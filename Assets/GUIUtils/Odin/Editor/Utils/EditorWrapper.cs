@@ -6,7 +6,7 @@ using Sirenix.OdinInspector.Editor.Validation;
 using Sirenix.Utilities.Editor;
 using UnityEngine;
 
-#if ODIN_INSPECTOR_3
+#if ODIN_INSPECTOR_3 && ODIN_VALIDATOR
 using Sirenix.OdinValidator.Editor;
 #endif
 
@@ -77,6 +77,7 @@ namespace Rhinox.GUIUtils.Odin.Editor
             DrawEditor();
         }
 
+#if ODIN_VALIDATOR
         public void Validate(Object root, ref List<ValidationResult> list)
         {
 #if ODIN_INSPECTOR_3
@@ -89,5 +90,6 @@ namespace Rhinox.GUIUtils.Odin.Editor
             runner.ValidateMembers(Target, selector, root, false, ref list);
 #endif
         }
+#endif
     }
 }

@@ -25,6 +25,7 @@ MonoBehaviour:
     m_Url: https://package.openupm.com
     m_Scopes:
     - com.rhinox.open
+    - io.github.icsharpcode.sharpziplib
     m_IsDefault: 0
   m_UserSelectedRegistryName: 
   m_UserAddingNewScopedRegistry: 0
@@ -36,10 +37,12 @@ MonoBehaviour:
       m_Url: https://package.openupm.com
       m_Scopes:
       - com.rhinox.open
+      - io.github.icsharpcode.sharpziplib
       m_IsDefault: 0
     m_Modified: 0
     m_Name: OpenUPM
     m_Url: https://package.openupm.com
     m_Scopes:
     - com.rhinox.open
+    - io.github.icsharpcode.sharpziplib
     m_SelectedScopeIndex: 0
