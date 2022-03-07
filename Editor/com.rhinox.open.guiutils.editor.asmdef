@@ -1,5 +1,6 @@
 {
     "name": "com.rhinox.open.guiutils.editor",
+    "rootNamespace": "",
     "references": [
         "com.rhinox.open.guiutils",
         "com.rhinox.open.lightspeed",
