@@ -5,13 +5,12 @@
       "url": "https://package.openupm.com",
       "scopes": [
         "com.rhinox.open",
-		"io.github.icsharpcode.sharpziplib"
+        "io.github.icsharpcode.sharpziplib"
       ]
     }
   ],
   "dependencies": {
-    "com.rhinox.open.lightspeed": "1.1.0",
-	"io.github.icsharpcode.sharpziplib": "1.2.0",
+    "com.rhinox.open.lightspeed": "1.1.4",
     "com.unity.2d.sprite": "1.0.0",
     "com.unity.ide.rider": "1.2.1",
     "com.unity.ide.visualstudio": "2.0.11",
@@ -20,6 +19,7 @@
     "com.unity.textmeshpro": "2.1.4",
     "com.unity.timeline": "1.2.18",
     "com.unity.ugui": "1.0.0",
+    "io.github.icsharpcode.sharpziplib": "1.2.0",
     "com.unity.modules.ai": "1.0.0",
     "com.unity.modules.androidjni": "1.0.0",
     "com.unity.modules.animation": "1.0.0",
