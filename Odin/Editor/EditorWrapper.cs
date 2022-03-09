@@ -1,13 +1,12 @@
+using System.Collections.Generic;
+using Sirenix.OdinInspector;
+using Sirenix.OdinInspector.Editor;
+using Sirenix.OdinInspector.Editor.Validation;
+using Sirenix.Utilities.Editor;
+using UnityEngine;
 
 namespace Rhinox.GUIUtils.Editor
 {
-    using System.Collections.Generic;
-    using Sirenix.OdinInspector;
-    using Sirenix.OdinInspector.Editor;
-    using Sirenix.OdinInspector.Editor.Validation;
-    using Sirenix.Utilities.Editor;
-    using UnityEngine;
-
     public struct EditorWrapper
     {
         [ShowIf(nameof(_expanded)), ShowInInspector]
