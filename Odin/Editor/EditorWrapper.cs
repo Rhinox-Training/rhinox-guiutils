@@ -1,5 +1,4 @@
 
-// TODO: migrate to GUIUtils?
 namespace Rhinox.GUIUtils.Editor
 {
     using System.Collections.Generic;
