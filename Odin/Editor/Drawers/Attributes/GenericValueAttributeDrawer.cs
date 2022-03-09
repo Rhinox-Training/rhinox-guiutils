@@ -1,7 +1,7 @@
 using System;
+using Rhinox.GUIUtils.Odin.Editor;
 using Rhinox.Lightspeed.Reflection;
 using Sirenix.OdinInspector.Editor;
-using Sirenix.OdinInspector.Editor.ValueResolvers;
 using Sirenix.Utilities.Editor;
 using UnityEditor;
 using UnityEngine;
@@ -17,7 +17,7 @@ namespace Rhinox.GUIUtils.Odin
         private Type _type;
         private string _cachedTypeName;
 
-        private ValueResolver<string> _typeHelper;
+        private PropertyMemberHelper<string> _typeHelper;
         private string _errorMessage;
         
         protected override void Initialize()
@@ -29,7 +29,7 @@ namespace Rhinox.GUIUtils.Odin
             else
             {
                 _type = typeof(object);
-                _typeHelper = ValueResolver.GetForString(Property, Attribute.TypeName);
+                _typeHelper = new PropertyMemberHelper<string>(Property, Attribute.TypeName);
             }
         }
 

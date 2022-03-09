@@ -7,7 +7,6 @@ using Sirenix.Utilities;
 using Sirenix.Utilities.Editor;
 using UnityEditor;
 using UnityEngine;
-using Rhinox.Utilities;
 
 namespace Rhinox.GUIUtils.Odin.Editor
 {
