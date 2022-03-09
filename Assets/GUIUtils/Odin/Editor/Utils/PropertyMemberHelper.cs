@@ -12,6 +12,7 @@ namespace Rhinox.GUIUtils.Odin.Editor
     /// Helper class to handle strings for labels and other similar purposes.
     /// Allows for a static string, or for referring to string member fields, properties or methods, by name
     /// </summary>
+    [Obsolete("Use Odin's ValueResolver system")]
     public class PropertyMemberHelper<T>
     {
         private T _cachedValue;

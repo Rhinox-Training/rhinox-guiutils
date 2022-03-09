@@ -1,6 +1,5 @@
-#if ODIN_INSPECTOR
-using Sirenix.Utilities.Editor;
 using UnityEditor;
+using UnityEngine;
 
 namespace Rhinox.GUIUtils.Editor
 {
@@ -8,8 +7,7 @@ namespace Rhinox.GUIUtils.Editor
     {
         public static void AddItem(this GenericMenu menu, string path, GenericMenu.MenuFunction func, bool on = false)
         {
-            menu.AddItem(GUIHelper.TempContent(path), on, func);
+            menu.AddItem(new GUIContent(path), on, func);
         }
     }
 }
-#endif

@@ -3,6 +3,7 @@ using Sirenix.OdinInspector;
 
 namespace Rhinox.GUIUtils.Odin
 {
+    // Note: IncludeMyAttributes will NOT work on classes
     [IncludeMyAttributes]
     [ShowInInspector, HideInPlayMode]
     public class ShowInEditorAttribute : Attribute
