@@ -1,6 +1,6 @@
+using Rhinox.GUIUtils.Odin.Editor;
 using Sirenix.OdinInspector;
 using Sirenix.OdinInspector.Editor;
-using Sirenix.OdinInspector.Editor.ValueResolvers;
 using Sirenix.Utilities;
 using Sirenix.Utilities.Editor;
 using UnityEditor;
@@ -15,12 +15,12 @@ namespace Rhinox.GUIUtils.Odin
         private static Color ActiveColor = EditorGUIUtility.isProSkin ? Color.white : new Color(0.802f, 0.802f, 0.802f, 1f);
         private static Color InactiveColor = EditorGUIUtility.isProSkin ? new Color(0.75f, 0.75f, 0.75f, 1f) : Color.white;
 
-        private ValueResolver<string> _oppositeHelper;
+        private PropertyMemberHelper<string> _oppositeHelper;
 
         protected override void Initialize()
         {
             base.Initialize();
-            _oppositeHelper = ValueResolver.GetForString(Property, Attribute.OppositeName);
+            _oppositeHelper = new PropertyMemberHelper<string>(Property, Attribute.OppositeName);
         }
 
         protected override void DrawPropertyLayout(GUIContent label)

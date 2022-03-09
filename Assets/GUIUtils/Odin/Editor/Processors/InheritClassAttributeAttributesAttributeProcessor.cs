@@ -12,7 +12,11 @@ public class InheritClassAttributeAttributesAttributeProcessor : OdinAttributePr
         if (!base.CanProcessSelfAttributes(property))
             return false;
         
-        return property.IsTreeRoot;
+#if ODIN_INSPECTOR_3
+        if (property.IsTreeRoot)
+            return true;
+#endif
+        return property.Parent == null;
     }
 
     public override void ProcessSelfAttributes(InspectorProperty property, List<Attribute> attributes)

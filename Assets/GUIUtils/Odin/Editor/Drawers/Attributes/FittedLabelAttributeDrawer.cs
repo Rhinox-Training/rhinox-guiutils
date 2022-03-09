@@ -1,7 +1,6 @@
-using Rhinox.Utilities;
+using Rhinox.GUIUtils.Odin.Editor;
 using Sirenix.OdinInspector;
 using Sirenix.OdinInspector.Editor;
-using Sirenix.OdinInspector.Editor.ValueResolvers;
 using Sirenix.Utilities;
 using Sirenix.Utilities.Editor;
 using UnityEngine;
@@ -11,11 +10,11 @@ namespace Rhinox.GUIUtils.Odin
     [DrawerPriority(DrawerPriorityLevel.SuperPriority)]
     public class FittedLabelAttributeDrawer : OdinAttributeDrawer<FittedLabelAttribute>
     {
-        private ValueResolver<string> _stringHelper;
+        private PropertyMemberHelper<string> _stringHelper;
     
         protected override void Initialize()
         {
-            _stringHelper = ValueResolver.GetForString(this.Property, this.Attribute.Text);
+            _stringHelper = new PropertyMemberHelper<string>(this.Property, this.Attribute.Text);
         }
     
         protected override void DrawPropertyLayout(GUIContent label)

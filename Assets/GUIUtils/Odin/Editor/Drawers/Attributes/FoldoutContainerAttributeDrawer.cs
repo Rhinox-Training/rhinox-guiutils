@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using Rhinox.GUIUtils.Editor;
+using Rhinox.GUIUtils.Odin.Editor;
 using Sirenix.OdinInspector;
 using Sirenix.OdinInspector.Editor;
-using Sirenix.OdinInspector.Editor.ValueResolvers;
 using Sirenix.Utilities.Editor;
 using UnityEngine;
 
@@ -13,14 +13,14 @@ namespace Rhinox.GUIUtils.Odin
     public class FoldoutContainerAttributeDrawer : OdinGroupDrawer<FoldoutContainerAttribute>
     {
         private LocalPersistentContext<bool> _isVisible;
-        private ValueResolver<string> _titleHelper;
+        private PropertyMemberHelper<string> _titleHelper;
         private float _t;
 
         /// <summary>Initializes this instance.</summary>
         protected override void Initialize()
         {
             _isVisible = this.GetPersistentValue("IsVisible", Attribute.HasDefinedExpanded ? Attribute.Expanded : SirenixEditorGUI.ExpandFoldoutByDefault);
-            _titleHelper = ValueResolver.GetForString(Property, Attribute.GroupName);
+            _titleHelper = new PropertyMemberHelper<string>(Property, Attribute.GroupName);
             _t = _isVisible.Value ? 1f : 0.0f;
         }
 

@@ -169,7 +169,7 @@ public static class StubGenerator
         {
             // @".\Sirenix.OdinInspector.Attributes\Attributes",
             // @".\Sirenix.OdinInspector.Attributes\Misc",
-            @".\Assets\GUIUtils\Odin\Attributes",
+            // @".\Assets\GUIUtils\Odin\Attributes",
         };
 
         StubData data = new StubData();
