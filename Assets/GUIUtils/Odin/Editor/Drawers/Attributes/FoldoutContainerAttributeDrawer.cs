@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Rhinox.GUIUtils.Editor;
+using Rhinox.GUIUtils.Odin.Editor;
 using Sirenix.OdinInspector;
 using Sirenix.OdinInspector.Editor;
 using Sirenix.Utilities.Editor;
@@ -11,39 +12,37 @@ namespace Rhinox.GUIUtils.Odin
 {
     public class FoldoutContainerAttributeDrawer : OdinGroupDrawer<FoldoutContainerAttribute>
     {
-        private LocalPersistentContext<bool> IsVisible;
-        private StringMemberHelper TitleHelper;
-        private float t;
+        private LocalPersistentContext<bool> _isVisible;
+        private PropertyMemberHelper<string> _titleHelper;
+        private float _t;
 
         /// <summary>Initializes this instance.</summary>
         protected override void Initialize()
         {
-            IsVisible = this.GetPersistentValue<bool>("IsVisible",
-                this.Attribute.HasDefinedExpanded ? this.Attribute.Expanded : SirenixEditorGUI.ExpandFoldoutByDefault);
-            TitleHelper = new StringMemberHelper(this.Property, this.Attribute.GroupName);
-            t = IsVisible.Value ? 1f : 0.0f;
+            _isVisible = this.GetPersistentValue("IsVisible", Attribute.HasDefinedExpanded ? Attribute.Expanded : SirenixEditorGUI.ExpandFoldoutByDefault);
+            _titleHelper = new PropertyMemberHelper<string>(Property, Attribute.GroupName);
+            _t = _isVisible.Value ? 1f : 0.0f;
         }
 
         /// <summary>Draws the property.</summary>
         protected override void DrawPropertyLayout(GUIContent label)
         {
-            if (this.TitleHelper.ErrorMessage != null)
-                SirenixEditorGUI.ErrorMessageBox(this.TitleHelper.ErrorMessage, true);
+            if (_titleHelper.ErrorMessage != null)
+                SirenixEditorGUI.ErrorMessageBox(_titleHelper.ErrorMessage, true);
 
-            var content = GUIHelper.TempContent(this.TitleHelper.GetString(Property));
+            var content = GUIHelper.TempContent(_titleHelper.GetValue());
 
-            IsVisible.Value = eUtility.FoldoutHeader(IsVisible.Value, content);
+            _isVisible.Value = eUtility.FoldoutHeader(_isVisible.Value, content);
 
             // update t (for the fadegroup)
             if (Event.current.type == EventType.Layout)
             {
                 EditorTimeHelper.Time.Update();
-                t = Mathf.MoveTowards(this.t, this.IsVisible.Value ? 1f : 0.0f,
-                    EditorTimeHelper.Time.DeltaTime * (1f / SirenixEditorGUI.DefaultFadeGroupDuration));
+                _t = Mathf.MoveTowards(_t, _isVisible.Value ? 1f : 0.0f, EditorTimeHelper.Time.DeltaTime * (1f / SirenixEditorGUI.DefaultFadeGroupDuration));
             }
 
             // Draw (BeginFadeGroup handles visibility being 0)
-            if (SirenixEditorGUI.BeginFadeGroup(this.t))
+            if (SirenixEditorGUI.BeginFadeGroup(_t))
             {
                 for (int index = 0; index < Property.Children.Count; ++index)
                 {

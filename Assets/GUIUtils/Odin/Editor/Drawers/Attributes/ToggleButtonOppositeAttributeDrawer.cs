@@ -1,3 +1,4 @@
+using Rhinox.GUIUtils.Odin.Editor;
 using Sirenix.OdinInspector;
 using Sirenix.OdinInspector.Editor;
 using Sirenix.Utilities;
@@ -14,26 +15,26 @@ namespace Rhinox.GUIUtils.Odin
         private static Color ActiveColor = EditorGUIUtility.isProSkin ? Color.white : new Color(0.802f, 0.802f, 0.802f, 1f);
         private static Color InactiveColor = EditorGUIUtility.isProSkin ? new Color(0.75f, 0.75f, 0.75f, 1f) : Color.white;
 
-        private StringMemberHelper OppositeHelper;
+        private PropertyMemberHelper<string> _oppositeHelper;
 
         protected override void Initialize()
         {
             base.Initialize();
-            OppositeHelper = new StringMemberHelper(Property, Attribute.OppositeName);
+            _oppositeHelper = new PropertyMemberHelper<string>(Property, Attribute.OppositeName);
         }
 
         protected override void DrawPropertyLayout(GUIContent label)
         {
-            if (OppositeHelper.ErrorMessage != null)
+            if (_oppositeHelper.ErrorMessage != null)
             {
-                SirenixEditorGUI.ErrorMessageBox(OppositeHelper.ErrorMessage, true);
+                SirenixEditorGUI.ErrorMessageBox(_oppositeHelper.ErrorMessage, true);
                 return;
             }
 
             SirenixEditorGUI.BeginIndentedHorizontal();
 
             DrawButton(label, true, SirenixGUIStyles.ButtonLeft);
-            DrawButton(GUIHelper.TempContent(OppositeHelper.GetString(Property)), false, SirenixGUIStyles.ButtonRight);
+            DrawButton(GUIHelper.TempContent(_oppositeHelper.GetValue()), false, SirenixGUIStyles.ButtonRight);
 
             SirenixEditorGUI.EndIndentedHorizontal();
         }

@@ -1,4 +1,5 @@
 using System;
+using Rhinox.GUIUtils.Odin.Editor;
 using Rhinox.Lightspeed.Reflection;
 using Sirenix.OdinInspector.Editor;
 using Sirenix.Utilities.Editor;
@@ -16,7 +17,7 @@ namespace Rhinox.GUIUtils.Odin
         private Type _type;
         private string _cachedTypeName;
 
-        private StringMemberHelper _typeHelper;
+        private PropertyMemberHelper<string> _typeHelper;
         private string _errorMessage;
         
         protected override void Initialize()
@@ -28,7 +29,7 @@ namespace Rhinox.GUIUtils.Odin
             else
             {
                 _type = typeof(object);
-                _typeHelper = new StringMemberHelper(Property, Attribute.TypeName, ref _errorMessage);
+                _typeHelper = new PropertyMemberHelper<string>(Property, Attribute.TypeName);
             }
         }
 
@@ -67,7 +68,7 @@ namespace Rhinox.GUIUtils.Odin
             if (_typeHelper == null)
                 return _type;
             
-            var typeName = _typeHelper.GetString(Property);
+            var typeName = _typeHelper.GetValue();
             if (typeName == _cachedTypeName)
                 return _type;
             
