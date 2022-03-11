@@ -190,7 +190,6 @@ namespace Rhinox.GUIUtils.Editor
             }
         }
         
-#if ODIN_INSPECTOR
         public class FoldoutContainer : GUI.Scope
         {
             private static readonly GUIStyle DefaultContainerStyle;
@@ -208,7 +207,7 @@ namespace Rhinox.GUIUtils.Editor
             public FoldoutContainer (ref bool isOpen, string text, GUIStyle containerStyle, GUIStyle labelStyle)
             {
                 this.isOpen = isOpen;
-                GUIHelper.PushIndentLevel(1);
+                GUIContentHelper.PushIndentLevel(1);
                 
                 EditorGUILayout.BeginVertical(containerStyle);
                 GUILayout.Space (3);
@@ -220,7 +219,7 @@ namespace Rhinox.GUIUtils.Editor
             public FoldoutContainer (SerializedProperty isExpanded, string text, GUIStyle containerStyle, GUIStyle labelStyle)
             {
                 this.isOpen = isExpanded.isExpanded;
-                GUIHelper.PushIndentLevel(1);
+                GUIContentHelper.PushIndentLevel(1);
                 
                 EditorGUILayout.BeginVertical(containerStyle);
                 GUILayout.Space (3);
@@ -240,10 +239,11 @@ namespace Rhinox.GUIUtils.Editor
                 GUILayout.Space(3);
                 EditorGUILayout.EndVertical();
                 
-                GUIHelper.PopIndentLevel();
+                GUIContentHelper.PopIndentLevel();
             }
         }
-        
+  
+#if ODIN_INSPECTOR      
         public class FoldoutData
         {
             public float Time;
