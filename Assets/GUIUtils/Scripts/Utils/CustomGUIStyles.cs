@@ -7,6 +7,21 @@ namespace Rhinox.GUIUtils
 {
     public static class CustomGUIStyles
     {
+        private static bool IsDarkMode()
+        {
+#if UNITY_EDITOR
+            return EditorGUIUtility.isProSkin;
+#else
+            return true;
+#endif
+        }
+        
+        // Colors
+        public static readonly Color BoxBackgroundColor = IsDarkMode() ? new Color(1f, 1f, 1f, 0.05f) : new Color(1f, 1f, 1f, 0.5f);
+        public static readonly Color DarkEditorBackground = IsDarkMode() ? new Color(0.192f, 0.192f, 0.192f, 1f) : new Color(0.0f, 0.0f, 0.0f, 0.0f);
+            
+        
+        
         private static GUIStyle _titleStyle;
         public static GUIStyle Title
         {
@@ -107,6 +122,23 @@ namespace Rhinox.GUIUtils
             }
         }
         
+        private static GUIStyle _labelStyleCentered;
+        public static GUIStyle CenteredLabel
+        {
+            get
+            {
+                if (_labelStyleCentered == null)
+                {
+                    _labelStyleCentered = new GUIStyle(CustomGUIStyles.Label)
+                    {
+                        alignment = TextAnchor.MiddleCenter
+                    };
+                }
+
+                return _labelStyleCentered;
+            }
+        }
+        
         private static GUIStyle _labelStyleBold;
         public static GUIStyle BoldLabel
         {
@@ -114,13 +146,7 @@ namespace Rhinox.GUIUtils
             {
                 if (_labelStyleBold == null)
                 {
-                    _labelStyleBold = new GUIStyle(
-#if UNITY_EDITOR
-                        EditorStyles.label
-#else
-                        "label"
-#endif
-                    )
+                    _labelStyleBold = new GUIStyle(CustomGUIStyles.Label)
                     {
                         fontStyle = FontStyle.Bold,
                     };
@@ -137,13 +163,7 @@ namespace Rhinox.GUIUtils
             {
                 if (_labelStyleBoldCentered == null)
                 {
-                    _labelStyleBoldCentered = new GUIStyle(
-#if UNITY_EDITOR
-                        EditorStyles.label
-#else
-                        "label"
-#endif
-                    )
+                    _labelStyleBoldCentered = new GUIStyle(CustomGUIStyles.Label)
                     {
                         fontStyle = FontStyle.Bold,
                         alignment = TextAnchor.MiddleCenter
@@ -161,13 +181,7 @@ namespace Rhinox.GUIUtils
             {
                 if (_labelStyleUnpadded == null)
                 {
-                    _labelStyleUnpadded = new GUIStyle(
-                        #if UNITY_EDITOR
-                        EditorStyles.label
-                        #else
-                        "label"
-                        #endif
-                        )
+                    _labelStyleUnpadded = new GUIStyle(CustomGUIStyles.Label)
                     {
                         padding = new RectOffset(),
                         fontStyle = FontStyle.Normal,
@@ -178,6 +192,51 @@ namespace Rhinox.GUIUtils
                 return _labelStyleUnpadded;
             }
         }
+
+#if UNITY_EDITOR
+        private static GUIStyle _miniLabelStyleLeft;
+        public static GUIStyle MiniLabelLeft
+        {
+            get
+            {
+                if (_miniLabelStyleLeft == null)
+                {
+                    _miniLabelStyleLeft = new GUIStyle(EditorStyles.centeredGreyMiniLabel)
+                    {
+                        alignment = TextAnchor.MiddleLeft,
+                        clipping = TextClipping.Clip
+                    };
+#if UNITY_2019_3_OR_NEWER
+                    _miniLabelStyleLeft.margin = new RectOffset(4, 4, 4, 4);
+#endif
+                }
+                return _miniLabelStyleLeft;
+            }
+        }
+        
+        private static GUIStyle _miniLabelStyleRight;
+        public static GUIStyle MiniLabelRight
+        {
+            get
+            {
+                if (_miniLabelStyleRight == null)
+                {
+                    _miniLabelStyleRight = new GUIStyle(EditorStyles.centeredGreyMiniLabel)
+                    {
+                        alignment = TextAnchor.MiddleRight,
+                        clipping = TextClipping.Overflow
+                    };
+#if UNITY_2019_3_OR_NEWER
+                    _miniLabelStyleRight.margin = new RectOffset(4, 4, 4, 4);
+#endif
+                }
+                return _miniLabelStyleRight;
+            }
+        }
+#endif
+        
+        // =============================================================================================================
+        // Toolbar styles
         
         private static GUIStyle _toolbarBackground;
         public static GUIStyle ToolbarBackground
@@ -223,5 +282,228 @@ namespace Rhinox.GUIUtils
                 return _toolbarTab;
             }
         }
+        
+        // =============================================================================================================
+        // Button Styles
+
+        private static GUIStyle _buttonStyle;
+        public static GUIStyle Button
+        {
+            get
+            {
+                if (_buttonStyle == null)
+                    _buttonStyle = new GUIStyle((GUIStyle)nameof(Button));
+                return _buttonStyle;
+            }
+        }
+        
+        private static GUIStyle _buttonStyleSelected;
+        public static GUIStyle ButtonSelected
+        {
+            get
+            {
+                if (_buttonStyleSelected == null)
+                    _buttonStyleSelected = new GUIStyle(CustomGUIStyles.Button)
+                    {
+                        normal = new GUIStyle(CustomGUIStyles.Button).onNormal
+                    };
+                return _buttonStyleSelected;
+            }
+        }
+
+        private static GUIStyle _buttonStyleLeft;
+        public static GUIStyle ButtonLeft
+        {
+            get
+            {
+                if (_buttonStyleLeft == null)
+                    _buttonStyleLeft = new GUIStyle((GUIStyle)nameof(ButtonLeft));
+                return _buttonStyleLeft;
+            }
+        }
+        
+        private static GUIStyle _buttonStyleLeftSelected;
+        public static GUIStyle ButtonLeftSelected
+        {
+            get
+            {
+                if (_buttonStyleLeftSelected == null)
+                    _buttonStyleLeftSelected = new GUIStyle(CustomGUIStyles.ButtonLeft)
+                    {
+                        normal = new GUIStyle(CustomGUIStyles.ButtonLeft).onNormal
+                    };
+                return _buttonStyleLeftSelected;
+            }
+        }
+
+        private static GUIStyle _buttonStyleMiddle;
+        public static GUIStyle ButtonMid
+        {
+            get
+            {
+                if (_buttonStyleMiddle == null)
+                    _buttonStyleMiddle = new GUIStyle((GUIStyle)nameof(ButtonMid));
+                return _buttonStyleMiddle;
+            }
+        }
+        
+        private static GUIStyle _buttonStyleMidSelected;
+        public static GUIStyle ButtonMidSelected
+        {
+            get
+            {
+                if (_buttonStyleMidSelected == null)
+                    _buttonStyleMidSelected = new GUIStyle(CustomGUIStyles.ButtonMid)
+                    {
+                        normal = new GUIStyle(CustomGUIStyles.ButtonMid).onNormal
+                    };
+                return _buttonStyleMidSelected;
+            }
+        }
+
+        private static GUIStyle _buttonStyleRight;
+        public static GUIStyle ButtonRight
+        {
+            get
+            {
+                if (_buttonStyleRight == null)
+                    _buttonStyleRight = new GUIStyle((GUIStyle)nameof(ButtonRight));
+                return _buttonStyleRight;
+            }
+        }
+        
+        private static GUIStyle _buttonStyleRightSelected;
+        public static GUIStyle ButtonRightSelected
+        {
+            get
+            {
+                if (_buttonStyleRightSelected == null)
+                    _buttonStyleRightSelected = new GUIStyle(CustomGUIStyles.ButtonRight)
+                    {
+                        normal = new GUIStyle(CustomGUIStyles.ButtonRight).onNormal
+                    };
+                return _buttonStyleRightSelected;
+            }
+        }
+        
+        public static GUIStyle GetButtonGroupStyle(int buttonI, int maxI, bool selected = false)
+        {
+            if (buttonI == 0 && maxI <= 1)
+                return selected ? CustomGUIStyles.ButtonSelected : CustomGUIStyles.Button;
+            if (buttonI == 0) return selected ? CustomGUIStyles.ButtonLeftSelected : CustomGUIStyles.ButtonLeft;
+            if (buttonI >= maxI - 1) return selected ? CustomGUIStyles.ButtonRightSelected : CustomGUIStyles.ButtonRight;
+            return selected ? CustomGUIStyles.ButtonMidSelected : CustomGUIStyles.ButtonMid;
+        }
+
+#if UNITY_EDITOR
+        private static GUIStyle _miniButtonStyle;
+        public static GUIStyle MiniButton
+        {
+            get
+            {
+                if (_miniButtonStyle == null)
+                    _miniButtonStyle = new GUIStyle(EditorStyles.miniButton);
+                return _miniButtonStyle;
+            }
+        }
+        
+        private static GUIStyle _miniButtonStyleSelected;
+        public static GUIStyle MiniButtonSelected
+        {
+            get
+            {
+                if (_miniButtonStyleSelected == null)
+                    _miniButtonStyleSelected = new GUIStyle(CustomGUIStyles.MiniButton)
+                    {
+                        normal = new GUIStyle(CustomGUIStyles.MiniButton).onNormal
+                    };
+                return _miniButtonStyleSelected;
+            }
+        }
+
+        private static GUIStyle _miniButtonStyleLeft;
+        public static GUIStyle MiniButtonLeft
+        {
+            get
+            {
+                if (_miniButtonStyleLeft == null)
+                    _miniButtonStyleLeft = new GUIStyle(EditorStyles.miniButtonLeft);
+                return _miniButtonStyleLeft;
+            }
+        }
+
+        private static GUIStyle _miniButtonStyleLeftSelected;
+        public static GUIStyle MiniButtonLeftSelected
+        {
+            get
+            {
+                if (_miniButtonStyleLeftSelected == null)
+                    _miniButtonStyleLeftSelected = new GUIStyle(CustomGUIStyles.MiniButtonLeft)
+                    {
+                        normal = new GUIStyle(CustomGUIStyles.MiniButtonLeft).onNormal
+                    };
+                return _miniButtonStyleLeftSelected;
+            }
+        }
+
+        private static GUIStyle _miniButtonStyleMid;
+        public static GUIStyle MiniButtonMid
+        {
+            get
+            {
+                if (_miniButtonStyleMid == null)
+                    _miniButtonStyleMid = new GUIStyle(EditorStyles.miniButtonMid);
+                return _miniButtonStyleMid;
+            }
+        }
+
+        private static GUIStyle _miniButtonStyleMidSelected;
+        public static GUIStyle MiniButtonMidSelected
+        {
+            get
+            {
+                if (_miniButtonStyleMidSelected == null)
+                    _miniButtonStyleMidSelected = new GUIStyle(CustomGUIStyles.MiniButtonMid)
+                    {
+                        normal = new GUIStyle(CustomGUIStyles.MiniButtonMid).onNormal
+                    };
+                return _miniButtonStyleMidSelected;
+            }
+        }
+
+        private static GUIStyle _miniButtonStyleRight;
+        public static GUIStyle MiniButtonRight
+        {
+            get
+            {
+                if (_miniButtonStyleRight == null)
+                    _miniButtonStyleRight = new GUIStyle(EditorStyles.miniButtonRight);
+                return _miniButtonStyleRight;
+            }
+        }
+
+        private static GUIStyle _miniButtonStyleRightSelected;
+        public static GUIStyle MiniButtonRightSelected
+        {
+            get
+            {
+                if (_miniButtonStyleRightSelected == null)
+                    _miniButtonStyleRightSelected = new GUIStyle(CustomGUIStyles.MiniButtonRight)
+                    {
+                        normal = new GUIStyle(CustomGUIStyles.MiniButtonRight).onNormal
+                    };
+                return _miniButtonStyleRightSelected;
+            }
+        }
+        
+        public static GUIStyle GetMiniButtonGroupStyle(int buttonI, int maxI, bool selected = false)
+        {
+            if (buttonI == 0 && maxI <= 1)
+                return selected ? CustomGUIStyles.MiniButtonSelected : CustomGUIStyles.MiniButton;
+            if (buttonI == 0) return selected ? CustomGUIStyles.MiniButtonLeftSelected : CustomGUIStyles.MiniButtonLeft;
+            if (buttonI >= maxI - 1) return selected ? CustomGUIStyles.MiniButtonRightSelected : CustomGUIStyles.MiniButtonRight;
+            return selected ? CustomGUIStyles.MiniButtonMidSelected : CustomGUIStyles.MiniButtonMid;
+        }
+#endif
     }
 }

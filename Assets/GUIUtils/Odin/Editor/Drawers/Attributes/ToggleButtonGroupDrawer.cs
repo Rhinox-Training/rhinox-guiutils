@@ -1,8 +1,5 @@
 using System;
-using Rhinox.GUIUtils.Editor;
-using Sirenix.OdinInspector;
 using Sirenix.OdinInspector.Editor;
-using Sirenix.OdinInspector.Editor.Drawers;
 using Sirenix.Utilities.Editor;
 using UnityEngine;
 
@@ -22,7 +19,7 @@ namespace Rhinox.GUIUtils.Odin
             for (int i = 0; i < Property.Children.Count; ++i)
             {
                 var val = (bool) Property.Children[i].ValueEntry.WeakSmartValue;
-                GUIStyle style = eUtility.GetButtonGroupStyle(i, Property.Children.Count, val);
+                GUIStyle style = CustomGUIStyles.GetButtonGroupStyle(i, Property.Children.Count, val);
                 InspectorProperty child = Property.Children[i];
                 child.Context.GetGlobal("ButtonStyle", style).Value = style;
                 child.Draw();

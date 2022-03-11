@@ -14,26 +14,6 @@ namespace Rhinox.GUIUtils.Editor
     {
 #if ODIN_INSPECTOR
         /// ================================================================================================================
-        /// STYLE
-        public static GUIStyle GetButtonGroupStyle(int buttonI, int maxI, bool selected = false)
-        {
-            if (buttonI == 0 && maxI <= 1)
-                return selected ? SirenixGUIStyles.ButtonSelected : SirenixGUIStyles.Button;
-            if (buttonI == 0) return selected ? SirenixGUIStyles.ButtonLeftSelected : SirenixGUIStyles.ButtonLeft;
-            if (buttonI >= maxI - 1) return selected ? SirenixGUIStyles.ButtonRightSelected : SirenixGUIStyles.ButtonRight;
-            return selected ? SirenixGUIStyles.ButtonMidSelected : SirenixGUIStyles.ButtonMid;
-        }
-
-        public static GUIStyle GetMiniButtonGroupStyle(int buttonI, int maxI, bool selected = false)
-        {
-            if (buttonI == 0 && maxI <= 1)
-                return selected ? SirenixGUIStyles.MiniButtonSelected : SirenixGUIStyles.MiniButton;
-            if (buttonI == 0) return selected ? SirenixGUIStyles.MiniButtonLeftSelected : SirenixGUIStyles.MiniButtonLeft;
-            if (buttonI >= maxI - 1) return selected ? SirenixGUIStyles.MiniButtonRightSelected : SirenixGUIStyles.MiniButtonRight;
-            return selected ? SirenixGUIStyles.MiniButtonMidSelected : SirenixGUIStyles.MiniButtonMid;
-        }
-
-        /// ================================================================================================================
         /// ELEMENTS
         public static void Card(Action draw, Action onClick = null, Action<Rect> postDraw = null, float alpha = 0f)
         {
@@ -66,15 +46,16 @@ namespace Rhinox.GUIUtils.Editor
             GUILayout.EndHorizontal();
             GUILayout.EndVertical();
         }
+#endif
 
         public static bool FoldoutHeader(bool foldout, string title, GUIStyle headerStyle = null)
         {
-            return FoldoutHeader(foldout, GUIHelper.TempContent(title), headerStyle: headerStyle);
+            return FoldoutHeader(foldout, GUIContentHelper.TempContent(title), headerStyle: headerStyle);
         }
         
         public static bool FoldoutHeader(bool foldout, string title, string subTitle, GUIStyle headerStyle = null)
         {
-            return FoldoutHeader(foldout, GUIHelper.TempContent(title), subTitle, headerStyle);
+            return FoldoutHeader(foldout, GUIContentHelper.TempContent(title), subTitle, headerStyle);
         }
 
         public static bool FoldoutHeader(bool foldout, GUIContent titleContent, string subTitle = null, GUIStyle headerStyle = null)
@@ -102,13 +83,13 @@ namespace Rhinox.GUIUtils.Editor
             backgroundRect.xMin = 0f;
 
             // Draw rects
-            EditorGUI.DrawRect(backgroundRect, SirenixGUIStyles.BoxBackgroundColor);
+            EditorGUI.DrawRect(backgroundRect, CustomGUIStyles.BoxBackgroundColor);
             
             EditorGUI.LabelField(labelRect, titleContent, headerStyle);
             
             if (!string.IsNullOrWhiteSpace(subTitle))
             {
-                var subHeaderStyle = SirenixGUIStyles.SubtitleRight;
+                var subHeaderStyle = CustomGUIStyles.SubtitleRight;
 
                 const int extraSpace = 13;
                 var remaining = extraSpace + labelRect.width - headerStyle.CalcSize(titleContent).x;
@@ -116,9 +97,9 @@ namespace Rhinox.GUIUtils.Editor
                 labelRect.x += extraSpace;
                 labelRect.y += 3;
                 
-                titleContent = GUIHelper.TempContent(subTitle);
+                titleContent = GUIContentHelper.TempContent(subTitle);
                 if (remaining > subHeaderStyle.CalcSize(titleContent).x)
-                    EditorGUI.LabelField(labelRect, titleContent, SirenixGUIStyles.SubtitleRight);
+                    EditorGUI.LabelField(labelRect, titleContent, CustomGUIStyles.SubtitleRight);
             }
             
             foldout = GUI.Toggle(foldoutRect, foldout, GUIContent.none, EditorStyles.foldout);
@@ -161,13 +142,13 @@ namespace Rhinox.GUIUtils.Editor
             backgroundRect.xMin = 0f;
 
             // Draw rects
-            EditorGUI.DrawRect(backgroundRect, SirenixGUIStyles.BoxBackgroundColor);
+            EditorGUI.DrawRect(backgroundRect, CustomGUIStyles.BoxBackgroundColor);
 
             EditorGUI.LabelField(labelRect, titleContent, headerStyle);
 
             if (!string.IsNullOrWhiteSpace(subTitle))
             {
-                var subHeaderStyle = SirenixGUIStyles.SubtitleRight;
+                var subHeaderStyle = CustomGUIStyles.SubtitleRight;
 
                 const int extraSpace = 13;
                 var remaining = extraSpace + labelRect.width - headerStyle.CalcSize(titleContent).x;
@@ -175,14 +156,13 @@ namespace Rhinox.GUIUtils.Editor
                 labelRect.x += extraSpace;
                 labelRect.y += 3;
 
-                titleContent = GUIHelper.TempContent(subTitle);
+                titleContent = GUIContentHelper.TempContent(subTitle);
                 if (remaining > subHeaderStyle.CalcSize(titleContent).x)
-                    EditorGUI.LabelField(labelRect, titleContent, SirenixGUIStyles.SubtitleRight);
+                    EditorGUI.LabelField(labelRect, titleContent, CustomGUIStyles.SubtitleRight);
             }
 
             GUILayout.Space(1);
         }
-#endif
 
         /// ================================================================================================================
         /// UTILITY
