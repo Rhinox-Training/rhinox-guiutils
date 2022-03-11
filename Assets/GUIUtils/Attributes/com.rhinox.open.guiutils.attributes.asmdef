@@ -1,14 +1,9 @@
 {
-    "name": "com.rhinox.open.guiutils.editor",
+    "name": "com.rhinox.open.guiutils.attributes",
     "references": [
-        "com.rhinox.open.guiutils",
-        "com.rhinox.open.lightspeed",
-        "Sirenix.OdinInspector.CompatibilityLayer",
-        "com.rhinox.open.guiutils.attributes"
+        "GUID:fc025ba4ac3997440926e87ec084af89"
     ],
-    "includePlatforms": [
-        "Editor"
-    ],
+    "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
     "overrideReferences": false,
