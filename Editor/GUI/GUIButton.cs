@@ -37,11 +37,7 @@ namespace Rhinox.GUIUtils.Editor
 
                 using (new eUtility.DisabledGroup(!canExecute))
                 {
-#if ODIN_INSPECTOR
-                    if (GUILayout.Button(button.Label, eUtility.GetButtonGroupStyle(i, _buttonsDrawn)))
-#else
-                    if (GUILayout.Button(button.Label))
-#endif
+                    if (GUILayout.Button(button.Label, CustomGUIStyles.GetButtonGroupStyle(i, _buttonsDrawn)))
                         button.Execute();
                     ++buttonsDrawn;
                 }

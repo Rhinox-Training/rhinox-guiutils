@@ -13,6 +13,30 @@ namespace Rhinox.GUIUtils
 #if UNITY_EDITOR
         private static readonly GUIFrameAwareStack<int> IndentLevelStack = new GUIFrameAwareStack<int>();
 #endif
+
+        public static GUIContent TempContent(string label, string tooltip = null)
+        {
+            _tempContent.image = null;
+            _tempContent.text = label;
+            _tempContent.tooltip = tooltip;
+            return _tempContent;
+        }
+        
+        public static GUIContent TempContent(Texture image, string tooltip = null)
+        {
+            _tempContent.image = image;
+            _tempContent.text = null;
+            _tempContent.tooltip = tooltip;
+            return _tempContent;
+        }
+        
+        public static GUIContent TempContent(string label, Texture image, string tooltip = null)
+        {
+            _tempContent.image = image;
+            _tempContent.text = label;
+            _tempContent.tooltip = tooltip;
+            return _tempContent;
+        }
         
         // =============================================================================================================
         // GUIStyle extensions
