@@ -17,6 +17,7 @@ namespace Rhinox.GUIUtils
         }
         
         // Colors
+        public static readonly Color BorderColor = IsDarkMode() ? new Color(0.11f, 0.11f, 0.11f, 0.8f) : new Color(0.38f, 0.38f, 0.38f, 0.6f);
         public static readonly Color BoxBackgroundColor = IsDarkMode() ? new Color(1f, 1f, 1f, 0.05f) : new Color(1f, 1f, 1f, 0.5f);
         public static readonly Color DarkEditorBackground = IsDarkMode() ? new Color(0.192f, 0.192f, 0.192f, 1f) : new Color(0.0f, 0.0f, 0.0f, 0.0f);
             
@@ -285,6 +286,20 @@ namespace Rhinox.GUIUtils
         
         // =============================================================================================================
         // Button Styles
+
+        private static GUIStyle _iconButtonStyle;
+        public static GUIStyle IconButton
+        {
+            get
+            {
+                if (_iconButtonStyle == null)
+                    _iconButtonStyle = new GUIStyle(GUIStyle.none)
+                    {
+                        padding = new RectOffset(1, 1, 1, 1)
+                    };
+                return _iconButtonStyle;
+            }
+        }
 
         private static GUIStyle _buttonStyle;
         public static GUIStyle Button

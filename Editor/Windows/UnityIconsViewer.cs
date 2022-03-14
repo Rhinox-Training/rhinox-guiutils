@@ -4,7 +4,6 @@
  *
  *	Dedication : I dedicate this code to Gabriel, who makes kickass extensions. Now go out and use awesome icons!
  */
-
 using UnityEngine;
 using UnityEditor;
 using System;
@@ -12,11 +11,11 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-
-#if ODIN_INSPECTOR
 using Sirenix.OdinInspector;
+#if ODIN_INSPECTOR
 using Sirenix.OdinInspector.Editor;
 using Sirenix.Utilities.Editor;
+#endif
 
 using ObjectFieldAlignment = Sirenix.OdinInspector.ObjectFieldAlignment;
 
@@ -115,7 +114,7 @@ namespace Rhinox.GUIUtils.Editor
 
             foreach (var folder in IconFolders)
             {
-                var path = UnityIconsViewer.FormatAssetsPath(folder);
+                var path = UnityIcon.FormatAssetsPath(folder);
                 
                 if (!AssetDatabase.IsValidFolder(path))
                     continue;
@@ -154,7 +153,7 @@ namespace Rhinox.GUIUtils.Editor
         public static string[] GetAllAssetIcons()
         {
             var folders = IconFolders
-                .Select(UnityIconsViewer.FormatAssetsPath)
+                .Select(UnityIcon.FormatAssetsPath)
                 .Where(AssetDatabase.IsValidFolder)
                 .ToArray();
 
@@ -165,6 +164,7 @@ namespace Rhinox.GUIUtils.Editor
                 .ToArray();
         }
         
+#if ODIN_INSPECTOR
         public static Dictionary<string, Texture> GetAllOdinIcons()
         {
             return typeof(EditorIcons)
@@ -178,8 +178,21 @@ namespace Rhinox.GUIUtils.Editor
                         return val as Texture2D ?? ((EditorIcon) val)?.Active;
                     });
         }
+#endif
+        
+        public static string FormatAssetsPath(string assetFolderPath)
+        {
+            assetFolderPath = (assetFolderPath ?? "")
+                .Replace("\\", "/")
+                .TrimEnd('/');
+            // if (!assetFolderPath.ToLower().StartsWith("assets/"))
+            //     assetFolderPath = "Assets/" + assetFolderPath;
+
+            return assetFolderPath;
+        }
     }
 
+#if ODIN_INSPECTOR
     /// ================================================================================================================
     /// UnityIconsViewer
     public class UnityIconsViewer : OdinMenuEditorWindow
@@ -267,17 +280,6 @@ namespace Rhinox.GUIUtils.Editor
             Repaint();
         }
 
-        public static string FormatAssetsPath(string assetFolderPath)
-        {
-            assetFolderPath = (assetFolderPath ?? "")
-                              .Replace("\\", "/")
-                              .TrimEnd('/');
-            // if (!assetFolderPath.ToLower().StartsWith("assets/"))
-            //     assetFolderPath = "Assets/" + assetFolderPath;
-
-            return assetFolderPath;
-        }
-
         private static List<UnityIcon> GetAssetIcons(string[] iconPaths)
         {
             var icons = new List<UnityIcon>();
@@ -316,5 +318,5 @@ namespace Rhinox.GUIUtils.Editor
             return tree;
         }
     }
-}
 #endif
+}
