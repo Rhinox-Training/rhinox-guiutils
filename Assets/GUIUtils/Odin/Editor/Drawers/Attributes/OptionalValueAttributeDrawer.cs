@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using Rhinox.GUIUtils.Attributes;
 using Sirenix.OdinInspector.Editor;
 using Rhinox.Lightspeed;
 using Rhinox.Lightspeed.Reflection;
@@ -6,7 +7,7 @@ using Sirenix.Utilities.Editor;
 using UnityEditor;
 using UnityEngine;
 
-namespace Rhinox.GUIUtils.Odin
+namespace Rhinox.GUIUtils.Odin.Editor
 {
     [DrawerPriority(DrawerPriorityLevel.WrapperPriority)]
     public class OptionalValueAttributeDrawer : OdinAttributeDrawer<OptionalValueAttribute>

@@ -1,9 +1,9 @@
-using Sirenix.OdinInspector;
+using Rhinox.GUIUtils.Attributes;
 using Sirenix.OdinInspector.Editor;
 using UnityEditor;
 using UnityEngine;
 
-namespace Rhinox.GUIUtils.Odin
+namespace Rhinox.GUIUtils.Odin.Editor
 {
     public class LayerAttributeDrawer : OdinAttributeDrawer<LayerAttribute, int>
     {

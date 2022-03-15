@@ -1,13 +1,11 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using Sirenix.OdinInspector;
+﻿using Rhinox.GUIUtils.Attributes;
 using Sirenix.OdinInspector.Editor;
 using Sirenix.Utilities;
 using Sirenix.Utilities.Editor;
 using UnityEditor;
 using UnityEngine;
 
-namespace Rhinox.GUIUtils.Odin
+namespace Rhinox.GUIUtils.Odin.Editor
 {
     [DrawerPriority(0.0, 0.0, 0.11)]
     public class InlinePropertyAltAttributeDrawer : OdinAttributeDrawer<InlinePropertyAltAttribute>

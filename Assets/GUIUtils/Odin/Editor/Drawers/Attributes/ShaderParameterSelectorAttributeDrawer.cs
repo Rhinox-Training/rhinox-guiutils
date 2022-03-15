@@ -1,17 +1,13 @@
-using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
-using Rhinox.GUIUtils.Odin.Editor;
-using Sirenix.OdinInspector;
+using Rhinox.GUIUtils.Attributes;
 using Sirenix.OdinInspector.Editor;
 using Sirenix.Utilities;
 using Sirenix.Utilities.Editor;
 using UnityEditor;
 using UnityEngine;
 
-namespace Rhinox.GUIUtils.Odin
+namespace Rhinox.GUIUtils.Odin.Editor
 {
     public class ShaderParameterSelectorAttributeDrawer : OdinAttributeDrawer<ShaderParameterSelectorAttribute, string>
     {

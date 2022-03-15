@@ -5,7 +5,7 @@ using UnityEngine;
 using UnityEditor;
 #endif
 
-namespace Rhinox.GUIUtils.Odin
+namespace Rhinox.GUIUtils.Attributes
 {
     [Conditional("UNITY_EDITOR")]
     public class ListItemSelectorAttribute : Attribute

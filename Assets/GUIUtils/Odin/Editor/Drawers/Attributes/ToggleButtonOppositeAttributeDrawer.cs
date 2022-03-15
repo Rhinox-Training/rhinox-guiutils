@@ -1,12 +1,11 @@
-using Rhinox.GUIUtils.Odin.Editor;
-using Sirenix.OdinInspector;
+using Rhinox.GUIUtils.Attributes;
 using Sirenix.OdinInspector.Editor;
 using Sirenix.Utilities;
 using Sirenix.Utilities.Editor;
 using UnityEditor;
 using UnityEngine;
 
-namespace Rhinox.GUIUtils.Odin
+namespace Rhinox.GUIUtils.Odin.Editor
 {
     public class ToggleButtonOppositeAttributeDrawer : OdinAttributeDrawer<ToggleButtonOppositeAttribute, bool>
     {

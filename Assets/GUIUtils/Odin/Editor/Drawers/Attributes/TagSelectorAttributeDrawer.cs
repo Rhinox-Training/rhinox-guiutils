@@ -1,13 +1,11 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using Sirenix.OdinInspector;
+﻿using System.Linq;
+using Rhinox.GUIUtils.Attributes;
 using Sirenix.OdinInspector.Editor;
 using Sirenix.Utilities.Editor;
 using Rhinox.Lightspeed;
 using UnityEngine;
 
-namespace Rhinox.GUIUtils.Odin
+namespace Rhinox.GUIUtils.Odin.Editor
 {
     public class TagSelectorAttributeDrawer : OdinAttributeDrawer<TagSelectorAttribute, string>
     {

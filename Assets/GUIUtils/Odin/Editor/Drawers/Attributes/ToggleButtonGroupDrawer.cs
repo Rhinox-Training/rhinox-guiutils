@@ -1,9 +1,10 @@
 using System;
+using Rhinox.GUIUtils.Attributes;
 using Sirenix.OdinInspector.Editor;
 using Sirenix.Utilities.Editor;
 using UnityEngine;
 
-namespace Rhinox.GUIUtils.Odin
+namespace Rhinox.GUIUtils.Odin.Editor
 {
     public class ToggleButtonGroupDrawer : OdinGroupDrawer<ToggleButtonAttribute>
     {

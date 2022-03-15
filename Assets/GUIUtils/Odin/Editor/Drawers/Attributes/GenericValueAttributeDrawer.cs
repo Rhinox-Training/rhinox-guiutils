@@ -1,5 +1,5 @@
 using System;
-using Rhinox.GUIUtils.Odin.Editor;
+using Rhinox.GUIUtils.Attributes;
 using Rhinox.Lightspeed.Reflection;
 using Sirenix.OdinInspector.Editor;
 using Sirenix.Utilities.Editor;
@@ -9,7 +9,7 @@ using UnityEngine;
 using Object = UnityEngine.Object;
 using SerializationUtility = Sirenix.Serialization.SerializationUtility;
 
-namespace Rhinox.GUIUtils.Odin
+namespace Rhinox.GUIUtils.Odin.Editor
 {
     [DrawerPriority(0, 0, 2500)]
     public class GenericValueAttributeDrawer : OdinAttributeDrawer<GenericValueAttribute>

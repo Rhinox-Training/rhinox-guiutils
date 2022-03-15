@@ -1,7 +1,7 @@
 using System;
 using System.Diagnostics;
 
-namespace Rhinox.GUIUtils.Odin
+namespace Rhinox.GUIUtils.Attributes
 {
     [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
     [Conditional("UNITY_EDITOR")]
