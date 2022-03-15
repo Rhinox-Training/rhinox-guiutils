@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Rhinox.GUIUtils.Editor;
+using UnityEngine;
 #if ODIN_INSPECTOR
 using Sirenix.OdinInspector;
 #endif
@@ -78,6 +80,30 @@ public class DialogBuilder
     public DialogBuilder TextField(string name, out ValueReference<string> reference, string initialValue = "", string tooltip = null)
     {
         var field = new TextInputField(name, tooltip);
+        return Add(field, out reference, initialValue);
+    }
+
+    public DialogBuilder TransformField(string name, out ValueReference<Transform> reference, Transform initialValue = null, string tooltip = null)
+    {
+        var field = new TransformInputField(name, tooltip);
+        return Add(field, out reference, initialValue);
+    }
+    
+    public DialogBuilder GameObjectField(string name, out ValueReference<GameObject> reference, GameObject initialValue = null, string tooltip = null)
+    {
+        var field = new GameObjectInputField(name, tooltip);
+        return Add(field, out reference, initialValue);
+    }
+    
+    public DialogBuilder MaterialField(string name, out ValueReference<Material> reference, Material initialValue = null, string tooltip = null)
+    {
+        var field = new MaterialInputField(name, tooltip);
+        return Add(field, out reference, initialValue);
+    }
+    
+    public DialogBuilder TextureField(string name, out ValueReference<Texture> reference, Texture initialValue = null, string tooltip = null)
+    {
+        var field = new TextureInputField(name, tooltip);
         return Add(field, out reference, initialValue);
     }
 
