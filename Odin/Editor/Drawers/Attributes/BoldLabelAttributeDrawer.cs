@@ -3,7 +3,7 @@ using Sirenix.OdinInspector.Editor;
 using Sirenix.Utilities.Editor;
 using UnityEngine;
 
-namespace Rhinox.GUIUtils.Odin
+namespace Rhinox.GUIUtils.Odin.Editor
 {
     public class BoldLabelAttributeDrawer : OdinAttributeDrawer<BoldLabelAttribute>
     {

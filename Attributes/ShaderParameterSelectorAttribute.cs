@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using UnityEngine;
 
-namespace Rhinox.GUIUtils.Odin
+namespace Rhinox.GUIUtils.Attributes
 {
     public enum ShaderParameterType
     {

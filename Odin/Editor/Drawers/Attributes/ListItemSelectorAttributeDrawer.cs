@@ -6,7 +6,7 @@ using Sirenix.Utilities.Editor;
 using UnityEditor;
 using Sirenix.Utilities;
 
-namespace Rhinox.GUIUtils.Odin
+namespace Rhinox.GUIUtils.Odin.Editor
 {
     [DrawerPriority(0.01, 0, 0)]
     public class ListItemSelectorAttributeDrawer : OdinAttributeDrawer<ListItemSelectorAttribute>

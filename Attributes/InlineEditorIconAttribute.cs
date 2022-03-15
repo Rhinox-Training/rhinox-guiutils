@@ -2,7 +2,7 @@ using System;
 using System.Diagnostics;
 using Sirenix.OdinInspector;
 
-namespace Rhinox.GUIUtils.Odin
+namespace Rhinox.GUIUtils.Attributes
 {
     [DontApplyToListElements]
     [AttributeUsage(AttributeTargets.All, AllowMultiple = true, Inherited = true)]

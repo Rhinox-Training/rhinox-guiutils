@@ -6,7 +6,7 @@ using Sirenix.Utilities;
 using Sirenix.Utilities.Editor;
 using UnityEngine;
 
-namespace Rhinox.GUIUtils.Odin
+namespace Rhinox.GUIUtils.Odin.Editor
 {
     public class InlineWarningAttributeDrawer<T> : InlineIconAttributeDrawer<InlineWarningAttribute, T>
     {

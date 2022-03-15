@@ -11,7 +11,7 @@ using UnityEditor;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
-namespace Rhinox.GUIUtils.Odin
+namespace Rhinox.GUIUtils.Odin.Editor
 {
     [DrawerPriority(0.0, 0.0, 2002.0)]
     public sealed class AssignableTypeFilterAttributeDrawer : OdinAttributeDrawer<AssignableTypeFilterAttribute>

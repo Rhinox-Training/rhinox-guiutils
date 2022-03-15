@@ -4,7 +4,7 @@ using Sirenix.OdinInspector.Editor;
 using Sirenix.Utilities;
 using UnityEngine;
 
-namespace Rhinox.GUIUtils.Odin
+namespace Rhinox.GUIUtils.Odin.Editor
 {
     public abstract class InlineIconAttributeDrawer<T, TValue> : OdinAttributeDrawer<T, TValue> where T : Attribute
     {

@@ -5,7 +5,7 @@ using UnityEngine;
 using Sirenix.OdinInspector;
 #endif
 
-namespace Rhinox.GUIUtils.Odin
+namespace Rhinox.GUIUtils.Attributes
 {
     /// <summary>
     /// Simply displays a list within a box; Has no drag, add, remove, foldout or paging functionality.

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Rhinox.GUIUtils.Odin
+namespace Rhinox.GUIUtils.Attributes
 {
     public class ProtectedEditableAttribute : Attribute
     {

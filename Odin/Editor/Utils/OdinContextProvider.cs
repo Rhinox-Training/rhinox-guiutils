@@ -1,24 +1,28 @@
 ﻿using Sirenix.OdinInspector.Editor;
 using Sirenix.Serialization;
 
-public class OdinContextProvider
+namespace Rhinox.GUIUtils.Odin.Editor
 {
-    protected LocalPersistentContext<T> GetPersistentValue<T>(string key, T defaultValue = default(T))
+    public class OdinContextProvider
     {
-        GlobalPersistentContext<T> context;
-        if (PersistentContext.Get(TwoWaySerializationBinder.Default.BindToName(GetType()), key, out context))
-            context.Value = defaultValue;
-        return LocalPersistentContext<T>.Create(context);
+        protected LocalPersistentContext<T> GetPersistentValue<T>(string key, T defaultValue = default(T))
+        {
+            GlobalPersistentContext<T> context;
+            if (PersistentContext.Get(TwoWaySerializationBinder.Default.BindToName(GetType()), key, out context))
+                context.Value = defaultValue;
+            return LocalPersistentContext<T>.Create(context);
+        }
     }
-}
 
-public static class OdinPersistentContextHelper
-{
-    public static LocalPersistentContext<T> GetPersistentValue<T>(this OdinEditor editor, string key, T defaultValue = default(T))
+    public static class OdinPersistentContextHelper
     {
-        GlobalPersistentContext<T> context;
-        if (PersistentContext.Get(TwoWaySerializationBinder.Default.BindToName(editor.GetType()), key, out context))
-            context.Value = defaultValue;
-        return LocalPersistentContext<T>.Create(context);
+        public static LocalPersistentContext<T> GetPersistentValue<T>(this OdinEditor editor, string key,
+            T defaultValue = default(T))
+        {
+            GlobalPersistentContext<T> context;
+            if (PersistentContext.Get(TwoWaySerializationBinder.Default.BindToName(editor.GetType()), key, out context))
+                context.Value = defaultValue;
+            return LocalPersistentContext<T>.Create(context);
+        }
     }
 }
