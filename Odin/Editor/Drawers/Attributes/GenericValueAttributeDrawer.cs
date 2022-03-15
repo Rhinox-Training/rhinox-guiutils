@@ -1,5 +1,5 @@
 using System;
-using Rhinox.GUIUtils.Odin.Editor;
+using Rhinox.GUIUtils.Attributes;
 using Rhinox.Lightspeed.Reflection;
 using Sirenix.OdinInspector.Editor;
 using Sirenix.Utilities.Editor;

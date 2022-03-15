@@ -1,5 +1,5 @@
 using System.Collections.Generic;
-using Rhinox.GUIUtils.Odin;
+using Rhinox.GUIUtils.Attributes;
 using Sirenix.OdinInspector;
 using Sirenix.OdinInspector.Editor;
 using UnityEngine;
