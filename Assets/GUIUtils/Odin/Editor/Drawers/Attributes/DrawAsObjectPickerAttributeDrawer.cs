@@ -3,7 +3,7 @@ using Sirenix.OdinInspector.Editor;
 using Sirenix.Utilities.Editor;
 using UnityEngine;
 
-namespace Rhinox.GUIUtils.Odin
+namespace Rhinox.GUIUtils.Odin.Editor
 {
     [DrawerPriority(0.0, 0.0, 3500.0)]
     public class DrawAsObjectPickerAttributeDrawer<T> : OdinAttributeDrawer<DrawAsUnityObjectAttribute, T> where T : Object

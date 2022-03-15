@@ -2,7 +2,7 @@
 using System.Diagnostics;
 using Sirenix.OdinInspector;
 
-namespace Rhinox.GUIUtils.Odin
+namespace Rhinox.GUIUtils.Attributes
 {
     [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field | AttributeTargets.Parameter)]
     [Conditional("UNITY_EDITOR")]

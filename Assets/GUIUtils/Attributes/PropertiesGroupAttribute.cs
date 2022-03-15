@@ -1,6 +1,6 @@
 ﻿using Sirenix.OdinInspector;
 
-namespace Rhinox.GUIUtils.Odin
+namespace Rhinox.GUIUtils.Attributes
 {
     public class PropertiesGroupAttribute : PropertyGroupAttribute
     {

@@ -1,7 +1,7 @@
 ﻿using System;
 using Sirenix.OdinInspector;
 
-namespace Rhinox.GUIUtils.Odin
+namespace Rhinox.GUIUtils.Attributes
 {
     [AttributeUsage(AttributeTargets.All, AllowMultiple = true, Inherited = true)]
     [IncludeMyAttributes]

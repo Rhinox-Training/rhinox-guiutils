@@ -7,7 +7,7 @@ using Sirenix.Utilities.Editor;
 using Rhinox.Lightspeed;
 using UnityEngine;
 
-namespace Rhinox.GUIUtils.Odin
+namespace Rhinox.GUIUtils.Odin.Editor
 {
     public class TagSelectorAttributeDrawer : OdinAttributeDrawer<TagSelectorAttribute, string>
     {

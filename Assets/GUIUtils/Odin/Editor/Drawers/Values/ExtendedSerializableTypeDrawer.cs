@@ -1,14 +1,12 @@
 ﻿#if ODIN_INSPECTOR
 using System.Linq;
-using Rhinox.GUIUtils.Odin;
 using Sirenix.OdinInspector.Editor;
 
-namespace Rhinox.Lightspeed.Editor
+namespace Rhinox.GUIUtils.Odin.Editor
 {
     [DrawerPriority(0, 0, 2004)]
     public class ExtendedSerializableTypeDrawer : SerializableTypeDrawer
     {
-
         protected override void Initialize()
         {
             base.Initialize();

@@ -7,7 +7,7 @@ using Sirenix.Utilities;
 using Sirenix.Utilities.Editor;
 using UnityEngine;
 
-namespace Rhinox.GUIUtils.Odin
+namespace Rhinox.GUIUtils.Odin.Editor
 {
     [DrawerPriority(0, 1000, 0)]
     public class UnfoldListAttributeDrawer : OdinAttributeDrawer<UnfoldListAttribute>

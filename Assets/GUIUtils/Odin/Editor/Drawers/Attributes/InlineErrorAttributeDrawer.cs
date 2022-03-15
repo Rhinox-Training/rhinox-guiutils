@@ -8,7 +8,7 @@ using Sirenix.Utilities.Editor;
 using UnityEditor;
 using UnityEngine;
 
-namespace Rhinox.GUIUtils.Odin
+namespace Rhinox.GUIUtils.Odin.Editor
 {
     [DrawerPriority(DrawerPriorityLevel.WrapperPriority)]
     public class InlineErrorAttributeDrawer<T> : InlineIconAttributeDrawer<InlineErrorAttribute, T>

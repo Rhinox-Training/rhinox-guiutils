@@ -6,67 +6,72 @@ using Sirenix.OdinInspector.Editor;
 using UnityEditor;
 using UnityEngine;
 
-public class DropdownInputField : DialogInputField<ValueDropdownItem>
+namespace Rhinox.GUIUtils.Editor
 {
-    private ValueDropdownItem[] _options;
-    
-    public DropdownInputField(string label, IEnumerable<ValueDropdownItem> options, string tooltip = null, ValueDropdownItem initialValue = default)
-        : base(label, tooltip, initialValue)
+    public class DropdownInputField : DialogInputField<ValueDropdownItem>
     {
-        _options = options.ToArray();
-    }
-    
-    protected override void DrawFieldValue(Rect rect)
-    {
-        if (GUI.Button(rect, SmartValue.Text, EditorStyles.miniPullDown))
+        private ValueDropdownItem[] _options;
+
+        public DropdownInputField(string label, IEnumerable<ValueDropdownItem> options, string tooltip = null,
+            ValueDropdownItem initialValue = default)
+            : base(label, tooltip, initialValue)
         {
-            var selector = new GenericSelector<ValueDropdownItem>(_options) { FlattenedTree = true };
-            
-            selector.EnableSingleClickToSelect();
-            selector.SelectionConfirmed += x =>
-            {
-                var t = x.FirstOrDefault();
-                SmartValue = t;
-            };
-            
-            selector.ShowInPopup(rect);
+            _options = options.ToArray();
         }
-    }
 
-    public override int GetWidth()
-    {
-        return 200 + _options.Max(x => x.Text.Length) * 8;
-    }
-
-}
-
-public class DropdownInputField<T> : DialogInputField<ValueDropdownItem<T>>
-{
-    private ValueDropdownItem<T>[] _options;
-    
-    public DropdownInputField(string label, IEnumerable<ValueDropdownItem<T>> options, string tooltip = null, ValueDropdownItem<T> initialValue = default)
-        : base(label, tooltip, initialValue)
-    {
-        _options = options.ToArray();
-    }
-    
-    protected override void DrawFieldValue(Rect rect)
-    {
-        if (GUI.Button(rect, SmartValue.Text, EditorStyles.miniPullDown))
+        protected override void DrawFieldValue(Rect rect)
         {
-            var selector = new GenericSelector<ValueDropdownItem<T>>(_options) { FlattenedTree = true };
-            
-            selector.EnableSingleClickToSelect();
-            selector.SelectionConfirmed += x =>
+            if (GUI.Button(rect, SmartValue.Text, EditorStyles.miniPullDown))
             {
-                var t = x.FirstOrDefault();
-                SmartValue = t;
-            };
-            
-            selector.ShowInPopup(rect);
+                var selector = new GenericSelector<ValueDropdownItem>(_options) { FlattenedTree = true };
+
+                selector.EnableSingleClickToSelect();
+                selector.SelectionConfirmed += x =>
+                {
+                    var t = x.FirstOrDefault();
+                    SmartValue = t;
+                };
+
+                selector.ShowInPopup(rect);
+            }
         }
+
+        public override int GetWidth()
+        {
+            return 200 + _options.Max(x => x.Text.Length) * 8;
+        }
+
     }
 
+    public class DropdownInputField<T> : DialogInputField<ValueDropdownItem<T>>
+    {
+        private ValueDropdownItem<T>[] _options;
+
+        public DropdownInputField(string label, IEnumerable<ValueDropdownItem<T>> options, string tooltip = null,
+            ValueDropdownItem<T> initialValue = default)
+            : base(label, tooltip, initialValue)
+        {
+            _options = options.ToArray();
+        }
+
+        protected override void DrawFieldValue(Rect rect)
+        {
+            if (GUI.Button(rect, SmartValue.Text, EditorStyles.miniPullDown))
+            {
+                var selector = new GenericSelector<ValueDropdownItem<T>>(_options) { FlattenedTree = true };
+
+                selector.EnableSingleClickToSelect();
+                selector.SelectionConfirmed += x =>
+                {
+                    var t = x.FirstOrDefault();
+                    SmartValue = t;
+                };
+
+                selector.ShowInPopup(rect);
+            }
+        }
+
+    }
 }
 
 #endif

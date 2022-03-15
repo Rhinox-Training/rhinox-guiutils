@@ -1,16 +1,18 @@
 using UnityEditor;
 using UnityEngine;
 
-public class TextInputField : DialogInputField<string>
+namespace Rhinox.GUIUtils.Editor
 {
-    public TextInputField(string label, string tooltip = null, string initialValue = default(string))
-        : base(label, tooltip, initialValue)
+    public class TextInputField : DialogInputField<string>
     {
-    }
-    
-    protected override void DrawFieldValue(Rect rect)
-    {
-        SmartValue = EditorGUI.TextField(rect, SmartValue);
-    }
+        public TextInputField(string label, string tooltip = null, string initialValue = default(string))
+            : base(label, tooltip, initialValue)
+        {
+        }
 
+        protected override void DrawFieldValue(Rect rect)
+        {
+            SmartValue = EditorGUI.TextField(rect, SmartValue);
+        }
+    }
 }

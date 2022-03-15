@@ -6,7 +6,7 @@ using Sirenix.Utilities.Editor;
 using UnityEditor;
 using UnityEngine;
 
-namespace Rhinox.GUIUtils.Odin
+namespace Rhinox.GUIUtils.Odin.Editor
 {
     public class ToggleButtonOppositeAttributeDrawer : OdinAttributeDrawer<ToggleButtonOppositeAttribute, bool>
     {

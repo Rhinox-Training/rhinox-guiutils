@@ -1,42 +1,45 @@
 using UnityEditor;
 using UnityEngine;
 
-public class Int32InputField : DialogInputField<int>
+namespace Rhinox.GUIUtils.Editor
 {
-    public Int32InputField(string label, string tooltip = null, int initialValue = default(int))
-        : base(label, tooltip, initialValue)
+    public class Int32InputField : DialogInputField<int>
     {
-    }
-    
-    protected override void DrawFieldValue(Rect rect)
-    {
-        SmartValue = EditorGUI.IntField(rect, SmartValue);
-    }
-}
+        public Int32InputField(string label, string tooltip = null, int initialValue = default(int))
+            : base(label, tooltip, initialValue)
+        {
+        }
 
-public class BoolInputField : DialogInputField<bool>
-{
-    public BoolInputField(string label, string tooltip = null, bool initialValue = default(bool))
-        : base(label, tooltip, initialValue)
-    {
-    }
-    
-    protected override void DrawFieldValue(Rect rect)
-    {
-        SmartValue = EditorGUI.Toggle(rect, SmartValue);
-    }
-}
-
-public class FloatInputField : DialogInputField<float>
-{
-    public FloatInputField(string label, string tooltip = null, float initialValue = default(float))
-        : base(label, tooltip, initialValue)
-    {
+        protected override void DrawFieldValue(Rect rect)
+        {
+            SmartValue = EditorGUI.IntField(rect, SmartValue);
+        }
     }
 
-
-    protected override void DrawFieldValue(Rect rect)
+    public class BoolInputField : DialogInputField<bool>
     {
-        SmartValue = EditorGUI.FloatField(rect, SmartValue);
+        public BoolInputField(string label, string tooltip = null, bool initialValue = default(bool))
+            : base(label, tooltip, initialValue)
+        {
+        }
+
+        protected override void DrawFieldValue(Rect rect)
+        {
+            SmartValue = EditorGUI.Toggle(rect, SmartValue);
+        }
+    }
+
+    public class FloatInputField : DialogInputField<float>
+    {
+        public FloatInputField(string label, string tooltip = null, float initialValue = default(float))
+            : base(label, tooltip, initialValue)
+        {
+        }
+
+
+        protected override void DrawFieldValue(Rect rect)
+        {
+            SmartValue = EditorGUI.FloatField(rect, SmartValue);
+        }
     }
 }

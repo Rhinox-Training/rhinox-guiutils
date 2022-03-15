@@ -1,10 +1,12 @@
-﻿using UnityEditor;
+﻿using Rhinox.GUIUtils.Editor;
+using UnityEditor;
 using UnityEngine;
 
 namespace Tests
 {
     public static class InputDialogTester
     {
+#if UNITY_EDITOR
         [MenuItem("Rhinox/GUIUtils/Test Dialog")]
         public static void TryDialog()
         {
@@ -27,6 +29,7 @@ namespace Tests
                     Debug.Log(textureValue.Value);
                 })
                 .Show();
-        }        
+        }
+#endif
     }
 }
