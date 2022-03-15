@@ -13,8 +13,12 @@ namespace Rhinox.GUIUtils.Editor
 
         public delegate void InputFieldHandler(DialogInputField field);
 
+#pragma warning disable 67
+
         public event InputFieldHandler ValidateValue;
         public event InputFieldHandler ValueChanged;
+
+#pragma warning restore 67
 
         public void Draw(GUIContent label)
         {

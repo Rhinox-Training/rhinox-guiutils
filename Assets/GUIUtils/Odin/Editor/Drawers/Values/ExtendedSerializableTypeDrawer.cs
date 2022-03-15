@@ -1,5 +1,7 @@
 ﻿#if ODIN_INSPECTOR
 using System.Linq;
+using Rhinox.GUIUtils.Attributes;
+using Rhinox.Lightspeed.Editor;
 using Sirenix.OdinInspector.Editor;
 
 namespace Rhinox.GUIUtils.Odin.Editor

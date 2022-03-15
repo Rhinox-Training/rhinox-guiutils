@@ -1,4 +1,4 @@
-using Sirenix.OdinInspector;
+using Rhinox.GUIUtils.Attributes;
 using Sirenix.OdinInspector.Editor;
 using UnityEditor;
 using UnityEngine;
