@@ -3,7 +3,6 @@
     "references": [
         "com.rhinox.open.guiutils",
         "com.rhinox.open.lightspeed",
-        "Sirenix.OdinInspector.CompatibilityLayer",
         "com.rhinox.open.guiutils.attributes"
     ],
     "includePlatforms": [
