@@ -36,8 +36,6 @@ namespace Rhinox.GUIUtils.Editor
         // public Type m_InspectorType;
         private static FieldInfo _inspectorTypeField;
 
-        private static bool _typesProcessed; // TODO: what is this for?
-
 #if !ODIN_INSPECTOR // OdinEditor implements these, to allow easy override make stubs
     protected virtual void OnEnable() { }
     protected virtual void OnDisable() { }
@@ -89,8 +87,6 @@ namespace Rhinox.GUIUtils.Editor
                 if (initializer != null)
                     initializer.Invoke(null, new object[] {defaultEditorType});
             }
-
-            _typesProcessed = true;
         }
 
         private static Type ExtractDefaultEditorType(IList typeList)

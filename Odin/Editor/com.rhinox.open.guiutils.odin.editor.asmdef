@@ -3,13 +3,10 @@
     "references": [
         "GUID:3b169ccda512e504b9e2eb8b0bec14f9",
         "GUID:62a965aa53b0d0e4a9715c9a86d7fd31",
-        "GUID:9f2912ef3cf155747b28c57f7136ff68",
         "GUID:7262f4696183b8841b571481b3ac0765",
         "GUID:fc025ba4ac3997440926e87ec084af89",
         "GUID:5b875414f570dc74181d052da0dc3042",
-        "GUID:0a274c6191a6ec145925269eaf6c7f2e",
-        "GUID:6055be8ebefd69e48b49212b09b47b2f",
-        "GUID:45e0bf20a32e8493ddb47197d68b3b52"
+        "GUID:6055be8ebefd69e48b49212b09b47b2f"
     ],
     "includePlatforms": [
         "Editor"
