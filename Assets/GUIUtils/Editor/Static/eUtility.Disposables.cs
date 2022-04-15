@@ -22,7 +22,7 @@ namespace Rhinox.GUIUtils.Editor
         
         public class DisabledGroup : IDisposable
         {
-            public DisabledGroup(bool disabled)
+            public DisabledGroup(bool disabled = true)
             {
                 EditorGUI.BeginDisabledGroup(disabled);
             }
@@ -30,6 +30,32 @@ namespace Rhinox.GUIUtils.Editor
             public virtual void Dispose()
             {
                 EditorGUI.EndDisabledGroup();
+            }
+        }
+        
+        public class ErrorGroup : IDisposable
+        {
+            public ErrorGroup(bool error = true)
+            {
+                GUIContentHelper.PushColor(Color.red);
+            }
+
+            public virtual void Dispose()
+            {
+                GUIContentHelper.PopColor();
+            }
+        }
+
+        public class MixedGroup : IDisposable
+        {
+            public MixedGroup(bool mixed = true)
+            {
+                EditorGUI.showMixedValue = mixed;
+            }
+
+            public virtual void Dispose()
+            {
+                EditorGUI.showMixedValue = false;
             }
         }
 
@@ -113,19 +139,16 @@ namespace Rhinox.GUIUtils.Editor
         
         public class GuiColor : IDisposable
         {
-            private Color _prevColor;
-
             public GuiColor(Color color, bool blendAlpha = false)
             {
-                _prevColor = GUI.color;
                 if (blendAlpha)
                     color.a *= GUI.color.a;
-                GUI.color = color;
+                GUIContentHelper.PushColor(color);
             }
 
-            public void Dispose()
+            public virtual void Dispose()
             {
-                GUI.color = _prevColor;
+                GUIContentHelper.PopColor();
             }
         }
         
