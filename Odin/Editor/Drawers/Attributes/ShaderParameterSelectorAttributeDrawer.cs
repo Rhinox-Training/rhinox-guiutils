@@ -11,7 +11,7 @@ namespace Rhinox.GUIUtils.Odin.Editor
 {
     public class ShaderParameterSelectorAttributeDrawer : OdinAttributeDrawer<ShaderParameterSelectorAttribute, string>
     {
-        private PropertyMemberHelper<Shader> _shaderMemberelper;
+        private PropertyMemberHelper<Shader> _shaderMemberHelper;
         private PropertyMemberHelper<ShaderParameterType> _parameterTypeMemberHelper;
 
         private List<string> _shaderProperties;
@@ -20,16 +20,16 @@ namespace Rhinox.GUIUtils.Odin.Editor
         {
             base.Initialize();
 
-            _shaderMemberelper = new PropertyMemberHelper<Shader>(Property, Attribute.ShaderProperty);
+            _shaderMemberHelper = new PropertyMemberHelper<Shader>(Property, Attribute.ShaderProperty);
             _parameterTypeMemberHelper = new PropertyMemberHelper<ShaderParameterType>(Property, Attribute.TypeProperty);
         }
 
         protected override void DrawPropertyLayout(GUIContent label)
         {
             // Errors
-            if (!_shaderMemberelper.ErrorMessage.IsNullOrWhitespace())
+            if (!_shaderMemberHelper.ErrorMessage.IsNullOrWhitespace())
             {
-                SirenixEditorGUI.ErrorMessageBox(_shaderMemberelper.ErrorMessage);
+                SirenixEditorGUI.ErrorMessageBox(_shaderMemberHelper.ErrorMessage);
                 return;
             }
 
@@ -41,7 +41,7 @@ namespace Rhinox.GUIUtils.Odin.Editor
 
             // Fetch Options
             bool changed = false;
-            var shader = _shaderMemberelper.GetValue(ref changed);
+            var shader = _shaderMemberHelper.GetValue(ref changed);
             var type = _parameterTypeMemberHelper.GetValue(ref changed);
             if (changed)
             {

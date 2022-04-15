@@ -113,10 +113,10 @@ namespace Rhinox.GUIUtils
         }
         
 #if UNITY_EDITOR
-        public static void PushIndentLevel(int indentLevel)
+        public static void PushIndentLevel(int indentLevel = -1)
         {
             GUIContentHelper.IndentLevelStack.Push(EditorGUI.indentLevel);
-            EditorGUI.indentLevel = indentLevel;
+            EditorGUI.indentLevel = indentLevel >= 0 ? indentLevel : EditorGUI.indentLevel + 1;
         }
 
         public static void PopIndentLevel()
