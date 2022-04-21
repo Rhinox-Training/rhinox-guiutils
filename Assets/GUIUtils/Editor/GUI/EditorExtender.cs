@@ -6,10 +6,6 @@ using Rhinox.Lightspeed.Reflection;
 using UnityEditor;
 using UnityEngine;
 using Object = System.Object;
-#if ODIN_INSPECTOR
-using Sirenix.OdinInspector.Editor;
-using Sirenix.Utilities;
-#endif
 
 namespace Rhinox.GUIUtils.Editor
 {

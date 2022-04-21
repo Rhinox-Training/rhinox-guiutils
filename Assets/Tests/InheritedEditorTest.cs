@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using Rhinox.GUIUtils.Attributes;
+using Rhinox.Lightspeed.Collections;
 using UnityEngine;
 #if UNITY_EDITOR
 using UnityEditor;
@@ -10,7 +11,7 @@ using Rhinox.GUIUtils.Editor;
 public class InheritedEditorTest : EditorTest
 {
     [ShaderParameterSelector(nameof(Shader))]
-    public int ShaderParam2;
+    public string ShaderParam2;
 }
 
 #if UNITY_EDITOR
@@ -23,8 +24,16 @@ public class EditorTestEditor : DefaultEditorExtender<EditorTest>
     {
         base.OnInspectorGUI();
         if (GUILayout.Button("Test"))
-            Debug.Log("It works!");
-            
+            Debug.Log($"{Target.TestList.Count}, {Target.TestList2.Count}");
+        if (GUILayout.Button("Set Dirty"))
+            EditorUtility.SetDirty(Target.gameObject);
+
+        if (GUILayout.Button("Add"))
+        {
+            Target.TestList.Add(new Toggleable<string>("Test"));
+            Target.TestList2.Add(new Toggleable<int>(2));
+
+        }
     }
 }
 #endif
