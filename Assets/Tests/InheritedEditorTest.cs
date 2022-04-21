@@ -14,7 +14,7 @@ public class InheritedEditorTest : EditorTest
     public string ShaderParam2;
 }
 
-#if UNITY_EDITOR
+/*#if UNITY_EDITOR
 // [CustomEditor(typeof(InheritedEditorTest))]
 // public class InheritedEditorTestEditor : DefaultEditorExtender<InheritedEditorTest>
 [CustomEditor(typeof(EditorTest))] 
@@ -36,4 +36,4 @@ public class EditorTestEditor : DefaultEditorExtender<EditorTest>
         }
     }
 }
-#endif
+#endif*/

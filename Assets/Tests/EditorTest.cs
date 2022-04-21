@@ -5,8 +5,14 @@ using System.Collections.ObjectModel;
 using Rhinox.GUIUtils.Attributes;
 using Rhinox.Lightspeed.Collections;
 using Sirenix.OdinInspector;
-using Sirenix.Serialization;
 using UnityEngine;
+
+[Serializable]
+public class GenericTest : ToggleableList<string> {}
+[Serializable]
+public class GenericTest2 : PairList<string, string> {}
+[Serializable]
+public class GenericTest3 : CustomCollection<string> {}
 
 public class EditorTest : MonoBehaviour
 {
@@ -16,14 +22,14 @@ public class EditorTest : MonoBehaviour
     [ShaderParameterSelector(nameof(Shader), nameof(Type))]
     public string ShaderParam;
 
-    // [SerializeReference]
-    public ToggleableList<string> TestList;
-    
-    // [SerializeReference]
+    [DrawAsUnityGeneric]
+    public GenericTest TestList;
+    [DrawAsUnityGeneric]
     public ToggleableList<int> TestList2;
     
-    public PairList<string, bool> Test;
+    [DrawAsUnityGeneric]
+    public GenericTest2 Test;
 
-    [SerializeReference]
-    public CustomCollection<string> StringTest;
+    [DrawAsUnityGeneric]
+    public GenericTest3 StringTest;
 }
