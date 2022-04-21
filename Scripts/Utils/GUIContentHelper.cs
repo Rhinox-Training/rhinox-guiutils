@@ -10,8 +10,11 @@ namespace Rhinox.GUIUtils
         private static readonly GUIContent _tempContent = new GUIContent("");
         
         private static readonly GUIFrameAwareStack<Color> ColorStack = new GUIFrameAwareStack<Color>();
+        private static readonly GUIFrameAwareStack<bool> GuiEnabled = new GUIFrameAwareStack<bool>();
+
 #if UNITY_EDITOR
         private static readonly GUIFrameAwareStack<int> IndentLevelStack = new GUIFrameAwareStack<int>();
+        private static readonly GUIFrameAwareStack<bool> HierarchyModeStack = new GUIFrameAwareStack<bool>();
 #endif
 
         public static GUIContent TempContent(string label, string tooltip = null)
@@ -112,6 +115,17 @@ namespace Rhinox.GUIUtils
             GUI.color = GUIContentHelper.ColorStack.Pop();
         }
         
+        public static void PushDisabled(bool disabled)
+        {
+            GUIContentHelper.GuiEnabled.Push(GUI.enabled);
+            GUI.enabled = !disabled;
+        }
+
+        public static void PopDisabled()
+        {
+            GUI.enabled = GUIContentHelper.GuiEnabled.Pop();
+        }
+        
 #if UNITY_EDITOR
         public static void PushIndentLevel(int indentLevel = -1)
         {
@@ -122,6 +136,17 @@ namespace Rhinox.GUIUtils
         public static void PopIndentLevel()
         {
             EditorGUI.indentLevel = GUIContentHelper.IndentLevelStack.Pop();
+        }
+        
+        public static void PushHierarchyMode(bool mode)
+        {
+            GUIContentHelper.HierarchyModeStack.Push(EditorGUIUtility.hierarchyMode);
+            EditorGUIUtility.hierarchyMode = mode;
+        }
+
+        public static void PopHierarchyMode()
+        {
+            EditorGUIUtility.hierarchyMode = GUIContentHelper.HierarchyModeStack.Pop();
         }
 #endif
     }
