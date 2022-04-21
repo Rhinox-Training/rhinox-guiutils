@@ -6,28 +6,20 @@ using Rhinox.Lightspeed.Reflection;
 using UnityEditor;
 using UnityEngine;
 using Object = System.Object;
-#if ODIN_INSPECTOR
-using Sirenix.OdinInspector.Editor;
-using Sirenix.Utilities;
-#endif
 
 namespace Rhinox.GUIUtils.Editor
 {
     /// <summary>
     /// Various stuff that only needs to be done once; and not per type instantiated type
     /// </summary>
-    public abstract class BaseEditorExtender
-#if ODIN_INSPECTOR
-        : OdinEditor
-#else
-        : UnityEditor.Editor
-#endif
+    public abstract class BaseEditorExtender : BaseEditor
     {
         // namespace UnityEditor - internal class CustomEditorAttributes
         private static Type _editorAttributesType;
 
         // private static readonly Dictionary<Type, List<MonoEditorType>> kSCustomEditors = new Dictionary<Type, List<MonoEditorType>>();
         private static FieldInfo _customEditorsDictionaryField;
+        // private static FieldInfo _customEditorIsInherited;
 
         // internal static void Rebuild()
         private static MethodInfo _rebuildMethod;
@@ -35,11 +27,6 @@ namespace Rhinox.GUIUtils.Editor
         // class MonoEditorType - Type nested under CustomEditorAttributes
         // public Type m_InspectorType;
         private static FieldInfo _inspectorTypeField;
-
-#if !ODIN_INSPECTOR // OdinEditor implements these, to allow easy override make stubs
-    protected virtual void OnEnable() { }
-    protected virtual void OnDisable() { }
-#endif
 
         [InitializeOnLoadMethod]
         private static void InitExtendors()
@@ -60,25 +47,43 @@ namespace Rhinox.GUIUtils.Editor
                 var unityObjectType = baseType.GetGenericArguments().First();
                 var typeList = dictionary[unityObjectType] as IList;
 
+
                 // We need something to work with
                 if (typeList == null || typeList.Count == 0)
                 {
                     Debug.LogError($"Failed to initialize {type}. No editors registered.");
                     continue;
                 }
+                
+                // Check for the CustomEditor attribute
+                var customEditorAttribute = type.GetCustomAttribute<CustomEditor>();
+                if (customEditorAttribute == null)
+                {
+                    Debug.LogError($"Failed to initialize {type}. Did you forget to add [CustomEditor] to your type?");
+                    continue;
+                }
+                
+                // Of course this stuff is internal again...
+                // if (_customEditorIsInherited == null)
+                //     _customEditorIsInherited = typeof(CustomEditor).GetField("m_EditorForChildClasses", BindingFlags.Instance | BindingFlags.NonPublic);
+                // if (((bool) _customEditorIsInherited.GetValue(customEditorAttribute)) == false)
+                // {
+                //     // If the editor is not 'inherited' check if we are 
+                //     // if type is inherited but our editor is not 'editorForChildClasses', this will throw an error.
+                //     // TODO Tested this, it doesn't but for some reason ProbuilderMesh does? INVESTIGATE
+                // }
 
                 // Ensure our type is in the list
                 var probablyOurType = GetTypeFromMonoEditorType(typeList[0]);
                 if (probablyOurType != type)
                 {
-                    Debug.LogError($"Failed to initialize {type}. Did you forget to add [CustomEditor] to your type?");
+                    // Debug.LogError($"Failed to initialize {type}. Did you forget to add [CustomEditor] to your type?");
                     continue;
                 }
 
                 // If there is only 1 editor, nothing to do here, the type likely has no default editor
                 if (typeList.Count < 2)
                     continue;
-
 
                 // Fetch the default editor type
                 var defaultEditorType = ExtractDefaultEditorType(typeList);
@@ -147,16 +152,15 @@ public class CustomMeshRendererEditor : DefaultEditorExtender<MeshRenderer>
             Debug.Log("It works!");
             
     }
-}
-*/
+}*/
 
     public abstract class DefaultEditorExtender<T> : BaseEditorExtender where T : UnityEngine.Object
     {
+        protected T Target => ConvertObject(target);
+        protected T[] Targets => Array.ConvertAll(targets, ConvertObject);
+
         private static Type _baseEditorType;
         protected UnityEditor.Editor _baseEditor;
-
-        protected T Target => target as T;
-        protected T[] Targets => Array.ConvertAll(targets, ConvertObject);
 
         // Called through reflection - Do not change the name
         private static void SetBaseInspectorType(Type editorType)

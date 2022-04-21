@@ -17,7 +17,7 @@ namespace Rhinox.GUIUtils.Attributes
 
     [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property | AttributeTargets.Parameter)]
     [Conditional("UNITY_EDITOR")]
-    public class ShaderParameterSelectorAttribute : Attribute
+    public class ShaderParameterSelectorAttribute : PropertyAttribute
     {
         public string ShaderProperty;
 
