@@ -131,6 +131,13 @@ namespace Rhinox.GUIUtils.Odin.Editor
             
             this._objectType = this._property.ParentType;
 
+            if (typeof(T) == typeof(string)) // Simple return value
+            {
+                // TODO any better way?
+                _staticValueGetter = () => (T)((object) text);
+                return;
+            }
+
             MemberFinder memberFinder = MemberFinder.Start(_objectType).HasReturnType<T>(true).IsNamed(text).HasNoParameters();
             if (isStatic)
                 memberFinder = memberFinder.IsStatic();

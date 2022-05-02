@@ -14,8 +14,40 @@ public class GenericTest2 : PairList<string, string> {}
 [Serializable]
 public class GenericTest3 : CustomCollection<string> {}
 
+[Serializable]
+public class ShaderData
+{
+    public Shader Shader;
+    [ShaderParameterSelector(nameof(Shader))]
+    public string ShaderParam;
+}
+
+public interface ISerializeReferenceTester
+{
+    
+}
+[Serializable]
+public class SimpleStringData : ISerializeReferenceTester
+{
+    public string String;
+}
+[Serializable]
+public class SimpleNumberData : ISerializeReferenceTester
+{
+    public float Float;
+}
 public class EditorTest : MonoBehaviour
 {
+    [SerializeReference, DrawAsReference]
+    public ISerializeReferenceTester SerializeReferenceTesterWithStupidlyLongName;
+    
+    [SerializeReference, DrawAsReference]
+    public ISerializeReferenceTester[] SerializeReferenceTesterArray;
+    public ShaderData ShaderParamData;
+
+    [ToggleButtonOpposite("Right")]
+    public bool Left;
+
     public Shader Shader;
     public ShaderParameterType Type;
 

@@ -10,7 +10,7 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-[CustomPropertyDrawer(typeof(DrawAsUnityGenericAttribute), true)]
+[CustomPropertyDrawer(typeof(DrawAsUnityGenericAttribute))]
 internal class GenericRedirectDrawer : PropertyDrawer
 {
     private struct GenericDrawerInfo
@@ -36,7 +36,6 @@ internal class GenericRedirectDrawer : PropertyDrawer
     private GenericPropertyDrawer _drawer;
     
     [InitializeOnLoadMethod]
-    [MenuItem("Rhinox/Reinit GenericRedirectDrawer")]
     private static void InitStatics()
     {
         var propertyDrawers = TypeCache.GetTypesWithAttribute<CustomPropertyDrawer>();
@@ -145,7 +144,7 @@ internal class GenericRedirectDrawer : PropertyDrawer
         
         if (_drawer != null)
             _drawer.OnGUI(position, property, label);
-        else
+        else 
             base.OnGUI(position, property, label);
     }
 
