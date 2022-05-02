@@ -1,6 +1,9 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Text.RegularExpressions;
+using Rhinox.Lightspeed;
 using Rhinox.Lightspeed.Reflection;
 using UnityEditor;
 using UnityEngine;
@@ -9,6 +12,138 @@ namespace Rhinox.GUIUtils.NoOdin.Editor
 {
     public static class SerializedObjectExtensions
     {
+        private const string _arrayElementExpr = @"([a-zA-Z_]*)\[(\d+)\]";
+        private static Regex _arrayElementRegex;
+        
+        public static FieldInfo[] GetHostInfo(this SerializedProperty prop, out FieldInfo hostInfo, out int arrayIndex)
+        {
+            var target = prop.serializedObject.targetObject;
+            arrayIndex = -1;
+            Type type = target.GetType();
+
+            if (prop.depth == 0)
+            {
+                hostInfo = GetValueInfo(type, prop.propertyPath);
+                return new[] { hostInfo };
+            }
+            
+            var infos = new List<FieldInfo>();
+            string element;
+            FieldInfo targetInfo;
+            
+            string path = prop.propertyPath;
+            path = path.Replace(".Array.data[", "[");
+            string[] parts = path.Split('.');
+            for (int i = 0; i < parts.Length - 1; ++i)
+            {
+                element = parts[i];
+
+                TryMatchArrayElement(ref element, out int subArrayIndex);
+                targetInfo = GetValueInfo(type, element);
+                type = targetInfo.GetReturnType();
+                infos.Add(targetInfo);
+            }
+
+            element = parts[parts.Length - 1];
+            TryMatchArrayElement(ref element, out arrayIndex);
+            hostInfo = GetValueInfo(type, element);
+            infos.Add(hostInfo);
+
+            return infos.ToArray();
+        }
+
+        private static bool TryMatchArrayElement(ref string element, out int index)
+        {
+            if (_arrayElementRegex == null)
+                _arrayElementRegex = new Regex(_arrayElementExpr);
+
+            index = -1;
+            
+            var match = _arrayElementRegex.Match(element);
+            if (!match.Success)
+                return false;
+            element = match.Groups[1].Value;
+            index = int.Parse(match.Groups[2].Value);
+            return true;
+        }
+        
+        public static object GetValue(this SerializedProperty prop)
+        {
+            switch (prop.propertyType)
+            {
+                case SerializedPropertyType.Integer:
+                    return prop.intValue;
+                case SerializedPropertyType.Boolean:
+                    return prop.boolValue;
+                case SerializedPropertyType.Float:
+                    return prop.floatValue;
+                case SerializedPropertyType.String:
+                    return prop.stringValue;
+                case SerializedPropertyType.Color:
+                    return prop.colorValue;
+                case SerializedPropertyType.ObjectReference:
+                    return prop.objectReferenceValue;
+                case SerializedPropertyType.LayerMask:
+                    return (LayerMask) prop.intValue;
+                case SerializedPropertyType.Enum:
+                    return prop.enumValueIndex;
+                case SerializedPropertyType.Vector2:
+                    return prop.vector2Value;
+                case SerializedPropertyType.Vector3:
+                    return prop.vector3Value;
+                case SerializedPropertyType.Vector4:
+                    return prop.vector4Value;
+                case SerializedPropertyType.Rect:
+                    return prop.rectValue;
+                case SerializedPropertyType.ArraySize:
+                    return prop.arraySize;
+                case SerializedPropertyType.Character:
+                    return (char)prop.intValue;
+                case SerializedPropertyType.AnimationCurve:
+                    return prop.animationCurveValue;
+                case SerializedPropertyType.Quaternion:
+                    return prop.quaternionValue;
+                case SerializedPropertyType.ExposedReference:
+                    return prop.exposedReferenceValue;
+                case SerializedPropertyType.Bounds:
+                    return prop.boundsValue;
+                case SerializedPropertyType.FixedBufferSize:
+                    return prop.fixedBufferSize;
+                case SerializedPropertyType.Vector2Int:
+                    return prop.vector2IntValue;
+                case SerializedPropertyType.Vector3Int:
+                    return prop.vector3Value;
+                case SerializedPropertyType.RectInt:
+                    return prop.rectIntValue;
+                case SerializedPropertyType.BoundsInt:
+                    return prop.boundsIntValue;
+                // Represents a property that references an object that does not derive from UnityEngine.Object.
+                case SerializedPropertyType.ManagedReference:
+                    var target = prop.serializedObject.targetObject;
+                    var info = GetValueInfo(target.GetType(), prop.propertyPath);
+                    return info.GetValue(prop.serializedObject.targetObject);
+                // Represents an array, list, struct or class.
+                case SerializedPropertyType.Generic:
+                default:
+                    throw new NotImplementedException();
+            }
+            
+        }
+
+        private static FieldInfo GetValueInfo(Type type, string element)
+        {
+            return type.GetField(element, BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase);
+        }
+
+        public static Type GetHostType(this SerializedProperty prop)
+        {
+            GetHostInfo(prop, out FieldInfo hostInfo, out int i);
+            if (hostInfo == null) return prop.GetParentType();
+            
+            var type = hostInfo.GetReturnType();
+            return i < 0 ? type : type.GetElementType();
+        }
+        
         public static Type GetParentType(this SerializedProperty prop)
         {
             return prop.serializedObject?.targetObject.GetType();
