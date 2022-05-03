@@ -72,11 +72,14 @@ namespace Rhinox.GUIUtils.NoOdin.Editor
             // Actual drawing
             position = EditorGUI.PrefixLabel(position, label);
 
+            GUIContentHelper.PushIndentLevel(0); // things like TextField will indent again if this is not done
+            
             if (_shaderProperties.IsNullOrEmpty())
             {
                 property.stringValue = EditorGUI.TextField(position, property.stringValue);
                 return;
             }
+            
 
             string dropdownContent = property.stringValue;
             if (!_shaderProperties.Contains(dropdownContent))
@@ -104,6 +107,8 @@ namespace Rhinox.GUIUtils.NoOdin.Editor
                         prop);
                 menu.DropDown(position);
             }
+            
+            GUIContentHelper.PopIndentLevel();
         }
         
         private static string[] GetShaderPropertyList(Shader shader, IList<ShaderUtil.ShaderPropertyType> filterTypes = null)
