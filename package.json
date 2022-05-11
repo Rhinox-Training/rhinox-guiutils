@@ -1,7 +1,7 @@
 {
   "name": "com.rhinox.open.guiutils",
   "displayName": "GUIUtils - Editor Graphical UI Extensions",
-  "version": "1.4.3",
+  "version": "1.4.4",
   "unity": "2019.3",
   "description": "GUI Utils for Unity projects, mostly Editor extensions. (Optional Odin extensions)",
   "keywords": [
@@ -10,7 +10,7 @@
   ],
   "category": "Unity",
   "dependencies": {
-    "com.rhinox.open.lightspeed": "1.1.13"
+    "com.rhinox.open.lightspeed": "1.1.14"
   },
   "repository": {
     "type": "git",
