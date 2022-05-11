@@ -1,31 +1,68 @@
 using System;
+using System.Collections.Generic;
 using System.Reflection;
 using Rhinox.GUIUtils.NoOdin.Editor;
+using Rhinox.Lightspeed;
 using UnityEditor;
+using UnityEngine;
 
 /// <summary>
 /// Base class without generics, try not to inherit from this
 /// </summary>
-public class GenericPropertyDrawer : PropertyDrawer
+public abstract class GenericPropertyDrawer : PropertyDrawer
 {
-    protected FieldInfo _fieldInfo;
+    protected Dictionary<string, HostInfo> _hostInfoByPath = new Dictionary<string, HostInfo>();
     
-    public void SetFieldInfo(FieldInfo fi)
+    public void SetHostInfo(SerializedProperty property, HostInfo info)
     {
-        _fieldInfo = fi;
+        _hostInfoByPath[property.propertyPath] = info;
     }
 
-    protected void SetValue(SerializedProperty property, object o) => property.managedReferenceValue = o;
+    protected HostInfo GetHostInfo(SerializedProperty property)
+    {
+        var key = property.propertyPath;
+        if (_hostInfoByPath.ContainsKey(key))
+            return _hostInfoByPath[key];
+        return _hostInfoByPath[key] = property.GetHostInfo();
+    }
+
+    protected void SetValue(SerializedProperty property, object o)
+    {
+        property.managedReferenceValue = o;
+        property.isExpanded = o != null;
+        property.serializedObject.ApplyModifiedProperties();
+    }
     
     protected object GetValue(SerializedProperty property)
     {
-        if (_fieldInfo == null)
-            _fieldInfo = property.GetParentType().GetField(property.propertyPath, BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
-        return _fieldInfo.GetValue(property.serializedObject.targetObject);
+        return GetHostInfo(property).GetValue();
     }
+
+    public sealed override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
+    {
+        EditorGUI.BeginProperty(position, label, property);
+
+        var id = property.propertyPath;
+        var info = GetHostInfo(property);
+        if (property.Update(ref info))
+        {
+            _hostInfoByPath[id] = info;
+            OnInitialize(property);
+        }
+        
+        OnPropertyGUI(position, property, label);
+        
+        EditorGUI.EndProperty();
+    }
+
+    protected virtual void OnInitialize(SerializedProperty property)
+    {
+    }
+
+    protected abstract void OnPropertyGUI(Rect position, SerializedProperty property, GUIContent label);
 }
 
-public class GenericPropertyDrawer<T> : GenericPropertyDrawer
+public abstract class GenericPropertyDrawer<T> : GenericPropertyDrawer
     where T : class
 {
     protected new T GetValue(SerializedProperty property) => (T) base.GetValue(property);

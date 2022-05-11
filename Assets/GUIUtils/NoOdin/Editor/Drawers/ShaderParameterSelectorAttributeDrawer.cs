@@ -1,15 +1,14 @@
 ﻿using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.Linq;
 using Rhinox.GUIUtils.Attributes;
 using UnityEditor;
 using UnityEngine;
 using Rhinox.Lightspeed;
-using UnityEngine.UIElements;
 
 namespace Rhinox.GUIUtils.NoOdin.Editor
 {
+
     [CustomPropertyDrawer(typeof(ShaderParameterSelectorAttribute))]
     public class ShaderParameterSelectorAttributeDrawer : PropertyDrawer
     {
@@ -23,7 +22,7 @@ namespace Rhinox.GUIUtils.NoOdin.Editor
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
             // First get the attribute
-            ShaderParameterSelectorAttribute attr = attribute as ShaderParameterSelectorAttribute;
+            ShaderParameterSelectorAttribute attr = (ShaderParameterSelectorAttribute) attribute;
 
             if (!SerializedProperty.DataEquals(_property, property))
             {
@@ -66,7 +65,7 @@ namespace Rhinox.GUIUtils.NoOdin.Editor
                 if (shader == null)
                     _shaderProperties = Array.Empty<string>();
                 else
-                    _shaderProperties = GetShaderPropertyList(shader, GetValidTypes(shaderType));
+                    _shaderProperties = ShaderUtility.GetShaderPropertyList(shader, shaderType);
             }
 
             // Actual drawing
@@ -111,59 +110,6 @@ namespace Rhinox.GUIUtils.NoOdin.Editor
             GUIContentHelper.PopIndentLevel();
         }
         
-        private static string[] GetShaderPropertyList(Shader shader, IList<ShaderUtil.ShaderPropertyType> filterTypes = null)
-        {
-            if (shader == null) return Array.Empty<string>();
-            
-            List<string> results = new List<string>();
-
-            int count = ShaderUtil.GetPropertyCount(shader);
-            results.Capacity = count;
-
-            for (int i = 0; i < count; i++)
-            {
-                bool isHidden = ShaderUtil.IsShaderPropertyHidden(shader, i);
-                var propertyType = ShaderUtil.GetPropertyType(shader, i);
-                bool isValidPropertyType = filterTypes == null || filterTypes.Contains(propertyType);
-                if (!isHidden && isValidPropertyType)
-                {
-                    var name = ShaderUtil.GetPropertyName(shader, i);
-                    results.Add(name);
-                }
-            }
-
-            results.Sort();
-            return results.ToArray();
-        }
         
-        private ShaderUtil.ShaderPropertyType[] GetValidTypes(ShaderParameterType type)
-        {
-            switch (type)
-            {
-                case ShaderParameterType.Float:
-                    return new[]
-                    {
-                        ShaderUtil.ShaderPropertyType.Float,
-                        ShaderUtil.ShaderPropertyType.Range
-                    };
-                case ShaderParameterType.Color:
-                    return new[]
-                    {
-                        ShaderUtil.ShaderPropertyType.Color,
-                    };
-                case ShaderParameterType.Vector:
-                    return new[]
-                    {
-                        ShaderUtil.ShaderPropertyType.Vector
-                    };
-                case ShaderParameterType.Texture:
-                    return new[]
-                    {
-                        ShaderUtil.ShaderPropertyType.TexEnv
-                    };
-            }
-
-            return null;
-        }
     }
 }
