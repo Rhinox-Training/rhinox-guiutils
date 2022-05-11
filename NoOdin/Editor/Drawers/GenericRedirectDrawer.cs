@@ -32,10 +32,10 @@ internal class GenericRedirectDrawer : PropertyDrawer
     // internal bool m_UseForChildren;
     private static FieldInfo _useAttributeForChildrenField;
     
-    private FieldInfo _fi;
+    private HostInfo _info;
     private GenericPropertyDrawer _drawer;
     
-    [InitializeOnLoadMethod]
+    [InitializeOnLoadMethod]//, MenuItem("Rhinox/Reinit Generics")]
     private static void InitStatics()
     {
         var propertyDrawers = TypeCache.GetTypesWithAttribute<CustomPropertyDrawer>();
@@ -82,14 +82,12 @@ internal class GenericRedirectDrawer : PropertyDrawer
                 var childClasses = TypeCache.GetTypesDerivedFrom(info.DrawTargetType);
                 foreach (var c in childClasses)
                 {
+                    var types = c.GetArgumentsOfInheritedOpenGenericClass(info.DrawTargetType).ToList();
+                    types.Insert(0, c);
+                    var typedInfo = info;
                     if (!c.IsGenericTypeDefinition)
-                    {
-                        var types = c.GetArgumentsOfInheritedOpenGenericClass(info.DrawTargetType).ToList();
-                        types.Insert(0, c);
-                        var typedInfo = info;
                         typedInfo.PropertyDrawerType = typedInfo.PropertyDrawerType.MakeGenericType(types.ToArray());
-                        _drawerInfoByTargetType[c] = typedInfo;
-                    }
+                    _drawerInfoByTargetType[c] = typedInfo;
                 }
             }
             
@@ -128,7 +126,7 @@ internal class GenericRedirectDrawer : PropertyDrawer
     
     public override VisualElement CreatePropertyGUI(SerializedProperty property)
     {
-        if (_fi == null)
+        if (_info == null)
             TryCreateDrawer(property);
         
         if (_drawer != null)
@@ -139,31 +137,36 @@ internal class GenericRedirectDrawer : PropertyDrawer
 
     public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
     {
-        if (_fi == null)
+        if (_info == null)
             TryCreateDrawer(property);
         
+        EditorGUI.BeginProperty(position, label, property);
+
         if (_drawer != null)
             _drawer.OnGUI(position, property, label);
         else 
             base.OnGUI(position, property, label);
+        
+        EditorGUI.EndProperty();
+
     }
 
     private void TryCreateDrawer(SerializedProperty property)
     {
-        var parentType = property.GetParentType();
-        _fi = parentType.GetField(property.propertyPath);
+        _info = property.GetHostInfo();
 
         Type drawerType = null;
 
-        if (_drawerInfoByTargetType.TryGetValue(_fi.FieldType, out GenericDrawerInfo drawerInfo))
+        var fieldType = _info.GetReturnType(false);
+        if (_drawerInfoByTargetType.TryGetValue(fieldType, out GenericDrawerInfo drawerInfo))
             drawerType = drawerInfo.PropertyDrawerType;
         else
         {
-            var generic = _fi.FieldType.GetGenericTypeDefinition();
+            var generic = fieldType.GetGenericTypeDefinition();
             if (_drawerInfoByTargetType.TryGetValue(generic, out drawerInfo))
             {
-                var types = _fi.FieldType.GetArgumentsOfInheritedOpenGenericClass(drawerInfo.DrawTargetType).ToList();
-                types.Insert(0, _fi.FieldType);
+                var types = fieldType.GetArgumentsOfInheritedOpenGenericClass(drawerInfo.DrawTargetType).ToList();
+                types.Insert(0, fieldType);
                 drawerType = drawerInfo.PropertyDrawerType.MakeGenericType(types.ToArray());
             }
         }
@@ -171,7 +174,7 @@ internal class GenericRedirectDrawer : PropertyDrawer
         if (drawerType != null)
         {
             _drawer = (GenericPropertyDrawer) Activator.CreateInstance(drawerType);
-            _drawer.SetFieldInfo(_fi);
+            _drawer.SetHostInfo(property, _info);
         }
     }
 
