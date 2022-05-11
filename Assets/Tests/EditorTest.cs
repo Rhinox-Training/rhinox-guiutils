@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using Rhinox.GUIUtils;
 using Rhinox.GUIUtils.Attributes;
 using Rhinox.Lightspeed.Collections;
 using Sirenix.OdinInspector;
@@ -47,6 +48,8 @@ public class EditorTest : MonoBehaviour
 
     [ToggleButtonOpposite("Right")]
     public bool Left;
+
+    public Shader AlsoAShader;
 
     public Shader Shader;
     public ShaderParameterType Type;

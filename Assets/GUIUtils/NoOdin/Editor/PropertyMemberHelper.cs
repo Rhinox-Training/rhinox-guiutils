@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
@@ -14,42 +13,43 @@ namespace Rhinox.GUIUtils.NoOdin.Editor
     {
         private const string _arrayElementExpr = @"([a-zA-Z_]*)\[(\d+)\]";
         private static Regex _arrayElementRegex;
-        
-        public static FieldInfo[] GetHostInfo(this SerializedProperty prop, out FieldInfo hostInfo, out int arrayIndex)
-        {
-            var target = prop.serializedObject.targetObject;
-            arrayIndex = -1;
-            Type type = target.GetType();
 
+        public static bool Update(this SerializedProperty prop, ref HostInfo info)
+        {
+            if (info == null || info.Path != prop.propertyPath)
+            {
+                info = prop.GetHostInfo();
+                return true;
+            }
+            return false;
+        }
+        public static HostInfo GetHostInfo(this SerializedProperty prop)
+        {
             if (prop.depth == 0)
             {
-                hostInfo = GetValueInfo(type, prop.propertyPath);
-                return new[] { hostInfo };
+                return GetValueInfo(prop);
             }
-            
-            var infos = new List<FieldInfo>();
-            string element;
-            FieldInfo targetInfo;
             
             string path = prop.propertyPath;
             path = path.Replace(".Array.data[", "[");
             string[] parts = path.Split('.');
-            for (int i = 0; i < parts.Length - 1; ++i)
+            
+            HostInfo hostInfo = null;
+
+            for (int i = 0; i < parts.Length; ++i)
             {
-                element = parts[i];
+                string element = parts[i];
 
                 TryMatchArrayElement(ref element, out int subArrayIndex);
-                targetInfo = GetValueInfo(type, element);
-                type = targetInfo.GetReturnType();
-                infos.Add(targetInfo);
+                
+                if (hostInfo == null)
+                    hostInfo = GetValueInfo(prop.serializedObject, element, subArrayIndex);
+                else hostInfo = GetValueInfo(hostInfo, element, subArrayIndex);
+                hostInfo.Path = string.Join(".", parts.Take(i));
             }
 
-            element = parts[parts.Length - 1];
-            TryMatchArrayElement(ref element, out arrayIndex);
-            hostInfo = GetValueInfo(type, element);
-            infos.Add(hostInfo);
-
-            return infos.ToArray();
+            hostInfo.Path = prop.propertyPath;
+            return hostInfo;
         }
 
         private static bool TryMatchArrayElement(ref string element, out int index)
@@ -119,9 +119,8 @@ namespace Rhinox.GUIUtils.NoOdin.Editor
                     return prop.boundsIntValue;
                 // Represents a property that references an object that does not derive from UnityEngine.Object.
                 case SerializedPropertyType.ManagedReference:
-                    var target = prop.serializedObject.targetObject;
-                    var info = GetValueInfo(target.GetType(), prop.propertyPath);
-                    return info.GetValue(prop.serializedObject.targetObject);
+                    var info = prop.GetHostInfo();
+                    return info.GetValue();
                 // Represents an array, list, struct or class.
                 case SerializedPropertyType.Generic:
                 default:
@@ -130,18 +129,23 @@ namespace Rhinox.GUIUtils.NoOdin.Editor
             
         }
 
-        private static FieldInfo GetValueInfo(Type type, string element)
+        private static HostInfo GetValueInfo(SerializedObject root, string element, int arrayIndex = -1)
         {
-            return type.GetField(element, BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase);
+            var fieldInfo = root.targetObject.GetType().GetField(element, BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase);
+            var hostInfo = new HostInfo(root, fieldInfo, arrayIndex);
+            hostInfo.Path = element;
+            return hostInfo;
         }
-
-        public static Type GetHostType(this SerializedProperty prop)
+        
+        private static HostInfo GetValueInfo(HostInfo host, string element, int arrayIndex = -1)
         {
-            GetHostInfo(prop, out FieldInfo hostInfo, out int i);
-            if (hostInfo == null) return prop.GetParentType();
-            
-            var type = hostInfo.GetReturnType();
-            return i < 0 ? type : type.GetElementType();
+            var fieldInfo = host.GetReturnType().GetField(element, BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase);
+            return new HostInfo(host, fieldInfo, arrayIndex);
+        }
+        
+        private static HostInfo GetValueInfo(SerializedProperty property)
+        {
+            return GetValueInfo(property.serializedObject, property.propertyPath);
         }
         
         public static Type GetParentType(this SerializedProperty prop)
@@ -160,11 +164,11 @@ namespace Rhinox.GUIUtils.NoOdin.Editor
         private T _cachedValue;
         private string _errorMessage;
         private readonly Type _objectType;
-        
+
         private Func<T> _staticValueGetter;
         private Func<object, T> _instanceValueGetter;
         
-        private UnityEngine.Object _propertyHost;
+        private HostInfo _info;
 
         /// <summary>
         /// If any error occurred while looking for members, it will be stored here.
@@ -198,7 +202,6 @@ namespace Rhinox.GUIUtils.NoOdin.Editor
         /// /// <param name="text">The input string. If the first character is a '$', then StringMemberHelper will look for a member string field, property or method.</param>
         private PropertyMemberHelper(bool isStatic, string text, SerializedProperty property)
         {
-            _propertyHost = property.serializedObject.targetObject;
             _objectType = property.GetParentType();
             
             if (string.IsNullOrEmpty(text) || _objectType == null || text.Length <= 0)
@@ -209,6 +212,8 @@ namespace Rhinox.GUIUtils.NoOdin.Editor
                 this._errorMessage = "Expressions are only supported with Odin Enabled";
                 return;
             }
+            
+            _info = property.GetHostInfo();
 
             const string PARENT_ID = "parent";
             const string ROOT_ID = "root";
@@ -224,60 +229,47 @@ namespace Rhinox.GUIUtils.NoOdin.Editor
                     switch (part)
                     {
                         case PARENT_ID:
-                            _errorMessage = $"${part} is only supported with Odin Enabled";
+                            _info = _info.Parent;
                             break;
                         case ROOT_ID:
-                            _errorMessage = $"${part} is only supported with Odin Enabled";
+                            while (_info.Parent != null)
+                                _info = _info.Parent;
                             break;
                         default:
                             actionTaken = false;
                             break;
                     }
 
-                    if (!actionTaken)
+                    if (actionTaken)
+                        text = text.Substring(part.Length+1);
+                    else
                         break;
                 }
             }
             
             // property might have changed
-            _objectType = property.GetParentType();
+            _objectType = _info.GetHostType();
 
             var flags = isStatic ? BindingFlags.Static : BindingFlags.Instance;
             flags |= BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.FlattenHierarchy;
             var members = _objectType.FindMembers(
                     MemberTypes.Property | MemberTypes.Field | MemberTypes.Method,
                     flags, 
-                    (mi, crit) => mi.GetReturnType() == typeof(T), 
+                    (info, crit) => info.GetReturnType() == typeof(T) && info.Name == text, 
                     null
             );
 
-            var member = members.FirstOrDefault();
-
-            switch (member)
-            {
-                case MethodInfo mi:
-                    if (mi.IsStatic())
-                        this._staticValueGetter = () => (T) mi.Invoke(null, new object[] {});
-                    else
-                        this._instanceValueGetter = (i) => (T) mi.Invoke(i, new object[] {});
-                    break;
-                case FieldInfo fi:
-                    if (fi.IsStatic())
-                        this._staticValueGetter = () => (T) fi.GetValue(null);
-                    else
-                        this._instanceValueGetter = (i) => (T) fi.GetValue(i);
-                    break;
-                case PropertyInfo pi:
-                    if (pi.IsStatic())
-                        this._staticValueGetter = () => (T) pi.GetValue(null);
-                    else
-                        this._instanceValueGetter = (i) => (T) pi.GetValue(i);
-                    break;
-                default:
-                    break;
-            }
-
+            var mi = members.FirstOrDefault();
+            
+            if (mi == null)
+                _errorMessage = $"Could not find field {text} on type {_objectType.Name}";
+            else if (mi.IsStatic())
+                this._staticValueGetter = () => (T) mi.GetValue(null);
+            else
+                this._instanceValueGetter = (i) => (T) mi.GetValue(i);
         }
+
+       
 
         /// <summary>
         /// Gets a value indicating whether or not the string is retrieved from a from a member.
@@ -293,8 +285,10 @@ namespace Rhinox.GUIUtils.NoOdin.Editor
         /// </summary>
         public T GetValue()
         {
-            if (this._cachedValue == null || Event.current == null || Event.current.type == EventType.Layout)
-                this._cachedValue = this.ForceGetValue(_propertyHost);
+            if (IsNewFrame())
+            {
+                this._cachedValue = this.ForceGetValue(_info?.GetHost());
+            }
             return this._cachedValue;
         }
 
@@ -321,6 +315,29 @@ namespace Rhinox.GUIUtils.NoOdin.Editor
                 return _instanceValueGetter(instance);
             
             return default;
+        }
+
+        private bool _isNewFrame, _nextEventIsNew;
+        private bool IsNewFrame()
+        {
+            if (Event.current == null)
+                return _isNewFrame;
+            EventType type = Event.current.type;
+            if (type == EventType.Repaint)
+            {
+                _nextEventIsNew = true;
+                _isNewFrame = false;
+                return _isNewFrame;
+            }
+            
+            if (_nextEventIsNew)
+            {
+                _nextEventIsNew = false;
+                _isNewFrame = true;
+                return _isNewFrame;
+            }
+            _isNewFrame = false;
+            return _isNewFrame;
         }
     }
 }
