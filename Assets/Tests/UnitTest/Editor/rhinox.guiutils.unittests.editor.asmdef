@@ -1,0 +1,23 @@
+{
+    "name": "rhinox.guiutils.unittests.editor",
+    "references": [
+        "GUID:0acc523941302664db1f4e527237feb3",
+        "GUID:27619889b8ba8c24980f49ee34dbb44a",
+        "GUID:3b169ccda512e504b9e2eb8b0bec14f9",
+        "GUID:62a965aa53b0d0e4a9715c9a86d7fd31",
+        "GUID:4c8a0eb4624f4ac459ce16c108ab4c08"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [
+        "UNITY_INCLUDE_TESTS"
+    ],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
