@@ -94,8 +94,8 @@ namespace Rhinox.GUIUtils
         {
             get
             {
-                if (_subtitleStyleCentered == null)
-                    _subtitleStyleCentered = new GUIStyle(CustomGUIStyles.Subtitle)
+                if (_subtitleStyleRightAligned == null)
+                    _subtitleStyleRightAligned = new GUIStyle(CustomGUIStyles.Subtitle)
                     {
                         alignment = TextAnchor.MiddleRight
                     };
@@ -332,7 +332,13 @@ namespace Rhinox.GUIUtils
             get
             {
                 if (_buttonStyleLeft == null)
-                    _buttonStyleLeft = new GUIStyle((GUIStyle)nameof(ButtonLeft));
+                {
+                    if (GUI.skin.FindStyle(nameof(ButtonLeft)) != null)
+                        _buttonStyleLeft = new GUIStyle((GUIStyle) nameof(ButtonLeft));
+                    else
+                        _buttonStyleLeft = new GUIStyle((GUIStyle) "button");
+                }
+
                 return _buttonStyleLeft;
             }
         }
@@ -357,7 +363,12 @@ namespace Rhinox.GUIUtils
             get
             {
                 if (_buttonStyleMiddle == null)
-                    _buttonStyleMiddle = new GUIStyle((GUIStyle)nameof(ButtonMid));
+                {
+                    if (GUI.skin.FindStyle(nameof(ButtonMid)) != null)
+                        _buttonStyleMiddle = new GUIStyle((GUIStyle)nameof(ButtonMid));
+                    else
+                        _buttonStyleMiddle = new GUIStyle((GUIStyle) "button");
+                }
                 return _buttonStyleMiddle;
             }
         }
@@ -382,7 +393,12 @@ namespace Rhinox.GUIUtils
             get
             {
                 if (_buttonStyleRight == null)
-                    _buttonStyleRight = new GUIStyle((GUIStyle)nameof(ButtonRight));
+                {
+                    if (GUI.skin.FindStyle(nameof(ButtonRight)) != null)
+                        _buttonStyleRight = new GUIStyle((GUIStyle)nameof(ButtonRight));
+                    else
+                        _buttonStyleRight = new GUIStyle((GUIStyle) "button");
+                }
                 return _buttonStyleRight;
             }
         }
