@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Linq;
 using Rhinox.GUIUtils.Attributes;
+using Rhinox.GUIUtils.Editor;
 using UnityEditor;
 using UnityEngine;
 using Rhinox.Lightspeed;
@@ -14,8 +15,8 @@ namespace Rhinox.GUIUtils.NoOdin.Editor
     {
         private SerializedProperty _property;
         
-        private PropertyMemberHelper<Shader> _shaderMemberHelper;
-        private PropertyMemberHelper<ShaderParameterType> _parameterTypeMemberHelper;
+        private SerializedPropertyMemberHelper<Shader> _shaderMemberHelper;
+        private SerializedPropertyMemberHelper<ShaderParameterType> _parameterTypeMemberHelper;
 
         private string[] _shaderProperties;
 
@@ -27,8 +28,8 @@ namespace Rhinox.GUIUtils.NoOdin.Editor
             if (!SerializedProperty.DataEquals(_property, property))
             {
                 _property = property;
-                _shaderMemberHelper = new PropertyMemberHelper<Shader>(property, attr.ShaderProperty);
-                _parameterTypeMemberHelper = new PropertyMemberHelper<ShaderParameterType>(property, attr.TypeProperty);
+                _shaderMemberHelper = new SerializedPropertyMemberHelper<Shader>(property, attr.ShaderProperty);
+                _parameterTypeMemberHelper = new SerializedPropertyMemberHelper<ShaderParameterType>(property, attr.TypeProperty);
             }
             
             // Errors
