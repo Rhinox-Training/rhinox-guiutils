@@ -25,9 +25,20 @@ public abstract class BaseEditor
 public abstract class BaseEditor<T> : BaseEditor
     where T : UnityEngine.Object
 {
+    public Type TargetType = typeof(T);
+    protected SerializedProperty _monoscriptField;
+    
     protected T Target => ConvertObject(target);
     protected T[] Targets => Array.ConvertAll(targets, ConvertObject);
 
+    protected void DrawScriptField()
+    {
+        if (_monoscriptField == null)
+            _monoscriptField = serializedObject.FindProperty("m_Script");
+        GUIContentHelper.PushDisabled(true);
+        EditorGUILayout.PropertyField(_monoscriptField);
+        GUIContentHelper.PopDisabled();
+    }
 
     protected void Each(Action<T> update, bool dirty = false)
     {

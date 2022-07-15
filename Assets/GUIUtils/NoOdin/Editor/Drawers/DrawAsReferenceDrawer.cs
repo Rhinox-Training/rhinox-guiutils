@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Text;
 using Rhinox.GUIUtils;
 using Rhinox.GUIUtils.Attributes;
+using Rhinox.GUIUtils.Editor;
 using Rhinox.GUIUtils.NoOdin.Editor;
 using Rhinox.Lightspeed;
 using Rhinox.Lightspeed.Reflection;
@@ -15,7 +16,7 @@ using UnityEngine;
 internal class DrawAsReferenceDrawer : PropertyDrawer
 {
     private FieldInfo _fi;
-    private Type[] _typeOptions;
+    private ICollection<Type> _typeOptions;
 
     private HostInfo _info;
 
@@ -33,7 +34,7 @@ internal class DrawAsReferenceDrawer : PropertyDrawer
         if (property.Update(ref _info))
         {
             var type = _info.GetReturnType(false);
-            _typeOptions = TypeCache.GetTypesDerivedFrom(type).ToArray();
+            _typeOptions = ReflectionUtility.GetTypesInheritingFrom(type);
         }
         
         Rect dropdownPosition = position.AlignTop(EditorGUIUtility.singleLineHeight);
