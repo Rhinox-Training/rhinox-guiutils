@@ -36,7 +36,7 @@ namespace Rhinox.GUIUtils.Editor
             }
         }
 
-        public override int GetWidth()
+        public override float GetWidth()
         {
             return 200 + _options.Max(x => x.Text.Length) * 8;
         }
