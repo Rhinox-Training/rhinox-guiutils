@@ -6,7 +6,7 @@ using System.Reflection;
 using Rhinox.Lightspeed.Reflection;
 using UnityEditor;
 
-namespace Rhinox.GUIUtils.NoOdin.Editor
+namespace Rhinox.GUIUtils.Editor
 {
     public class HostInfo
     {
