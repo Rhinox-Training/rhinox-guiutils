@@ -178,10 +178,7 @@ namespace Rhinox.GUIUtils.Editor
         {
             return EditorInputDialog.ShowBlocking(_dialogData);
         }
-
     }
-
-
 
     public class DialogData
     {
@@ -228,9 +225,9 @@ namespace Rhinox.GUIUtils.Editor
 
         public float GetPreferredWidth()
         {
-            int width = 0;
+            float width = 0;
             foreach (var field in Fields)
-                width = Math.Max(field.GetWidth(), width);
+                width = Mathf.Max(field.GetWidth(), width);
             return width;
         }
 

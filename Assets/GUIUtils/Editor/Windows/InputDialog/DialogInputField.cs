@@ -9,7 +9,7 @@ namespace Rhinox.GUIUtils.Editor
         public GUIContent Label => _label;
 
         public abstract object WeakValue { get; }
-        public int Height { get; protected set; } = 22;
+        public float Height { get; protected set; } = EditorGUIUtility.singleLineHeight + 4;
 
         public delegate void InputFieldHandler(DialogInputField field);
 
@@ -25,7 +25,7 @@ namespace Rhinox.GUIUtils.Editor
             DrawField(label ?? Label);
         }
 
-        public virtual int GetWidth()
+        public virtual float GetWidth()
         {
             return 0;
         }
