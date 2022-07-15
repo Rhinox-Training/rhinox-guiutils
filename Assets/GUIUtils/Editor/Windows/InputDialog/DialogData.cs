@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Rhinox.GUIUtils.Editor;
+using UnityEditor;
 using UnityEngine;
 #if ODIN_INSPECTOR
 using Sirenix.OdinInspector;
@@ -177,10 +178,7 @@ namespace Rhinox.GUIUtils.Editor
         {
             return EditorInputDialog.ShowBlocking(_dialogData);
         }
-
     }
-
-
 
     public class DialogData
     {
@@ -225,16 +223,22 @@ namespace Rhinox.GUIUtils.Editor
                 Canceled?.Invoke();
         }
 
-        public int GetPreferredWidth()
+        public float GetPreferredWidth()
         {
-            int width = 0;
+            float width = 0;
             foreach (var field in Fields)
-                width = Math.Max(field.GetWidth(), width);
+                width = Mathf.Max(field.GetWidth(), width);
             return width;
         }
 
-        public int GetPreferredHeight() => 60 + (Fields.Sum(x => x.Height));
-
+        public float GetPreferredHeight()
+        {
+            float height = Fields.Sum(x => x.Height);
+            height += EditorGUIUtility.singleLineHeight; // title
+            height += EditorGUIUtility.singleLineHeight; // buttons
+            height += 5; // padding
+            return 60 + height;
+        }
         public static DialogBuilder Create(string title, string content, string confirm = "Confirm",
             string cancel = "Cancel")
         {

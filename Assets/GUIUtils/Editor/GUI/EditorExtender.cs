@@ -12,7 +12,7 @@ namespace Rhinox.GUIUtils.Editor
     /// <summary>
     /// Various stuff that only needs to be done once; and not per type instantiated type
     /// </summary>
-    public abstract class BaseEditorExtender : BaseEditor
+    public abstract class BaseEditorExtender : UnityEditor.Editor
     {
         // namespace UnityEditor - internal class CustomEditorAttributes
         private static Type _editorAttributesType;
@@ -27,6 +27,9 @@ namespace Rhinox.GUIUtils.Editor
         // class MonoEditorType - Type nested under CustomEditorAttributes
         // public Type m_InspectorType;
         private static FieldInfo _inspectorTypeField;
+        
+        protected virtual void OnEnable() { }
+        protected virtual void OnDisable() { }
 
         [InitializeOnLoadMethod]
         private static void InitExtendors()
