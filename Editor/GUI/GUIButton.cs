@@ -8,7 +8,12 @@ namespace Rhinox.GUIUtils.Editor
     {
         private int _buttonsDrawn;
 
-        public void Draw(bool hideDisabled)
+        public GUIButtonList(IEnumerable<GUIButton> collection)
+            : base(collection)
+        {
+        }
+
+        public void Draw(bool hideDisabled, params GUILayoutOption[] options)
         {
             foreach (var button in this)
             {
@@ -18,13 +23,13 @@ namespace Rhinox.GUIUtils.Editor
 
                 using (new eUtility.DisabledGroup(!canExecute))
                 {
-                    if (GUILayout.Button(button.Label))
+                    if (GUILayout.Button(button.Label, options))
                         button.Execute();
                 }
             }
         }
         
-        public void DrawHorizontal(bool hideDisabled)
+        public void DrawHorizontal(bool hideDisabled, params GUILayoutOption[] options)
         {
             GUILayout.BeginHorizontal();
             int buttonsDrawn = 0;
@@ -37,7 +42,7 @@ namespace Rhinox.GUIUtils.Editor
 
                 using (new eUtility.DisabledGroup(!canExecute))
                 {
-                    if (GUILayout.Button(button.Label, CustomGUIStyles.GetButtonGroupStyle(i, _buttonsDrawn)))
+                    if (GUILayout.Button(button.Label, CustomGUIStyles.GetButtonGroupStyle(i, _buttonsDrawn), options))
                         button.Execute();
                     ++buttonsDrawn;
                 }
@@ -55,9 +60,21 @@ namespace Rhinox.GUIUtils.Editor
         public Func<bool> _canExecute;
         public Action _action;
         
-        public GUIButton(string label, Func<bool> canExecute, Action action)
+        public GUIButton(string label, Func<bool> canExecute, Action action, string tooltip = null)
+            : this(new GUIContent(label, tooltip), canExecute, action)
+        { }
+        
+        public GUIButton(Texture tex, Func<bool> canExecute, Action action, string tooltip = null)
+            : this(new GUIContent(tex, tooltip), canExecute, action)
+        { }
+        
+        public GUIButton(Texture tex, string label, Func<bool> canExecute, Action action, string tooltip = null)
+            : this(new GUIContent(label, tex, tooltip), canExecute, action)
+        { }
+        
+        public GUIButton(GUIContent label, Func<bool> canExecute, Action action)
         {
-            Label = new GUIContent(label);
+            Label = label;
             
             _canExecute = canExecute;
             _action = action;

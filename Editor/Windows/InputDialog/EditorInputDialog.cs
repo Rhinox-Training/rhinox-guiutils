@@ -10,7 +10,7 @@ namespace Rhinox.GUIUtils.Editor
     {
         private DialogData _data;
 
-        public int Width = 250;
+        public float Width = 250;
 
         // Event.current is not available in a contextmenu function
         // However, it is still available in the code
@@ -74,7 +74,7 @@ namespace Rhinox.GUIUtils.Editor
             _data = data;
         }
 
-        public void Resize(int width)
+        public void Resize(float width)
         {
             float y = 60 + (_data.Fields.Sum(x => x.Height));
             minSize = new Vector2(width, y);
@@ -100,7 +100,7 @@ namespace Rhinox.GUIUtils.Editor
 
         public static EditorInputDialog ShowDialog(DialogData data)
         {
-            var window = InitWindow(data, out int width);
+            var window = InitWindow(data, out float width);
 
             window.Resize(width);
 
@@ -125,9 +125,9 @@ namespace Rhinox.GUIUtils.Editor
 
         public static EditorInputDialog ShowInPopup(DialogData data, Vector2? openPosition = null)
         {
-            var window = InitWindow(data, out int x);
+            var window = InitWindow(data, out float x);
 
-            int y = data.GetPreferredHeight();
+            float y = data.GetPreferredHeight();
 
             if (!openPosition.HasValue)
             {
@@ -150,7 +150,7 @@ namespace Rhinox.GUIUtils.Editor
 
         public static EditorInputDialog ShowBlocking(DialogData data)
         {
-            var window = InitWindow(data, out int width);
+            var window = InitWindow(data, out float width);
 
             window.Resize(width);
 
@@ -162,7 +162,7 @@ namespace Rhinox.GUIUtils.Editor
             return window;
         }
 
-        private static EditorInputDialog InitWindow(DialogData data, out int width)
+        private static EditorInputDialog InitWindow(DialogData data, out float width)
         {
             var window = CreateInstance<EditorInputDialog>();
 
