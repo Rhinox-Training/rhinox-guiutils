@@ -38,7 +38,7 @@ namespace Rhinox.GUIUtils.Editor
             "Assets/Plugins/Editor/Icons",
             
             "Assets/GUIUtils/Icons",
-            "Packages/com.rhinox.guiutils/Icons"
+            "Packages/com.rhinox.open.guiutils/Icons"
         };
         
         /// ================================================================================================================
