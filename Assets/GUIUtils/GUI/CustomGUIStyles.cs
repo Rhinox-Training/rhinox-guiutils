@@ -1,6 +1,7 @@
 ﻿#if UNITY_EDITOR
 using UnityEditor;
 #endif
+using Rhinox.Lightspeed;
 using UnityEngine;
 
 namespace Rhinox.GUIUtils
@@ -343,6 +344,23 @@ namespace Rhinox.GUIUtils
             }
         }
         
+        private static GUIStyle _iconButtonStyleLeft;
+        public static GUIStyle IconButtonLeft
+        {
+            get
+            {
+                if (_iconButtonStyleLeft == null)
+                {
+                    _iconButtonStyleLeft = new GUIStyle(CustomGUIStyles.ButtonLeft)
+                    {
+                        padding = new RectOffset(1, 1, 1, 1)
+                    };
+                }
+
+                return _iconButtonStyleLeft;
+            }
+        }
+        
         private static GUIStyle _buttonStyleLeftSelected;
         public static GUIStyle ButtonLeftSelected
         {
@@ -351,7 +369,7 @@ namespace Rhinox.GUIUtils
                 if (_buttonStyleLeftSelected == null)
                     _buttonStyleLeftSelected = new GUIStyle(CustomGUIStyles.ButtonLeft)
                     {
-                        normal = new GUIStyle(CustomGUIStyles.ButtonLeft).onNormal
+                        normal = CustomGUIStyles.ButtonLeft.onNormal
                     };
                 return _buttonStyleLeftSelected;
             }
@@ -381,9 +399,26 @@ namespace Rhinox.GUIUtils
                 if (_buttonStyleMidSelected == null)
                     _buttonStyleMidSelected = new GUIStyle(CustomGUIStyles.ButtonMid)
                     {
-                        normal = new GUIStyle(CustomGUIStyles.ButtonMid).onNormal
+                        normal = CustomGUIStyles.ButtonMid.onNormal
                     };
                 return _buttonStyleMidSelected;
+            }
+        }
+        
+        private static GUIStyle _iconButtonStyleMid;
+        public static GUIStyle IconButtonMid
+        {
+            get
+            {
+                if (_iconButtonStyleMid == null)
+                {
+                    _iconButtonStyleMid = new GUIStyle(CustomGUIStyles.ButtonMid)
+                    {
+                        padding = new RectOffset(1, 1, 1, 1)
+                    };
+                }
+
+                return _iconButtonStyleMid;
             }
         }
 
@@ -411,9 +446,26 @@ namespace Rhinox.GUIUtils
                 if (_buttonStyleRightSelected == null)
                     _buttonStyleRightSelected = new GUIStyle(CustomGUIStyles.ButtonRight)
                     {
-                        normal = new GUIStyle(CustomGUIStyles.ButtonRight).onNormal
+                        normal = CustomGUIStyles.ButtonRight.onNormal
                     };
                 return _buttonStyleRightSelected;
+            }
+        }
+        
+        private static GUIStyle _iconButtonStyleRight;
+        public static GUIStyle IconButtonRight
+        {
+            get
+            {
+                if (_iconButtonStyleRight == null)
+                {
+                    _iconButtonStyleRight = new GUIStyle(CustomGUIStyles.ButtonRight)
+                    {
+                        padding = new RectOffset(1, 1, 1, 1)
+                    };
+                }
+
+                return _iconButtonStyleRight;
             }
         }
         
