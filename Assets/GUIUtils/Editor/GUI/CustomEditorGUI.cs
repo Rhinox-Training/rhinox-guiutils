@@ -5,8 +5,10 @@ namespace Rhinox.GUIUtils.Editor
 {
     public static class CustomEditorGUI
     {
-        private const int DEFAULT_LINE_WIDTH = 1; 
-        
+        private const int DEFAULT_LINE_WIDTH = 1;
+        private const int DEFAULT_ICON_WIDTH = 22;
+        private const int DEFAULT_ICON_HEIGHT = 18;
+
         public static void HorizontalLine(int lineWidth = DEFAULT_LINE_WIDTH) => CustomEditorGUI.HorizontalLine(CustomGUIStyles.BorderColor, lineWidth);
 
         public static void HorizontalLine(Color color, int lineWidth = DEFAULT_LINE_WIDTH) => CustomEditorGUI.DrawSolidRect(GUILayoutUtility.GetRect((float) lineWidth, (float) lineWidth, GUILayout.ExpandWidth(true)), color);
@@ -17,7 +19,7 @@ namespace Rhinox.GUIUtils.Editor
 
         public static void DrawSolidRect(Rect rect, Color color, bool usePlaymodeTint = true)
         {
-            if (Event.current.type != UnityEngine.EventType.Repaint)
+            if (Event.current.type != EventType.Repaint)
                 return;
             if (usePlaymodeTint)
             {
@@ -26,35 +28,32 @@ namespace Rhinox.GUIUtils.Editor
             else
             {
                 GUIContentHelper.PushColor(color);
-                GUI.DrawTexture(rect, (Texture) EditorGUIUtility.whiteTexture);
+                GUI.DrawTexture(rect, EditorGUIUtility.whiteTexture);
                 GUIContentHelper.PopColor();
             }
         }
 
-        public static bool IconButton(Texture icon, int width = 18, int height = 18, string tooltip = "")
+        public static bool IconButton(Texture icon, int width = DEFAULT_ICON_WIDTH, int height = DEFAULT_ICON_HEIGHT, string tooltip = "")
         {
-            return CustomEditorGUI.IconButton(icon, (GUIStyle)null, width, height, tooltip);
+            return IconButton(icon, null, width, height, tooltip);
         }
 
-        public static bool IconButton(Texture icon, GUIStyle style, int width = 18, int height = 18, string tooltip = "")
+        public static bool IconButton(Texture icon, GUIStyle style = null, int width = DEFAULT_ICON_WIDTH, int height = DEFAULT_ICON_HEIGHT, string tooltip = "")
         {
-            style = style ?? CustomGUIStyles.IconButton;
-            var tempContent = GUIContentHelper.TempContent(icon);
-            return CustomEditorGUI.IconButton(
-                GUILayoutUtility.GetRect(tempContent, style, GUILayout.ExpandWidth(false), GUILayout.Width((float) width), GUILayout.Height((float) height)), 
-                icon, style, tooltip);
+            return IconButton(GUIContentHelper.TempContent(icon, tooltip), style, width, height);
         }
         
-        public static bool IconButton(Rect rect, Texture icon, GUIStyle style, string tooltip)
+        public static bool IconButton(GUIContent content, GUIStyle style = null, int width = DEFAULT_ICON_WIDTH, int height = DEFAULT_ICON_HEIGHT)
         {
-#if ODIN_INSPECTOR
-            return Sirenix.Utilities.Editor.SirenixEditorGUI.IconButton(rect, icon, style, tooltip);
-#else
-            GUIContent content = new GUIContent(icon, tooltip);
+            style = style ?? CustomGUIStyles.IconButton;
+            var rect = GUILayoutUtility.GetRect(content, style, GUILayout.ExpandWidth(false), GUILayout.Width(width), GUILayout.Height(height));
+            return IconButton(rect, content, style);
+        }
+        
+        private static bool IconButton(Rect rect, GUIContent content, GUIStyle style = null)
+        {
             style = style ?? CustomGUIStyles.IconButton;
             return GUI.Button(rect, content, style);
-#endif
         }
-        
     }
 }
