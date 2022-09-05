@@ -56,7 +56,7 @@ namespace Rhinox.GUIUtils.Editor
 
         protected override void DrawFieldValue(Rect rect)
         {
-            if (GUI.Button(rect, SmartValue.Text, EditorStyles.miniPullDown))
+            if (GUI.Button(rect, GUIContentHelper.TempContent(SmartValue.Text, _tooltip), EditorStyles.miniPullDown))
             {
                 var selector = new GenericSelector<ValueDropdownItem<T>>(_options) { FlattenedTree = true };
 
