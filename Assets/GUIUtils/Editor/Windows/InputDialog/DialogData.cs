@@ -237,10 +237,10 @@ namespace Rhinox.GUIUtils.Editor
             height += EditorGUIUtility.singleLineHeight; // title
             height += EditorGUIUtility.singleLineHeight; // buttons
             height += 5; // padding
-            return 60 + height;
+            return height;
         }
-        public static DialogBuilder Create(string title, string content, string confirm = "Confirm",
-            string cancel = "Cancel")
+        
+        public static DialogBuilder Create(string title, string content, string confirm = "Confirm", string cancel = "Cancel")
         {
             return new DialogBuilder(title, content, confirm, cancel);
         }
