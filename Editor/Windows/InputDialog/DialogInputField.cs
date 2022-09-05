@@ -1,3 +1,4 @@
+using Rhinox.Lightspeed;
 using UnityEditor;
 using UnityEngine;
 
@@ -5,9 +6,11 @@ namespace Rhinox.GUIUtils.Editor
 {
     public abstract class DialogInputField
     {
+        protected string _tooltip;
+        
         protected GUIContent _label;
         public GUIContent Label => _label;
-
+        
         public abstract object WeakValue { get; }
         public float Height { get; protected set; } = EditorGUIUtility.singleLineHeight + 4;
 
@@ -33,7 +36,7 @@ namespace Rhinox.GUIUtils.Editor
         private void DrawField(GUIContent label)
         {
             var rect = EditorGUILayout.GetControlRect();
-            if (label != null)
+            if (label != null && !label.text.IsNullOrEmpty())
             {
 #if ODIN_INSPECTOR
                 var labelWidth = Sirenix.Utilities.Editor.GUIHelper.BetterLabelWidth;
@@ -47,7 +50,9 @@ namespace Rhinox.GUIUtils.Editor
                 DrawFieldValue(fieldRect);
             }
             else
+            {
                 DrawFieldValue(rect);
+            }
         }
 
         public static Rect AlignLeft(Rect rect, float width)
@@ -74,6 +79,7 @@ namespace Rhinox.GUIUtils.Editor
 
         protected DialogInputField(string label, string tooltip = null, T initialValue = default(T))
         {
+            _tooltip = tooltip;
             _label = new GUIContent(label, tooltip);
             SmartValue = initialValue;
         }

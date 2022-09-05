@@ -1,6 +1,7 @@
 ﻿using Sirenix.OdinInspector;
 using Sirenix.Utilities;
 using Sirenix.Utilities.Editor;
+using UnityEditor;
 using UnityEngine;
 
 namespace Rhinox.GUIUtils.Odin.Editor
@@ -58,6 +59,8 @@ namespace Rhinox.GUIUtils.Odin.Editor
 
         private Vector2 _scrollPos;
         private float _width;
+
+        protected bool _changed;
 
         protected OdinPagerPage(SlidePagedWindowNavigationHelper<object> pager)
         {
@@ -131,6 +134,21 @@ namespace Rhinox.GUIUtils.Odin.Editor
 
         protected virtual void OnDrawTopOverlay()
         {
+        }
+
+        public virtual void MarkAsChanged()
+        {
+            _changed = true;
+        }
+
+        protected virtual void ResolveChange()
+        {
+            _changed = false;
+        }
+
+        protected virtual void NavigateBack()
+        {
+            EditorApplication.delayCall += _pager.NavigateBack;
         }
     }
 }

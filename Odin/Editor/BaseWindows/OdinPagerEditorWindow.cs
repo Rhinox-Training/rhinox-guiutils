@@ -119,7 +119,6 @@ namespace Rhinox.GUIUtils.Odin.Editor
             SirenixEditorGUI.DrawSolidRect(headerRect, SirenixGUIStyles.EditorWindowBackgroundColor);
             SirenixEditorGUI.DrawBorders(headerRect, 0, 0, 0, 1);
             _pager.DrawPageNavigation(headerRect.AlignCenterY(20).HorizontalPadding(10));
-
             // Draw pages:
             _pager.BeginGroup();
             var i = 0;
@@ -127,13 +126,16 @@ namespace Rhinox.GUIUtils.Odin.Editor
             {
                 if (page.BeginPage())
                 {
+                    EditorGUI.BeginChangeCheck();
                     GUILayout.BeginVertical(GUILayoutOptions.ExpandHeight(true));
                     GUILayout.Space(30);
-                    _scrollPosition =
-                        GUILayout.BeginScrollView(_scrollPosition, _alwaysShowHorizontalScrollbar, _alwaysShowVerticalScrollbar);
+                    _scrollPosition = GUILayout.BeginScrollView(_scrollPosition, _alwaysShowHorizontalScrollbar, _alwaysShowVerticalScrollbar);
                     DrawEditor(i);
                     GUILayout.EndScrollView();
                     GUILayout.EndVertical();
+                    if (EditorGUI.EndChangeCheck() && page.Value is OdinPagerPage odinPage)
+                        odinPage.MarkAsChanged();
+
                 }
 
                 page.EndPage();
