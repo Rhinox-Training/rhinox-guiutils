@@ -3,9 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Sirenix.OdinInspector;
-using Sirenix.OdinInspector.Editor;
 using UnityEngine;
-using Object = System.Object;
 
 namespace Rhinox.GUIUtils.Editor
 {
@@ -21,22 +19,34 @@ namespace Rhinox.GUIUtils.Editor
 		public List<object> List;
 	}
 
-	public abstract class OdinMenuListEditorWindow : OdinMenuEditorWindow
+	public abstract class MenuListEditorWindow : CustomMenuEditorWindow
 	{
 		protected override IEnumerable<object> GetTargets()
 		{
 			if (MenuTree != null)
 			{
-				if (MenuTree.Selection.Count > 1)
+				if (MenuTree.SelectionCount > 1)
 				{
-					yield return new ListDrawer(MenuTree.Selection.Select(GetObject).Where(x => x != null).ToList());
+					var list = MenuTree.Selection
+						.Select(x => x?.GetInstanceValue())
+						.Where(x => x != null)
+						.Select(x => TransformTarget(x))
+						.Where(x => x != null)
+						.ToList();
+					yield return new ListDrawer(list);
 					yield break;
 				}
 
-				for (int i = 0; i < MenuTree.Selection.Count; ++i)
+				for (int i = 0; i < MenuTree.SelectionCount; ++i)
 				{
-					OdinMenuItem odinMenuItem = MenuTree.Selection[i];
-					var o = GetObject(odinMenuItem);
+					var menuItem = MenuTree.Selection[i];
+					if (menuItem == null)
+						continue;
+
+					var o = menuItem.GetInstanceValue();
+					if (o == null)
+						continue;
+					o = TransformTarget(o);
 					if (o != null)
 						yield return o;
 				}
@@ -47,16 +57,9 @@ namespace Rhinox.GUIUtils.Editor
 			}
 		}
 
-		protected virtual object GetObject(OdinMenuItem item)
+		protected virtual object TransformTarget(object item)
 		{
-			if (item == null)
-				return null;
-			object obj = item.Value;
-			Func<object> func = obj as Func<object>;
-			if (func != null)
-				obj = func();
-
-			return obj;
+			return item;
 		}
 	}
 }

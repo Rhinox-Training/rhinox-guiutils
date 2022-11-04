@@ -212,6 +212,40 @@ namespace Rhinox.GUIUtils.Editor
                 GUI.matrix = _originalMatrix;
             }
         }
+
+        public class HierarchyMode : IDisposable
+        {
+            private readonly bool _originalHierachyMode;
+
+            public HierarchyMode(bool state)
+            {
+                _originalHierachyMode = EditorGUIUtility.hierarchyMode;
+                EditorGUIUtility.hierarchyMode = state;
+            }
+            
+            public void Dispose()
+            {
+                
+                EditorGUIUtility.hierarchyMode = _originalHierachyMode;
+            }
+        }
+
+        public class LabelWidth : IDisposable
+        {
+            private readonly float _originalLabelWidth;
+
+            public LabelWidth(float width)
+            {
+                _originalLabelWidth = EditorGUIUtility.labelWidth;
+                EditorGUIUtility.labelWidth = width;
+            }
+            
+            public void Dispose()
+            {
+                
+                EditorGUIUtility.labelWidth = _originalLabelWidth;
+            }
+        }
         
         public class FoldoutContainer : GUI.Scope
         {

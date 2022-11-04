@@ -1,9 +1,12 @@
 using Rhinox.GUIUtils.Editor;
 using System.Collections.Generic;
 using Sirenix.OdinInspector;
+#if ODIN_INSPECTOR
 using Sirenix.OdinInspector.Editor;
 using Sirenix.OdinInspector.Editor.Validation;
 using Sirenix.Utilities.Editor;
+#endif
+using UnityEditor;
 using UnityEngine;
 
 #if ODIN_INSPECTOR_3 && ODIN_VALIDATOR
@@ -21,12 +24,14 @@ namespace Rhinox.GUIUtils.Odin.Editor
         [ShowIf(nameof(_expanded)), ShowInInspector]
         [InlineEditor(Expanded = true, ObjectFieldMode = InlineEditorObjectFieldModes.CompletelyHidden)]
         public object Target;
-
+        
+#if ODIN_INSPECTOR
         private PropertyTree _tree;
+#endif
         private bool _expanded;
 
         private static GUIStyle _headerStyle;
-        public static GUIStyle HeaderStyle => _headerStyle ?? (_headerStyle = new GUIStyle(SirenixGUIStyles.ToggleGroupTitleBg)
+        public static GUIStyle HeaderStyle => _headerStyle ?? (_headerStyle = new GUIStyle(CustomGUIStyles.ToggleGroupBackground)
         {
             fixedHeight = 26
         });
@@ -35,7 +40,9 @@ namespace Rhinox.GUIUtils.Odin.Editor
         {
             Target = target;
             _expanded = expanded;
+#if ODIN_INSPECTOR
             _tree = null;
+#endif
         }
 
         public void DrawHeader()
@@ -43,19 +50,19 @@ namespace Rhinox.GUIUtils.Odin.Editor
             if (Target == null)
                 return;
             
-            SirenixEditorGUI.BeginIndentedHorizontal(HeaderStyle);
-            if (SirenixEditorGUI.IconButton(_expanded ? EditorIcons.TriangleDown : EditorIcons.TriangleRight, 20, 20))
+            CustomEditorGUI.BeginHorizontalToolbar(HeaderStyle);
+            if (CustomEditorGUI.IconButton(_expanded ? UnityIcon.AssetIcon("Fa_ArrowDown") : UnityIcon.AssetIcon("Fa_ArrowRight") , 20, 20))
                 _expanded = !_expanded;
 
             using (new eUtility.DisabledGroup(true))
             {
                 if (Target is Object unityTarget)
-                    SirenixEditorFields.UnityObjectField(GUIContent.none, unityTarget, unityTarget.GetType(), true);
+                    EditorGUILayout.ObjectField(GUIContent.none, unityTarget, unityTarget.GetType(), true);
                 else
-                    SirenixEditorGUI.Title(Target.GetType().Name, null, TextAlignment.Left, true);
+                    EditorGUILayout.LabelField(Target.GetType().Name, CustomGUIStyles.SubtitleCentered);
             }
             
-            SirenixEditorGUI.EndIndentedHorizontal();
+            CustomEditorGUI.EndHorizontalToolbar();
         }
 
         public void DrawEditor()
@@ -63,12 +70,15 @@ namespace Rhinox.GUIUtils.Odin.Editor
             if (Target == null)
                 return;
             
-            if (_tree == null) _tree = PropertyTree.Create(Target);
+#if ODIN_INSPECTOR
+            if (_tree == null) 
+                _tree = PropertyTree.Create(Target);
 
             if (SirenixEditorGUI.BeginFadeGroup(Target, _expanded))
                 _tree.Draw(true);
         
             SirenixEditorGUI.EndFadeGroup();
+#endif
         }
 
         public void Draw()
