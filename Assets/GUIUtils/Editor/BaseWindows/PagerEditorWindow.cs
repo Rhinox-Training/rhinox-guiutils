@@ -2,45 +2,26 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using ICSharpCode.SharpZipLib.Zip;
+using Rhinox.GUIUtils.Editor;
+using Rhinox.GUIUtils.Editor.Helpers;
+using Rhinox.Lightspeed;
+#if ODIN_INSPECTOR
 using Sirenix.OdinInspector.Editor;
-using Sirenix.Utilities;
-using Sirenix.Utilities.Editor;
+#endif
 using UnityEditor;
 using UnityEngine;
 
 namespace Rhinox.GUIUtils.Odin.Editor
 {
-    public static class SlidePageNavigationHelperExtensions
+    public abstract class PagerEditorWindow<T> :
+#if ODIN_INSPECTOR
+        OdinEditorWindow where T : OdinEditorWindow
+#else
+        CustomEditorWindow where T : CustomEditorWindow
+#endif
     {
-        public static SlidePageNavigationHelper<T>.Page GetCurrentPage<T>(this SlidePageNavigationHelper<T> helper)
-        {
-            // Unfortunately EnumeratePages also includes the 'prev' page as last entry if it is not within the pages list (i.e. if you just navigated back)
-            // Hence it cannot be used to determine what the current page is, you need to use the private field...
-
-            // Another unfortunate: we cannot cache the FieldInfo as it differs for each type...
-            // You can get the 'generic' fieldinfo BUT it cannot be used to retrieve a typed value
-            var fieldInfo = typeof(SlidePageNavigationHelper<T>).GetField("pages", Flags.InstancePrivate);
-
-            var list = (List<SlidePageNavigationHelper<T>.Page>) fieldInfo.GetValue(helper);
-            return list.LastOrDefault();
-        }
-    }
-
-    public class SlidePagedWindowNavigationHelper<T> : SlidePageNavigationHelper<T>
-    {
-        public OdinEditorWindow Window;
-
-        public Page CurrentPage => this.GetCurrentPage();
-
-        public SlidePagedWindowNavigationHelper(OdinEditorWindow window)
-        {
-            Window = window;
-        }
-    }
-
-    public abstract class OdinPagerEditorWindow<T> : OdinEditorWindow where T : OdinEditorWindow
-    {
-        protected SlidePagedWindowNavigationHelper<object> _pager;
+        protected SlidePagedWindowNavigationHelper<object, T> _pager;
 
         private Vector2 _scrollPosition;
         protected bool _alwaysShowHorizontalScrollbar = false;
@@ -64,7 +45,7 @@ namespace Rhinox.GUIUtils.Odin.Editor
             }
 
             window = GetWindow<T>();
-            window.position = GUIHelper.GetEditorWindowRect().AlignCenter(670, 700);
+            window.position = CustomEditorGUI.GetEditorWindowRect().AlignCenter(670, 700);
 
             window.Show();
 
@@ -77,14 +58,15 @@ namespace Rhinox.GUIUtils.Odin.Editor
 
             if (this._pager != null) return;
 
-            _pager = new SlidePagedWindowNavigationHelper<object>(this);
+            var windowType = this as T;
+            _pager = new SlidePagedWindowNavigationHelper<object, T>(windowType);
             _pager.PushPage(RootPage, RootPageName);
-            (RootPage as OdinPagerPage)?.SetPager(_pager);
+            (RootPage as PagerPage<T>)?.SetPager(_pager);
         }
 
         protected virtual void Update()
         {
-            if (CurrentPage?.Value is OdinPagerPage page)
+            if (CurrentPage?.Value is PagerPage<T> page)
                 page.Update();
         }
 
@@ -110,30 +92,37 @@ namespace Rhinox.GUIUtils.Odin.Editor
         protected override void DrawEditors()
         {
             var contentRect = new Rect(0, 0, this.position.width, this.position.height);
-            SirenixEditorGUI.DrawSolidRect(contentRect, SirenixGUIStyles.DarkEditorBackground);
+            CustomEditorGUI.DrawSolidRect(contentRect, CustomGUIStyles.DarkEditorBackground);
 
             int headerHeight = DrawHeaderEditor();
 
             // Draw top pager:
-            var headerRect = GUIHelper.GetCurrentLayoutRect().AlignTop(34).AddY(headerHeight);
-            SirenixEditorGUI.DrawSolidRect(headerRect, SirenixGUIStyles.EditorWindowBackgroundColor);
-            SirenixEditorGUI.DrawBorders(headerRect, 0, 0, 0, 1);
-            _pager.DrawPageNavigation(headerRect.AlignCenterY(20).HorizontalPadding(10));
+            var headerRect = CustomEditorGUI.GetTopLevelLayoutRect().AlignTop(34).AddY(headerHeight);
+            CustomEditorGUI.DrawSolidRect(headerRect, CustomGUIStyles.BoxBackgroundColor);
+            CustomEditorGUI.DrawBorders(headerRect, 0, 0, 0, 1);
+            var pageNavigationRect = headerRect;
+            
+            pageNavigationRect.y = (float) ((double) headerRect.y + ((double) headerRect.height * 0.5 - 20.0) * 0.5);
+            pageNavigationRect.height = 20;
+            pageNavigationRect = pageNavigationRect.HorizontalPadding(10);
+            
+            _pager.DrawPageNavigation(pageNavigationRect);
             // Draw pages:
             _pager.BeginGroup();
+            
             var i = 0;
             foreach (var page in this._pager.EnumeratePages)
             {
                 if (page.BeginPage())
                 {
                     EditorGUI.BeginChangeCheck();
-                    GUILayout.BeginVertical(GUILayoutOptions.ExpandHeight(true));
+                    GUILayout.BeginVertical(GUILayout.ExpandHeight(true));
                     GUILayout.Space(30);
                     _scrollPosition = GUILayout.BeginScrollView(_scrollPosition, _alwaysShowHorizontalScrollbar, _alwaysShowVerticalScrollbar);
                     DrawEditor(i);
                     GUILayout.EndScrollView();
                     GUILayout.EndVertical();
-                    if (EditorGUI.EndChangeCheck() && page.Value is OdinPagerPage odinPage)
+                    if (EditorGUI.EndChangeCheck() && page.Value is PagerPage<T> odinPage)
                         odinPage.MarkAsChanged();
 
                 }

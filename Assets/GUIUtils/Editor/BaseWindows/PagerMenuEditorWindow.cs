@@ -3,17 +3,26 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Rhinox.GUIUtils.Editor;
+using Rhinox.GUIUtils.Editor.Helpers;
+using Rhinox.Lightspeed;
+#if ODIN_INSPECTOR
 using Sirenix.OdinInspector.Editor;
-using Sirenix.Utilities;
+//using Sirenix.Utilities;
 using Sirenix.Utilities.Editor;
+#endif
 using UnityEditor;
 using UnityEngine;
 
 namespace Rhinox.GUIUtils.Odin.Editor
 {
-    public abstract class OdinPagerMenuEditorWindow<T> : OdinMenuEditorWindow where T : OdinMenuEditorWindow
+    public abstract class PagerMenuEditorWindow<T> : 
+#if ODIN_INSPECTOR
+        OdinMenuEditorWindow where T : OdinMenuEditorWindow
+#else
+        CustomMenuEditorWindow where T : CustomMenuEditorWindow
+#endif
     {
-        protected SlidePagedWindowNavigationHelper<object> _pager;
+        protected SlidePagedWindowNavigationHelper<object, T> _pager;
 
         private Vector2 _scrollPosition;
 
@@ -36,7 +45,7 @@ namespace Rhinox.GUIUtils.Odin.Editor
             }
 
             window = GetWindow<T>();
-            window.position = GUIHelper.GetEditorWindowRect().AlignCenter(670, 700);
+            window.position = CustomEditorGUI.GetEditorWindowRect().AlignCenter(670, 700);
 
             window.Show();
 
@@ -49,9 +58,9 @@ namespace Rhinox.GUIUtils.Odin.Editor
 
             if (this._pager != null) return;
 
-            _pager = new SlidePagedWindowNavigationHelper<object>(this);
+            _pager = new SlidePagedWindowNavigationHelper<object, T>(this as T);
             _pager.PushPage(RootPage, RootPageName);
-            (RootPage as OdinPagerPage)?.SetPager(_pager);
+            (RootPage as PagerPage<T>)?.SetPager(_pager);
         }
 
         protected override void OnDestroy()
@@ -64,20 +73,24 @@ namespace Rhinox.GUIUtils.Odin.Editor
 
         protected override void OnBeginDrawEditors()
         {
+#if ODIN_INSPECTOR
             var toolbarHeight = MenuTree.Config.SearchToolbarHeight;
+#else
+            var toolbarHeight = MenuTree.ToolbarHeight;
+#endif
 
             // Draws a toolbar 
-            SirenixEditorGUI.BeginHorizontalToolbar(toolbarHeight);
+            CustomEditorGUI.BeginHorizontalToolbar(height: toolbarHeight);
 
             // Draw paging
-            var headerRect = GUIHelper.GetCurrentLayoutRect();
-            _pager.DrawPageNavigation(headerRect.AlignCenterY(20).HorizontalPadding(10));
+            var headerRect = CustomEditorGUI.GetTopLevelLayoutRect();
+            _pager.DrawPageNavigation(headerRect.AlignCenterVertical(20).HorizontalPadding(10));
 
             GUILayout.FlexibleSpace();
 
             DrawToolbarIcons(toolbarHeight);
 
-            SirenixEditorGUI.EndHorizontalToolbar();
+            CustomEditorGUI.EndHorizontalToolbar();
         }
 
         protected virtual void DrawToolbarIcons(int toolbarHeight)
@@ -92,7 +105,7 @@ namespace Rhinox.GUIUtils.Odin.Editor
             {
                 if (page.BeginPage())
                 {
-                    GUILayout.BeginVertical(GUILayoutOptions.ExpandHeight(true));
+                    GUILayout.BeginVertical(GUILayout.ExpandHeight(true));
                     _scrollPosition = GUILayout.BeginScrollView(_scrollPosition);
                     DrawEditor(i);
                     GUILayout.EndScrollView();
@@ -123,6 +136,7 @@ namespace Rhinox.GUIUtils.Odin.Editor
             return _pager.EnumeratePages.Select(x => x.Value);
         }
 
+#if ODIN_INSPECTOR
         /// <summary>
         /// Utility func which you can use to simplify the search algorithm of the MenuTree
         /// </summary>
@@ -130,5 +144,6 @@ namespace Rhinox.GUIUtils.Odin.Editor
         {
             return item.SearchString.Contains(MenuTree.Config.SearchTerm, StringComparison.InvariantCultureIgnoreCase);
         }
+#endif
     }
 }

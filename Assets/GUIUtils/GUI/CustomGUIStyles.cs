@@ -262,6 +262,27 @@ namespace Rhinox.GUIUtils
                 return _toolbarBackground;
             }
         }
+        
+#if UNITY_EDITOR
+        private static GUIStyle _toggleGroupBackground;
+        public static GUIStyle ToggleGroupBackground
+        {
+            get
+            {
+                if (_toggleGroupBackground == null)
+                {
+                    _toggleGroupBackground = new GUIStyle(EditorStyles.helpBox)
+                    {
+                        overflow = new RectOffset(0, 0, 0, 0),
+                        margin = new RectOffset(0, 0, 0, 0),
+                        padding = new RectOffset(0, 0, 0, 0)
+                    };
+                }
+
+                return _toggleGroupBackground;
+            }
+        }
+#endif
 
         private static GUIStyle _toolbarTab;
         public static GUIStyle ToolbarTab

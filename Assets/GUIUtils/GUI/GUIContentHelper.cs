@@ -15,6 +15,7 @@ namespace Rhinox.GUIUtils
 #if UNITY_EDITOR
         private static readonly GUIFrameAwareStack<int> IndentLevelStack = new GUIFrameAwareStack<int>();
         private static readonly GUIFrameAwareStack<bool> HierarchyModeStack = new GUIFrameAwareStack<bool>();
+        private static readonly GUIFrameAwareStack<float> LabelWidthStack = new GUIFrameAwareStack<float>();
 #endif
 
         public static GUIContent TempContent(string label, string tooltip = null)
@@ -147,6 +148,18 @@ namespace Rhinox.GUIUtils
         public static void PopHierarchyMode()
         {
             EditorGUIUtility.hierarchyMode = GUIContentHelper.HierarchyModeStack.Pop();
+        }
+
+        public static void PushLabelWidth(float width)
+        {
+            
+            GUIContentHelper.LabelWidthStack.Push(EditorGUIUtility.labelWidth);
+            EditorGUIUtility.labelWidth = width;
+        }
+
+        public static void PopLabelWidth()
+        {
+            EditorGUIUtility.labelWidth = GUIContentHelper.LabelWidthStack.Pop();
         }
 #endif
     }
