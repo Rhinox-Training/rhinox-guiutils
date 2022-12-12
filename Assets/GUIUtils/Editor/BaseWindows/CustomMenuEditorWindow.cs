@@ -5,7 +5,6 @@ using System.Reflection;
 using Rhinox.Lightspeed;
 using UnityEditor;
 using UnityEngine;
-using Object = System.Object;
 
 namespace Rhinox.GUIUtils.Editor
 {
@@ -28,18 +27,18 @@ namespace Rhinox.GUIUtils.Editor
                 if (onProjectChangedEvent == null)
                     throw new NotImplementedException(
                         "EditorApplication.projectChanged is not implemented in this version of Unity.");
-                onProjectChangedEvent.AddEventHandler((object) null, (Delegate) value);
+                onProjectChangedEvent.AddEventHandler(null, value);
             }
             remove
             {
                 if (onProjectChangedEvent == null)
                     throw new NotImplementedException(
                         "EditorApplication.projectChanged is not implemented in this version of Unity.");
-                onProjectChangedEvent.RemoveEventHandler((object) null, (Delegate) value);
+                onProjectChangedEvent.RemoveEventHandler(null, value);
             }
         }
 
-        private void ProjectWindowChanged() => this.isDirty = true;
+        private void ProjectWindowChanged() => isDirty = true;
 
         /// <summary>
         /// Called when the window is destroyed. Remember to call base.OnDestroy();
@@ -48,14 +47,9 @@ namespace Rhinox.GUIUtils.Editor
         {
             base.OnDestroy();
             if (HasOnProjectChanged)
-            {
-                OnProjectChanged -= new Action(this.ProjectWindowChanged);
-            }
+                OnProjectChanged -= ProjectWindowChanged;
             else
-            {
-                EditorApplication.projectWindowChanged -=
-                    new EditorApplication.CallbackFunction(this.ProjectWindowChanged);
-            }
+                EditorApplication.projectWindowChanged -= ProjectWindowChanged;
         }
 
         /// <summary>Builds the menu tree.</summary>
@@ -64,21 +58,21 @@ namespace Rhinox.GUIUtils.Editor
         /// <summary>Gets or sets the width of the menu.</summary>
         public virtual float MenuWidth
         {
-            get => this.menuWidth;
-            set => this.menuWidth = value;
+            get => menuWidth;
+            set => menuWidth = value;
         }
 
         /// <summary>Gets the menu tree.</summary>
-        public CustomMenuTree MenuTree => this.menuTree;
+        public CustomMenuTree MenuTree => menuTree;
 
         /// <summary>Forces the menu tree rebuild.</summary>
         public void ForceMenuTreeRebuild()
         {
-            this.menuTree = this.BuildMenuTree();
-            if (this.selectedItems.Count == 0 && !this.menuTree.HasSelection)
+            menuTree = BuildMenuTree();
+            if (selectedItems.Count == 0 && !menuTree.HasSelection)
             {
-                var menuItem = this.menuTree.Enumerate()
-                    .FirstOrDefault((Func<UIMenuItem, bool>) (x => x.RawValue != null));
+                var menuItem = menuTree.Enumerate()
+                    .FirstOrDefault(x => x.RawValue != null);
                 if (menuItem != null)
                 {
                     // TODO: no nested support
@@ -87,40 +81,40 @@ namespace Rhinox.GUIUtils.Editor
                     menuItem.Select();
                 }
             }
-            else if (!this.menuTree.HasSelection && this.selectedItems.Count > 0)
+            else if (!menuTree.HasSelection && selectedItems.Count > 0)
             {
-                foreach (var menuItem in this.menuTree.Enumerate())
+                foreach (var menuItem in menuTree.Enumerate())
                 {
-                    if (this.selectedItems.Contains(menuItem.FullPath))
+                    if (selectedItems.Contains(menuItem.FullPath))
                         menuItem.Select(true);
                 }
             }
 
-            this.menuTree.SelectionChanged += this.OnSelectionChanged;
+            menuTree.SelectionChanged += OnSelectionChanged;
         }
 
         private void OnSelectionChanged()
         {
-            this.Repaint();
+            Repaint();
             CustomEditorGUI.RemoveFocusControl();
-            this.selectedItems = this.menuTree.Selection
-                .Select<UIMenuItem, string>((Func<UIMenuItem, string>) (x => x.FullPath)).ToList<string>();
-            EditorUtility.SetDirty((UnityEngine.Object) this);
+            selectedItems = menuTree.Selection
+                .Select(x => x.FullPath).ToList();
+            EditorUtility.SetDirty(this);
         }
 
         /// <summary>
         /// Tries to select the menu item with the specified object.
         /// </summary>
-        public void TrySelectMenuItemWithObject(object obj) => this.trySelectObject = obj;
+        public void TrySelectMenuItemWithObject(object obj) => trySelectObject = obj;
 
         /// <summary>Draws the menu tree selection.</summary>
         protected override IEnumerable<object> GetTargets()
         {
-            if (this.menuTree != null)
+            if (menuTree != null)
             {
-                for (int i = 0; i < this.menuTree.SelectionCount; ++i)
+                for (int i = 0; i < menuTree.SelectionCount; ++i)
                 {
-                    var menuItem = this.menuTree.Selection[i];
+                    var menuItem = menuTree.Selection[i];
                     if (menuItem != null)
                     {
                         object obj = menuItem.GetInstanceValue();
@@ -134,54 +128,52 @@ namespace Rhinox.GUIUtils.Editor
         /// <summary>Draws the Odin Editor Window.</summary>
         protected override void OnGUI()
         {
-            if (Event.current.type == UnityEngine.EventType.Layout)
+            if (Event.current.type == EventType.Layout)
             {
-                bool flag = this.menuTree == null;
-                if (this.menuTree == null || this.isDirty)
+                bool flag = menuTree == null;
+                if (menuTree == null || isDirty)
                 {
-                    this.ForceMenuTreeRebuild();
+                    ForceMenuTreeRebuild();
                     if (flag)
-                        CustomMenuTree.ActiveMenuTree = this.menuTree;
+                        CustomMenuTree.ActiveMenuTree = menuTree;
                     if (HasOnProjectChanged)
                     {
-                        OnProjectChanged -= new Action(this.ProjectWindowChanged);
-                        OnProjectChanged += new Action(this.ProjectWindowChanged);
+                        OnProjectChanged -= ProjectWindowChanged;
+                        OnProjectChanged += ProjectWindowChanged;
                     }
                     else
                     {
-                        EditorApplication.projectWindowChanged -=
-                            new EditorApplication.CallbackFunction(this.ProjectWindowChanged);
-                        EditorApplication.projectWindowChanged +=
-                            new EditorApplication.CallbackFunction(this.ProjectWindowChanged);
+                        EditorApplication.projectWindowChanged -= ProjectWindowChanged;
+                        EditorApplication.projectWindowChanged += ProjectWindowChanged;
                     }
 
-                    this.isDirty = false;
+                    isDirty = false;
                 }
 
-                if (this.trySelectObject != null && this.menuTree != null)
+                if (trySelectObject != null && menuTree != null)
                 {
-                    var menuItem = this.menuTree.Enumerate()
-                        .FirstOrDefault((Func<UIMenuItem, bool>) (x => x.RawValue == this.trySelectObject));
+                    var menuItem = menuTree.Enumerate()
+                        .FirstOrDefault(x => x.RawValue == trySelectObject);
                     if (menuItem != null)
                     {
-                        this.menuTree.ClearSelection();
+                        menuTree.ClearSelection();
                         menuItem.Select();
-                        this.trySelectObject = (object) null;
+                        trySelectObject = null;
                     }
                 }
             }
 
             GUILayout.BeginHorizontal();
-            GUILayout.BeginVertical(GUILayout.Width(this.MenuWidth), GUILayout.ExpandHeight(true));
+            GUILayout.BeginVertical(GUILayout.Width(MenuWidth), GUILayout.ExpandHeight(true));
             Rect currentLayoutRect = CustomEditorGUI.GetTopLevelLayoutRect();
-            if (this.menuTree != null)
-                this.menuTree.HandleRefocus(currentLayoutRect);
+            if (menuTree != null)
+                menuTree.HandleRefocus(currentLayoutRect);
             EditorGUI.DrawRect(currentLayoutRect, new Color(1f, 1f, 1f, 0.035f));
             Rect rect = currentLayoutRect;
             rect.xMin = currentLayoutRect.xMax - 4f;
             rect.xMax += 4f;
 
-            this.DrawMenu();
+            DrawMenu();
             GUILayout.EndVertical();
             GUILayout.BeginVertical();
             EditorGUI.DrawRect(CustomEditorGUI.GetTopLevelLayoutRect(), CustomGUIStyles.DarkEditorBackground);
@@ -189,17 +181,17 @@ namespace Rhinox.GUIUtils.Editor
             GUILayout.EndVertical();
             GUILayout.EndHorizontal();
             EditorGUI.DrawRect(rect.AlignCenter(1f), CustomGUIStyles.BorderColor);
-            if (this.menuTree != null)
-                this.menuTree.Update();
+            if (menuTree != null)
+                menuTree.Update();
             RepaintIfRequested();
         }
 
         /// <summary>The method that draws the menu.</summary>
         protected virtual void DrawMenu()
         {
-            if (this.menuTree == null)
+            if (menuTree == null)
                 return;
-            this.menuTree.Draw(Event.current);
+            menuTree.Draw(Event.current);
         }
     }
 }
