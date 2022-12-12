@@ -400,7 +400,7 @@ namespace Rhinox.GUIUtils.Editor
                 GUILayout.BeginArea(new Rect(0.0f, 0.0f, this.position.width, (float) this.wrappedAreaMaxHeight));
             if (this.OnBeginGUI != null)
                 this.OnBeginGUI();
-            
+
             this.InitializeIfNeeded();
             GUIStyle guiStyle = this.marginStyle;
             if (guiStyle == null)
@@ -539,39 +539,73 @@ namespace Rhinox.GUIUtils.Editor
                     }
                     else
                     {
-                        EditorWindow editorWindow = obj as EditorWindow;
-                        if (TypeExtensions.InheritsFrom<Object>(obj.GetType()) && !(bool) (Object) editorWindow)
+                        if (obj is EditorWindow editorWindow)
                         {
-                            Object targetObject = obj as Object;
-                            if ((bool) targetObject)
-                            {
-                                if ((bool) (Object) this.editors[index])
-                                    Object.DestroyImmediate((Object) this.editors[index]);
-                                this.editors[index] = UnityEditor.Editor.CreateEditor(targetObject);
-                                MaterialEditor editor = this.editors[index] as MaterialEditor;
-                                if ((Object) editor != (Object) null &&
-                                    CustomEditorWindow.materialForceVisibleProperty != null)
-                                    CustomEditorWindow.materialForceVisibleProperty.SetValue((object) editor,
-                                        (object) true, (object[]) null);
-                            }
-                            else
-                            {
-                                if ((bool) (Object) this.editors[index])
-                                    Object.DestroyImmediate((Object) this.editors[index]);
-                                this.editors[index] = (UnityEditor.Editor) null;
-                            }
+                            var dynamicEntry = TryCreateGenericEditor(editorWindow);
+                            
+                            if (dynamicEntry == null && (bool) (Object) this.editors[index])
+                                Object.DestroyImmediate((Object) this.editors[index]);
+                            this.editors[index] = (UnityEditor.Editor) dynamicEntry;
                         }
                         else
                         {
-                            if ((bool) (Object) this.editors[index])
-                                Object.DestroyImmediate((Object) this.editors[index]);
-                            this.editors[index] = (UnityEditor.Editor) null;
+                            if (TypeExtensions.InheritsFrom<Object>(obj.GetType()))
+                            {
+                                Object targetObject = obj as Object;
+                                if ((bool) targetObject)
+                                {
+                                    if ((bool) (Object) this.editors[index])
+                                        Object.DestroyImmediate((Object) this.editors[index]);
+
+                                    var dynamicEntry = UnityEditor.Editor.CreateEditor(targetObject);
+                                    if (dynamicEntry == null ||
+                                        dynamicEntry.GetType().Name
+                                            .Contains("OdinEditor")) // TODO: remove once odin-less testing is done
+                                    {
+                                        dynamicEntry = TryCreateGenericEditor(targetObject);
+                                    }
+
+                                    this.editors[index] = dynamicEntry;
+
+                                    MaterialEditor editor = this.editors[index] as MaterialEditor;
+                                    if ((Object) editor != (Object) null &&
+                                        CustomEditorWindow.materialForceVisibleProperty != null)
+                                        CustomEditorWindow.materialForceVisibleProperty.SetValue((object) editor,
+                                            (object) true, (object[]) null);
+                                }
+                                else
+                                {
+                                    if ((bool) (Object) this.editors[index])
+                                        Object.DestroyImmediate((Object) this.editors[index]);
+                                    this.editors[index] = (UnityEditor.Editor) null;
+                                }
+                            }
+                            else
+                            {
+                                this.editors[index] = (UnityEditor.Editor) null;
+                            }
                         }
                     }
                 }
             }
 
             this.currentTargetsImm = new List<object>((IList<object>) this.currentTargets);
+        }
+
+        private UnityEditor.Editor TryCreateGenericEditor(Object targetObject)
+        {
+            UnityEditor.Editor customEditor = null;
+            try
+            {
+                customEditor = UnityEditor.Editor.CreateEditor(targetObject, typeof(GenericSmartUnityObjectEditor));
+            }
+            catch (Exception e)
+            {
+                Debug.LogError(e);
+                customEditor = null;
+            }
+
+            return customEditor;
         }
 
         protected void RequestRepaint()

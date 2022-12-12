@@ -1,6 +1,9 @@
-﻿using System.Reflection;
+﻿using System;
+using System.Linq;
+using System.Reflection;
 using Rhinox.Lightspeed;
 using UnityEditor;
+using UnityEditor.UIElements;
 using UnityEngine;
 
 namespace Rhinox.GUIUtils.Editor
@@ -13,6 +16,7 @@ namespace Rhinox.GUIUtils.Editor
 
         private static object _parentView = null;
         private static PropertyInfo _screenPosProp;
+        private static MethodInfo _toolbarSearchFieldMethodInfo;
 
         public static Rect GetEditorWindowRect()
         {
@@ -73,6 +77,16 @@ namespace Rhinox.GUIUtils.Editor
             return rectField.GetValue(topLevelInstance) is Rect ? (Rect) rectField.GetValue(topLevelInstance) : default;
         }
         
+        public static Rect GetVisibleRect()
+        {
+            string fullTypeName = "UnityEngine.GUIClip";
+            Type t = typeof(GUILayout).Assembly.GetType(fullTypeName);
+            var propInfo = t.GetProperty("visibleRect", BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Static);
+            if (propInfo == null)
+                return default(Rect);
+            return (Rect)propInfo.GetValue(null);
+        }
+        
         
         public static void RemoveFocusControl()
         {
@@ -87,6 +101,17 @@ namespace Rhinox.GUIUtils.Editor
         public static void HorizontalLine(Color color, int lineWidth = DEFAULT_LINE_WIDTH) =>
             CustomEditorGUI.DrawSolidRect(
                 GUILayoutUtility.GetRect((float) lineWidth, (float) lineWidth, GUILayout.ExpandWidth(true)), color);
+        
+        public static void HorizontalLine(Color color, float width, int lineWidth = DEFAULT_LINE_WIDTH) =>
+            CustomEditorGUI.DrawSolidRect(
+                GUILayoutUtility.GetRect((float) lineWidth, (float) lineWidth, GUILayout.Width(width)), color);
+
+
+        public static void HorizontalLine(Rect r, Color color, int lineWidth = DEFAULT_LINE_WIDTH)
+        {
+            r.height = lineWidth;
+            CustomEditorGUI.DrawSolidRect(r, color);
+        }
 
         public static void VerticalLine(int lineWidth = DEFAULT_LINE_WIDTH) =>
             CustomEditorGUI.VerticalLine(CustomGUIStyles.BorderColor, lineWidth);
@@ -250,6 +275,18 @@ namespace Rhinox.GUIUtils.Editor
             GUIContentHelper.PopIndentLevel();
             GUIContentHelper.PopHierarchyMode();
             EditorGUILayout.EndHorizontal();
+        }
+
+        public static string ToolbarSearchField(string searchText, params GUILayoutOption[] layoutOptions)
+        {
+            if (_toolbarSearchFieldMethodInfo == null)
+            {
+                var methods = typeof(EditorGUILayout).GetMethods( BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public);
+                _toolbarSearchFieldMethodInfo = methods.FirstOrDefault(x => x.Name.Equals(nameof(ToolbarSearchField)) && x.GetParameters().Length == 2);
+            }
+
+            string result = _toolbarSearchFieldMethodInfo.Invoke(null, new object[] {searchText, layoutOptions}) as string;
+            return result ?? string.Empty;
         }
     }
 }

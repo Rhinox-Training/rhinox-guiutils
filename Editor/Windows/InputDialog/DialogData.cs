@@ -12,9 +12,16 @@ namespace Rhinox.GUIUtils.Editor
 {
     public class DialogBuilder
     {
-        public abstract class ValueReference<T>
+        public interface IValueReference
+        {
+            object GenericValue { get; }
+        }
+        
+        public abstract class ValueReference<T> : IValueReference
         {
             public abstract T Value { get; }
+
+            public object GenericValue => Value;
 
             public static implicit operator T(ValueReference<T> reference) => reference.Value;
         }
