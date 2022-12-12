@@ -54,19 +54,19 @@ namespace Rhinox.GUIUtils.Editor
         {
             Rect rect1 = GUILayoutUtility.GetRect(0.0f, 30.0f);
 
-            UnityEngine.EventType currentEventType = currentEvent.type;
-            if (currentEventType == UnityEngine.EventType.Layout)
+            EventType currentEventType = currentEvent.type;
+            if (currentEventType == EventType.Layout)
                 return;
 
-            if (currentEventType == UnityEngine.EventType.Repaint || (double) this.rect.width == 0.0)
-                this.rect = rect1;
+            if (currentEventType == EventType.Repaint || rect.width == 0.0) 
+                rect = rect1;
 
-            float y1 = this.rect.y;
-            if ((double) y1 > 1000.0)
+            float y1 = rect.y;
+            if (y1 > 1000f)
             {
                 float y2 = MenuTree.VisibleRect.y;
-                if ((double) y1 + (double) this.rect.height < (double) y2 ||
-                    (double) y1 > (double) y2 + (double) MenuTree.VisibleRect.height)
+                if (y1 + (double) rect.height < y2 ||
+                    y1 > y2 + (double) MenuTree.VisibleRect.height)
                 {
                     this.MenuItemIsBeingRendered = false;
                     return;
@@ -74,42 +74,42 @@ namespace Rhinox.GUIUtils.Editor
             }
 
             this.MenuItemIsBeingRendered = true;
-            if (currentEventType == UnityEngine.EventType.Repaint)
+            if (currentEventType == EventType.Repaint)
             {
-                this.labelRect = rect;
-                this.labelRect.xMin += 16f + (float) indentLevel * 15f;
-                bool isSelected = this.IsSelected;
+                labelRect = rect;
+                labelRect.xMin += 16f + indentLevel * 15f;
+                bool isSelected = IsSelected;
                 if (isSelected)
                 {
-                    bool windowInFocus = CustomMenuTree.ActiveMenuTree == this.MenuTree;
+                    bool windowInFocus = CustomMenuTree.ActiveMenuTree == MenuTree;
                     Color backgroundColor = windowInFocus
                         ? new Color(0.243f, 0.373f, 0.588f, 1f)
                         : new Color(0.838f, 0.838f, 0.838f, 0.134f);
-                    
-                    EditorGUI.DrawRect(this.rect, backgroundColor);
+
+                    EditorGUI.DrawRect(rect, backgroundColor);
                 }
                 else
                 {
-                    if (this.rect.Contains(currentEvent.mousePosition))
-                        EditorGUI.DrawRect(this.rect, new Color(0.243f, 0.372f, 0.588f, 1f));
+                    if (rect.Contains(currentEvent.mousePosition))
+                        EditorGUI.DrawRect(rect, new Color(0.243f, 0.372f, 0.588f, 1f));
                 }
 
 
-                Texture image = this.IconGetter();
-                if ((UnityEngine.Object) image != null)
+                Texture image = IconGetter();
+                if (image != null)
                 {
-                    Rect position = this.labelRect.AlignLeft(16f).AlignCenter(16f);
+                    Rect position = labelRect.AlignLeft(16f).AlignCenter(16f);
                     //position.x += this.Style.IconOffset;
                     if (!isSelected)
                         GUIContentHelper.PushColor(new Color(1f, 1f, 1f, 0.85f));
                     GUI.DrawTexture(position, image, ScaleMode.ScaleToFit);
-                    this.labelRect.xMin += 16f + 3f; // size + padding
+                    labelRect.xMin += 16f + 3f; // size + padding
                     if (!isSelected)
                         GUIContentHelper.PopColor();
                 }
 
                 GUIStyle style = isSelected ? CustomGUIStyles.BoldLabel : CustomGUIStyles.Label;
-                var actualLabelRect = this.labelRect.AlignCenterVertical(16f);
+                var actualLabelRect = labelRect.AlignCenterVertical(16f);
                 GUI.Label(actualLabelRect, Name, style);
                 if (UseBorders)
                 {
@@ -117,11 +117,11 @@ namespace Rhinox.GUIUtils.Editor
                     if (isSelected)
                         num = 0.0f;
 
-                    Rect rect2 = this.rect;
+                    Rect rect2 = rect;
                     rect2.x += num;
                     rect2.width -= num * 2f;
-                    
-                    
+
+
                     CustomEditorGUI.HorizontalLine(rect2, new Color(1f, 1f, 1f, 0.103f));
 
                     // Color backgroundColor = GUI.backgroundColor;
@@ -168,13 +168,13 @@ namespace Rhinox.GUIUtils.Editor
 
         public void Update()
         {
-            UnityEngine.EventType type = Event.current.type;
-            if (type == UnityEngine.EventType.Used && this.wasMouseDownEvent)
+            EventType type = Event.current.type;
+            if (type == EventType.Used && this.wasMouseDownEvent)
                 this.wasMouseDownEvent = false;
 
             if (type != EventType.MouseDown) // Only click on mousedown TODO: ? 
                 return;
-            
+
             this.wasMouseDownEvent = false;
             if (!rect.Contains(Event.current.mousePosition))
                 return;
@@ -203,14 +203,14 @@ namespace Rhinox.GUIUtils.Editor
 
         public List<UIMenuItem> Selection; // TODO: how to
 
-        public bool HasSelection => Selection != null ? Selection.Count != 0 : false;
-        public int SelectionCount => Selection != null ? Selection.Count : 0;
+        public bool HasSelection => !Selection.IsNullOrEmpty();
+        public int SelectionCount => Selection?.Count ?? 0;
 
         public int ToolbarHeight = 22;
 
         public Rect VisibleRect { get; set; }
 
-        public event System.Action SelectionChanged; // TODO: how to
+        public event Action SelectionChanged; // TODO: how to
 
         private List<UIMenuItem> _items;
 
@@ -221,7 +221,7 @@ namespace Rhinox.GUIUtils.Editor
 
         public IReadOnlyCollection<UIMenuItem> Enumerate() // TODO: how to
         {
-            return (IReadOnlyCollection<UIMenuItem>) _items ?? Array.Empty<UIMenuItem>();
+            return (IReadOnlyCollection<UIMenuItem>)_items ?? Array.Empty<UIMenuItem>();
         }
 
 
@@ -232,7 +232,7 @@ namespace Rhinox.GUIUtils.Editor
             {
                 if (item == null)
                     continue;
-                
+
                 item.Update();
             }
         }
@@ -256,7 +256,7 @@ namespace Rhinox.GUIUtils.Editor
             rect.width += expand * 2f;
             return rect;
         }
-        
+
         public void ClearSelection()
         {
             if (Selection != null)

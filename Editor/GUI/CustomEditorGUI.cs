@@ -99,12 +99,10 @@ namespace Rhinox.GUIUtils.Editor
             CustomEditorGUI.HorizontalLine(CustomGUIStyles.BorderColor, lineWidth);
 
         public static void HorizontalLine(Color color, int lineWidth = DEFAULT_LINE_WIDTH) =>
-            CustomEditorGUI.DrawSolidRect(
-                GUILayoutUtility.GetRect((float) lineWidth, (float) lineWidth, GUILayout.ExpandWidth(true)), color);
+            CustomEditorGUI.DrawSolidRect(GUILayoutUtility.GetRect(lineWidth, lineWidth, GUILayout.ExpandWidth(true)), color);
         
         public static void HorizontalLine(Color color, float width, int lineWidth = DEFAULT_LINE_WIDTH) =>
-            CustomEditorGUI.DrawSolidRect(
-                GUILayoutUtility.GetRect((float) lineWidth, (float) lineWidth, GUILayout.Width(width)), color);
+            CustomEditorGUI.DrawSolidRect(GUILayoutUtility.GetRect(lineWidth, lineWidth, GUILayout.Width(width)), color);
 
 
         public static void HorizontalLine(Rect r, Color color, int lineWidth = DEFAULT_LINE_WIDTH)
@@ -190,22 +188,22 @@ namespace Rhinox.GUIUtils.Editor
             if (Event.current.type != UnityEngine.EventType.Repaint)
                 return;
             if (left > 0)
-                DrawSolidRect(rect.SetWidth((float) left), color, usePlaymodeTint);
+                DrawSolidRect(rect.SetWidth(left), color, usePlaymodeTint);
             if (top > 0)
-                DrawSolidRect(rect.SetHeight((float) top), color, usePlaymodeTint);
+                DrawSolidRect(rect.SetHeight(top), color, usePlaymodeTint);
             if (right > 0)
             {
                 Rect rect1 = rect;
-                rect1.x += rect.width - (float) right;
-                rect1.width = (float) right;
+                rect1.x += rect.width - right;
+                rect1.width = right;
                 DrawSolidRect(rect1, color, usePlaymodeTint);
             }
 
             if (bottom <= 0)
                 return;
             Rect rect2 = rect;
-            rect2.y += rect.height - (float) bottom;
-            rect2.height = (float) bottom;
+            rect2.y += rect.height - bottom;
+            rect2.height = bottom;
             DrawSolidRect(rect2, color, usePlaymodeTint);
         }
 
@@ -266,11 +264,11 @@ namespace Rhinox.GUIUtils.Editor
         /// </summary>
         public static void EndHorizontalToolbar()
         {
-            if (Event.current.type == UnityEngine.EventType.Repaint)
+            if (Event.current.type == EventType.Repaint)
             {
-                Rect currentLayoutRect = CustomEditorGUI.GetTopLevelLayoutRect();
+                Rect currentLayoutRect = GetTopLevelLayoutRect();
                 --currentLayoutRect.yMin;
-                CustomEditorGUI.DrawBorders(currentLayoutRect, 1);
+                DrawBorders(currentLayoutRect, 1);
             }
             GUIContentHelper.PopIndentLevel();
             GUIContentHelper.PopHierarchyMode();
