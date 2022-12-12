@@ -17,26 +17,28 @@ namespace Rhinox.GUIUtils.Editor
         [NonSerialized] private object trySelectObject;
         [SerializeField] [HideInInspector] private List<string> selectedItems = new List<string>();
         [SerializeField] [HideInInspector] private bool resizableMenuWidth = true;
-       
-        private static readonly EventInfo onProjectChangedEvent = typeof (EditorApplication).GetEvent("projectChanged");
+
+        private static readonly EventInfo onProjectChangedEvent = typeof(EditorApplication).GetEvent("projectChanged");
         public static readonly bool HasOnProjectChanged = onProjectChangedEvent != null;
-        
+
         public static event Action OnProjectChanged
         {
             add
             {
                 if (onProjectChangedEvent == null)
-                    throw new NotImplementedException("EditorApplication.projectChanged is not implemented in this version of Unity.");
+                    throw new NotImplementedException(
+                        "EditorApplication.projectChanged is not implemented in this version of Unity.");
                 onProjectChangedEvent.AddEventHandler((object) null, (Delegate) value);
             }
             remove
             {
                 if (onProjectChangedEvent == null)
-                    throw new NotImplementedException("EditorApplication.projectChanged is not implemented in this version of Unity.");
+                    throw new NotImplementedException(
+                        "EditorApplication.projectChanged is not implemented in this version of Unity.");
                 onProjectChangedEvent.RemoveEventHandler((object) null, (Delegate) value);
             }
         }
-        
+
         private void ProjectWindowChanged() => this.isDirty = true;
 
         /// <summary>
@@ -51,7 +53,8 @@ namespace Rhinox.GUIUtils.Editor
             }
             else
             {
-                EditorApplication.projectWindowChanged -= new EditorApplication.CallbackFunction(this.ProjectWindowChanged);
+                EditorApplication.projectWindowChanged -=
+                    new EditorApplication.CallbackFunction(this.ProjectWindowChanged);
             }
         }
 
@@ -67,7 +70,7 @@ namespace Rhinox.GUIUtils.Editor
 
         /// <summary>Gets the menu tree.</summary>
         public CustomMenuTree MenuTree => this.menuTree;
-        
+
         /// <summary>Forces the menu tree rebuild.</summary>
         public void ForceMenuTreeRebuild()
         {
@@ -131,64 +134,64 @@ namespace Rhinox.GUIUtils.Editor
         /// <summary>Draws the Odin Editor Window.</summary>
         protected override void OnGUI()
         {
-                if (Event.current.type == UnityEngine.EventType.Layout)
+            if (Event.current.type == UnityEngine.EventType.Layout)
+            {
+                bool flag = this.menuTree == null;
+                if (this.menuTree == null || this.isDirty)
                 {
-                    bool flag = this.menuTree == null;
-                    if (this.menuTree == null || this.isDirty)
+                    this.ForceMenuTreeRebuild();
+                    if (flag)
+                        CustomMenuTree.ActiveMenuTree = this.menuTree;
+                    if (HasOnProjectChanged)
                     {
-                        this.ForceMenuTreeRebuild();
-                        if (flag)
-                            CustomMenuTree.ActiveMenuTree = this.menuTree;
-                        if (HasOnProjectChanged)
-                        {
-                            OnProjectChanged -= new Action(this.ProjectWindowChanged);
-                            OnProjectChanged += new Action(this.ProjectWindowChanged);
-                        }
-                        else
-                        {
-                            EditorApplication.projectWindowChanged -=
-                                new EditorApplication.CallbackFunction(this.ProjectWindowChanged);
-                            EditorApplication.projectWindowChanged +=
-                                new EditorApplication.CallbackFunction(this.ProjectWindowChanged);
-                        }
-
-                        this.isDirty = false;
+                        OnProjectChanged -= new Action(this.ProjectWindowChanged);
+                        OnProjectChanged += new Action(this.ProjectWindowChanged);
+                    }
+                    else
+                    {
+                        EditorApplication.projectWindowChanged -=
+                            new EditorApplication.CallbackFunction(this.ProjectWindowChanged);
+                        EditorApplication.projectWindowChanged +=
+                            new EditorApplication.CallbackFunction(this.ProjectWindowChanged);
                     }
 
-                    if (this.trySelectObject != null && this.menuTree != null)
-                    {
-                        var menuItem = this.menuTree.Enumerate()
-                            .FirstOrDefault((Func<UIMenuItem, bool>) (x => x.RawValue == this.trySelectObject));
-                        if (menuItem != null)
-                        {
-                            this.menuTree.ClearSelection();
-                            menuItem.Select();
-                            this.trySelectObject = (object) null;
-                        }
-                    }
+                    this.isDirty = false;
                 }
 
-                GUILayout.BeginHorizontal();
-                GUILayout.BeginVertical(GUILayout.Width(this.MenuWidth), GUILayout.ExpandHeight(true));
-                Rect currentLayoutRect = CustomEditorGUI.GetTopLevelLayoutRect();
-                if (this.menuTree != null)
-                    this.menuTree.HandleRefocus(currentLayoutRect);
-                EditorGUI.DrawRect(currentLayoutRect, new Color(1f, 1f, 1f, 0.035f));
-                Rect rect = currentLayoutRect;
-                rect.xMin = currentLayoutRect.xMax - 4f;
-                rect.xMax += 4f;
-            
-                this.DrawMenu();
-                GUILayout.EndVertical();
-                GUILayout.BeginVertical();
-                EditorGUI.DrawRect(CustomEditorGUI.GetTopLevelLayoutRect(), CustomGUIStyles.DarkEditorBackground);
-                base.OnGUI();
-                GUILayout.EndVertical();
-                GUILayout.EndHorizontal();
-                EditorGUI.DrawRect(rect.AlignCenter(1f), CustomGUIStyles.BorderColor);
-                if (this.menuTree != null)
-                    this.menuTree.Update();
-                RepaintIfRequested();
+                if (this.trySelectObject != null && this.menuTree != null)
+                {
+                    var menuItem = this.menuTree.Enumerate()
+                        .FirstOrDefault((Func<UIMenuItem, bool>) (x => x.RawValue == this.trySelectObject));
+                    if (menuItem != null)
+                    {
+                        this.menuTree.ClearSelection();
+                        menuItem.Select();
+                        this.trySelectObject = (object) null;
+                    }
+                }
+            }
+
+            GUILayout.BeginHorizontal();
+            GUILayout.BeginVertical(GUILayout.Width(this.MenuWidth), GUILayout.ExpandHeight(true));
+            Rect currentLayoutRect = CustomEditorGUI.GetTopLevelLayoutRect();
+            if (this.menuTree != null)
+                this.menuTree.HandleRefocus(currentLayoutRect);
+            EditorGUI.DrawRect(currentLayoutRect, new Color(1f, 1f, 1f, 0.035f));
+            Rect rect = currentLayoutRect;
+            rect.xMin = currentLayoutRect.xMax - 4f;
+            rect.xMax += 4f;
+
+            this.DrawMenu();
+            GUILayout.EndVertical();
+            GUILayout.BeginVertical();
+            EditorGUI.DrawRect(CustomEditorGUI.GetTopLevelLayoutRect(), CustomGUIStyles.DarkEditorBackground);
+            base.OnGUI();
+            GUILayout.EndVertical();
+            GUILayout.EndHorizontal();
+            EditorGUI.DrawRect(rect.AlignCenter(1f), CustomGUIStyles.BorderColor);
+            if (this.menuTree != null)
+                this.menuTree.Update();
+            RepaintIfRequested();
         }
 
         /// <summary>The method that draws the menu.</summary>
@@ -196,7 +199,7 @@ namespace Rhinox.GUIUtils.Editor
         {
             if (this.menuTree == null)
                 return;
-            this.menuTree.Draw();
+            this.menuTree.Draw(Event.current);
         }
     }
 }

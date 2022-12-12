@@ -53,7 +53,7 @@ namespace Rhinox.GUIUtils.Editor
 			}
 			else
 			{
-				throw new Exception("MenuTree is null?");
+				Debug.LogError("MenuTree is null?");
 			}
 		}
 

@@ -2,6 +2,7 @@ using System;
 using System.Reflection;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.Experimental.TerrainAPI;
 
 #if ODIN_INSPECTOR
 using Sirenix.Utilities;
@@ -149,6 +150,22 @@ namespace Rhinox.GUIUtils.Editor
             public virtual void Dispose()
             {
                 GUIContentHelper.PopColor();
+            }
+        }
+        
+        public class GuiBackgroundColor : IDisposable
+        {
+            private readonly Color _old;
+
+            public GuiBackgroundColor(Color color)
+            {
+                _old = GUI.backgroundColor;
+                GUI.backgroundColor = color;
+            }
+
+            public virtual void Dispose()
+            {
+                GUI.backgroundColor = _old;
             }
         }
         
