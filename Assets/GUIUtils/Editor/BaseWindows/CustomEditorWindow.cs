@@ -14,34 +14,6 @@ namespace Rhinox.GUIUtils.Editor
 {
     public class CustomEditorWindow : EditorWindow, ISerializationCallbackReceiver
     {
-        private static PropertyInfo materialForceVisibleProperty = typeof(MaterialEditor).GetProperty("forceVisible",
-            BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic |
-            BindingFlags.FlattenHierarchy);
-
-        private static int inspectObjectWindowCount = 3;
-
-        [SerializeField] [HideInInspector] private Object inspectorTargetSerialized;
-        [NonSerialized] private object inspectTargetObject;
-        [SerializeField] [HideInInspector] private int wrappedAreaMaxHeight = 1000;
-        [NonSerialized] private int drawCountWarmup;
-        [NonSerialized] private bool _initialized;
-        private GUIStyle _marginStyle;
-        private object[] _currentPaintedTargets = new object[0];
-        private ReadOnlyCollection<object> currentTargetsImm;
-        private UnityEditor.Editor[] editors = new UnityEditor.Editor[0];
-        private Vector2 scrollPos;
-        private int mouseDownId;
-        private EditorWindow mouseDownWindow;
-        private int mouseDownKeyboardControl;
-        private Vector2 _contentSize;
-        private bool _requestRepaint;
-
-        public event Action OnClose;
-
-        public event Action OnBeginGUI;
-
-        public event Action OnEndGUI;
-
         /// <summary>
         /// Gets the label width to be used. Values between 0 and 1 are treated as percentages, and values above as pixels.
         /// </summary>
@@ -82,22 +54,50 @@ namespace Rhinox.GUIUtils.Editor
             get => _defaultEditorPreviewHeight;
             set => _defaultEditorPreviewHeight = value;
         }
+        
+        
+        private static PropertyInfo s_materialForceVisibleProperty = typeof(MaterialEditor).GetProperty("forceVisible",
+            BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic |
+            BindingFlags.FlattenHierarchy);
 
+        private static int s_inspectObjectWindowCount = 3;
+
+        [SerializeField, HideInInspector] private Object _inspectorTargetSerialized;
+        [NonSerialized] private object _inspectTargetObject;
+        [SerializeField, HideInInspector] private int _wrappedAreaMaxHeight = 1000;
+        [NonSerialized] private int _drawCountWarmup;
+        [NonSerialized] private bool _initialized;
+        private GUIStyle _marginStyle;
+        private object[] _currentPaintedTargets = new object[0];
+        private ReadOnlyCollection<object> _currentTargetsImm;
+        private UnityEditor.Editor[] _editors = new UnityEditor.Editor[0];
+        private Vector2 _currentScrollPosition;
+        private int _mouseDownId;
+        private EditorWindow _mouseDownWindow;
+        private int _mouseDownKeyboardControl;
+        private Vector2 _contentSize;
+        private bool _repaintRequested;
+
+        //==============================================================================================================
+        // EVENTS
+
+        public event Action OnBeginGUI;
+        public event Action OnEndGUI;
+        public event Action OnClose;
+        
         /// <summary>
-        /// Gets the target which which the window is supposed to draw. By default it simply returns the editor window instance itself. By default, this method is called by <see cref="M:Sirenix.OdinInspector.Editor.CustomEditorWindow.GetTargets" />().
+        /// Gets the target which which the window is supposed to draw.
+        /// By default it simply returns the editor window instance itself.
         /// </summary>
         protected virtual object GetTarget()
         {
-            if (inspectTargetObject != null)
-                return inspectTargetObject;
-            return inspectorTargetSerialized != null
-                ? inspectorTargetSerialized
+            if (_inspectTargetObject != null)
+                return _inspectTargetObject;
+            return _inspectorTargetSerialized != null
+                ? _inspectorTargetSerialized
                 : (object)this;
         }
 
-        /// <summary>
-        /// Gets the targets to be drawn by the editor window. By default this simply yield returns the <see cref="M:Sirenix.OdinInspector.Editor.CustomEditorWindow.GetTarget" /> method.
-        /// </summary>
         protected virtual IEnumerable<object> GetTargets()
         {
             yield return GetTarget();
@@ -106,35 +106,25 @@ namespace Rhinox.GUIUtils.Editor
         /// <summary>
         /// At the start of each OnGUI event when in the Layout event, the GetTargets() method is called and cached into a list which you can access from here.
         /// </summary>
-        protected IReadOnlyList<object> CurrentDrawingTargets => currentTargetsImm;
+        protected IReadOnlyList<object> CurrentDrawingTargets => _currentTargetsImm;
 
         /// <summary>
-        /// <para>
         /// Pops up an editor window for the given object in a drop-down window which closes when it loses its focus.
         /// This particular overload uses a few frames to calculate the height of the content before showing the window with a height that matches its content.
-        /// </para>
-        /// <para>Protip: You can subscribe to OnClose if you want to know when that occurs.</para>
         /// </summary>
-        public static CustomEditorWindow InspectObjectInDropDown(
-            object obj,
-            Rect btnRect,
-            float windowWidth)
+        public static CustomEditorWindow InspectObjectInDropDown(object obj, Rect btnRect, float windowWidth)
         {
             return InspectObjectInDropDown(obj, btnRect, new Vector2(windowWidth, 0.0f));
         }
 
         private void SetupAutomaticHeightAdjustment(int maxHeight)
         {
-            wrappedAreaMaxHeight = maxHeight;
+            _wrappedAreaMaxHeight = maxHeight;
             int screenHeight = Screen.currentResolution.height - 40;
-            Rect originalP = position;
-            originalP.x = (int)originalP.x;
-            originalP.y = (int)originalP.y;
-            originalP.width = (int)originalP.width;
-            originalP.height = (int)originalP.height;
+            Rect originalP = RoundValues(position);
             Rect currentP = originalP;
             CustomEditorWindow wnd = this;
-            int getGoodOriginalPounter = 0;
+            int getGoodOriginalCounter = 0;
             int tmpFrameCount = 0;
             EditorApplication.CallbackFunction callback = null;
             callback = () =>
@@ -145,15 +135,15 @@ namespace Rhinox.GUIUtils.Editor
                     return;
                 if (tmpFrameCount++ < 10)
                     wnd.Repaint();
-                if (getGoodOriginalPounter <= 1 && originalP.y < 1.0)
+                if (getGoodOriginalCounter <= 1 && originalP.y < 1.0)
                 {
-                    ++getGoodOriginalPounter;
+                    ++getGoodOriginalCounter;
                     originalP = position;
                 }
                 else
                 {
                     int y = (int)_contentSize.y;
-                    if ((double)y != currentP.height)
+                    if (y != (int)currentP.height)
                     {
                         tmpFrameCount = 0;
                         currentP = originalP; // Copy with changed height
@@ -173,25 +163,16 @@ namespace Rhinox.GUIUtils.Editor
         }
 
         /// <summary>
-        /// <para>
         /// Pops up an editor window for the given object in a drop-down window which closes when it loses its focus.
-        /// </para>
-        /// <para>Protip: You can subscribe to OnClose if you want to know when that occurs.</para>
         /// </summary>
-        public static CustomEditorWindow InspectObjectInDropDown(
-            object obj,
-            Rect btnRect,
-            Vector2 windowSize)
+        public static CustomEditorWindow InspectObjectInDropDown(object obj, Rect btnRect, Vector2 windowSize)
         {
             CustomEditorWindow window = CreateCustomEditorWindowInstanceForObject(obj);
             if (windowSize.x <= 1.0)
                 windowSize.x = btnRect.width;
             if (windowSize.x <= 1.0)
                 windowSize.x = 400f;
-            btnRect.x = (int)btnRect.x;
-            btnRect.width = (int)btnRect.width;
-            btnRect.height = (int)btnRect.height;
-            btnRect.y = (int)btnRect.y;
+            btnRect = RoundValues(btnRect);
             windowSize.x = (int)windowSize.x;
             windowSize.y = (int)windowSize.y;
             try
@@ -204,16 +185,6 @@ namespace Rhinox.GUIUtils.Editor
             {
             }
 
-            if (!EditorGUIUtility.isProSkin)
-                window.OnBeginGUI += () =>
-                {
-                    Rect position = window.position;
-                    double width = position.width;
-                    position = window.position;
-                    double height = position.height;
-                    CustomEditorGUI.DrawSolidRect(new Rect(0.0f, 0.0f, (float)width, (float)height),
-                        new Color(1f, 1f, 1f, 0.035f));
-                };
             window.OnEndGUI += () =>
             {
                 Rect position = window.position;
@@ -237,10 +208,7 @@ namespace Rhinox.GUIUtils.Editor
         }
 
         /// <summary>
-        /// <para>
         /// Pops up an editor window for the given object in a drop-down window which closes when it loses its focus.
-        /// </para>
-        /// <para>Protip: You can subscribe to OnClose if you want to know when that occurs.</para>
         /// </summary>
         public static CustomEditorWindow InspectObjectInDropDown(object obj, Vector2 position)
         {
@@ -249,10 +217,7 @@ namespace Rhinox.GUIUtils.Editor
         }
 
         /// <summary>
-        /// <para>
         /// Pops up an editor window for the given object in a drop-down window which closes when it loses its focus.
-        /// </para>
-        /// <para>Protip: You can subscribe to OnClose if you want to know when that occurs.</para>
         /// </summary>
         public static CustomEditorWindow InspectObjectInDropDown(object obj, float windowWidth)
         {
@@ -299,7 +264,7 @@ namespace Rhinox.GUIUtils.Editor
         {
             CustomEditorWindow instanceForObject = CreateCustomEditorWindowInstanceForObject(obj);
             instanceForObject.Show();
-            Vector2 move = new Vector2(30f, 30f) * (inspectObjectWindowCount++ % 6 - 3);
+            Vector2 move = new Vector2(30f, 30f) * (s_inspectObjectWindowCount++ % 6 - 3);
             var baseRect = RectExtensions.AlignCenter(CustomEditorGUI.GetEditorWindowRect(), 400f, 300f);
             baseRect.position += move;
             instanceForObject.position = baseRect;
@@ -314,13 +279,13 @@ namespace Rhinox.GUIUtils.Editor
             Object unityObj = obj as Object;
             if (unityObj)
             {
-                window.inspectTargetObject = null;
-                window.inspectorTargetSerialized = unityObj;
+                window._inspectTargetObject = null;
+                window._inspectorTargetSerialized = unityObj;
             }
             else
             {
-                window.inspectTargetObject = obj;
-                window.inspectorTargetSerialized = null;
+                window._inspectTargetObject = obj;
+                window._inspectorTargetSerialized = null;
             }
 
             window.titleContent = GetObjectName(obj);
@@ -341,17 +306,16 @@ namespace Rhinox.GUIUtils.Editor
         /// <summary>
         /// Creates an editor window instance for the specified object, without opening the window.
         /// </summary>
-        public static CustomEditorWindow CreateCustomEditorWindowInstanceForObject(
-            object obj)
+        public static CustomEditorWindow CreateCustomEditorWindowInstanceForObject(object obj)
         {
             CustomEditorWindow instance = CreateInstance<CustomEditorWindow>();
             GUIUtility.hotControl = 0;
             GUIUtility.keyboardControl = 0;
             Object @object = obj as Object;
             if ((bool)@object)
-                instance.inspectorTargetSerialized = @object;
+                instance._inspectorTargetSerialized = @object;
             else
-                instance.inspectTargetObject = obj;
+                instance._inspectTargetObject = obj;
             
             instance.titleContent = GetObjectName(obj);
             instance.position = RectExtensions.AlignCenter(CustomEditorGUI.GetEditorWindowRect(), 600f, 600f);
@@ -359,10 +323,9 @@ namespace Rhinox.GUIUtils.Editor
             return instance;
         }
 
-        /// <summary>Draws the Odin Editor Window.</summary>
         protected virtual void OnGUI()
         {
-            GUILayout.BeginArea(new Rect(0.0f, 0.0f, position.width, wrappedAreaMaxHeight));
+            GUILayout.BeginArea(new Rect(0.0f, 0.0f, position.width, _wrappedAreaMaxHeight));
             
             OnBeginGUI?.Invoke();
 
@@ -382,14 +345,14 @@ namespace Rhinox.GUIUtils.Editor
             EventType type = Event.current.type;
             if (Event.current.type == EventType.MouseDown)
             {
-                mouseDownId = GUIUtility.hotControl;
-                mouseDownKeyboardControl = GUIUtility.keyboardControl;
-                mouseDownWindow = focusedWindow;
+                _mouseDownId = GUIUtility.hotControl;
+                _mouseDownKeyboardControl = GUIUtility.keyboardControl;
+                _mouseDownWindow = focusedWindow;
             }
 
             bool useScrollView = UseScrollView;
             if (useScrollView)
-                scrollPos = EditorGUILayout.BeginScrollView(scrollPos);
+                _currentScrollPosition = EditorGUILayout.BeginScrollView(_currentScrollPosition);
 
             var rect = EditorGUILayout.BeginVertical(GUILayout.ExpandHeight(false));
             {
@@ -419,10 +382,10 @@ namespace Rhinox.GUIUtils.Editor
             OnEndGUI?.Invoke();
             
             if (Event.current.type != type)
-                mouseDownId = -2;
-            if (Event.current.type == EventType.MouseUp && GUIUtility.hotControl == mouseDownId &&
-                focusedWindow == mouseDownWindow &&
-                GUIUtility.keyboardControl == mouseDownKeyboardControl)
+                _mouseDownId = -2;
+            if (Event.current.type == EventType.MouseUp && GUIUtility.hotControl == _mouseDownId &&
+                focusedWindow == _mouseDownWindow &&
+                GUIUtility.keyboardControl == _mouseDownKeyboardControl)
             {
                 GUIUtility.hotControl = 0;
                 DragAndDrop.activeControlID = 0;
@@ -430,11 +393,11 @@ namespace Rhinox.GUIUtils.Editor
                 GUI.FocusControl(null);
             }
 
-            if (drawCountWarmup < 10)
+            if (_drawCountWarmup < 10)
             {
                 Repaint();
                 if (Event.current.type == EventType.Repaint)
-                    ++drawCountWarmup;
+                    ++_drawCountWarmup;
             }
 
             if (Event.current.isMouse || 
@@ -445,15 +408,6 @@ namespace Rhinox.GUIUtils.Editor
             RepaintIfRequested();
             
             GUILayout.EndArea();
-        }
-
-        protected void RepaintIfRequested()
-        {
-            if (!_requestRepaint)
-                return;
-            if (this)
-                Repaint();
-            _requestRepaint = false;
         }
 
         /// <summary>
@@ -468,23 +422,23 @@ namespace Rhinox.GUIUtils.Editor
         private void UpdateEditors()
         {
             _currentPaintedTargets = _currentPaintedTargets ?? Array.Empty<object>();
-            editors = editors ?? Array.Empty<UnityEditor.Editor>();
+            _editors = _editors ?? Array.Empty<UnityEditor.Editor>();
             IList<object> targetList = GetTargets().ToArray();
             if (_currentPaintedTargets.Length != targetList.Count)
             {
-                if (editors.Length > targetList.Count)
+                if (_editors.Length > targetList.Count)
                 {
-                    int num = editors.Length - targetList.Count;
+                    int num = _editors.Length - targetList.Count;
                     for (int i = 0; i < num; ++i)
                     {
-                        UnityEditor.Editor editor = editors[editors.Length - i - 1];
+                        UnityEditor.Editor editor = _editors[_editors.Length - i - 1];
                         if (editor)
                             DestroyImmediate(editor);
                     }
                 }
 
                 Array.Resize(ref _currentPaintedTargets, targetList.Count);
-                Array.Resize(ref editors, targetList.Count);
+                Array.Resize(ref _editors, targetList.Count);
                 Repaint();
             }
 
@@ -498,8 +452,8 @@ namespace Rhinox.GUIUtils.Editor
                     _currentPaintedTargets[index] = obj;
                     
                     // Refresh editor
-                    if (editors[index])
-                        DestroyImmediate(editors[index]);
+                    if (_editors[index])
+                        DestroyImmediate(_editors[index]);
                     
                     // Create new editor
                     UnityEditor.Editor curEditor = null;
@@ -517,18 +471,18 @@ namespace Rhinox.GUIUtils.Editor
                             curEditor = TryCreateGenericEditor(targetObject);
                         }
                     }
-                    editors[index] = curEditor;
+                    _editors[index] = curEditor;
                 }
             }
 
-            currentTargetsImm = new ReadOnlyCollection<object>(_currentPaintedTargets);
+            _currentTargetsImm = new ReadOnlyCollection<object>(_currentPaintedTargets);
         }
 
         private static UnityEditor.Editor CreateStandardEditor(UnityEngine.Object targetObject)
         {
             var editor = UnityEditor.Editor.CreateEditor(targetObject);
-            if (editor is MaterialEditor matEditor && materialForceVisibleProperty != null)
-                materialForceVisibleProperty.SetValue(matEditor, true, null);
+            if (editor is MaterialEditor matEditor && s_materialForceVisibleProperty != null)
+                s_materialForceVisibleProperty.SetValue(matEditor, true, null);
             return editor;
         }
 
@@ -548,16 +502,28 @@ namespace Rhinox.GUIUtils.Editor
             return customEditor;
         }
 
-        protected void RequestRepaint()
-        {
-            _requestRepaint = true;
-        }
-
-        private void SelectionChanged() => Repaint();
-
         protected virtual void OnEnable()
         {
             InitializeIfNeeded();
+        }
+
+        protected virtual void OnDestroy()
+        {
+            if (_editors != null)
+            {
+                for (int i = 0; i < _editors.Length; ++i)
+                {
+                    if (_editors[i])
+                    {
+                        DestroyImmediate(_editors[i]);
+                        _editors[i] = null;
+                    }
+                }
+            }
+
+            Selection.selectionChanged -= Repaint;
+            
+            OnClose?.Invoke();
         }
 
         private void InitializeIfNeeded()
@@ -568,8 +534,8 @@ namespace Rhinox.GUIUtils.Editor
             if (titleContent != null && titleContent.text == GetType().FullName)
                 titleContent.text = GetType().GetNameWithNesting().SplitCamelCase();
             wantsMouseMove = true;
-            Selection.selectionChanged -= SelectionChanged;
-            Selection.selectionChanged += SelectionChanged;
+            Selection.selectionChanged -= Repaint;
+            Selection.selectionChanged += Repaint;
             Initialize();
         }
 
@@ -581,31 +547,12 @@ namespace Rhinox.GUIUtils.Editor
         {
         }
 
-        protected virtual void OnDestroy()
-        {
-            if (editors != null)
-            {
-                for (int i = 0; i < editors.Length; ++i)
-                {
-                    if (editors[i])
-                    {
-                        DestroyImmediate(editors[i]);
-                        editors[i] = null;
-                    }
-                }
-            }
-
-            Selection.selectionChanged -= SelectionChanged;
-            
-            OnClose?.Invoke();
-        }
-
         /// <summary>
         /// Draws the editor for the this.CurrentDrawingTargets[index].
         /// </summary>
         protected virtual void DrawEditor(int index)
         {
-            UnityEditor.Editor editor = editors[index];
+            UnityEditor.Editor editor = _editors[index];
             if (editor != null && editor.target != null)
                 editor.OnInspectorGUI();
 
@@ -618,7 +565,7 @@ namespace Rhinox.GUIUtils.Editor
         /// </summary>
         protected virtual void DrawEditorPreview(int index, float height)
         {
-            UnityEditor.Editor editor = editors[index];
+            UnityEditor.Editor editor = _editors[index];
             if (editor == null || !editor.HasPreviewGUI())
                 return;
             Rect controlRect = EditorGUILayout.GetControlRect(false, height);
@@ -631,6 +578,29 @@ namespace Rhinox.GUIUtils.Editor
 
         protected virtual void OnEndDrawEditors()
         {
+        }
+        
+        protected void RequestRepaint()
+        {
+            _repaintRequested = true;
+        }
+
+        protected void RepaintIfRequested()
+        {
+            if (!_repaintRequested)
+                return;
+            if (this)
+                Repaint();
+            _repaintRequested = false;
+        }
+        
+        private static Rect RoundValues(Rect r)
+        {
+            r.x = (int)r.x;
+            r.y = (int)r.y;
+            r.width = (int)r.width;
+            r.height = (int)r.height;
+            return r;
         }
 
         //==============================================================================================================
