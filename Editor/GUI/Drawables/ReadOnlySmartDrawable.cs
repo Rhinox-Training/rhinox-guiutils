@@ -74,9 +74,9 @@ namespace Rhinox.GUIUtils.Editor
             {
                 EditorGUILayout.Toggle((bool)_info.GetValue(target));
             }
-            else if (_info.PropertyType == typeof(UnityEngine.Object))
+            else if (_info.PropertyType == typeof(Object))
             {
-                EditorGUILayout.ObjectField(_info.GetValue(target) as UnityEngine.Object, _info.PropertyType);
+                EditorGUILayout.ObjectField(_info.GetValue(target) as Object, _info.PropertyType);
             }
             else
             {
