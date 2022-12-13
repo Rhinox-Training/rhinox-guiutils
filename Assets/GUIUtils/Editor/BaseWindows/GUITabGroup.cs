@@ -32,10 +32,9 @@ namespace GUIUtils.Editor.BaseWindows
         public bool FixedHeight;
         public bool ExpandHeight;
 
-        private IEnumerable<GUITabPage> OrderedPages => (IEnumerable<GUITabPage>) this.pages
-            .Select<KeyValuePair<string, GUITabPage>, GUITabPage>(
-                (Func<KeyValuePair<string, GUITabPage>, GUITabPage>) (x => x.Value))
-            .OrderBy<GUITabPage, int>((Func<GUITabPage, int>) (x => x.Order));
+        private IEnumerable<GUITabPage> OrderedPages => this.pages
+            .Select(x => x.Value)
+            .OrderBy(x => x.Order);
 
         /// <summary>Gets the outer rect of the entire tab group.</summary>
         public Rect OuterRect { get; private set; }
@@ -53,7 +52,7 @@ namespace GUIUtils.Editor.BaseWindows
             this.currentPage = this.pages.ContainsValue(page)
                 ? page
                 : throw new InvalidOperationException("Page is not part of TabGroup");
-            this.targetPage = (GUITabPage) null;
+            this.targetPage = null;
         }
 
         /// <summary>Gets the current page.</summary>
@@ -92,26 +91,25 @@ namespace GUIUtils.Editor.BaseWindows
         public void BeginGroup(bool drawToolbar = true, GUIStyle style = null)
         {
             this.LabelWidth = EditorGUIUtility.labelWidth;
-            if (Event.current.type == UnityEngine.EventType.Layout)
+            if (Event.current.type == EventType.Layout)
                 this.drawToolbar = drawToolbar;
             style = style ?? CustomGUIStyles.ToggleGroupBackground;
             this.InnerContainerWidth = this.OuterRect.width -
-                                       (float) (style.padding.left + style.padding.right + style.margin.left +
-                                                style.margin.right);
+                                       (style.padding.left + style.padding.right + style.margin.left +
+                                        style.margin.right);
             if (this.currentPage == null && this.pages.Count > 0)
                 this.currentPage = this.pages
-                    .Select<KeyValuePair<string, GUITabPage>, GUITabPage>(
-                        (Func<KeyValuePair<string, GUITabPage>, GUITabPage>) (x => x.Value))
-                    .OrderBy<GUITabPage, int>((Func<GUITabPage, int>) (x => x.Order)).First<GUITabPage>();
+                    .Select(x => x.Value)
+                    .OrderBy(x => x.Order).First();
             if (this.currentPage != null && !this.pages.ContainsKey(this.currentPage.Name))
-                this.currentPage = this.pages.Count <= 0 ? (GUITabPage) null : this.OrderedPages.First<GUITabPage>();
+                this.currentPage = this.pages.Count <= 0 ? null : this.OrderedPages.First();
             float num1 = 0.0f;
             foreach (GUITabPage guiTabPage in this.pages.Values)
             {
                 guiTabPage.OnBeginGroup();
                 Rect rect = guiTabPage.Rect;
                 num1 = Mathf.Max(rect.height, num1);
-                if (Event.current.type == UnityEngine.EventType.Layout && guiTabPage.IsVisible !=
+                if (Event.current.type == EventType.Layout && guiTabPage.IsVisible !=
                     (guiTabPage.IsVisible = guiTabPage == this.targetPage || guiTabPage == this.currentPage))
                 {
                     if (this.targetPage == null)
@@ -129,16 +127,16 @@ namespace GUIUtils.Editor.BaseWindows
                             ref Vector2 local2 = ref this.scrollPosition;
                             rect = this.OuterRect;
                             double width;
-                            float num3 = (float) (width = (double) rect.width);
+                            float num3 = (float) (width = rect.width);
                             local2.x = (float) width;
-                            num2 = (double) num3;
+                            num2 = num3;
                         }
                         else
                             num2 = 0.0;
 
                         local1.x = (float) num2;
-                        rect = this.currentPage.Rect;
-                        this.currentHeight = rect.height;
+                        rect = currentPage.Rect;
+                        currentHeight = rect.height;
                     }
                 }
             }
@@ -148,7 +146,7 @@ namespace GUIUtils.Editor.BaseWindows
                 GUILayout.ExpandWidth(true), GUILayout.ExpandHeight(this.ExpandHeight));
             if (this.drawToolbar)
                 this.DrawToolbar();
-            if ((double) this.InnerRect.width > 0.0 && !this.ExpandHeight)
+            if (this.InnerRect.width > 0.0 && !this.ExpandHeight)
             {
                 if (this.options.Length == 2)
                 {
@@ -169,7 +167,7 @@ namespace GUIUtils.Editor.BaseWindows
             GUIContentHelper.PopDisabled();
             Rect rect2 =
                 EditorGUILayout.BeginHorizontal(GUILayout.ExpandHeight(this.ExpandHeight));
-            if (Event.current.type != UnityEngine.EventType.Repaint)
+            if (Event.current.type != EventType.Repaint)
                 return;
             this.OuterRect = rect1;
             this.InnerRect = rect2;
@@ -184,7 +182,7 @@ namespace GUIUtils.Editor.BaseWindows
             GUIContentHelper.PopDisabled();
             EditorGUILayout.EndVertical();
             bool shouldRepaint = this.targetPage != this.currentPage;
-            if (this.currentPage != null && Event.current.type == UnityEngine.EventType.Repaint)
+            if (this.currentPage != null && Event.current.type == EventType.Repaint)
             {
                 this.scrollPosition.x = this.currentPage.Rect.x;
                 this.currentHeight = this.currentPage.Rect.height;
@@ -248,7 +246,7 @@ namespace GUIUtils.Editor.BaseWindows
             if (this.currentPage == null)
                 return;
             bool flag = false;
-            List<GUITabPage> list = this.OrderedPages.ToList<GUITabPage>();
+            List<GUITabPage> list = this.OrderedPages.ToList();
             for (int index = 0; index < list.Count; ++index)
             {
                 if (flag && list[index].IsActive)
@@ -267,7 +265,7 @@ namespace GUIUtils.Editor.BaseWindows
         {
             if (this.currentPage == null)
                 return;
-            List<GUITabPage> list = this.OrderedPages.ToList<GUITabPage>();
+            List<GUITabPage> list = this.OrderedPages.ToList();
             int index1 = -1;
             for (int index2 = 0; index2 < list.Count; ++index2)
             {
