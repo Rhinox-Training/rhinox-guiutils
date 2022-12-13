@@ -10,7 +10,7 @@
   ],
   "category": "Unity",
   "dependencies": {
-    "com.rhinox.open.lightspeed": "1.2.7"
+    "com.rhinox.open.lightspeed": "1.2.11"
   },
   "repository": {
     "type": "git",

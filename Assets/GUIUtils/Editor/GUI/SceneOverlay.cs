@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Rhinox.Lightspeed.Reflection;
 using UnityEditor;
 using UnityEngine;
 using Object = UnityEngine.Object;
@@ -59,30 +60,6 @@ namespace Rhinox.GUIUtils.Editor
             var o = mi.Invoke(null, new object[] { title, castedDelegate, order, (int)option });
 
             return o;
-        }
-    }
-
-// TODO: migrate to lightspeed?
-    public static class DelegateUtility
-    {
-        public static T Cast<T>(Delegate source) where T : class
-        {
-            return Cast(source, typeof(T)) as T;
-        }
-
-        public static Delegate Cast(Delegate source, Type type)
-        {
-            if (source == null)
-                return null;
-            Delegate[] delegates = source.GetInvocationList();
-            if (delegates.Length == 1)
-                return Delegate.CreateDelegate(type,
-                    delegates[0].Target, delegates[0].Method);
-            Delegate[] delegatesDest = new Delegate[delegates.Length];
-            for (int nDelegate = 0; nDelegate < delegates.Length; nDelegate++)
-                delegatesDest[nDelegate] = Delegate.CreateDelegate(type,
-                    delegates[nDelegate].Target, delegates[nDelegate].Method);
-            return Delegate.Combine(delegatesDest);
         }
     }
 }

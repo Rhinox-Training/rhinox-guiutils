@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -20,77 +21,66 @@ namespace Rhinox.GUIUtils.Editor
         private static int inspectObjectWindowCount = 3;
 
         [SerializeField] [HideInInspector] private Object inspectorTargetSerialized;
-        [SerializeField] [HideInInspector] private float labelWidth = 0.33f;
         [NonSerialized] private object inspectTargetObject;
-        [SerializeField] [HideInInspector] private Vector4 windowPadding = new Vector4(4f, 4f, 4f, 4f);
-        [SerializeField] [HideInInspector] private bool useScrollView = true;
-        [SerializeField] [HideInInspector] private bool drawUnityEditorPreview;
         [SerializeField] [HideInInspector] private int wrappedAreaMaxHeight = 1000;
         [NonSerialized] private int drawCountWarmup;
-        [NonSerialized] private bool isInitialized;
-        private GUIStyle marginStyle;
-        private object[] currentTargets = new object[0];
-        private List<object> currentTargetsImm;
+        [NonSerialized] private bool _initialized;
+        private GUIStyle _marginStyle;
+        private object[] _currentPaintedTargets = new object[0];
+        private ReadOnlyCollection<object> currentTargetsImm;
         private UnityEditor.Editor[] editors = new UnityEditor.Editor[0];
         private Vector2 scrollPos;
         private int mouseDownId;
         private EditorWindow mouseDownWindow;
         private int mouseDownKeyboardControl;
-        private Vector2 contenSize;
-        private float defaultEditorPreviewHeight = 170f;
-        private bool preventContentFromExpanding;
+        private Vector2 _contentSize;
         private bool _requestRepaint;
 
-        /// <summary>Occurs when the window is closed.</summary>
         public event Action OnClose;
 
-        /// <summary>Occurs at the beginning the OnGUI method.</summary>
         public event Action OnBeginGUI;
 
-        /// <summary>Occurs at the end the OnGUI method.</summary>
         public event Action OnEndGUI;
 
         /// <summary>
         /// Gets the label width to be used. Values between 0 and 1 are treated as percentages, and values above as pixels.
         /// </summary>
+        [SerializeField, HideInInspector] private float _labelWidth = 0.33f;
         public virtual float DefaultLabelWidth
         {
-            get => labelWidth;
-            set => labelWidth = value;
+            get => _labelWidth;
+            set => _labelWidth = value;
         }
 
         /// <summary>
         /// Gets or sets the window padding. x = left, y = right, z = top, w = bottom.
         /// </summary>
+        [SerializeField, HideInInspector] private Vector4 _windowPadding = new Vector4(4f, 4f, 4f, 4f);
         public virtual Vector4 WindowPadding
         {
-            get => windowPadding;
-            set => windowPadding = value;
+            get => _windowPadding;
+            set => _windowPadding = value;
         }
 
-        /// <summary>
-        /// Gets a value indicating whether the window should draw a scroll view.
-        /// </summary>
+        [SerializeField, HideInInspector] private bool _useScrollView = true;
         public virtual bool UseScrollView
         {
-            get => useScrollView;
-            set => useScrollView = true;
+            get => _useScrollView;
+            set => _useScrollView = true;
         }
 
-        /// <summary>
-        /// Gets a value indicating whether the window should draw a Unity editor preview, if possible.
-        /// </summary>
+        [SerializeField, HideInInspector] private bool _drawUnityEditorPreview;
         public virtual bool DrawUnityEditorPreview
         {
-            get => drawUnityEditorPreview;
-            set => drawUnityEditorPreview = value;
+            get => _drawUnityEditorPreview;
+            set => _drawUnityEditorPreview = value;
         }
 
-        /// <summary>Gets the default preview height for Unity editors.</summary>
+        private float _defaultEditorPreviewHeight = 170f;
         public virtual float DefaultEditorPreviewHeight
         {
-            get => defaultEditorPreviewHeight;
-            set => defaultEditorPreviewHeight = value;
+            get => _defaultEditorPreviewHeight;
+            set => _defaultEditorPreviewHeight = value;
         }
 
         /// <summary>
@@ -135,7 +125,6 @@ namespace Rhinox.GUIUtils.Editor
 
         private void SetupAutomaticHeightAdjustment(int maxHeight)
         {
-            preventContentFromExpanding = true;
             wrappedAreaMaxHeight = maxHeight;
             int screenHeight = Screen.currentResolution.height - 40;
             Rect originalP = position;
@@ -163,7 +152,7 @@ namespace Rhinox.GUIUtils.Editor
                 }
                 else
                 {
-                    int y = (int)contenSize.y;
+                    int y = (int)_contentSize.y;
                     if ((double)y != currentP.height)
                     {
                         tmpFrameCount = 0;
@@ -233,7 +222,7 @@ namespace Rhinox.GUIUtils.Editor
                 double height = position.height;
                 CustomEditorGUI.DrawBorders(new Rect(0.0f, 0.0f, (float)width, (float)height), 1);
             };
-            window.labelWidth = 0.33f;
+            window._labelWidth = 0.33f;
             window.DrawUnityEditorPreview = true;
             btnRect.position = GUIUtility.GUIToScreenPoint(btnRect.position);
             if ((int)windowSize.y == 0)
@@ -322,26 +311,31 @@ namespace Rhinox.GUIUtils.Editor
         /// </summary>
         public static CustomEditorWindow InspectObject(CustomEditorWindow window, object obj)
         {
-            Object @object = obj as Object;
-            if ((bool)@object)
+            Object unityObj = obj as Object;
+            if (unityObj)
             {
                 window.inspectTargetObject = null;
-                window.inspectorTargetSerialized = @object;
+                window.inspectorTargetSerialized = unityObj;
             }
             else
             {
-                window.inspectorTargetSerialized = null;
                 window.inspectTargetObject = obj;
+                window.inspectorTargetSerialized = null;
             }
 
-            if ((bool)(Object)(@object as Component))
-                window.titleContent = new GUIContent((@object as Component).gameObject.name);
-            else if ((bool)@object)
-                window.titleContent = new GUIContent(@object.name);
-            else
-                window.titleContent = new GUIContent(obj.ToString());
+            window.titleContent = GetObjectName(obj);
             EditorUtility.SetDirty(window);
             return window;
+        }
+
+        private static GUIContent GetObjectName(object obj)
+        {
+            if (obj is Component component)
+                return new GUIContent(component.gameObject.name);
+            else if (obj is UnityEngine.Object unityObj)
+                return new GUIContent(unityObj.name);
+            else
+                return new GUIContent(obj.ToString());
         }
 
         /// <summary>
@@ -358,50 +352,30 @@ namespace Rhinox.GUIUtils.Editor
                 instance.inspectorTargetSerialized = @object;
             else
                 instance.inspectTargetObject = obj;
-            if ((bool)(Object)(@object as Component))
-                instance.titleContent = new GUIContent((@object as Component).gameObject.name);
-            else if ((bool)@object)
-                instance.titleContent = new GUIContent(@object.name);
-            else
-                instance.titleContent = new GUIContent(obj.ToString());
+            
+            instance.titleContent = GetObjectName(obj);
             instance.position = RectExtensions.AlignCenter(CustomEditorGUI.GetEditorWindowRect(), 600f, 600f);
             EditorUtility.SetDirty(instance);
             return instance;
         }
 
-        void ISerializationCallbackReceiver.OnAfterDeserialize()
-        {
-            OnAfterDeserialize();
-        }
-
-        void ISerializationCallbackReceiver.OnBeforeSerialize()
-        {
-            OnBeforeSerialize();
-        }
-
         /// <summary>Draws the Odin Editor Window.</summary>
         protected virtual void OnGUI()
         {
-            bool contentFromExpanding = preventContentFromExpanding;
-            if (contentFromExpanding)
-                GUILayout.BeginArea(new Rect(0.0f, 0.0f, position.width, wrappedAreaMaxHeight));
-            if (OnBeginGUI != null)
-                OnBeginGUI();
+            GUILayout.BeginArea(new Rect(0.0f, 0.0f, position.width, wrappedAreaMaxHeight));
+            
+            OnBeginGUI?.Invoke();
 
             InitializeIfNeeded();
-            GUIStyle guiStyle = marginStyle;
-            if (guiStyle == null)
-                guiStyle = new GUIStyle
-                {
-                    padding = new RectOffset()
-                };
-            marginStyle = guiStyle;
+            if (_marginStyle == null)
+                _marginStyle = new GUIStyle { padding = new RectOffset() };
+            
             if (Event.current.type == EventType.Layout)
             {
-                marginStyle.padding.left = (int)WindowPadding.x;
-                marginStyle.padding.right = (int)WindowPadding.y;
-                marginStyle.padding.top = (int)WindowPadding.z;
-                marginStyle.padding.bottom = (int)WindowPadding.w;
+                _marginStyle.padding.left = (int)WindowPadding.x;
+                _marginStyle.padding.right = (int)WindowPadding.y;
+                _marginStyle.padding.top = (int)WindowPadding.z;
+                _marginStyle.padding.bottom = (int)WindowPadding.w;
                 UpdateEditors();
             }
 
@@ -416,30 +390,34 @@ namespace Rhinox.GUIUtils.Editor
             bool useScrollView = UseScrollView;
             if (useScrollView)
                 scrollPos = EditorGUILayout.BeginScrollView(scrollPos);
-            Vector2 vector2 = !preventContentFromExpanding
-                ? EditorGUILayout.BeginVertical().size
-                : EditorGUILayout.BeginVertical(GUILayout.ExpandHeight(false)).size;
-            if (contenSize == Vector2.zero || Event.current.type == EventType.Repaint)
-                contenSize = vector2;
-            using (new eUtility.HierarchyMode(false))
+
+            var rect = EditorGUILayout.BeginVertical(GUILayout.ExpandHeight(false));
             {
-                float newLabelWidth = DefaultLabelWidth >= 1.0
-                    ? DefaultLabelWidth
-                    : contenSize.x * DefaultLabelWidth;
-                using (new eUtility.LabelWidth(newLabelWidth))
+                if (_contentSize == Vector2.zero || Event.current.type == EventType.Repaint)
+                    _contentSize = rect.size;
+
+                using (new eUtility.HierarchyMode(false))
                 {
-                    OnBeginDrawEditors();
-                    GUILayout.BeginVertical(marginStyle);
-                    DrawEditors();
-                    GUILayout.EndVertical();
-                    OnEndDrawEditors();
+                    float newLabelWidth = DefaultLabelWidth >= 1.0
+                        ? DefaultLabelWidth
+                        : _contentSize.x * DefaultLabelWidth;
+                    using (new eUtility.LabelWidth(newLabelWidth))
+                    {
+                        OnBeginDrawEditors();
+                        GUILayout.BeginVertical(_marginStyle);
+                        DrawEditors();
+                        GUILayout.EndVertical();
+                        OnEndDrawEditors();
+                    }
                 }
             }
-
             EditorGUILayout.EndVertical();
+            
             if (useScrollView)
                 EditorGUILayout.EndScrollView();
+            
             OnEndGUI?.Invoke();
+            
             if (Event.current.type != type)
                 mouseDownId = -2;
             if (Event.current.type == EventType.MouseUp && GUIUtility.hotControl == mouseDownId &&
@@ -459,12 +437,13 @@ namespace Rhinox.GUIUtils.Editor
                     ++drawCountWarmup;
             }
 
-            if (Event.current.isMouse || Event.current.type == EventType.Used ||
-                currentTargets == null || currentTargets.Length == 0)
+            if (Event.current.isMouse || 
+                Event.current.type == EventType.Used ||
+                _currentPaintedTargets.IsNullOrEmpty())
                 Repaint();
+            
             RepaintIfRequested();
-            if (!contentFromExpanding)
-                return;
+            
             GUILayout.EndArea();
         }
 
@@ -482,99 +461,75 @@ namespace Rhinox.GUIUtils.Editor
         /// </summary>
         protected virtual void DrawEditors()
         {
-            for (int index = 0; index < currentTargets.Length; ++index)
-                DrawEditor(index);
+            for (int i = 0; i < _currentPaintedTargets.Length; ++i)
+                DrawEditor(i);
         }
 
         private void UpdateEditors()
         {
-            currentTargets = currentTargets ?? Array.Empty<object>();
+            _currentPaintedTargets = _currentPaintedTargets ?? Array.Empty<object>();
             editors = editors ?? Array.Empty<UnityEditor.Editor>();
-            IList<object> objectList = GetTargets().ToArray();
-            if (currentTargets.Length != objectList.Count)
+            IList<object> targetList = GetTargets().ToArray();
+            if (_currentPaintedTargets.Length != targetList.Count)
             {
-                if (editors.Length > objectList.Count)
+                if (editors.Length > targetList.Count)
                 {
-                    int num = editors.Length - objectList.Count;
-                    for (int index = 0; index < num; ++index)
+                    int num = editors.Length - targetList.Count;
+                    for (int i = 0; i < num; ++i)
                     {
-                        UnityEditor.Editor editor = editors[editors.Length - index - 1];
-                        if ((bool)(Object)editor)
+                        UnityEditor.Editor editor = editors[editors.Length - i - 1];
+                        if (editor)
                             DestroyImmediate(editor);
                     }
                 }
 
-                Array.Resize(ref currentTargets, objectList.Count);
-                Array.Resize(ref editors, objectList.Count);
+                Array.Resize(ref _currentPaintedTargets, targetList.Count);
+                Array.Resize(ref editors, targetList.Count);
                 Repaint();
             }
 
-            for (int index = 0; index < objectList.Count; ++index)
+            for (int index = 0; index < targetList.Count; ++index)
             {
-                object obj = objectList[index];
-                object currentTarget = currentTargets[index];
-                if (obj != currentTarget)
+                object obj = targetList[index];
+                object currentTarget = _currentPaintedTargets[index];
+                if (obj != currentTarget) // Has target at index changed?
                 {
                     RequestRepaint();
-                    currentTargets[index] = obj;
-                    if (obj == null)
+                    _currentPaintedTargets[index] = obj;
+                    
+                    // Refresh editor
+                    if (editors[index])
+                        DestroyImmediate(editors[index]);
+                    
+                    // Create new editor
+                    UnityEditor.Editor curEditor = null;
+                    if (obj is EditorWindow editorWindow)
                     {
-                        if (editors[index])
-                            DestroyImmediate(editors[index]);
-                        editors[index] = null;
+                        curEditor = TryCreateGenericEditor(editorWindow);
                     }
-                    else
+                    else if (obj is UnityEngine.Object targetObject)
                     {
-                        if (obj is EditorWindow editorWindow)
+                        curEditor = CreateStandardEditor(targetObject);
+                        if (curEditor == null ||
+                            curEditor.GetType().Name
+                                .Contains("OdinEditor")) // TODO: remove once odin-less testing is done
                         {
-                            var dynamicEntry = TryCreateGenericEditor(editorWindow);
-
-                            if (dynamicEntry == null && editors[index])
-                                DestroyImmediate(editors[index]);
-                            editors[index] = dynamicEntry;
-                        }
-                        else
-                        {
-                            if (TypeExtensions.InheritsFrom<Object>(obj.GetType()))
-                            {
-                                Object targetObject = obj as Object;
-                                if (targetObject)
-                                {
-                                    if (editors[index])
-                                        DestroyImmediate(editors[index]);
-
-                                    var dynamicEntry = UnityEditor.Editor.CreateEditor(targetObject);
-                                    if (dynamicEntry == null ||
-                                        dynamicEntry.GetType().Name
-                                            .Contains("OdinEditor")) // TODO: remove once odin-less testing is done
-                                    {
-                                        dynamicEntry = TryCreateGenericEditor(targetObject);
-                                    }
-
-                                    editors[index] = dynamicEntry;
-
-                                    MaterialEditor editor = editors[index] as MaterialEditor;
-                                    if (editor != null &&
-                                        materialForceVisibleProperty != null)
-                                        materialForceVisibleProperty.SetValue(editor, true, null);
-                                }
-                                else
-                                {
-                                    if (editors[index])
-                                        DestroyImmediate(editors[index]);
-                                    editors[index] = null;
-                                }
-                            }
-                            else
-                            {
-                                editors[index] = null;
-                            }
+                            curEditor = TryCreateGenericEditor(targetObject);
                         }
                     }
+                    editors[index] = curEditor;
                 }
             }
 
-            currentTargetsImm = new List<object>(currentTargets);
+            currentTargetsImm = new ReadOnlyCollection<object>(_currentPaintedTargets);
+        }
+
+        private static UnityEditor.Editor CreateStandardEditor(UnityEngine.Object targetObject)
+        {
+            var editor = UnityEditor.Editor.CreateEditor(targetObject);
+            if (editor is MaterialEditor matEditor && materialForceVisibleProperty != null)
+                materialForceVisibleProperty.SetValue(matEditor, true, null);
+            return editor;
         }
 
         private UnityEditor.Editor TryCreateGenericEditor(Object targetObject)
@@ -598,46 +553,25 @@ namespace Rhinox.GUIUtils.Editor
             _requestRepaint = true;
         }
 
+        private void SelectionChanged() => Repaint();
+
+        protected virtual void OnEnable()
+        {
+            InitializeIfNeeded();
+        }
+
         private void InitializeIfNeeded()
         {
-            if (isInitialized)
+            if (_initialized)
                 return;
-            isInitialized = true;
+            _initialized = true;
             if (titleContent != null && titleContent.text == GetType().FullName)
-                titleContent.text = SplitPascalCase(GetNiceName(GetType()));
+                titleContent.text = GetType().GetNameWithNesting().SplitCamelCase();
             wantsMouseMove = true;
             Selection.selectionChanged -= SelectionChanged;
             Selection.selectionChanged += SelectionChanged;
             Initialize();
         }
-
-        // TODO: migrate to lightspeed
-        private static string GetNiceName(Type type) => type.IsNested && !type.IsGenericParameter
-            ? GetNiceName(type.DeclaringType) + "." + type.Name
-            : type.Name;
-
-        public static string SplitPascalCase(string input)
-        {
-            if (string.IsNullOrWhiteSpace(input))
-                return input;
-
-            StringBuilder stringBuilder = new StringBuilder(input.Length);
-            if (char.IsLetter(input[0]))
-                stringBuilder.Append(char.ToUpper(input[0]));
-            else
-                stringBuilder.Append(input[0]);
-
-            for (int i = 1; i < input.Length; ++i)
-            {
-                char c = input[i];
-                if (char.IsUpper(c) && !char.IsUpper(input[i - 1]))
-                    stringBuilder.Append(' ');
-                stringBuilder.Append(c);
-            }
-
-            return stringBuilder.ToString();
-        }
-
 
         /// <summary>
         /// Initialize get called by OnEnable and by OnGUI after assembly reloads
@@ -647,12 +581,24 @@ namespace Rhinox.GUIUtils.Editor
         {
         }
 
-        private void SelectionChanged() => Repaint();
+        protected virtual void OnDestroy()
+        {
+            if (editors != null)
+            {
+                for (int i = 0; i < editors.Length; ++i)
+                {
+                    if (editors[i])
+                    {
+                        DestroyImmediate(editors[i]);
+                        editors[i] = null;
+                    }
+                }
+            }
 
-        /// <summary>
-        /// Called when the window is enabled. Remember to call base.OnEnable();
-        /// </summary>
-        protected virtual void OnEnable() => InitializeIfNeeded();
+            Selection.selectionChanged -= SelectionChanged;
+            
+            OnClose?.Invoke();
+        }
 
         /// <summary>
         /// Draws the editor for the this.CurrentDrawingTargets[index].
@@ -661,13 +607,10 @@ namespace Rhinox.GUIUtils.Editor
         {
             UnityEditor.Editor editor = editors[index];
             if (editor != null && editor.target != null)
-            {
                 editor.OnInspectorGUI();
-            }
 
-            if (!DrawUnityEditorPreview)
-                return;
-            DrawEditorPreview(index, defaultEditorPreviewHeight);
+            if (DrawUnityEditorPreview)
+                DrawEditorPreview(index, _defaultEditorPreviewHeight);
         }
 
         /// <summary>
@@ -676,60 +619,36 @@ namespace Rhinox.GUIUtils.Editor
         protected virtual void DrawEditorPreview(int index, float height)
         {
             UnityEditor.Editor editor = editors[index];
-            if (!(editor != null) || !editor.HasPreviewGUI())
+            if (editor == null || !editor.HasPreviewGUI())
                 return;
             Rect controlRect = EditorGUILayout.GetControlRect(false, height);
             editor.DrawPreview(controlRect);
         }
 
-        /// <summary>
-        /// Called when the window is destroyed. Remember to call base.OnDestroy();
-        /// </summary>
-        protected virtual void OnDestroy()
-        {
-            if (editors != null)
-            {
-                for (int index = 0; index < editors.Length; ++index)
-                {
-                    if (editors[index])
-                    {
-                        DestroyImmediate(editors[index]);
-                        editors[index] = null;
-                    }
-                }
-            }
-
-            Selection.selectionChanged -= SelectionChanged;
-            Selection.selectionChanged -= SelectionChanged;
-            if (OnClose == null)
-                return;
-            OnClose();
-        }
-
-        /// <summary>
-        /// Called before starting to draw all editors for the <see cref="P:Sirenix.OdinInspector.Editor.CustomEditorWindow.CurrentDrawingTargets" />.
-        /// </summary>
-        protected virtual void OnEndDrawEditors()
-        {
-        }
-
-        /// <summary>
-        /// Called after all editors for the <see cref="P:Sirenix.OdinInspector.Editor.CustomEditorWindow.CurrentDrawingTargets" /> has been drawn.
-        /// </summary>
         protected virtual void OnBeginDrawEditors()
         {
         }
 
-        /// <summary>
-        /// See ISerializationCallbackReceiver.OnBeforeSerialize for documentation on how to use this method.
-        /// </summary>
+        protected virtual void OnEndDrawEditors()
+        {
+        }
+
+        //==============================================================================================================
+        // SERIALIZATION CALLBACKS
+        void ISerializationCallbackReceiver.OnAfterDeserialize()
+        {
+            OnAfterDeserialize();
+        }
+
+        void ISerializationCallbackReceiver.OnBeforeSerialize()
+        {
+            OnBeforeSerialize();
+        }
+        
         protected virtual void OnAfterDeserialize()
         {
         }
 
-        /// <summary>
-        /// Implement this method to receive a callback after unity serialized your object.
-        /// </summary>
         protected virtual void OnBeforeSerialize()
         {
         }
