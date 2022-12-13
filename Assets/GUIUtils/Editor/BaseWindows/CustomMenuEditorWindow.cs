@@ -112,7 +112,7 @@ namespace Rhinox.GUIUtils.Editor
                     ForceMenuTreeRebuild();
                     if (flag)
                         CustomMenuTree.ActiveMenuTree = menuTree;
-                
+
                     EditorApplication.projectChanged -= ProjectWindowChanged;
                     EditorApplication.projectChanged += ProjectWindowChanged;
 
@@ -132,24 +132,33 @@ namespace Rhinox.GUIUtils.Editor
                 }
             }
 
+            Rect rect;
             GUILayout.BeginHorizontal();
-            GUILayout.BeginVertical(GUILayout.Width(MenuWidth), GUILayout.ExpandHeight(true));
-            Rect currentLayoutRect = CustomEditorGUI.GetTopLevelLayoutRect();
-            if (menuTree != null)
-                menuTree.HandleRefocus(currentLayoutRect);
-            EditorGUI.DrawRect(currentLayoutRect, new Color(1f, 1f, 1f, 0.035f));
-            Rect rect = currentLayoutRect;
-            rect.xMin = currentLayoutRect.xMax - 4f;
-            rect.xMax += 4f;
+            {
+                GUILayout.BeginVertical(GUILayout.Width(MenuWidth), GUILayout.ExpandHeight(true));
+                {
+                    Rect currentLayoutRect = CustomEditorGUI.GetTopLevelLayoutRect();
+                    if (menuTree != null)
+                        menuTree.HandleRefocus(currentLayoutRect);
+                    EditorGUI.DrawRect(currentLayoutRect, new Color(1f, 1f, 1f, 0.035f));
+                    rect = currentLayoutRect;
+                    rect.xMin = currentLayoutRect.xMax - 4f;
+                    rect.xMax += 4f;
 
-            DrawMenu();
-            GUILayout.EndVertical();
-            GUILayout.BeginVertical();
-            EditorGUI.DrawRect(CustomEditorGUI.GetTopLevelLayoutRect(), CustomGUIStyles.DarkEditorBackground);
-            base.OnGUI();
-            GUILayout.EndVertical();
+                    DrawMenu();
+                }
+                GUILayout.EndVertical();
+                GUILayout.BeginVertical();
+                {
+                    EditorGUI.DrawRect(CustomEditorGUI.GetTopLevelLayoutRect(), CustomGUIStyles.DarkEditorBackground);
+                    base.OnGUI();
+                }
+                GUILayout.EndVertical();
+            }
             GUILayout.EndHorizontal();
+            
             EditorGUI.DrawRect(rect.AlignCenter(1f), CustomGUIStyles.BorderColor);
+            
             if (menuTree != null)
                 menuTree.Update();
             RepaintIfRequested();
