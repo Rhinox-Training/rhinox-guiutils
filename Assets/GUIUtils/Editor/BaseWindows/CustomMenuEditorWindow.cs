@@ -16,28 +16,7 @@ namespace Rhinox.GUIUtils.Editor
         [NonSerialized] private object trySelectObject;
         [SerializeField] [HideInInspector] private List<string> selectedItems = new List<string>();
         [SerializeField] [HideInInspector] private bool resizableMenuWidth = true;
-
-        private static readonly EventInfo onProjectChangedEvent = typeof(EditorApplication).GetEvent("projectChanged");
-        public static readonly bool HasOnProjectChanged = onProjectChangedEvent != null;
-
-        public static event Action OnProjectChanged
-        {
-            add
-            {
-                if (onProjectChangedEvent == null)
-                    throw new NotImplementedException(
-                        "EditorApplication.projectChanged is not implemented in this version of Unity.");
-                onProjectChangedEvent.AddEventHandler(null, value);
-            }
-            remove
-            {
-                if (onProjectChangedEvent == null)
-                    throw new NotImplementedException(
-                        "EditorApplication.projectChanged is not implemented in this version of Unity.");
-                onProjectChangedEvent.RemoveEventHandler(null, value);
-            }
-        }
-
+        
         private void ProjectWindowChanged() => isDirty = true;
 
         /// <summary>
@@ -46,10 +25,7 @@ namespace Rhinox.GUIUtils.Editor
         protected override void OnDestroy()
         {
             base.OnDestroy();
-            if (HasOnProjectChanged)
-                OnProjectChanged -= ProjectWindowChanged;
-            else
-                EditorApplication.projectWindowChanged -= ProjectWindowChanged;
+            EditorApplication.projectChanged -= ProjectWindowChanged;
         }
 
         /// <summary>Builds the menu tree.</summary>
@@ -136,16 +112,9 @@ namespace Rhinox.GUIUtils.Editor
                     ForceMenuTreeRebuild();
                     if (flag)
                         CustomMenuTree.ActiveMenuTree = menuTree;
-                    if (HasOnProjectChanged)
-                    {
-                        OnProjectChanged -= ProjectWindowChanged;
-                        OnProjectChanged += ProjectWindowChanged;
-                    }
-                    else
-                    {
-                        EditorApplication.projectWindowChanged -= ProjectWindowChanged;
-                        EditorApplication.projectWindowChanged += ProjectWindowChanged;
-                    }
+                
+                    EditorApplication.projectChanged -= ProjectWindowChanged;
+                    EditorApplication.projectChanged += ProjectWindowChanged;
 
                     isDirty = false;
                 }
