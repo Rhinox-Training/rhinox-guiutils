@@ -77,6 +77,7 @@ namespace Rhinox.GUIUtils.Editor
         private int _mouseDownKeyboardControl;
         private Vector2 _contentSize;
         private bool _repaintRequested;
+        private bool _preventContentFromExpanding;
 
         //==============================================================================================================
         // EVENTS
@@ -119,6 +120,7 @@ namespace Rhinox.GUIUtils.Editor
 
         private void SetupAutomaticHeightAdjustment(int maxHeight)
         {
+            _preventContentFromExpanding = true;
             _wrappedAreaMaxHeight = maxHeight;
             int screenHeight = Screen.currentResolution.height - 40;
             Rect originalP = RoundValues(position);
@@ -325,7 +327,9 @@ namespace Rhinox.GUIUtils.Editor
 
         protected virtual void OnGUI()
         {
-            GUILayout.BeginArea(new Rect(0.0f, 0.0f, position.width, _wrappedAreaMaxHeight));
+            bool preventExpansion = _preventContentFromExpanding;
+            if (preventExpansion)
+                GUILayout.BeginArea(new Rect(0.0f, 0.0f, position.width, _wrappedAreaMaxHeight));
             
             OnBeginGUI?.Invoke();
 
@@ -354,7 +358,9 @@ namespace Rhinox.GUIUtils.Editor
             if (useScrollView)
                 _currentScrollPosition = EditorGUILayout.BeginScrollView(_currentScrollPosition);
 
-            var rect = EditorGUILayout.BeginVertical(GUILayout.ExpandHeight(false));
+            var rect = !_preventContentFromExpanding ? 
+                EditorGUILayout.BeginVertical() : 
+                EditorGUILayout.BeginVertical(GUILayout.ExpandHeight(false));
             {
                 if (_contentSize == Vector2.zero || Event.current.type == EventType.Repaint)
                     _contentSize = rect.size;
@@ -407,7 +413,8 @@ namespace Rhinox.GUIUtils.Editor
             
             RepaintIfRequested();
             
-            GUILayout.EndArea();
+            if (preventExpansion)
+                GUILayout.EndArea();
         }
 
         /// <summary>
