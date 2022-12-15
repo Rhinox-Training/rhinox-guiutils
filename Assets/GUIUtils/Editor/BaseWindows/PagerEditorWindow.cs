@@ -60,12 +60,12 @@ namespace Rhinox.GUIUtils.Odin.Editor
             var windowType = this as T;
             _pager = new SlidePagedWindowNavigationHelper<object>(windowType);
             _pager.PushPage(RootPage, RootPageName);
-            (RootPage as PagerPage<T>)?.SetPager(_pager);
+            (RootPage as PagerPage)?.SetPager(_pager);
         }
 
         protected virtual void Update()
         {
-            if (CurrentPage?.Value is PagerPage<T> page)
+            if (CurrentPage?.Value is PagerPage page)
                 page.Update();
         }
 
@@ -121,9 +121,8 @@ namespace Rhinox.GUIUtils.Odin.Editor
                     DrawEditor(i);
                     GUILayout.EndScrollView();
                     GUILayout.EndVertical();
-                    if (EditorGUI.EndChangeCheck() && page.Value is PagerPage<T> odinPage)
+                    if (EditorGUI.EndChangeCheck() && page.Value is PagerPage odinPage)
                         odinPage.MarkAsChanged();
-
                 }
 
                 page.EndPage();
