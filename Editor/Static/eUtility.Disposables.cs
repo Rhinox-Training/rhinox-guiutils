@@ -1,6 +1,7 @@
 using System;
 using System.Reflection;
 using UnityEditor;
+using UnityEditor.Experimental;
 using UnityEngine;
 using UnityEngine.Experimental.TerrainAPI;
 
@@ -431,6 +432,30 @@ namespace Rhinox.GUIUtils.Editor
                     editor = (TextEditor) _recycledTextEditorField.GetValue(null);
                 }
                 return editor;
+            }
+        }
+        
+        public class PaddedGUIScope : GUI.Scope
+        {
+            private float m_LabelWidth;
+            private const string STYLESHEET_NAME = "sb-settings-panel-client-area";
+            public PaddedGUIScope(float? customMargin = null, float labelWidth = 0.5f)
+            {
+                this.m_LabelWidth = EditorGUIUtility.labelWidth;
+                EditorGUIUtility.labelWidth = labelWidth;
+                GUILayout.BeginHorizontal();
+                float marginLeft = customMargin.HasValue ? customMargin.Value : ExposedEditorResources.GetFloat(STYLESHEET_NAME, ExposedStyleCatalog.marginLeft);
+                float marginRight = customMargin.HasValue ? customMargin.Value : ExposedEditorResources.GetFloat(STYLESHEET_NAME, ExposedStyleCatalog.marginRight);
+                GUILayout.Space(marginLeft);
+                GUILayout.BeginVertical();
+                GUILayout.Space(marginRight);
+            }
+
+            protected override void CloseScope()
+            {
+                GUILayout.EndVertical();
+                GUILayout.EndHorizontal();
+                EditorGUIUtility.labelWidth = this.m_LabelWidth;
             }
         }
     }
