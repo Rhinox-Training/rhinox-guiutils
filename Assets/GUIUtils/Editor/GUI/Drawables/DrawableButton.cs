@@ -7,6 +7,7 @@ using Sirenix.OdinInspector;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
+using Object = UnityEngine.Object;
 
 namespace Rhinox.GUIUtils.Editor
 {
@@ -29,6 +30,18 @@ namespace Rhinox.GUIUtils.Editor
             var buttonHeight = _buttonAttr.ButtonHeight;
             buttonHeight = buttonHeight == 0 ? (int)EditorGUIUtility.singleLineHeight : buttonHeight;
             if (GUILayout.Button(_buttonAttr.Name ?? _methodInfo.Name, GUILayout.Height(buttonHeight)))
+            {
+                if (!TryCreateDialog(_methodInfo, target))
+                    _methodInfo.Invoke(target, null);
+            }
+        }
+
+        protected override void Draw(Rect rect, Object target)
+        {
+            var buttonHeight = _buttonAttr.ButtonHeight;
+            buttonHeight = buttonHeight == 0 ? (int)EditorGUIUtility.singleLineHeight : buttonHeight;
+            rect.height = buttonHeight;
+            if (GUI.Button(rect, _buttonAttr.Name ?? _methodInfo.Name))
             {
                 if (!TryCreateDialog(_methodInfo, target))
                     _methodInfo.Invoke(target, null);
