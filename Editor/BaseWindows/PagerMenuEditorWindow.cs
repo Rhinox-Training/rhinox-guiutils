@@ -22,7 +22,7 @@ namespace Rhinox.GUIUtils.Odin.Editor
         CustomMenuEditorWindow where T : CustomMenuEditorWindow
 #endif
     {
-        protected SlidePagedWindowNavigationHelper<object, T> _pager;
+        protected SlidePagedWindowNavigationHelper<object> _pager;
 
         private Vector2 _scrollPosition;
 
@@ -58,7 +58,7 @@ namespace Rhinox.GUIUtils.Odin.Editor
 
             if (this._pager != null) return;
 
-            _pager = new SlidePagedWindowNavigationHelper<object, T>(this as T);
+            _pager = new SlidePagedWindowNavigationHelper<object>(this as T);
             _pager.PushPage(RootPage, RootPageName);
             (RootPage as PagerPage<T>)?.SetPager(_pager);
         }

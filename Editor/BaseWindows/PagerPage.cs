@@ -10,11 +10,11 @@ namespace Rhinox.GUIUtils.Odin.Editor
     {
         protected EditorWrapper _targetWrapper;
 
-        protected PagerTreePage(SlidePagedWindowNavigationHelper<object, T> pager) : base(pager)
+        protected PagerTreePage(SlidePagedWindowNavigationHelper<object> pager) : base(pager)
         {
         }
 
-        protected PagerTreePage(SlidePagedWindowNavigationHelper<object, T> pager, object target) : base(pager)
+        protected PagerTreePage(SlidePagedWindowNavigationHelper<object> pager, object target) : base(pager)
         {
             SetTarget(target);
         }
@@ -52,7 +52,7 @@ namespace Rhinox.GUIUtils.Odin.Editor
 
     public abstract class PagerPage<T> where T : EditorWindow
     {
-        protected SlidePagedWindowNavigationHelper<object, T> _pager;
+        protected SlidePagedWindowNavigationHelper<object> _pager;
 
         protected int _topWidth;
         protected int _topHeight = 18;
@@ -62,7 +62,7 @@ namespace Rhinox.GUIUtils.Odin.Editor
 
         protected bool _changed;
 
-        protected PagerPage(SlidePagedWindowNavigationHelper<object, T> pager)
+        protected PagerPage(SlidePagedWindowNavigationHelper<object> pager)
         {
             _pager = pager;
         }
@@ -74,7 +74,7 @@ namespace Rhinox.GUIUtils.Odin.Editor
         }
 
         // for after deserialization, etc
-        public void SetPager(SlidePagedWindowNavigationHelper<object, T> pager)
+        public void SetPager(SlidePagedWindowNavigationHelper<object> pager)
         {
             _pager = pager;
         }
