@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace Rhinox.GUIUtils.Odin.Editor
 {
-    public abstract class PagerTreePage<T> : PagerPage<T> where T : EditorWindow
+    public abstract class PagerTreePage : PagerPage
     {
         protected EditorWrapper _targetWrapper;
 
@@ -50,7 +50,7 @@ namespace Rhinox.GUIUtils.Odin.Editor
         }
     }
 
-    public abstract class PagerPage<T> where T : EditorWindow
+    public abstract class PagerPage
     {
         protected SlidePagedWindowNavigationHelper<object> _pager;
 

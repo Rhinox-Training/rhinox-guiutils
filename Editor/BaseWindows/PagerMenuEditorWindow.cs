@@ -60,7 +60,7 @@ namespace Rhinox.GUIUtils.Odin.Editor
 
             _pager = new SlidePagedWindowNavigationHelper<object>(this as T);
             _pager.PushPage(RootPage, RootPageName);
-            (RootPage as PagerPage<T>)?.SetPager(_pager);
+            (RootPage as PagerPage)?.SetPager(_pager);
         }
 
         protected override void OnDestroy()
