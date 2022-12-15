@@ -8,13 +8,13 @@ using UnityEngine;
 
 namespace Rhinox.GUIUtils.Editor.Helpers
 {
-    public class SlidePagedWindowNavigationHelper<T, TWindow> : SlidePageNavigationHelper<T> where TWindow : EditorWindow
+    public class SlidePagedWindowNavigationHelper<T> : SlidePageNavigationHelper<T> 
     {
-        public TWindow Window;
+        public EditorWindow Window;
 
         public Page CurrentPage => this.GetCurrentPage();
 
-        public SlidePagedWindowNavigationHelper(TWindow window)
+        public SlidePagedWindowNavigationHelper(EditorWindow window)
         {
             Window = window;
         }
