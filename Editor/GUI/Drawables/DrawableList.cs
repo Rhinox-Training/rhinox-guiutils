@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Reflection;
 using Rhinox.Lightspeed;
 using Sirenix.OdinInspector;
 using UnityEditor;
 using UnityEditorInternal;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace Rhinox.GUIUtils.Editor
 {
@@ -152,7 +154,22 @@ namespace Rhinox.GUIUtils.Editor
                 _listProperty.serializedObject.ApplyModifiedProperties();
             }
         }
-        
+
+        protected override void Draw(Rect rect, Object target)
+        {
+            if (_listProperty != null && _listProperty.serializedObject != null)
+            {
+                _listProperty.serializedObject.Update();
+                EditorGUI.BeginDisabledGroup(_listDrawerAttr.IsReadOnly);
+                _listRO.DoList(rect);
+                
+                
+                
+                EditorGUI.EndDisabledGroup();
+                _listProperty.serializedObject.ApplyModifiedProperties();
+            }
+        }
+
         public void DrawElementBackground(
             Rect rect,
             int index,

@@ -1,4 +1,5 @@
 ﻿using UnityEditor;
+using UnityEngine;
 
 namespace Rhinox.GUIUtils.Editor
 {
@@ -15,6 +16,11 @@ namespace Rhinox.GUIUtils.Editor
         protected override void Draw(UnityEngine.Object target)
         {
             EditorGUILayout.PropertyField(_property, GUIContentHelper.TempContent(_property.displayName));
+        }
+
+        protected override void Draw(Rect rect, Object target)
+        {
+            EditorGUI.PropertyField(rect, _property, GUIContentHelper.TempContent(_property.displayName));
         }
     }
 }

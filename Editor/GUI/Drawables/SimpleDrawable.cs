@@ -16,6 +16,22 @@ namespace Rhinox.GUIUtils.Editor
             Order = order;
         }
 
+        public void Draw(Rect rect)
+        {
+            if (Colour != null)
+            {
+                var color = Colour.Value;
+                using (new eUtility.GuiBackgroundColor(color))
+                {
+                    DrawForTargets(rect);
+                }
+            }
+            else
+            {
+                DrawForTargets(rect);
+            }
+        }
+
         public void Draw()
         {
             if (Colour != null)
@@ -32,18 +48,21 @@ namespace Rhinox.GUIUtils.Editor
             }
         }
 
-        private void DrawForTargets()
+        private void DrawForTargets(Rect? r = null)
         {
             foreach (var target in _serializedObj.targetObjects)
             {
                 if (target == null)
                     continue;
-                Draw(target);
+
+                if (r.HasValue)
+                    Draw(r.Value, target);
+                else
+                    Draw(target);
             }
         }
-        
-        
 
         protected abstract void Draw(Object target);
+        protected abstract void Draw(Rect rect, Object target);
     }
 }

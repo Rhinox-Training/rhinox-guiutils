@@ -34,5 +34,17 @@ namespace Rhinox.GUIUtils.Editor
             }
             GUILayout.EndHorizontal();
         }
+
+        protected override void Draw(Rect rect, Object target)
+        {
+            GUILayout.BeginHorizontal();
+            foreach (var button in _buttons)
+            {
+                if (button == null)
+                    continue;
+                button.Draw(rect);
+            }
+            GUILayout.EndHorizontal();
+        }
     }
 }
