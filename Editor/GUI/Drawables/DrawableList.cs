@@ -19,7 +19,33 @@ namespace Rhinox.GUIUtils.Editor
         private readonly int _maxPerPage;
         private readonly float _elementHeight;
 
+        private class ElementDrawable
+        {
+            private readonly ICollection<ISimpleDrawable> _drawables;
+
+            public ElementDrawable(SerializedProperty property)
+            {
+                if (property.exposedReferenceValue != null)
+                    _drawables = DrawableFactory.ParseSerializedObject(new SerializedObject(property.exposedReferenceValue));
+            }
+
+            public void Draw(Rect r)
+            {
+                if (_drawables == null)
+                {
+                    GUI.TextField(r, "NULL");
+                    return;
+                }
+
+                foreach (var drawable in _drawables)
+                    drawable.Draw(r);
+            }
+        }
+        
+
         private static ReorderableList.Defaults _defaults;
+        private ElementDrawable[] _listElements;
+
         private static ReorderableList.Defaults Defaults
         {
             get
@@ -46,6 +72,7 @@ namespace Rhinox.GUIUtils.Editor
 
             _listRO = new ReorderableList(listProperty.serializedObject, listProperty, _listDrawerAttr.DraggableItems,
                 true, !_listDrawerAttr.HideAddButton, !_listDrawerAttr.HideRemoveButton);
+            _listElements = new ElementDrawable[_listRO.count];
 
             _maxPerPage = _listDrawerAttr.NumberOfItemsPerPage;
             _elementHeight = _listRO.elementHeight;
@@ -69,10 +96,8 @@ namespace Rhinox.GUIUtils.Editor
                 rect.y += 2.0f;
                 rect.height = EditorGUIUtility.singleLineHeight;
 
-                var listEntryRect = _listDrawerAttr.IsReadOnly ? rect : rect.AlignLeft(rect.width - 16);
-                
-                EditorGUI.PropertyField(listEntryRect,
-                    _listRO.serializedProperty.GetArrayElementAtIndex(index), GUIContent.none);
+                DrawElement(rect, index);
+
                 if (!_listDrawerAttr.IsReadOnly)
                 {
                     if (GUI.Button(rect.AlignRight(16), GUIContentHelper.TempContent("X", "Remove entry")))
@@ -83,6 +108,7 @@ namespace Rhinox.GUIUtils.Editor
                             if (list != null)
                             {
                                 list.RemoveAt(index);
+                                _listElements = new ElementDrawable[_listRO.count];
                                 SetValue(_listRO.serializedProperty, list);
                             }
                         }
@@ -93,6 +119,17 @@ namespace Rhinox.GUIUtils.Editor
                     }
                 }
             };
+        }
+
+        private void DrawElement(Rect rect, int index)
+        {
+            var listEntryRect = _listDrawerAttr.IsReadOnly ? rect : rect.AlignLeft(rect.width - 16);
+            
+            if (_listElements[index] == null)
+                _listElements[index] = new ElementDrawable(_listRO.serializedProperty.GetArrayElementAtIndex(index));
+            _listElements[index].Draw(rect);
+            
+            //EditorGUI.PropertyField(listEntryRect, _listRO.serializedProperty.GetArrayElementAtIndex(index), GUIContent.none);
         }
 
         private void DrawFooter(Rect rect)
