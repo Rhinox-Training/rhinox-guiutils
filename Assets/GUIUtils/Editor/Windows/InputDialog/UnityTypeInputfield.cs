@@ -15,6 +15,14 @@ namespace Rhinox.GUIUtils.Editor
             SmartValue = EditorGUI.ObjectField(rect, SmartValue, typeof(T), true) as T;
         }
     }
+    
+    public class GenericUnityObjectInputField<T> : BaseUnityObjectInputField<T> where T : UnityEngine.Object
+    {
+        public GenericUnityObjectInputField(string label, string tooltip = null, T initialValue = default(T)) 
+            : base(label, tooltip, initialValue)
+        {
+        }
+    }
 
     public class TransformInputField : BaseUnityObjectInputField<Transform>
     {
