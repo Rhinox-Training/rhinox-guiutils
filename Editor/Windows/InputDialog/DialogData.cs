@@ -89,6 +89,13 @@ namespace Rhinox.GUIUtils.Editor
             var field = new TextInputField(name, tooltip);
             return Add(field, out reference, initialValue);
         }
+        
+        public DialogBuilder GenericUnityObjectField<T>(string name, out ValueReference<T> reference,
+            T initialValue = null, string tooltip = null) where T : UnityEngine.Object
+        {
+            var field = new GenericUnityObjectInputField<T>(name, tooltip);
+            return Add(field, out reference, initialValue);
+        }
 
         public DialogBuilder TransformField(string name, out ValueReference<Transform> reference,
             Transform initialValue = null, string tooltip = null)
