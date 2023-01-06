@@ -1,4 +1,6 @@
-﻿using Rhinox.GUIUtils.Editor;
+﻿using System.Collections.Generic;
+using Sirenix.OdinInspector;
+using Rhinox.GUIUtils.Editor;
 using UnityEditor;
 using UnityEngine;
 
@@ -18,6 +20,7 @@ namespace Tests
                 .GameObjectField("GameobjectField", out var gameObjectValue)
                 .MaterialField("MaterialField", out var materialValue)
                 .TextureField("TextureField", out var textureValue)
+                .Dropdown("Options", new List<ValueDropdownItem>() { new ValueDropdownItem("foo", "foo"), new ValueDropdownItem("bar", "bar")}, out var option)
                 .OnAccept(() =>
                 {
                     Debug.Log(boolValue.Value);
@@ -27,6 +30,7 @@ namespace Tests
                     Debug.Log(gameObjectValue.Value);
                     Debug.Log(materialValue.Value);
                     Debug.Log(textureValue.Value);
+                    Debug.Log(option.Value);
                 })
                 .Show();
         }

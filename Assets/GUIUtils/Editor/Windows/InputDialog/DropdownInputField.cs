@@ -1,8 +1,10 @@
-#if ODIN_INSPECTOR
+//
 using System.Collections.Generic;
 using System.Linq;
 using Sirenix.OdinInspector;
+#if ODIN_INSPECTOR
 using Sirenix.OdinInspector.Editor;
+#endif
 using UnityEditor;
 using UnityEngine;
 
@@ -21,8 +23,10 @@ namespace Rhinox.GUIUtils.Editor
 
         protected override void DrawFieldValue(Rect rect)
         {
+#if ODIN_INSPECTOR
             if (GUI.Button(rect, SmartValue.Text, EditorStyles.miniPullDown))
             {
+                EditorGUILayout.DropdownButton(SmartValue.Text, FocusType.Passive)
                 var selector = new GenericSelector<ValueDropdownItem>(_options) { FlattenedTree = true };
 
                 selector.EnableSingleClickToSelect();
@@ -34,6 +38,20 @@ namespace Rhinox.GUIUtils.Editor
 
                 selector.ShowInPopup(rect);
             }
+#else
+            if (EditorGUI.DropdownButton(rect, GUIContentHelper.TempContent(SmartValue.Text ?? "<Select a value>", _tooltip), FocusType.Passive, EditorStyles.miniPullDown))
+            {
+                var menu = new GenericMenu();
+                foreach (var option in _options)
+                {
+                    menu.AddItem(new GUIContent(option.Text), false, () =>
+                    {
+                        SmartValue = option;
+                    });
+                }
+                menu.DropDown(rect);
+            }
+#endif
         }
 
         public override float GetWidth()
@@ -56,6 +74,7 @@ namespace Rhinox.GUIUtils.Editor
 
         protected override void DrawFieldValue(Rect rect)
         {
+#if ODIN_INSPECTOR
             if (GUI.Button(rect, GUIContentHelper.TempContent(SmartValue.Text, _tooltip), EditorStyles.miniPullDown))
             {
                 var selector = new GenericSelector<ValueDropdownItem<T>>(_options) { FlattenedTree = true };
@@ -69,9 +88,21 @@ namespace Rhinox.GUIUtils.Editor
 
                 selector.ShowInPopup(rect);
             }
+#else
+            if (EditorGUI.DropdownButton(rect, GUIContentHelper.TempContent(SmartValue.Text), FocusType.Passive, EditorStyles.miniPullDown))
+            {
+                var menu = new GenericMenu();
+                foreach (var option in _options)
+                {
+                    menu.AddItem(new GUIContent(option.Text), false, () =>
+                    {
+                        SmartValue = option;
+                    });
+                }
+                menu.DropDown(rect);
+            }
+#endif
         }
 
     }
 }
-
-#endif
