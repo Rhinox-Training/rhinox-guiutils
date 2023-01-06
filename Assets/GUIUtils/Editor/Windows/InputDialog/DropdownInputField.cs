@@ -26,7 +26,6 @@ namespace Rhinox.GUIUtils.Editor
 #if ODIN_INSPECTOR
             if (GUI.Button(rect, SmartValue.Text, EditorStyles.miniPullDown))
             {
-                EditorGUILayout.DropdownButton(SmartValue.Text, FocusType.Passive)
                 var selector = new GenericSelector<ValueDropdownItem>(_options) { FlattenedTree = true };
 
                 selector.EnableSingleClickToSelect();
