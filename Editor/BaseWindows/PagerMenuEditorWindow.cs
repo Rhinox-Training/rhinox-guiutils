@@ -7,8 +7,6 @@ using Rhinox.GUIUtils.Editor.Helpers;
 using Rhinox.Lightspeed;
 #if ODIN_INSPECTOR
 using Sirenix.OdinInspector.Editor;
-//using Sirenix.Utilities;
-using Sirenix.Utilities.Editor;
 #endif
 using UnityEditor;
 using UnityEngine;
