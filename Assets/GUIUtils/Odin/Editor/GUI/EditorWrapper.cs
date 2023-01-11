@@ -80,7 +80,13 @@ namespace Rhinox.GUIUtils.Odin.Editor
 
 #if ODIN_VALIDATOR
     #if ODIN_INSPECTOR_3 && !OLD_ODIN_VALIDATION_ENGINE
-    
+
+        public void Validate(Object root)
+        {
+            var list = new List<PersistentValidationResultBatch>();
+            Validate(root, ref list);
+        }
+        
         public void Validate(Object root, ref List<PersistentValidationResultBatch> list)
         {
             var runner = new OdinValidationRunner();
@@ -89,6 +95,13 @@ namespace Rhinox.GUIUtils.Odin.Editor
             list.AddRange(resultBatches);
         }
     #else
+    
+        public void Validate(Object root)
+        {
+            var list = new List<ValidationResult>();
+            Validate(root, ref list);
+        }
+    
         public void Validate(Object root, ref List<ValidationResult> list)
         {
         #if ODIN_INSPECTOR_3
