@@ -86,7 +86,18 @@ namespace Rhinox.GUIUtils.Editor
                 return default(Rect);
             return (Rect)propInfo.GetValue(null);
         }
-        
+
+        public static void EndEditingActiveTextField()
+        {
+            var methodInfo = typeof(EditorGUI).GetMethod("EndEditingActiveTextField", BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
+            methodInfo.Invoke(null, null);
+        }
+
+        public static bool HasCurrentWindowKeyFocus()
+        {
+            var methodInfo = typeof(EditorGUIUtility).GetMethod("HasCurrentWindowKeyFocus", BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
+            return (bool)methodInfo.Invoke(null, null);
+        }
         
         public static void RemoveFocusControl()
         {
