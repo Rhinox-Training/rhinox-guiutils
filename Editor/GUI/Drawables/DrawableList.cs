@@ -13,7 +13,7 @@ namespace Rhinox.GUIUtils.Editor
 {
     public class DrawableList : SimpleDrawable
     {
-        private ReorderableList _listRO;
+        private BetterReorderableList _listRO;
         private readonly SerializedProperty _listProperty;
         private readonly ListDrawerSettingsAttribute _listDrawerAttr;
         private readonly int _maxPerPage;
@@ -43,17 +43,17 @@ namespace Rhinox.GUIUtils.Editor
         }
         
 
-        private static ReorderableList.Defaults _defaults;
+        private static BetterReorderableList.Defaults _defaults;
         private ElementDrawable[] _listElements;
 
-        private static ReorderableList.Defaults Defaults
+        private static BetterReorderableList.Defaults Defaults
         {
             get
             {
                 if (_defaults == null)
                 {
-                    var field = typeof(ReorderableList).GetField("s_Defaults", BindingFlags.Static | BindingFlags.NonPublic);
-                    _defaults = field.GetValue(null) as ReorderableList.Defaults;
+                    var field = typeof(BetterReorderableList).GetField("s_Defaults", BindingFlags.Static | BindingFlags.NonPublic);
+                    _defaults = field.GetValue(null) as BetterReorderableList.Defaults;
                 }
                 return _defaults;
             }
@@ -70,7 +70,7 @@ namespace Rhinox.GUIUtils.Editor
 
 
 
-            _listRO = new ReorderableList(listProperty.serializedObject, listProperty, _listDrawerAttr.DraggableItems,
+            _listRO = new BetterReorderableList(listProperty.serializedObject, listProperty, _listDrawerAttr.DraggableItems,
                 true, !_listDrawerAttr.HideAddButton, !_listDrawerAttr.HideRemoveButton);
             _listElements = new ElementDrawable[_listRO.count];
 
@@ -89,6 +89,7 @@ namespace Rhinox.GUIUtils.Editor
             _listRO.showDefaultBackground = false;
             //_listRO.elementHeightCallback = ElementHeight;
             _listRO.drawElementBackgroundCallback = DrawElementBackground;
+            _listRO.drawElementCountCallback = GetDrawnElementCount;
             _listRO.drawElementCallback = (rect, index, active, focused) =>
             {
                 if (_maxPerPage > 0 && index > _maxPerPage)
@@ -101,24 +102,34 @@ namespace Rhinox.GUIUtils.Editor
                 if (!_listDrawerAttr.IsReadOnly)
                 {
                     if (GUI.Button(rect.AlignRight(16), GUIContentHelper.TempContent("X", "Remove entry")))
-                    {
-                        var list = GetValue(_listRO.serializedProperty) as IList;
-                        try
-                        {
-                            if (list != null)
-                            {
-                                list.RemoveAt(index);
-                                _listElements = new ElementDrawable[_listRO.count];
-                                SetValue(_listRO.serializedProperty, list);
-                            }
-                        }
-                        catch (Exception e)
-                        {
-                            Debug.LogError(e);
-                        }
-                    }
+                        DeleteEntry(index);
                 }
             };
+        }
+
+        private void DeleteEntry(int index)
+        {
+            var list = GetValue(_listRO.serializedProperty) as IList;
+            try
+            {
+                if (list != null)
+                {
+                    list.RemoveAt(index);
+                    _listElements = new ElementDrawable[_listRO.count];
+                    SetValue(_listRO.serializedProperty, list);
+                }
+            }
+            catch (Exception e)
+            {
+                Debug.LogError(e);
+            }
+        }
+
+        private int GetDrawnElementCount()
+        {
+            if (_maxPerPage > 0)
+                return Mathf.Min(_maxPerPage, _listRO.count);
+            return _listRO.count;
         }
 
         private void DrawElement(Rect rect, int index)
@@ -127,7 +138,7 @@ namespace Rhinox.GUIUtils.Editor
             
             if (_listElements[index] == null)
                 _listElements[index] = new ElementDrawable(_listRO.serializedProperty.GetArrayElementAtIndex(index));
-            _listElements[index].Draw(rect);
+            _listElements[index].Draw(listEntryRect);
             
             //EditorGUI.PropertyField(listEntryRect, _listRO.serializedProperty.GetArrayElementAtIndex(index), GUIContent.none);
         }
