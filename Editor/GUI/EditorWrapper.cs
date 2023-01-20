@@ -1,5 +1,6 @@
 using Rhinox.GUIUtils.Editor;
 using System.Collections.Generic;
+using System.Linq;
 using Sirenix.OdinInspector;
 #if ODIN_INSPECTOR
 using Sirenix.OdinInspector.Editor;
@@ -88,18 +89,42 @@ namespace Rhinox.GUIUtils.Odin.Editor
         }
 
 #if ODIN_VALIDATOR
+    #if ODIN_INSPECTOR_3 && !OLD_ODIN_VALIDATION_ENGINE
+
+        public void Validate(Object root)
+        {
+            var list = new List<PersistentValidationResultBatch>();
+            Validate(root, ref list);
+        }
+        
+        public void Validate(Object root, ref List<PersistentValidationResultBatch> list)
+        {
+            var runner = new OdinValidationRunner();
+            // TODO root or Target??
+            var resultBatches = runner.ValidateUnityObjectRecursively(root).ToArray();
+            list.AddRange(resultBatches);
+        }
+    #else
+    
+        public void Validate(Object root)
+        {
+            var list = new List<ValidationResult>();
+            Validate(root, ref list);
+        }
+    
         public void Validate(Object root, ref List<ValidationResult> list)
         {
-#if ODIN_INSPECTOR_3
-            var runner = new ValidationRunner();
+        #if ODIN_INSPECTOR_3
+           var runner = new ValidationRunner();
             // TODO root or Target??
             runner.ValidateUnityObjectRecursively(root, ref list);
-#else
+        #else
             var runner = new ValidationRunner();
             var selector = new DefaultValidationMemberSelector();
             runner.ValidateMembers(Target, selector, root, false, ref list);
-#endif
+        #endif
         }
+    #endif
 #endif
     }
 }
