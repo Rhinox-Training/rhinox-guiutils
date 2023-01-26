@@ -28,6 +28,8 @@ namespace Rhinox.GUIUtils.Odin.Editor
         
 #if ODIN_INSPECTOR
         private PropertyTree _tree;
+#else
+        private DrawablePropertyView _view;
 #endif
         private bool _expanded;
 
@@ -43,6 +45,8 @@ namespace Rhinox.GUIUtils.Odin.Editor
             _expanded = expanded;
 #if ODIN_INSPECTOR
             _tree = null;
+#else
+            _view = null;
 #endif
         }
 
@@ -79,6 +83,10 @@ namespace Rhinox.GUIUtils.Odin.Editor
                 _tree.Draw(true);
         
             SirenixEditorGUI.EndFadeGroup();
+#else
+            if (_view == null) 
+                _view = new DrawablePropertyView(Target);
+            _view.Draw();
 #endif
         }
 

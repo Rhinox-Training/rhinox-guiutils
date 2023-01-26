@@ -110,8 +110,8 @@ namespace Rhinox.GUIUtils.Editor
 
             if (type.InheritsFrom<UnityEngine.Object>())
                 return new ObjectDrawableField(info);
-
-            return new LabelDrawableField(info);
+            
+            return new CompositeDrawableMember(type);
         }
     }
 }

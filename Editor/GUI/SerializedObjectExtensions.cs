@@ -65,6 +65,14 @@ namespace Rhinox.GUIUtils.Editor
             return true;
         }
         
+        public static void SetValue(this SerializedProperty property, object value)
+        {
+            System.Type parentType = property.serializedObject.targetObject.GetType();
+            System.Reflection.FieldInfo
+                fi = parentType.GetField(property.propertyPath); //this FieldInfo contains the type.
+            fi.SetValue(property.serializedObject.targetObject, value);
+        }
+        
         public static object GetValue(this SerializedProperty prop)
         {
             switch (prop.propertyType)
@@ -122,7 +130,9 @@ namespace Rhinox.GUIUtils.Editor
                 // Represents an array, list, struct or class.
                 case SerializedPropertyType.Generic:
                 default:
-                    throw new NotImplementedException();
+                    System.Type parentType = prop.serializedObject.targetObject.GetType();
+                    System.Reflection.FieldInfo fi = parentType.GetField(prop.propertyPath);
+                    return fi.GetValue(prop.serializedObject.targetObject);
             }
             
         }
@@ -149,6 +159,23 @@ namespace Rhinox.GUIUtils.Editor
         public static Type GetParentType(this SerializedProperty prop)
         {
             return prop.serializedObject?.targetObject.GetType();
+        }
+
+        public static T GetAttribute<T>(this SerializedProperty property) where T : Attribute
+        {
+            System.Type parentType = property.serializedObject.targetObject.GetType();
+            System.Reflection.FieldInfo fi = parentType.GetField(property.propertyPath);
+            return fi.GetCustomAttribute(typeof(T)) as T;
+        }
+        
+        public static T GetAttributeOrCreate<T>(this SerializedProperty property) where T : Attribute, new()
+        {
+            System.Type parentType = property.serializedObject.targetObject.GetType();
+            System.Reflection.FieldInfo fi = parentType.GetField(property.propertyPath);
+            var instance = fi.GetCustomAttribute(typeof(T)) as T;
+            if (instance == null)
+                instance = new T();
+            return instance;
         }
     }
 }

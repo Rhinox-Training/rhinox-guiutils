@@ -228,6 +228,9 @@ namespace Rhinox.GUIUtils.Editor
         public virtual void Update()
         {
             //OdinMenuTree.HandleKeybaordMenuNavigation();
+
+            if (_items == null)
+                return;
             foreach (var item in _items)
             {
                 if (item == null)
@@ -240,11 +243,14 @@ namespace Rhinox.GUIUtils.Editor
         public virtual void Draw(Event evt)
         {
             VisibleRect = Expand(CustomEditorGUI.GetVisibleRect(), 300f);
-            foreach (var uiItem in _items)
+            if (_items != null)
             {
-                if (uiItem == null)
-                    continue;
-                uiItem.DrawMenuItem(evt, 0);
+                foreach (var uiItem in _items)
+                {
+                    if (uiItem == null)
+                        continue;
+                    uiItem.DrawMenuItem(evt, 0);
+                }
             }
         }
 
