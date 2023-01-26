@@ -47,9 +47,6 @@ namespace Rhinox.GUIUtils.Editor
                     drawable = new DrawableList(prop);
                 else
                     drawable = new UnityDrawableProperty(prop);
-
-                if (drawable == null)
-                    continue;
                 
                 var propOrder = field.GetCustomAttribute<PropertyOrderAttribute>();
                 if (propOrder != null)

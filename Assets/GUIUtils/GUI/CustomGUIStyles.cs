@@ -196,6 +196,26 @@ namespace Rhinox.GUIUtils
         }
 
 #if UNITY_EDITOR
+        private static GUIStyle _miniLabelStyleCentered;
+        public static GUIStyle MiniLabel
+        {
+            get
+            {
+                if (_miniLabelStyleCentered == null)
+                {
+                    _miniLabelStyleCentered = new GUIStyle(EditorStyles.centeredGreyMiniLabel)
+                    {
+                        alignment = TextAnchor.MiddleCenter,
+                        clipping = TextClipping.Clip
+                    };
+#if UNITY_2019_3_OR_NEWER
+                    _miniLabelStyleCentered.margin = new RectOffset(4, 4, 4, 4);
+#endif
+                }
+                return _miniLabelStyleCentered;
+            }
+        }
+        
         private static GUIStyle _miniLabelStyleLeft;
         public static GUIStyle MiniLabelLeft
         {
