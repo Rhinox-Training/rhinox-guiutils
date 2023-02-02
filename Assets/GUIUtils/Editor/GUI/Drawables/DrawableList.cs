@@ -21,10 +21,31 @@ namespace Rhinox.GUIUtils.Editor
             private readonly ICollection<ISimpleDrawable> _drawables;
             private readonly SerializedProperty _property;
 
-            public ListElementDrawable(SerializedProperty property)
+            public float ElementHeight
+            {
+                get
+                {
+                    if (_property.isExpanded)
+                    {
+                        float height = EditorGUI.GetPropertyHeight(_property, true);
+                        return height;
+                    }
+                    else
+                    {
+                        return _defaultElementHeight;
+                    }
+                }
+            }
+
+            private readonly float _defaultElementHeight;
+            private readonly HostInfo _hostInfo;
+
+            public ListElementDrawable(SerializedProperty property, float defaultElementHeight = 18.0f)
             {
                 if (property == null) throw new ArgumentNullException(nameof(property));
+                _defaultElementHeight = defaultElementHeight;
                 _property = property;
+                _hostInfo = property.GetHostInfo();
                 if (property.exposedReferenceValue != null)
                     _drawables = DrawableFactory.ParseSerializedObject(new SerializedObject(property.exposedReferenceValue));
             }
@@ -33,7 +54,21 @@ namespace Rhinox.GUIUtils.Editor
             {
                 if (_drawables == null)
                 {
-                    EditorGUI.PropertyField(r, _property, true);
+                    var label = GUIContentHelper.TempContent(_hostInfo.GetReturnType().Name);
+                    EditorGUI.BeginProperty(r, label, _property);
+                    {
+                        EditorGUI.PropertyField(r, _property, label, true);
+                    }
+                    EditorGUI.EndProperty();
+                    // if (_property.isExpanded)
+                    // {
+                    //     float height = EditorGUI.GetPropertyHeight(_property, label, true);
+                    //     ElementHeight = height;
+                    // }
+                    // else
+                    // {
+                    //     ElementHeight = _defaultElementHeight;
+                    // }
                     return;
                 }
 
@@ -58,12 +93,27 @@ namespace Rhinox.GUIUtils.Editor
             };
             
             _listElements = new ListElementDrawable[_listRO.count];
+            for (int i = 0; i < _listRO.count; ++i)
+            {
+                _listElements[i] = new ListElementDrawable(_listProperty.GetArrayElementAtIndex(i));
+            }
             
-            _listRO.showDefaultBackground = false;
+            //_listRO.showDefaultBackground = false;
             _listRO.drawElementCallback = DrawElement;
             _listRO.onChangedCallback += OnChangedListCallback;
+            _listRO.elementHeightCallback = OnHeight;
         }
-        
+
+        private float OnHeight(int index)
+        {
+            if (_listElements.Length > index && index >= 0 && _listElements[index] != null)
+            {
+                return _listElements[index].ElementHeight;
+            }
+
+            return _listRO.elementHeight;
+        }
+
         protected override void Draw(UnityEngine.Object target)
         {
             if (_listProperty != null && _listProperty.serializedObject != null)
@@ -102,7 +152,7 @@ namespace Rhinox.GUIUtils.Editor
             var listEntryRect = _listDrawerAttr.IsReadOnly ? rect : rect.AlignLeft(rect.width - 16);
             
             if (_listElements[index] == null)
-                _listElements[index] = new ListElementDrawable(_listRO.serializedProperty.GetArrayElementAtIndex(index));
+                _listElements[index] = new ListElementDrawable(_listRO.serializedProperty.GetArrayElementAtIndex(index), _listRO.elementHeight);
             _listElements[index].Draw(listEntryRect);
             
             //EditorGUI.PropertyField(listEntryRect, _listRO.serializedProperty.GetArrayElementAtIndex(index), GUIContent.none);

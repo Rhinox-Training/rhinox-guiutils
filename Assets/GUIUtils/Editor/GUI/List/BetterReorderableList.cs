@@ -54,6 +54,7 @@ namespace Rhinox.GUIUtils.Editor
         public float headerHeight = 20f;
         public float footerHeight = 20f;
         public bool showDefaultBackground = true;
+        private float elementMargin = 4f;
         private const float kListElementBottomPadding = 4f;
 
         public static BetterReorderableList.Defaults defaultBehaviours => BetterReorderableList.s_Defaults;
@@ -171,21 +172,24 @@ namespace Rhinox.GUIUtils.Editor
 
         private float GetElementYOffset(int index, int skipIndex)
         {
-            if (this.elementHeightCallback == null)
-                return (float) index * this.elementHeight;
+            // if (this.elementHeightCallback == null)
+            //     return (float) index * this.elementHeight;
             float elementYoffset = 0.0f;
-            for (int index1 = 0; index1 < index; ++index1)
+            for (int i = 0; i < index; ++i)
             {
-                if (index1 != skipIndex)
-                    elementYoffset += this.elementHeightCallback(index1);
+                if (i != skipIndex)
+                    elementYoffset += GetElementHeight(i);
             }
 
-            return elementYoffset;
+            return elementYoffset + (elementMargin / 2.0f);
         }
 
-        private float GetElementHeight(int index) => this.elementHeightCallback == null
-            ? this.elementHeight
-            : this.elementHeightCallback(index);
+        protected virtual float GetElementHeight(int index)
+        {
+            if (this.elementHeightCallback != null)
+                return this.elementHeightCallback(index) + this.elementMargin;
+            return this.elementHeight + this.elementMargin;
+        }
 
         private Rect GetRowRect(int index, Rect listRect) => new Rect(listRect.x,
             listRect.y + this.GetElementYOffset(index), listRect.width, this.GetElementHeight(index));
@@ -238,9 +242,7 @@ namespace Rhinox.GUIUtils.Editor
             int count = GetListDrawCount();
             if (count == 0)
                 return this.elementHeight + num;
-            return this.elementHeightCallback != null
-                ? this.GetElementYOffset(count - 1) + this.GetElementHeight(count - 1) + num
-                : this.elementHeight * (float) count + num;
+            return this.GetElementYOffset(count - 1) + this.GetElementHeight(count - 1) + num;
         }
 
         private void DoListElements(Rect listRect)
@@ -278,18 +280,10 @@ namespace Rhinox.GUIUtils.Editor
                         if (this.m_NonDragTargetIndices[index] != -1)
                         {
                             rect1.height = this.GetElementHeight(index);
-                            if (this.elementHeightCallback == null)
-                            {
-                                rect1.y = listRect.y + this.GetElementYOffset(index, this.m_ActiveElement);
-                            }
-                            else
-                            {
-                                rect1.y = listRect.y + this.GetElementYOffset(this.m_NonDragTargetIndices[index],
-                                    this.m_ActiveElement);
-                                if (flag)
-                                    rect1.y += this.elementHeightCallback(this.m_ActiveElement);
-                            }
-
+                            rect1.y = listRect.y + this.GetElementYOffset(this.m_NonDragTargetIndices[index],
+                                this.m_ActiveElement);
+                            if (flag)
+                                rect1.y += GetElementHeight(this.m_ActiveElement);
                             rect1 = this.m_SlideGroup.GetRect(this.m_NonDragTargetIndices[index], rect1);
                             OnDrawElementBackground(rect1, index, false, false, m_Draggable);
                             
@@ -316,8 +310,7 @@ namespace Rhinox.GUIUtils.Editor
                         rect1.height = this.GetElementHeight(index);
                         rect1.y = listRect.y + this.GetElementYOffset(index);
                         OnDrawElementBackground(rect1, index, flag1, flag2, this.m_Draggable);
-                        BetterReorderableList.s_Defaults.DrawElementDraggingHandle(rect1, index, flag1, flag2,
-                            this.m_Draggable);
+                        s_Defaults.DrawElementDraggingHandle(rect1, index, flag1, flag2, this.m_Draggable);
                         Rect contentRect = this.GetContentRect(rect1);
                         DrawElement(contentRect, index, flag1, flag2);
                     }
@@ -570,12 +563,12 @@ namespace Rhinox.GUIUtils.Editor
 
         private int GetRowIndex(float localY)
         {
-            if (this.elementHeightCallback == null)
-                return Mathf.Clamp(Mathf.FloorToInt(localY / this.elementHeight), 0, this.count - 1);
+            // if (this.elementHeightCallback == null)
+            //     return Mathf.Clamp(Mathf.FloorToInt(localY / this.elementHeight), 0, this.count - 1);
             float num1 = 0.0f;
             for (int index = 0; index < this.count; ++index)
             {
-                float num2 = this.elementHeightCallback(index);
+                float num2 = GetElementHeight(index);
                 float num3 = num1 + num2;
                 if ((double) localY >= (double) num1 && (double) localY < (double) num3)
                     return index;
@@ -662,10 +655,52 @@ namespace Rhinox.GUIUtils.Editor
             public readonly GUIStyle boxBackground = (GUIStyle) "RL Background";
             public readonly GUIStyle preButton = (GUIStyle) "RL FooterButton";
             public readonly GUIStyle elementBackground = (GUIStyle) "RL Element";
+            private GUIStyle _altBackground;
+            private Texture _altBackgroundNormalTex;
+            public GUIStyle altElementBackground {
+                get
+                {
+                    Color c = new Color(0.29f, 0.29f, 0.29f, 1.0f);
+                    if (_altBackground == null)
+                    {
+                        var style = (GUIStyle) "RL Element";
+                        style = new GUIStyle(style);
+                        style.name = "RL Element Alt Style";
+                        _altBackground = style;
+                    }
+
+                    if (_altBackgroundNormalTex == null)
+                    { 
+                        var backgroundColor = _altBackground.normal.background;
+                        var altTex = backgroundColor != null ?
+                            MakeTex(backgroundColor.width, backgroundColor.height, c) : 
+                            MakeTex(1, 1, c);
+                        _altBackgroundNormalTex = altTex;
+                        _altBackground.normal.background = altTex;
+                    }
+
+                    return _altBackground;
+                }
+            }
             public const int padding = 6;
             public const int dragHandleWidth = 20;
             private static GUIContent s_ListIsEmpty = EditorGUIUtility.TrTextContent("List is Empty");
 
+            private Texture2D MakeTex(int width, int height, Color col)
+            {
+                Color[] pix = new Color[width*height];
+ 
+                for(int i = 0; i < pix.Length; i++)
+                    pix[i] = col;
+ 
+                Texture2D result = new Texture2D(width, height);
+                result.SetPixels(pix);
+                result.Apply();
+ 
+                return result;
+            }
+
+            
             public void DrawFooter(Rect rect, BetterReorderableList list, bool displayAdd, bool displayRemove)
             {
                 float num = rect.xMax - 10f;
@@ -790,6 +825,21 @@ namespace Rhinox.GUIUtils.Editor
                 if (Event.current.type != UnityEngine.EventType.Repaint)
                     return;
                 this.elementBackground.Draw(rect, false, selected, selected, focused);
+            }
+
+            public void DrawElementBackgroundAlternating(
+                Rect rect,
+                int index,
+                bool selected,
+                bool focused,
+                bool draggable)
+            {
+                if (Event.current.type != UnityEngine.EventType.Repaint)
+                    return;
+                if (index % 2 == 0)
+                    s_Defaults.elementBackground.Draw(rect, false, selected, selected, focused);
+                else
+                    s_Defaults.altElementBackground.Draw(rect, false, selected, selected, focused);
             }
 
             public void DrawElementDraggingHandle(

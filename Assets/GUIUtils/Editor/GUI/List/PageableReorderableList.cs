@@ -13,7 +13,7 @@ namespace Rhinox.GUIUtils.Editor
     public class PageableReorderableList : BetterReorderableList
     {
         public int MaxItemsPerPage { get; set; } = DEFAULT_ITEMS_PER_PAGE;
-        private const int DEFAULT_ITEMS_PER_PAGE = 100; 
+        private const int DEFAULT_ITEMS_PER_PAGE = 100;
         
         private ICollection<Type> m_AddOptionTypes;
         private bool HasMultipleTypeOptions
@@ -76,15 +76,6 @@ namespace Rhinox.GUIUtils.Editor
             EditorGUI.LabelField(nameRect, this.serializedProperty.displayName);
             EditorGUI.LabelField(sizeRect, $"{count} Items");
         }
-        
-        protected override void OnDrawElementBackground(Rect rect, int index, bool selected, bool focused, bool draggable)
-        {
-            if (Event.current.type != UnityEngine.EventType.Repaint)
-                return;
-            if (MaxItemsPerPage > 0 && index > MaxItemsPerPage)
-                return;
-            s_Defaults.elementBackground.Draw(rect, false, selected, selected, focused);
-        }
 
         protected override void DoListFooter(Rect rect)
         {
@@ -105,15 +96,22 @@ namespace Rhinox.GUIUtils.Editor
         {
             if (MaxItemsPerPage > 0 && elementIndex > MaxItemsPerPage)
                 return;
-            contentRect.y += 2.0f; // TODO: is this margin?
-            contentRect.height = elementHeight;
-            
+            // const float margin = 16.0f;
+            // contentRect.y += margin; // TODO: is this margin?
+            // contentRect.height = elementHeight + margin;
+
+            Rect removeButton = default;
+            if (this.displayRemove)
+            {
+                removeButton = contentRect.AlignRight(18).AlignCenterVertical(18);
+                contentRect = contentRect.PadRight(9);
+            }
+
             base.DrawElement(contentRect, elementIndex, selected, focused);
 
             if (this.displayRemove)
             {
-                var rect = contentRect.AlignRight(16);
-                if (GUI.Button(rect, GUIContentHelper.TempContent("X", "Remove entry")))
+                if (GUI.Button(removeButton, GUIContentHelper.TempContent(UnityIcon.AssetIcon("Fa_Times").Pad(2), tooltip: "Remove entry.")))
                 {
                     this.index = elementIndex;
                     s_Defaults.OnRemoveElement(this);
@@ -121,7 +119,15 @@ namespace Rhinox.GUIUtils.Editor
                 }
             }
         }
+        
+        protected override void OnDrawElementBackground(Rect rect, int index, bool selected, bool focused, bool draggable)
+        {
+            if (MaxItemsPerPage > 0 && index > MaxItemsPerPage)
+                return;
 
+            s_Defaults.DrawElementBackgroundAlternating(rect, index, selected, focused, draggable);
+        }
+        
         protected override int GetListDrawCount()
         {
             if (MaxItemsPerPage > 0)
@@ -142,23 +148,20 @@ namespace Rhinox.GUIUtils.Editor
             {
                 genericMenu.AddItem(new GUIContent(option.Name), false, () =>
                 {
-                    // if (list.serializedProperty != null)
-                    // {
-                    //     ++list.serializedProperty.arraySize;
-                    //     list.index = list.serializedProperty.arraySize - 1;
-                    // }
-                    // else
+                    if (serializedProperty != null)
                     {
+                        ++serializedProperty.arraySize;
+                        var serializedPropElement = serializedProperty.GetArrayElementAtIndex(serializedProperty.arraySize - 1);
+                        var hostInfo = serializedPropElement.GetHostInfo();
+                        var instance = Activator.CreateInstance(option);
+                        hostInfo.SetValue(instance);
+                    }
+                    else
+                    {
+                        
                         if (list == null)
                             list = (IList)Activator.CreateInstance(this.m_ListType);
                         index = list.Add(Activator.CreateInstance(option));
-                        
-                    }
-                    if (serializedProperty != null)
-                    {
-                        serializedProperty.SetValue(list);
-                        serializedProperty.arraySize = list.Count;
-                        // list.index = list.serializedProperty.arraySize - 1;
                     }
 
                     if (onChangedCallback != null)

@@ -56,6 +56,27 @@ namespace Rhinox.GUIUtils.Editor
             throw new IndexOutOfRangeException($"Could not map found index {ArrayIndex} to value {value}");
         }
 
+        public void SetValue(object obj)
+        {
+            if (ArrayIndex < 0)
+            {
+                FieldInfo.SetValue(GetHost(), obj);
+                return;
+            }
+
+            var value = FieldInfo.GetValue(GetHost());
+            if (value is IList e)
+            {
+                if (ArrayIndex >= e.Count)
+                    e.Insert(ArrayIndex, obj);
+                else
+                    e[ArrayIndex] = obj;
+                return;
+            }
+
+            throw new IndexOutOfRangeException($"Could not map found index {ArrayIndex} to value {value}");
+        }
+
         public Type GetReturnType(bool preferValueType = true)
         {
             if (preferValueType)
