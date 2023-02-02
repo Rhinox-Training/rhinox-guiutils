@@ -1,6 +1,5 @@
 using Rhinox.Lightspeed;
 using UnityEngine;
-using UnityEngine.Experimental.Rendering;
 
 namespace Rhinox.GUIUtils.Editor
 {
@@ -19,7 +18,7 @@ namespace Rhinox.GUIUtils.Editor
         public HoverTexture(Texture2D tex, Color unhoveredColor)
         {
             _tex = tex;
-            _unhoveredTexture = Utility.CopyTextureCPU(tex);
+            _unhoveredTexture = Rhinox.Lightspeed.Utility.CopyTextureCPU(tex);
             
             var pixels = _unhoveredTexture.GetPixels();
             for (var i = 0; i < pixels.Length; i++)
