@@ -326,6 +326,23 @@ namespace Rhinox.GUIUtils
             }
         }
         
+        private static GUIStyle _toolbarCentered;
+        public static GUIStyle ToolbarButtonCentered
+        {
+            get
+            {
+                if (_toolbarCentered == null)
+                    _toolbarCentered = new GUIStyle(EditorStyles.toolbarButton)
+                    {
+                        fixedHeight = 0.0f,
+                        alignment = TextAnchor.MiddleCenter,
+                        stretchHeight = true,
+                        stretchWidth = false
+                    };
+                return _toolbarCentered;
+            }
+        }
+        
         // =============================================================================================================
         // Button Styles
 

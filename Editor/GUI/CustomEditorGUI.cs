@@ -238,13 +238,30 @@ namespace Rhinox.GUIUtils.Editor
                 GUILayout.Height(height));
             return IconButton(rect, content, style);
         }
+        
+        public static bool IconButton(Rect rect, Texture icon, string tooltip = "", GUIStyle style = null)
+        {
+            style = style ?? CustomGUIStyles.IconButton;
+            return IconButton(rect, GUIContentHelper.TempContent(icon, tooltip), style);
+        }
 
-        private static bool IconButton(Rect rect, GUIContent content, GUIStyle style = null)
+        public static bool IconButton(Rect rect, GUIContent content, GUIStyle style = null)
         {
             style = style ?? CustomGUIStyles.IconButton;
             return GUI.Button(rect, content, style);
         }
-        
+
+        public static bool ToolbarButton(string text, string tooltip = "")
+        {
+            return ToolbarButton(GUIContentHelper.TempContent(text, tooltip));
+        }
+
+        public static bool ToolbarButton(GUIContent content)
+        {
+            return GUILayout.Button(content, 
+                CustomGUIStyles.ToolbarButtonCentered, 
+                GUILayout.Height(22), GUILayout.ExpandWidth(false));
+        }
         
             /// <summary>
         /// Begins a horizontal toolbar. Remember to end with <see cref="M:Sirenix.Utilities.Editor.SirenixEditorGUI.EndHorizontalToolbar" />.

@@ -26,9 +26,9 @@ namespace Rhinox.GUIUtils.Editor
                 alpha = (EditorGUIUtility.isProSkin ? 0.25f : 0.45f) * (isMouseIver ? 2 : 1);
             }
         
-            GUIHelper.PushColor(new Color(1, 1, 1, alpha));
+            GUIContentHelper.PushColor(new Color(1, 1, 1, alpha));
             GUILayout.BeginHorizontal(SirenixGUIStyles.CardStyle);
-            GUIHelper.PopColor();
+            GUIContentHelper.PopColor();
             {
                 GUILayout.BeginVertical();
 
