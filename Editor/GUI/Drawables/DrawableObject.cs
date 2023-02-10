@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace Rhinox.GUIUtils.Editor
 {
-    public class DrawableObject : ISimpleDrawable
+    public class DrawableObject : IOrderedDrawable
     {
         public int Order { get; set; }
         

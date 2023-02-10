@@ -87,6 +87,7 @@ namespace Rhinox.GUIUtils.Editor.Helpers
             this.TabGroup.GoToPage(this.pages[this.pages.Count - 1].Tab);
         }
 
+#pragma warning disable CS0693
         private static void Resize<T>(List<T> list, int length)
         {
             while (list.Count < length)
@@ -94,6 +95,7 @@ namespace Rhinox.GUIUtils.Editor.Helpers
             while (list.Count > length)
                 list.RemoveAt(list.Count - 1);
         }
+#pragma warning restore CS0693
 
         public void DrawPageNavigation(Rect rect)
         {

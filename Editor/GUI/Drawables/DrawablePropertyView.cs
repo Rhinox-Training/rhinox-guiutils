@@ -11,15 +11,15 @@ namespace Rhinox.GUIUtils.Editor
     public class DrawablePropertyView
     {
         private readonly object _instance;
-        private readonly IReadOnlyCollection<MemberInfo> _serializedMembers;
-        private readonly IDrawableMember[] _drawables;
+        private readonly ICollection<IDrawableMember> _drawables;
+        private readonly ICollection<IOrderedDrawable> _additionalDrawables;
 
         public DrawablePropertyView(object nonUnityObjInstance)
         {
             if (nonUnityObjInstance == null) throw new ArgumentNullException(nameof(nonUnityObjInstance));
             _instance = nonUnityObjInstance;
-            _serializedMembers = SerializeHelper.GetPublicAndSerializedMembers(_instance.GetType());
-            _drawables = _serializedMembers.Select(x => DrawableMemberFactory.Create(x)).ToArray();
+            _drawables = DrawableMemberFactory.CreateDrawableMembersFor(_instance.GetType());
+            _additionalDrawables = DrawableFactory.ParseNonUnityObject(nonUnityObjInstance);
         }
         
         public void Draw()
@@ -30,6 +30,14 @@ namespace Rhinox.GUIUtils.Editor
                     continue;
                 drawable.Draw(_instance);
             }
+            
+            foreach (var drawable in _additionalDrawables)
+            {
+                if (drawable == null)
+                    continue;
+                drawable.Draw();
+            }
+        
         }
     }
 }

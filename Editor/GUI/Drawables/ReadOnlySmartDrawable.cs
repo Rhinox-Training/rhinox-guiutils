@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace Rhinox.GUIUtils.Editor
 {
-    public class ReadOnlySmartDrawable : SimpleDrawable
+    public class ReadOnlySmartDrawable : SimpleUnityDrawable
     {
         private readonly FieldInfo _info;
         private IDrawableMember _drawable;
@@ -44,7 +44,7 @@ namespace Rhinox.GUIUtils.Editor
             }
             else if (_info.FieldType == typeof(UnityEngine.Object))
             {
-                EditorGUI.ObjectField(rect, _info.GetValue(target) as UnityEngine.Object, _info.FieldType);
+                EditorGUI.ObjectField(rect, _info.GetValue(target) as UnityEngine.Object, _info.FieldType, true);
             }
             else
             {
@@ -54,7 +54,7 @@ namespace Rhinox.GUIUtils.Editor
         }
     }
     
-    public class ReadOnlySmartPropertyDrawable : SimpleDrawable
+    public class ReadOnlySmartPropertyDrawable : SimpleUnityDrawable
     {
         private readonly PropertyInfo _info;
         private IDrawableMember _drawable;
@@ -94,7 +94,7 @@ namespace Rhinox.GUIUtils.Editor
             }
             else if (_info.PropertyType == typeof(Object))
             {
-                EditorGUI.ObjectField(rect, _info.GetValue(target) as Object, _info.PropertyType);
+                EditorGUI.ObjectField(rect, _info.GetValue(target) as Object, _info.PropertyType, true);
             }
             else
             {

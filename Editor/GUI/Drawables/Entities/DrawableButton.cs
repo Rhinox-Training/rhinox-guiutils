@@ -18,14 +18,14 @@ namespace Rhinox.GUIUtils.Editor
         private readonly MethodInfo _methodInfo;
         private readonly ButtonAttribute _buttonAttr;
 
-        public DrawableButton(SerializedObject obj, MethodInfo method, ButtonAttribute buttonAttr)
+        public DrawableButton(object obj, MethodInfo method, ButtonAttribute buttonAttr)
             : base(obj)
         {
             _methodInfo = method;
             _buttonAttr = buttonAttr;
         }
         
-        protected override void Draw(UnityEngine.Object target)
+        protected override void Draw(object target)
         {
             var buttonHeight = _buttonAttr.ButtonHeight;
             buttonHeight = buttonHeight == 0 ? (int)EditorGUIUtility.singleLineHeight : buttonHeight;
@@ -36,7 +36,7 @@ namespace Rhinox.GUIUtils.Editor
             }
         }
 
-        protected override void Draw(Rect rect, Object target)
+        protected override void Draw(Rect rect, object target)
         {
             var buttonHeight = _buttonAttr.ButtonHeight;
             buttonHeight = buttonHeight == 0 ? (int)EditorGUIUtility.singleLineHeight : buttonHeight;

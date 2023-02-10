@@ -12,7 +12,7 @@ namespace Rhinox.GUIUtils.Editor
         
         private List<DrawableButton> _buttons;
         
-        public DrawableButtonGroup(SerializedObject obj, string groupId, int order = 0) : base(obj, order)
+        public DrawableButtonGroup(object obj, string groupId, int order = 0) : base(obj, order)
         {
             _buttons = new List<DrawableButton>();
             ID = groupId;
@@ -23,7 +23,7 @@ namespace Rhinox.GUIUtils.Editor
             _buttons.AddUnique(button);
         }
 
-        protected override void Draw(Object target)
+        protected override void Draw(object target)
         {
             GUILayout.BeginHorizontal();
             foreach (var button in _buttons)
@@ -35,7 +35,7 @@ namespace Rhinox.GUIUtils.Editor
             GUILayout.EndHorizontal();
         }
 
-        protected override void Draw(Rect rect, Object target)
+        protected override void Draw(Rect rect, object target)
         {
             GUILayout.BeginHorizontal();
             foreach (var button in _buttons)
