@@ -1,4 +1,6 @@
-﻿using System.Reflection;
+﻿using System.Collections.Generic;
+using System.Reflection;
+using Rhinox.Lightspeed.Reflection;
 using UnityEditor;
 using UnityEngine;
 
@@ -7,19 +9,20 @@ namespace Rhinox.GUIUtils.Editor
     public class ReadOnlySmartDrawable : SimpleUnityDrawable
     {
         private readonly FieldInfo _info;
-        private IDrawableMember _drawable;
+        private ICollection<IOrderedDrawable> _drawable;
 
         public ReadOnlySmartDrawable(SerializedObject obj, FieldInfo info, int order = 0) 
             : base(obj, order)
         {
             _info = info;
-            _drawable = DrawableMemberFactory.Create(_info);
+            _drawable = DrawableFactory.CreateDrawableMembersFor(_info.GetValue(obj.targetObject), _info.GetReturnType());
         }
 
         protected override void Draw(Object target)
         {
             EditorGUI.BeginDisabledGroup(true);
-            _drawable.Draw(target);
+            foreach (var draw in _drawable)
+                draw.Draw();
             EditorGUI.EndDisabledGroup();
         }
 
@@ -57,19 +60,20 @@ namespace Rhinox.GUIUtils.Editor
     public class ReadOnlySmartPropertyDrawable : SimpleUnityDrawable
     {
         private readonly PropertyInfo _info;
-        private IDrawableMember _drawable;
+        private ICollection<IOrderedDrawable> _drawable;
 
         public ReadOnlySmartPropertyDrawable(SerializedObject obj, PropertyInfo info, int order = 0) 
             : base(obj, order)
         {
             _info = info;
-            _drawable = DrawableMemberFactory.Create(_info);
+            _drawable = DrawableFactory.CreateDrawableMembersFor(_info.GetValue(obj.targetObject), _info.GetReturnType());
         }
 
         protected override void Draw(Object target)
         {
             EditorGUI.BeginDisabledGroup(true);
-            _drawable.Draw(target);
+            foreach (var draw in _drawable)
+                draw.Draw();
             EditorGUI.EndDisabledGroup();
         }
 

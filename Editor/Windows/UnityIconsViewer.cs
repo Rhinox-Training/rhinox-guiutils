@@ -327,7 +327,7 @@ namespace Rhinox.GUIUtils.Editor
             var target = (UnityIcon)GetTargets().ElementAt(index);
 
             var propertyDrawer = new DrawablePropertyView(target);
-            propertyDrawer.Draw();
+            propertyDrawer.DrawLayout();
         }
 #endif
     }

@@ -9,32 +9,41 @@ using UnityEngine;
 
 namespace Rhinox.GUIUtils.Editor
 {
-    public class CompositeDrawableMember : IDrawableMember
+    public class CompositeDrawableMember : IOrderedDrawable
     {
-        private readonly ICollection<IDrawableMember> _drawableMemberChildren;
-        private readonly MemberInfo _memberInfo;
+        public int Order { get; set; }
+        
+        private readonly ICollection<IOrderedDrawable> _drawableMemberChildren;
 
-        public CompositeDrawableMember(ICollection<IDrawableMember> subdrawables, MemberInfo memberInfo)
+        public CompositeDrawableMember(ICollection<IOrderedDrawable> subdrawables)
         {
             _drawableMemberChildren = subdrawables;
-            _memberInfo = memberInfo;
         }
 
-        public object Draw(object target)
+        public void Draw()
         {
             if (_drawableMemberChildren == null)
-                return target;
+                return;
 
-            var child = _memberInfo.GetValue(target);
             foreach (var childDrawable in _drawableMemberChildren)
             {
                 if (childDrawable == null)
                     continue;
-                child = childDrawable.Draw(child);
+                childDrawable.Draw();
             }
+        }
 
-            _memberInfo.SetValue(target, child);
-            return target;
+        public void Draw(Rect rect)
+        {
+            if (_drawableMemberChildren == null)
+                return;
+
+            foreach (var childDrawable in _drawableMemberChildren)
+            {
+                if (childDrawable == null)
+                    continue;
+                childDrawable.Draw(rect);
+            }
         }
     }
 }
