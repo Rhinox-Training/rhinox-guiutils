@@ -11,33 +11,40 @@ namespace Rhinox.GUIUtils.Editor
     public class DrawablePropertyView
     {
         private readonly object _instance;
-        private readonly ICollection<IDrawableMember> _drawables;
-        private readonly ICollection<IOrderedDrawable> _additionalDrawables;
+        private readonly ICollection<IOrderedDrawable> _drawables;
 
         public DrawablePropertyView(object nonUnityObjInstance)
         {
             if (nonUnityObjInstance == null) throw new ArgumentNullException(nameof(nonUnityObjInstance));
             _instance = nonUnityObjInstance;
-            _drawables = DrawableMemberFactory.CreateDrawableMembersFor(_instance.GetType());
-            _additionalDrawables = DrawableFactory.ParseNonUnityObject(nonUnityObjInstance);
+            _drawables = DrawableFactory.ParseNonUnityObject(nonUnityObjInstance);
         }
         
-        public void Draw()
+        public DrawablePropertyView(SerializedObject unityObjInstance)
+        {
+            if (unityObjInstance == null) throw new ArgumentNullException(nameof(unityObjInstance));
+            _instance = unityObjInstance;
+            _drawables = DrawableFactory.ParseSerializedObject(unityObjInstance);
+        }
+        
+        public void DrawLayout()
         {
             foreach (var drawable in _drawables)
             {
                 if (drawable == null)
                     continue;
-                drawable.Draw(_instance);
+                drawable.Draw();
             }
-            
-            foreach (var drawable in _additionalDrawables)
+        }
+        
+        public void Draw(Rect rect)
+        {
+            foreach (var drawable in _drawables)
             {
                 if (drawable == null)
                     continue;
-                drawable.Draw();
+                drawable.Draw(rect);
             }
-        
         }
     }
 }

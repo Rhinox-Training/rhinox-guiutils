@@ -5,16 +5,6 @@ using UnityEngine;
 
 namespace Rhinox.GUIUtils.Editor
 {
-    public class BoolDrawableFieldAlt : BaseDrawable<bool>
-    {
-        public BoolDrawableFieldAlt(object instance, MemberInfo info) : base(instance, info) { }
-        
-        protected override bool DrawWithSmartValue(object target)
-        {
-            return EditorGUILayout.Toggle(GetSmartValue());
-        }
-    }
-    
     public abstract class BaseDrawable<T> : IOrderedDrawable
     {
         public int Order { get; set; }
@@ -28,20 +18,24 @@ namespace Rhinox.GUIUtils.Editor
             _info = info;
         }
         
-        public T GetSmartValue() => (T) _info.GetValue(_instance);
-
-        protected abstract T DrawWithSmartValue(object target);
+        protected T GetSmartValue() => (T) _info.GetValue(_instance);
+        protected void SetSmartValue(T val) => _info.SetValue(_instance, val);
         
         public void Draw()
         {
-            
-            var newVal = DrawWithSmartValue(_instance);
-            _info.SetValue(_instance, newVal);
+            var smartVal = GetSmartValue();
+            var newVal = DrawValue(_instance, smartVal);
+            SetSmartValue(newVal);
         }
 
         public void Draw(Rect rect)
         {
-            Draw();
+            var smartVal = GetSmartValue();
+            var newVal = DrawValue(rect, _instance, smartVal);
+            SetSmartValue(newVal);
         }
+
+        protected abstract T DrawValue(object instance, T memberVal);
+        protected abstract T DrawValue(Rect rect, object instance, T memberVal);
     }
 }

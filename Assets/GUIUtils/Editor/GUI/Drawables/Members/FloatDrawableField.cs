@@ -1,16 +1,22 @@
-﻿using System;
-using System.Reflection;
+﻿using System.Reflection;
 using UnityEditor;
+using UnityEngine;
+using Object = System.Object;
 
 namespace Rhinox.GUIUtils.Editor
 {
-    public class FloatDrawableField : BaseSmartDrawableMember<float>
+    public class FloatDrawableField : BaseDrawable<float>
     {
-        public FloatDrawableField(MemberInfo info) : base(info) { }
+        public FloatDrawableField(object instance, MemberInfo info) : base(instance, info) { }
         
-        public override float DrawWithSmartValue(Object target)
+        protected override float DrawValue(object instance, float memberVal)
         {
-            return EditorGUILayout.FloatField(GetSmartValue(target));
+            return EditorGUILayout.FloatField(memberVal);
+        }
+
+        protected override float DrawValue(Rect rect, object instance, float memberVal)
+        {
+            return EditorGUI.FloatField(rect, memberVal);
         }
     }
 }

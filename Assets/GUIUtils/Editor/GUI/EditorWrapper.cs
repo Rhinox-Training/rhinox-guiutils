@@ -86,7 +86,7 @@ namespace Rhinox.GUIUtils.Odin.Editor
 #else
             if (_view == null) 
                 _view = new DrawablePropertyView(Target);
-            _view.Draw();
+            _view.DrawLayout();
 #endif
         }
 

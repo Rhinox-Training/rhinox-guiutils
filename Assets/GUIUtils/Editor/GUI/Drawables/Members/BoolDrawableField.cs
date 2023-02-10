@@ -1,16 +1,22 @@
 ﻿using System;
 using System.Reflection;
 using UnityEditor;
+using UnityEngine;
 
 namespace Rhinox.GUIUtils.Editor
 {
-    public class BoolDrawableField : BaseSmartDrawableMember<bool>
+    public class BoolDrawableField : BaseDrawable<bool>
     {
-        public BoolDrawableField(MemberInfo info) : base(info) { }
+        public BoolDrawableField(object instance, MemberInfo info) : base(instance, info) { }
         
-        public override bool DrawWithSmartValue(Object target)
+        protected override bool DrawValue(object instance, bool val)
         {
-            return EditorGUILayout.Toggle(GetSmartValue(target));
+            return EditorGUILayout.Toggle(val);
+        }
+
+        protected override bool DrawValue(Rect rect, object instance, bool memberVal)
+        {
+            return EditorGUI.Toggle(rect, memberVal);
         }
     }
 }

@@ -1,16 +1,22 @@
-﻿using System;
-using System.Reflection;
+﻿using System.Reflection;
 using UnityEditor;
+using UnityEngine;
+using Object = System.Object;
 
 namespace Rhinox.GUIUtils.Editor
 {
-    public class StringDrawableField : BaseSmartDrawableMember<string>
+    public class StringDrawableField : BaseDrawable<string>
     {
-        public StringDrawableField(MemberInfo info) : base(info) { }
+        public StringDrawableField(object instance, MemberInfo info) : base(instance, info) { }
 
-        public override string DrawWithSmartValue(Object target)
+        protected override string DrawValue(object instance, string memberVal)
         {
-            return EditorGUILayout.TextField(GetSmartValue(target));
+            return EditorGUILayout.TextField(memberVal);
+        }
+
+        protected override string DrawValue(Rect rect, object instance, string memberVal)
+        {
+            return EditorGUI.TextField(rect, memberVal);
         }
     }
 }
