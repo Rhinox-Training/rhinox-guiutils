@@ -1,6 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Rhinox.Lightspeed;
+#if ODIN_INSPECTOR
+using Sirenix.OdinInspector.Editor;
+#endif
 using UnityEditor;
 using UnityEngine;
 
@@ -50,7 +54,7 @@ namespace Rhinox.GUIUtils.Editor
             IsSelected = true;
         }
 
-        public virtual void DrawMenuItem(Event currentEvent, int indentLevel)
+        public virtual void DrawMenuItem(Event currentEvent, int indentLevel, Func<string, string> nameTransformer = null)
         {
             Rect rect1 = GUILayoutUtility.GetRect(0.0f, 30.0f);
 
@@ -110,7 +114,8 @@ namespace Rhinox.GUIUtils.Editor
 
                 GUIStyle style = isSelected ? CustomGUIStyles.BoldLabel : CustomGUIStyles.Label;
                 var actualLabelRect = labelRect.AlignCenterVertical(16f);
-                GUI.Label(actualLabelRect, Name, style);
+                string name = nameTransformer != null ? nameTransformer.Invoke(Name) : Name;
+                GUI.Label(actualLabelRect, name, style);
                 if (UseBorders)
                 {
                     float num = 1f;
@@ -208,7 +213,15 @@ namespace Rhinox.GUIUtils.Editor
 
         public int ToolbarHeight = 22;
 
+        public bool ShowGrouped = true;
+
+        public string GroupingString = "/";
+
         public Rect VisibleRect { get; set; }
+#if ODIN_INSPECTOR
+        public OdinMenuStyle DefaultMenuStyle;
+        public bool DrawSearchToolbar;
+#endif
 
         public event Action SelectionChanged; // TODO: how to
 
@@ -243,7 +256,26 @@ namespace Rhinox.GUIUtils.Editor
         public virtual void Draw(Event evt)
         {
             VisibleRect = Expand(CustomEditorGUI.GetVisibleRect(), 300f);
-            if (_items != null)
+            if (_items == null) 
+                return;
+
+            if (ShowGrouped)
+            {
+                var grouped = _items.GroupBy(x => x.Name.Split(new string[] { GroupingString }, 
+                    StringSplitOptions.None).FirstOrDefault());
+                foreach (var group in grouped)
+                {
+                    if (!string.IsNullOrEmpty(group.Key))
+                        EditorGUILayout.LabelField(group.Key);
+                    foreach (var uiItem in group)
+                    {
+                        if (uiItem == null)
+                            continue;
+                        uiItem.DrawMenuItem(evt, 0, (x) => x.Replace(group.Key + GroupingString, ""));
+                    }
+                }
+            }
+            else
             {
                 foreach (var uiItem in _items)
                 {
@@ -253,7 +285,6 @@ namespace Rhinox.GUIUtils.Editor
                 }
             }
         }
-
         public static Rect Expand(Rect rect, float expand)
         {
             rect.x -= expand;
@@ -303,6 +334,23 @@ namespace Rhinox.GUIUtils.Editor
             if (icon != null)
                 item.SetIcon(icon);
             _items.AddUnique(item);
+        }
+
+        public void AddCustom(UIMenuItem customItem)
+        {
+            if (customItem == null || customItem.MenuTree != this)
+                return;
+            if (_items == null)
+                _items = new List<UIMenuItem>(); ;
+            _items.AddUnique(customItem);
+        }
+
+        public void SortMenuItemsByName(bool reverseSort = false)
+        {
+            if (!reverseSort)
+                _items.SortBy(x => x.Name);
+            else
+                _items.SortByDescending(x => x.Name);
         }
     }
 }

@@ -16,7 +16,8 @@ namespace Rhinox.GUIUtils.Editor
         [NonSerialized] private object trySelectObject;
         [SerializeField] [HideInInspector] private List<string> selectedItems = new List<string>();
         [SerializeField] [HideInInspector] private bool resizableMenuWidth = true;
-        
+        [HideInInspector] private Vector2 _menuScrollPosition;
+
         private void ProjectWindowChanged() => isDirty = true;
 
         /// <summary>
@@ -135,6 +136,7 @@ namespace Rhinox.GUIUtils.Editor
             Rect rect;
             GUILayout.BeginHorizontal();
             {
+                _menuScrollPosition = GUILayout.BeginScrollView(_menuScrollPosition);
                 GUILayout.BeginVertical(GUILayout.Width(MenuWidth), GUILayout.ExpandHeight(true));
                 {
                     Rect currentLayoutRect = CustomEditorGUI.GetTopLevelLayoutRect();
@@ -148,6 +150,7 @@ namespace Rhinox.GUIUtils.Editor
                     DrawMenu();
                 }
                 GUILayout.EndVertical();
+                GUILayout.EndScrollView();
                 GUILayout.BeginVertical();
                 {
                     EditorGUI.DrawRect(CustomEditorGUI.GetTopLevelLayoutRect(), CustomGUIStyles.DarkEditorBackground);

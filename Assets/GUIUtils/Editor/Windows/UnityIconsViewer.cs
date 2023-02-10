@@ -55,7 +55,7 @@ namespace Rhinox.GUIUtils.Editor
         [HorizontalGroup("Row1", 70), VerticalGroup("Row1/Right")]
         public Texture Icon;
         
-        [ReadOnly] public string TextureUsage { get; set; }
+        public string TextureUsage { get; set; }
         
         [PropertySpace(10)]
         [Button(ButtonSizes.Medium)]
@@ -65,7 +65,7 @@ namespace Rhinox.GUIUtils.Editor
         }
 
         [Button(ButtonSizes.Medium)]
-        private void CopyTextureUseage()
+        private void CopyTextureUsage()
         {
             Copy(TextureUsage);
         }
@@ -192,10 +192,9 @@ namespace Rhinox.GUIUtils.Editor
         }
     }
 
-#if ODIN_INSPECTOR
     /// ================================================================================================================
     /// UnityIconsViewer
-    public class UnityIconsViewer : OdinMenuEditorWindow
+    public class UnityIconsViewer : CustomMenuEditorWindow
     {
         private readonly List<UnityIcon> _Icons = new List<UnityIcon>();
         private Vector2 _scrollPos;
@@ -210,7 +209,7 @@ namespace Rhinox.GUIUtils.Editor
 
         public static GUIContent TitleContent
         {
-            get { return new GUIContent("Icon List", EditorIcons.MagnifyingGlass.Raw); }
+            get { return new GUIContent("Icon List", UnityIcon.AssetIcon("Fa_Search")); }
         }
 
         protected override void OnEnable()
@@ -221,17 +220,17 @@ namespace Rhinox.GUIUtils.Editor
 
         protected override void OnBeginDrawEditors()
         {
-            var toolbarHeight = MenuTree.Config.SearchToolbarHeight;
+            var toolbarHeight = MenuTree.ToolbarHeight;
 
             // Draws a toolbar with the name of the currently selected menu item.
-            SirenixEditorGUI.BeginHorizontalToolbar(toolbarHeight);
+            CustomEditorGUI.BeginHorizontalToolbar(height: toolbarHeight);
             {
                 GUILayout.Label(_Icons.Count + " Icons found");
 
-                if (SirenixEditorGUI.ToolbarButton(new GUIContent("Refresh", EditorIcons.Refresh.Active)))
+                if (CustomEditorGUI.ToolbarButton(new GUIContent("Refresh", UnityIcon.AssetIcon("Fa_Redo"))))
                     FindIcons();
             }
-            SirenixEditorGUI.EndHorizontalToolbar();
+            CustomEditorGUI.EndHorizontalToolbar();
         }
 
         /* Find all textures and filter them to narrow the search. */
@@ -257,6 +256,7 @@ namespace Rhinox.GUIUtils.Editor
             }
 
             // Odin icons
+#if ODIN_INSPECTOR
             var odinIcons = UnityIcon.GetAllOdinIcons();
             foreach (var pair in odinIcons)
             {
@@ -271,6 +271,7 @@ namespace Rhinox.GUIUtils.Editor
 
             // resources icons
             _Icons.AddRange(GetAssetIcons( UnityIcon.GetAllAssetIcons() ));
+#endif
                 
 
             _Icons.Sort();
@@ -304,11 +305,13 @@ namespace Rhinox.GUIUtils.Editor
             return icons;
         }
 
-        protected override OdinMenuTree BuildMenuTree()
+        protected override CustomMenuTree BuildMenuTree()
         {
-            var tree = new OdinMenuTree(true);
+            var tree = new CustomMenuTree(); // true: multisearch
+#if ODIN_INSPECTOR
             tree.DefaultMenuStyle.IconSize = 16.00f;
             tree.Config.DrawSearchToolbar = true;
+#endif
 
             foreach (var icon in _Icons)
                 tree.Add(icon.Origin + "/" + icon.Name, icon, icon.Icon);
@@ -317,6 +320,15 @@ namespace Rhinox.GUIUtils.Editor
 
             return tree;
         }
-    }
+
+#if !ODIN_INSPECTOR
+        protected override void DrawEditor(int index)
+        {
+            var target = (UnityIcon)GetTargets().ElementAt(index);
+
+            var propertyDrawer = new DrawablePropertyView(target);
+            propertyDrawer.Draw();
+        }
 #endif
+    }
 }

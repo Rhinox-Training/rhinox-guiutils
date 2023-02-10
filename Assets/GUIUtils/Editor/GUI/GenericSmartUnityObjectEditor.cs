@@ -13,7 +13,7 @@ namespace Rhinox.GUIUtils.Editor
     [UnityEditor.CustomEditor(typeof(object))]
     public class GenericSmartUnityObjectEditor : UnityEditor.Editor
     {
-        private ICollection<ISimpleDrawable> _drawables;
+        private ICollection<IOrderedDrawable> _drawables;
 
         private void OnEnable()
         {

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Rhinox.Lightspeed;
+using Rhinox.Lightspeed.Reflection;
 using UnityEditor;
 using UnityEngine;
 
@@ -10,28 +11,29 @@ namespace Rhinox.GUIUtils.Editor
 {
     public class CompositeDrawableMember : IDrawableMember
     {
-        private readonly Type _type;
-        private readonly IReadOnlyCollection<MemberInfo> _members;
-        private readonly IDrawableMember[] _drawableMemberProperties;
+        private readonly ICollection<IDrawableMember> _drawableMemberChildren;
+        private readonly MemberInfo _memberInfo;
 
-        public CompositeDrawableMember(Type t)
+        public CompositeDrawableMember(ICollection<IDrawableMember> subdrawables, MemberInfo memberInfo)
         {
-            _type = t;
-            _members = SerializeHelper.GetPublicAndSerializedMembers(_type);
-            _drawableMemberProperties = _members.Select(x => DrawableMemberFactory.Create(x)).ToArray();
+            _drawableMemberChildren = subdrawables;
+            _memberInfo = memberInfo;
         }
-        
+
         public object Draw(object target)
         {
-            EditorGUILayout.BeginVertical(EditorStyles.helpBox);
-            GUILayout.Label(_type.Name, EditorStyles.boldLabel);
-            foreach (var prop in _drawableMemberProperties)
+            if (_drawableMemberChildren == null)
+                return target;
+
+            var child = _memberInfo.GetValue(target);
+            foreach (var childDrawable in _drawableMemberChildren)
             {
-                if (prop == null)
+                if (childDrawable == null)
                     continue;
-                target = prop.Draw(target);
+                child = childDrawable.Draw(child);
             }
-            EditorGUILayout.EndVertical();
+
+            _memberInfo.SetValue(target, child);
             return target;
         }
     }

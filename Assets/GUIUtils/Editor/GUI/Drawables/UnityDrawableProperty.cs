@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace Rhinox.GUIUtils.Editor
 {
-    public class UnityDrawableProperty : SimpleDrawable
+    public class UnityDrawableProperty : SimpleUnityDrawable
     {
         private readonly SerializedProperty _property;
 

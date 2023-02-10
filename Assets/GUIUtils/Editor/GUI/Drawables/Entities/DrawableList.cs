@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using Rhinox.Lightspeed;
 using Sirenix.OdinInspector;
@@ -8,7 +9,7 @@ using Object = UnityEngine.Object;
 
 namespace Rhinox.GUIUtils.Editor
 {
-    public class DrawableList : SimpleDrawable
+    public class DrawableList : SimpleUnityDrawable
     {
         private BetterReorderableList _listRO;
         private readonly SerializedProperty _listProperty;
@@ -18,7 +19,7 @@ namespace Rhinox.GUIUtils.Editor
 
         private class ListElementDrawable
         {
-            private readonly ICollection<ISimpleDrawable> _drawables;
+            private readonly ICollection<IOrderedDrawable> _drawables;
             private readonly SerializedProperty _property;
 
             public float ElementHeight
@@ -102,6 +103,12 @@ namespace Rhinox.GUIUtils.Editor
             _listRO.drawElementCallback = DrawElement;
             _listRO.onChangedCallback += OnChangedListCallback;
             _listRO.elementHeightCallback = OnHeight;
+        }
+
+        public DrawableList(IList instance)
+            : base(null)
+        {
+            // TODO: support non unity variant
         }
 
         private float OnHeight(int index)

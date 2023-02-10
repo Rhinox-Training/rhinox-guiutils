@@ -12,14 +12,61 @@ namespace Rhinox.GUIUtils.Editor
 {
     public static class DrawableFactory
     {
-        public static ICollection<ISimpleDrawable> ParseSerializedObject(SerializedObject obj)
+        public static ICollection<IOrderedDrawable> ParseNonUnityObject(object obj)
+        {
+            if (obj == null)
+                return Array.Empty<SimpleDrawable>();
+            
+            var type = obj.GetType();
+
+            var drawables = new List<IOrderedDrawable>();
+            // var fields = type.GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic).ToList();
+            // foreach (var field in fields)
+            // {
+            //     if (field.IsPrivate)
+            //     {
+            //         var showInInspector = field.GetCustomAttribute<ShowInInspectorAttribute>();
+            //         if (showInInspector != null)
+            //         {
+            //             var drawable = DrawableMemberFactory.Create(field);
+            //             var readonlyDraw = new ReadOnlySmartDrawable(obj, field);
+            //             var propOrder2 = field.GetCustomAttribute<PropertyOrderAttribute>();
+            //             if (propOrder2 != null)
+            //                 readonlyDraw.Order = propOrder2.Order;
+            //             drawables.Add(readonlyDraw);
+            //         }
+            //     }
+            // }
+            //
+            // var properties = type.GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic).ToList();
+            // foreach (var property in properties)
+            // { 
+            //     var showInInspector = property.GetCustomAttribute<ShowInInspectorAttribute>();
+            //     if (showInInspector != null)
+            //     {
+            //         var readonlyDraw = new ReadOnlySmartPropertyDrawable(obj, property);
+            //         var propOrder2 = property.GetCustomAttribute<PropertyOrderAttribute>();
+            //         if (propOrder2 != null)
+            //             readonlyDraw.Order = propOrder2.Order;
+            //         drawables.Add(readonlyDraw);
+            //     }
+            // }
+
+            var buttons = FindButtons(obj);
+            drawables.AddRange(buttons);
+
+            var result = drawables.OrderBy(x => x.Order).ToArray();
+            return result;
+        }
+        
+        public static ICollection<IOrderedDrawable> ParseSerializedObject(SerializedObject obj)
         {
             if (obj == null || obj.targetObject == null)
                 return Array.Empty<SimpleDrawable>();
             
             var type = obj.targetObject.GetType();
 
-            var drawables = new List<SimpleDrawable>();
+            var drawables = new List<IOrderedDrawable>();
             var fields = type.GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic).ToList();
             foreach (var field in fields)
             {
@@ -41,7 +88,7 @@ namespace Rhinox.GUIUtils.Editor
                     continue;
                 }
 
-                SimpleDrawable drawable = null;
+                IOrderedDrawable drawable = null;
 
                 if (field.FieldType.InheritsFrom(typeof(IList)))
                     drawable = new DrawableList(prop);
@@ -76,11 +123,11 @@ namespace Rhinox.GUIUtils.Editor
             return result;
         }
         
-        private static ICollection<SimpleDrawable> FindButtons(SerializedObject obj)
+        private static ICollection<IOrderedDrawable> FindButtons(object obj)
         {
-            var type = obj.targetObject.GetType();
+            var type = obj.GetType();
             
-            var buttons = new List<SimpleDrawable>();
+            var buttons = new List<IOrderedDrawable>();
             var buttonGroups = new List<DrawableButtonGroup>();
             var methods = type.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
             foreach (var method in methods)

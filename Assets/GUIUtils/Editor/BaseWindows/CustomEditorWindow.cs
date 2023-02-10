@@ -77,7 +77,7 @@ namespace Rhinox.GUIUtils.Editor
         private int _mouseDownKeyboardControl;
         private Vector2 _contentSize;
         private bool _repaintRequested;
-        private bool _preventContentFromExpanding;
+        protected bool _preventContentFromExpanding;
 
         //==============================================================================================================
         // EVENTS

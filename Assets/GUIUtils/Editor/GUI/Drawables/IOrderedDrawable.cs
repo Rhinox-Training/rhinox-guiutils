@@ -2,7 +2,7 @@
 
 namespace Rhinox.GUIUtils.Editor
 {
-    public interface ISimpleDrawable
+    public interface IOrderedDrawable
     {
         int Order { get; set; }
         void Draw();
