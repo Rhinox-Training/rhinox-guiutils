@@ -136,7 +136,7 @@ namespace Rhinox.GUIUtils.Editor
             Rect rect;
             GUILayout.BeginHorizontal();
             {
-                _menuScrollPosition = GUILayout.BeginScrollView(_menuScrollPosition);
+                _menuScrollPosition = GUILayout.BeginScrollView(_menuScrollPosition, GUILayout.ExpandWidth(false));
                 GUILayout.BeginVertical(GUILayout.Width(MenuWidth), GUILayout.ExpandHeight(true));
                 {
                     Rect currentLayoutRect = CustomEditorGUI.GetTopLevelLayoutRect();
@@ -148,10 +148,12 @@ namespace Rhinox.GUIUtils.Editor
                     rect.xMax += 4f;
 
                     DrawMenu();
+
                 }
                 GUILayout.EndVertical();
                 GUILayout.EndScrollView();
-                GUILayout.BeginVertical();
+
+                GUILayout.BeginVertical(GUILayout.ExpandWidth(true));
                 {
                     EditorGUI.DrawRect(CustomEditorGUI.GetTopLevelLayoutRect(), CustomGUIStyles.DarkEditorBackground);
                     base.OnGUI();
