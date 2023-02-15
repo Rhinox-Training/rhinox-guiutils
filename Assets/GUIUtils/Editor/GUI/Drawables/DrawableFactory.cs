@@ -7,6 +7,7 @@ using Rhinox.Lightspeed;
 using Rhinox.Lightspeed.Reflection;
 using Sirenix.OdinInspector;
 using UnityEditor;
+using UnityEngine;
 
 namespace Rhinox.GUIUtils.Editor
 {
@@ -26,10 +27,100 @@ namespace Rhinox.GUIUtils.Editor
             var buttons = FindButtons(obj);
             drawables.AddRange(buttons);
 
+
+            HandleGrouping(ref drawables);
+            
+
             var result = drawables.OrderBy(x => x.Order).ToArray();
             return result;
         }
-        
+
+        private static void HandleGrouping(ref List<IOrderedDrawable> drawables)
+        {
+            var grouping = new Dictionary<PropertyGroupAttribute, List<IOrderedDrawable>>();
+            var finalList = new List<IOrderedDrawable>();
+            foreach (var drawable in drawables)
+            {
+                if (drawable == null)
+                    continue;
+
+                var groupingAttributes = drawable.GetMemberAttributes<PropertyGroupAttribute>();
+                if (groupingAttributes.IsNullOrEmpty())
+                {
+                    finalList.AddUnique(drawable);
+                    continue;
+                }
+                
+                foreach (var attr in groupingAttributes)
+                {
+                    var key = FindKey(grouping, attr);
+                    if (key == null)
+                    {
+                        grouping.Add(attr, new List<IOrderedDrawable>());
+                        key = attr;
+                    }
+
+                    var list = grouping[key];
+                    list.AddUnique(drawable);
+                    grouping[key] = list;
+                }
+            }
+
+            var remainingGroupings = grouping.Keys.ToList();
+            remainingGroupings.SortByDescending(x => x.GroupID.Length);
+            while (remainingGroupings.Count > 0)
+            {
+                var target = remainingGroupings.First();
+                remainingGroupings.RemoveAt(0);
+
+                var targetDrawables = grouping[target];
+                var converted = new CompositeDrawableMember(targetDrawables, target.Order);
+                converted.GroupBy(target);
+
+                grouping.Remove(target);
+
+                bool someoneContains = false;
+                foreach (var entry in grouping)
+                {
+                    if (entry.Value.ContainsAny(targetDrawables))
+                    {
+                        entry.Value.RemoveRange(targetDrawables);
+                        entry.Value.Add(converted);
+                        entry.Value.SortBy(x => x.Order);
+                        someoneContains = true;
+                    }
+                }
+
+                if (!someoneContains)
+                {
+                    var firstDrawable = converted.FirstOrDefault(x => !(x is CompositeDrawableMember));
+                    int index = drawables.IndexOf(firstDrawable);
+                    if (index == -1)
+                        finalList.Add(converted);
+                    else
+                        finalList.Insert(index, converted);
+                }
+            }
+
+            drawables = finalList;
+        }
+
+        private static PropertyGroupAttribute FindKey(Dictionary<PropertyGroupAttribute, List<IOrderedDrawable>> grouping, PropertyGroupAttribute attr)
+        {
+            foreach (var group in grouping)
+            {
+                if (group.Key.GetType() != attr.GetType())
+                    continue;
+
+                if (group.Key.GroupID != null && group.Key.GroupID.Equals(attr.GroupID))
+                {
+                    return group.Key;
+                }
+            }
+
+            return null;
+        }
+
         public static ICollection<IOrderedDrawable> ParseSerializedObject(SerializedObject obj)
         {
             if (obj == null || obj.targetObject == null)
@@ -89,6 +180,8 @@ namespace Rhinox.GUIUtils.Editor
 
             var buttons = FindButtons(obj);
             drawables.AddRange(buttons);
+            
+            HandleGrouping(ref drawables);
 
             var result = drawables.OrderBy(x => x.Order).ToArray();
             return result;
@@ -143,18 +236,21 @@ namespace Rhinox.GUIUtils.Editor
             return buttons;
         }
         
-        public static ICollection<IOrderedDrawable> CreateDrawableMembersFor(object instance, Type t)
+        private static List<IOrderedDrawable> CreateDrawableMembersFor(object instance, Type t)
         {
             return CreateDrawableMembersFor(instance, t, 0);
         }
 
-        private static ICollection<IOrderedDrawable> CreateDrawableMembersFor(object instance, Type t, int depth)
+        private static List<IOrderedDrawable> CreateDrawableMembersFor(object instance, Type t, int depth)
         {
             var publicAndSerializedMembers = SerializeHelper.GetPublicAndSerializedMembers(t);
             var drawableMembers = new List<IOrderedDrawable>();
             foreach (var memberInfo in publicAndSerializedMembers)
             {
                 if (memberInfo == null)
+                    continue;
+
+                if (memberInfo is PropertyInfo && memberInfo.GetCustomAttribute<SerializeField>() == null)
                     continue;
 
                 IOrderedDrawable resultingMember = null;
@@ -206,6 +302,12 @@ namespace Rhinox.GUIUtils.Editor
             if (type.InheritsFrom<IList>())
             {
                 drawableMember = new DrawableList(instance as IList);
+                return true;
+            }
+
+            if (type.InheritsFrom<UnityEngine.Object>())
+            {
+                drawableMember = new TextureDrawableField(instance, info);
                 return true;
             }
 

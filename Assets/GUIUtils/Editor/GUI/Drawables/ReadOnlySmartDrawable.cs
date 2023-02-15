@@ -15,7 +15,7 @@ namespace Rhinox.GUIUtils.Editor
             : base(obj, order)
         {
             _info = info;
-            _drawable = DrawableFactory.CreateDrawableMembersFor(_info.GetValue(obj.targetObject), _info.GetReturnType());
+            _drawable = DrawableFactory.ParseNonUnityObject(_info.GetValue(obj.targetObject));
         }
 
         protected override void Draw(Object target)
@@ -66,7 +66,7 @@ namespace Rhinox.GUIUtils.Editor
             : base(obj, order)
         {
             _info = info;
-            _drawable = DrawableFactory.CreateDrawableMembersFor(_info.GetValue(obj.targetObject), _info.GetReturnType());
+            _drawable = DrawableFactory.ParseNonUnityObject(_info.GetValue(obj.targetObject));
         }
 
         protected override void Draw(Object target)

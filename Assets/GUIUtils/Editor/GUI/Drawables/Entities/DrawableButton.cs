@@ -95,5 +95,12 @@ namespace Rhinox.GUIUtils.Editor
                 .Show();
             return true;
         }
+
+        public override ICollection<TAttribute> GetMemberAttributes<TAttribute>()
+        {
+            if (_methodInfo == null)
+                return base.GetMemberAttributes<TAttribute>();
+            return _methodInfo.GetCustomAttributes<TAttribute>().ToArray();
+        }
     }
 }

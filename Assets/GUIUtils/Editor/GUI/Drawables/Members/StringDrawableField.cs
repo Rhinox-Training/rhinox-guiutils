@@ -11,12 +11,12 @@ namespace Rhinox.GUIUtils.Editor
 
         protected override string DrawValue(object instance, string memberVal)
         {
-            return EditorGUILayout.TextField(memberVal);
+            return EditorGUILayout.TextField(Label, memberVal);
         }
 
         protected override string DrawValue(Rect rect, object instance, string memberVal)
         {
-            return EditorGUI.TextField(rect, memberVal);
+            return EditorGUI.TextField(rect, Label, memberVal);
         }
     }
 }

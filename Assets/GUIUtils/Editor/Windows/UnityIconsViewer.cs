@@ -44,15 +44,15 @@ namespace Rhinox.GUIUtils.Editor
         /// ================================================================================================================
         /// EDITOR DISPLAY
         [ReadOnly, HideLabel, Title("Info")]
-        [HorizontalGroup("Row1"), VerticalGroup("Row1/Left")]
+        [HorizontalGroup("Row1"), VerticalGroup("Row1/Left", 0)]
         public string Name;
 
         [ReadOnly]
-        [HorizontalGroup("Row1"), VerticalGroup("Row1/Left")]
+        [HorizontalGroup("Row1"), VerticalGroup("Row1/Left", 0)]
         public string Origin;
         
         [HideLabel, PreviewField(70, ObjectFieldAlignment.Right)]
-        [HorizontalGroup("Row1", 70), VerticalGroup("Row1/Right")]
+        [HorizontalGroup("Row1", 70), VerticalGroup("Row1/Right", 1)]
         public Texture Icon;
         
         public string TextureUsage { get; set; }
