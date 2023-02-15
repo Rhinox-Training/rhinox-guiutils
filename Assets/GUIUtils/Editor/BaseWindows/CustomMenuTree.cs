@@ -25,7 +25,7 @@ namespace Rhinox.GUIUtils.Editor
         private Rect rect;
         private Rect labelRect;
 
-
+        public bool IsHoveringItem { get; private set; }
         public bool MenuItemIsBeingRendered { get; private set; }
 
         public UIMenuItem(CustomMenuTree customMenuTree, string name, object value)
@@ -83,6 +83,8 @@ namespace Rhinox.GUIUtils.Editor
                 labelRect = rect;
                 labelRect.xMin += 16f + indentLevel * 15f;
                 bool isSelected = IsSelected;
+                IsHoveringItem = rect.Contains(currentEvent.mousePosition);
+
                 if (isSelected)
                 {
                     bool windowInFocus = CustomMenuTree.ActiveMenuTree == MenuTree;
@@ -94,7 +96,7 @@ namespace Rhinox.GUIUtils.Editor
                 }
                 else
                 {
-                    if (rect.Contains(currentEvent.mousePosition))
+                    if (IsHoveringItem)
                         EditorGUI.DrawRect(rect, new Color(0.243f, 0.372f, 0.588f, 1f));
                 }
 
@@ -181,8 +183,10 @@ namespace Rhinox.GUIUtils.Editor
                 return;
 
             this.wasMouseDownEvent = false;
-            if (!rect.Contains(Event.current.mousePosition))
+            
+            if (!IsHoveringItem)
                 return;
+            
             bool isSelected = this.IsSelected;
             if (Event.current.button == 0)
             {
