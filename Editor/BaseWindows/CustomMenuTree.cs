@@ -120,22 +120,14 @@ namespace Rhinox.GUIUtils.Editor
                 GUI.Label(actualLabelRect, name, style);
                 if (UseBorders)
                 {
-                    float num = 1f;
-                    if (isSelected)
-                        num = 0.0f;
-
-                    Rect rect2 = rect;
-                    rect2.x += num;
-                    rect2.width -= num * 2f;
-
-
-                    CustomEditorGUI.HorizontalLine(rect2, new Color(1f, 1f, 1f, 0.103f));
-
-                    // Color backgroundColor = GUI.backgroundColor;
-                    // GUI.backgroundColor = backgroundColor * 0.7058f;
-                    // if (Event.current.type == UnityEngine.EventType.Repaint)
-                    //     whiteTextureStyle.Draw(rect2, GUIContent.none, false, false, false, false);
-                    // GUI.backgroundColor = backgroundColor;
+                    Rect borderRect = rect;
+                    if (!isSelected)
+                    {
+                        borderRect.x += 1.0f;
+                        borderRect.width -= 2.0f;
+                    }
+                    
+                    CustomEditorGUI.HorizontalLine(borderRect, new Color(1f, 1f, 1f, 0.103f));
                 }
             }
         }
