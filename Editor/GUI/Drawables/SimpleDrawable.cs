@@ -1,5 +1,8 @@
-﻿using UnityEditor;
+﻿using System;
+using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace Rhinox.GUIUtils.Editor
 {
@@ -30,6 +33,11 @@ namespace Rhinox.GUIUtils.Editor
             {
                 DrawForTargets(rect);
             }
+        }
+
+        public virtual ICollection<TAttribute> GetMemberAttributes<TAttribute>() where TAttribute : Attribute
+        {
+            return Array.Empty<TAttribute>();
         }
 
         public void Draw()
@@ -82,6 +90,11 @@ namespace Rhinox.GUIUtils.Editor
         public void Draw(Rect rect)
         {
             DrawInternal(rect);
+        }
+
+        public virtual ICollection<TAttribute> GetMemberAttributes<TAttribute>() where TAttribute : Attribute
+        {
+            return Array.Empty<TAttribute>();
         }
 
         public void Draw()

@@ -11,12 +11,12 @@ namespace Rhinox.GUIUtils.Editor
         
         protected override float DrawValue(object instance, float memberVal)
         {
-            return EditorGUILayout.FloatField(memberVal);
+            return EditorGUILayout.FloatField(Label, memberVal);
         }
 
         protected override float DrawValue(Rect rect, object instance, float memberVal)
         {
-            return EditorGUI.FloatField(rect, memberVal);
+            return EditorGUI.FloatField(rect, Label, memberVal);
         }
     }
 }

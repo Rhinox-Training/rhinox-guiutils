@@ -11,12 +11,12 @@ namespace Rhinox.GUIUtils.Editor
         
         protected override bool DrawValue(object instance, bool val)
         {
-            return EditorGUILayout.Toggle(val);
+            return EditorGUILayout.Toggle(Label, val);
         }
 
         protected override bool DrawValue(Rect rect, object instance, bool memberVal)
         {
-            return EditorGUI.Toggle(rect, memberVal);
+            return EditorGUI.Toggle(rect, Label, memberVal);
         }
     }
 }
