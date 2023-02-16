@@ -307,7 +307,7 @@ namespace Rhinox.GUIUtils.Editor
 
         protected override CustomMenuTree BuildMenuTree()
         {
-            var tree = ScriptableObject.CreateInstance<CustomMenuTree>(); // true: multisearch
+            var tree = new CustomMenuTree(); // true: multisearch
 #if ODIN_INSPECTOR
             if (tree.DefaultMenuStyle != null)
                 tree.DefaultMenuStyle.IconSize = 16.00f;
