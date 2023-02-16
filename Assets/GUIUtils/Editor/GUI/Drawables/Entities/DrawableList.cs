@@ -17,10 +17,23 @@ namespace Rhinox.GUIUtils.Editor
         {
             get
             {
-                if (_property != null && _property.isExpanded)
+                if (_property != null)
                 {
-                    float height = EditorGUI.GetPropertyHeight(_property, true);
-                    return height;
+                    if (_property.isExpanded)
+                    {
+                        float height = EditorGUI.GetPropertyHeight(_property, true);
+                        return height;
+                    }
+                }
+                else
+                {
+                    if (_drawables != null)
+                    {
+                        float height = 0.0f;
+                        foreach (var drawable in _drawables)
+                            height += drawable.ElementHeight;
+                        return height;
+                    }
                 }
 
                 return _defaultElementHeight;
@@ -63,8 +76,14 @@ namespace Rhinox.GUIUtils.Editor
                 return;
             }
 
+            //GUILayout.BeginArea(r);
             foreach (var drawable in _drawables)
+            {
+                r.height = drawable.ElementHeight;
                 drawable.Draw(r);
+                r.y += r.height;
+            }
+            // GUILayout.EndArea();
         }
     }
 

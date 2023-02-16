@@ -28,7 +28,7 @@ namespace Rhinox.GUIUtils.Editor
             drawables.AddRange(buttons);
 
 
-            HandleGrouping(ref drawables);
+            Help(ref drawables);
             
 
             var result = drawables.OrderBy(x => x.Order).ToArray();
@@ -74,7 +74,8 @@ namespace Rhinox.GUIUtils.Editor
                 remainingGroupings.RemoveAt(0);
 
                 var targetDrawables = grouping[target];
-                var converted = new CompositeDrawableMember(targetDrawables, target.Order);
+                var converted = new CompositeDrawableMember("", target.Order);
+                converted.AddRange(targetDrawables);
                 converted.GroupBy(target);
 
                 grouping.Remove(target);
@@ -103,6 +104,69 @@ namespace Rhinox.GUIUtils.Editor
             }
 
             drawables = finalList;
+        }
+        
+        private const string GroupingString = "/";
+
+        private static void Help(ref List<IOrderedDrawable> drawables)
+        {
+            var rootItems = new List<IOrderedDrawable>();
+        
+            var lookup = new Dictionary<string, CompositeDrawableMember>();
+            foreach (var drawable in drawables)
+            {
+                
+                var groupingAttributes = drawable.GetMemberAttributes<PropertyGroupAttribute>();
+                if (groupingAttributes.IsNullOrEmpty())
+                {
+                    rootItems.Add(drawable);
+                    continue;
+                }
+                
+                foreach (var groupingAttribute in groupingAttributes)
+                {
+
+                    string itemName = groupingAttribute.GroupID;
+
+                    
+                    var splitI = groupingAttribute.GroupID.LastIndexOf(GroupingString, StringComparison.InvariantCulture);
+                    if (splitI < 0)
+                    {
+                        if (!lookup.ContainsKey(itemName))
+                        {
+                            var grouping = new CompositeDrawableMember(itemName);
+                            grouping.GroupBy(groupingAttribute);
+                            lookup.Add(itemName, grouping);
+                            rootItems.Add(grouping);
+                        }
+
+                        lookup[itemName].Add(drawable);
+                        continue;
+                    }
+                    
+                    var parts = itemName.Split(new[] {GroupingString}, StringSplitOptions.RemoveEmptyEntries);
+                    CompositeDrawableMember hierarchy = null;
+                    for (int i = 0; i < parts.Length; ++i)
+                    {
+                        string full = string.Join(GroupingString, parts.Take(i + 1));
+                        if (lookup.ContainsKey(full))
+                        {
+                            hierarchy = lookup[full];
+                            continue;
+                        }
+
+                        var next = new CompositeDrawableMember(full);
+                        next.GroupBy(groupingAttribute);
+                        hierarchy?.Add(next);
+                        hierarchy = next;
+                        lookup[full] = next;
+                    }
+                    
+                    lookup[itemName].Add(drawable);
+                }
+            }
+
+            drawables = rootItems;
         }
 
         private static PropertyGroupAttribute FindKey(Dictionary<PropertyGroupAttribute, List<IOrderedDrawable>> grouping, PropertyGroupAttribute attr)
@@ -261,7 +325,17 @@ namespace Rhinox.GUIUtils.Editor
                         var subInstance = memberInfo.GetValue(instance);
                         var subtype = memberInfo.GetReturnType();
                         var subdrawables = CreateDrawableMembersFor(subInstance, subtype, depth + 1);
-                        resultingMember = new CompositeDrawableMember(subdrawables);
+                        Help(ref subdrawables);
+                        var composite = new CompositeDrawableMember();
+                        var attributes = memberInfo.GetCustomAttributes<Attribute>();
+                        if (attributes != null)
+                        {
+                            foreach (var attr in attributes)
+                                composite.AddAttribute(attr);
+                        }
+
+                        composite.AddRange(subdrawables);
+                        resultingMember = composite;
                     }
                     catch (Exception e)
                     {
@@ -291,6 +365,12 @@ namespace Rhinox.GUIUtils.Editor
             if (type == typeof(string))
             {
                 drawableMember = new StringDrawableField(instance, info);
+                return true;
+            }
+
+            if (type.IsEnum)
+            {
+                drawableMember = new EnumDrawableField(instance, info);
                 return true;
             }
 

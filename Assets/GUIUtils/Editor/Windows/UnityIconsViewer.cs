@@ -53,6 +53,7 @@ namespace Rhinox.GUIUtils.Editor
         
         [HideLabel, PreviewField(70, ObjectFieldAlignment.Right)]
         [HorizontalGroup("Row1", 70), VerticalGroup("Row1/Right", 1)]
+        [ReadOnly]
         public Texture Icon;
         
         public string TextureUsage { get; set; }

@@ -6,12 +6,16 @@ using Rhinox.Lightspeed.Reflection;
 using Sirenix.OdinInspector;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.PlayerLoop;
 
 namespace Rhinox.GUIUtils.Editor
 {
     public abstract class BaseDrawable<T> : IOrderedDrawable
     {
         public float Order { get; set; }
+
+        public virtual float ElementHeight => EditorGUIUtility.singleLineHeight;
+        
         public bool IsReadOnly { get; }
         public bool HideLabel { get; }
 
@@ -52,6 +56,7 @@ namespace Rhinox.GUIUtils.Editor
 
         public void Draw()
         {
+            Update();
             var smartVal = GetSmartValue();
             TryDrawTitle();
             EditorGUI.BeginDisabledGroup(IsReadOnly);
@@ -62,12 +67,18 @@ namespace Rhinox.GUIUtils.Editor
 
         public void Draw(Rect rect)
         {
+            Update();
             var smartVal = GetSmartValue();
             TryDrawTitle();
             EditorGUI.BeginDisabledGroup(IsReadOnly);
             var newVal = DrawValue(rect, _instance, smartVal);
             EditorGUI.EndDisabledGroup();
             SetSmartValue(newVal);
+        }
+
+        protected virtual void Update()
+        {
+            
         }
 
         protected abstract T DrawValue(object instance, T memberVal);
