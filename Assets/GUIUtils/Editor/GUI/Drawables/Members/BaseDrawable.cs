@@ -36,7 +36,7 @@ namespace Rhinox.GUIUtils.Editor
                 Order = orderAttr.Order;
             
             var readonlyAttr = _info.GetCustomAttribute<ReadOnlyAttribute>();
-            IsReadOnly = readonlyAttr != null;
+            IsReadOnly = readonlyAttr != null || (_info is PropertyInfo propertyInfo && propertyInfo.GetSetMethod(true) == null);
 
             HideLabel = _info.GetCustomAttribute<HideLabelAttribute>() != null;
 
@@ -62,7 +62,8 @@ namespace Rhinox.GUIUtils.Editor
             EditorGUI.BeginDisabledGroup(IsReadOnly);
             var newVal = DrawValue(_instance, smartVal);
             EditorGUI.EndDisabledGroup();
-            SetSmartValue(newVal);
+            if (!IsReadOnly)
+                SetSmartValue(newVal);
         }
 
         public void Draw(Rect rect)
@@ -73,7 +74,8 @@ namespace Rhinox.GUIUtils.Editor
             EditorGUI.BeginDisabledGroup(IsReadOnly);
             var newVal = DrawValue(rect, _instance, smartVal);
             EditorGUI.EndDisabledGroup();
-            SetSmartValue(newVal);
+            if (!IsReadOnly)
+                SetSmartValue(newVal);
         }
 
         protected virtual void Update()
