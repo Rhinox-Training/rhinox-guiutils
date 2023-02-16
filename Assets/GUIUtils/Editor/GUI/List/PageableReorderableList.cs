@@ -73,7 +73,10 @@ namespace Rhinox.GUIUtils.Editor
         {
             var nameRect = rect.AlignLeft(rect.width);
             var sizeRect = rect.AlignRight(rect.width / 4.0f);
-            EditorGUI.LabelField(nameRect, this.serializedProperty.displayName);
+            if (serializedProperty != null)
+                EditorGUI.LabelField(nameRect, this.serializedProperty.displayName);
+            else
+                EditorGUI.LabelField(nameRect, this.list.GetType().Name);
             EditorGUI.LabelField(sizeRect, $"{count} Items");
         }
 
