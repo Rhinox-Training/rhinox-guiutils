@@ -198,7 +198,7 @@ namespace Rhinox.GUIUtils.Editor
     }
 
     [Serializable]
-    public class CustomMenuTree : ScriptableObject
+    public class CustomMenuTree
     {
         public static CustomMenuTree ActiveMenuTree; // TODO: how to
 

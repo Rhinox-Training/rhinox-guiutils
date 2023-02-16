@@ -15,6 +15,7 @@ namespace Rhinox.GUIUtils.Editor
 
         protected SimpleUnityDrawable(SerializedObject obj, int order = 0)
         {
+            //if (obj == null) throw new ArgumentNullException(nameof(obj));
             _serializedObj = obj;
             Order = order;
         }
@@ -58,6 +59,9 @@ namespace Rhinox.GUIUtils.Editor
 
         private void DrawForTargets(Rect? r = null)
         {
+            if (_serializedObj == null || _serializedObj.targetObjects == null)
+                return;
+            
             foreach (var target in _serializedObj.targetObjects)
             {
                 if (target == null)

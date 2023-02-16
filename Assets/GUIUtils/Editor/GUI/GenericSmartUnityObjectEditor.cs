@@ -10,7 +10,7 @@ using UnityEngine.UI;
 
 namespace Rhinox.GUIUtils.Editor
 {
-    [UnityEditor.CustomEditor(typeof(object))]
+    [UnityEditor.CustomEditor(typeof(UnityEngine.Object))]
     public class GenericSmartUnityObjectEditor : UnityEditor.Editor
     {
         private ICollection<IOrderedDrawable> _drawables;
@@ -29,19 +29,5 @@ namespace Rhinox.GUIUtils.Editor
                 drawable.Draw();
             }
         }
-        
-        // TODO: utils?/lightspeed?
-        // public static object GetValue(SerializedProperty property)
-        // {
-        //     System.Type parentType = property.serializedObject.targetObject.GetType();
-        //     System.Reflection.FieldInfo fi = parentType.GetField(property.propertyPath);  
-        //     return fi.GetValue(property.serializedObject.targetObject);
-        // }
-        // public static void SetValue(SerializedProperty property,object value)
-        // {
-        //     System.Type parentType = property.serializedObject.targetObject.GetType();
-        //     System.Reflection.FieldInfo fi = parentType.GetField(property.propertyPath);//this FieldInfo contains the type.
-        //     fi.SetValue(property.serializedObject.targetObject, value);
-        // }
     }
 }

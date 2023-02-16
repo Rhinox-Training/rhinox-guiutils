@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Reflection;
 using Rhinox.Lightspeed;
+using Rhinox.Lightspeed.Reflection;
 using Sirenix.OdinInspector;
 using UnityEditor;
 using UnityEngine;
@@ -105,10 +107,31 @@ namespace Rhinox.GUIUtils.Editor
             _listRO.elementHeightCallback = OnHeight;
         }
 
-        public DrawableList(IList instance)
+        public DrawableList(object containerInstance, MemberInfo memberInfo)
             : base(null)
         {
-            // TODO: support non unity variant
+            if (containerInstance == null) throw new ArgumentNullException(nameof(containerInstance));
+            _listProperty = null;
+
+            _listDrawerAttr = memberInfo.GetCustomAttribute<ListDrawerSettingsAttribute>() ?? new ListDrawerSettingsAttribute(); // TODO: handle defaults
+
+            _listRO = new PageableReorderableList(memberInfo.GetValue(containerInstance) as IList,
+                _listDrawerAttr.DraggableItems, true, 
+                !_listDrawerAttr.IsReadOnly && !_listDrawerAttr.HideAddButton, !_listDrawerAttr.IsReadOnly && !_listDrawerAttr.HideRemoveButton)
+            {
+                MaxItemsPerPage = _listDrawerAttr.NumberOfItemsPerPage
+            };
+            
+            _listElements = new ListElementDrawable[_listRO.count];
+            for (int i = 0; i < _listRO.count; ++i)
+            {
+                _listElements[i] = new ListElementDrawable(_listProperty.GetArrayElementAtIndex(i));
+            }
+            
+            //_listRO.showDefaultBackground = false;
+            _listRO.drawElementCallback = DrawElement;
+            _listRO.onChangedCallback += OnChangedListCallback;
+            _listRO.elementHeightCallback = OnHeight;
         }
 
         private float OnHeight(int index)
