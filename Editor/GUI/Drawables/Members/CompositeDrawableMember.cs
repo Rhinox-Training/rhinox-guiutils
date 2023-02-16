@@ -12,7 +12,7 @@ namespace Rhinox.GUIUtils.Editor
 {
     public class CompositeDrawableMember : IOrderedDrawable
     {
-        public int Order { get; set; }
+        public float Order { get; set; }
         public PropertyGroupAttribute Grouping { get; private set; }
         
         private readonly ICollection<IOrderedDrawable> _drawableMemberChildren;
@@ -38,7 +38,7 @@ namespace Rhinox.GUIUtils.Editor
             return null;
         }
 
-        public CompositeDrawableMember(ICollection<IOrderedDrawable> subdrawables, int order = 0)
+        public CompositeDrawableMember(ICollection<IOrderedDrawable> subdrawables, float order = 0)
         {
             _drawableMemberChildren = subdrawables;
             Order = order;

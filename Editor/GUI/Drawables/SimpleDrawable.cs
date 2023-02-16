@@ -9,11 +9,11 @@ namespace Rhinox.GUIUtils.Editor
     public abstract class SimpleUnityDrawable : IOrderedDrawable
     {
         public Color? Colour { get; set; }
-        public int Order { get; set; }
+        public float Order { get; set; }
 
         private readonly SerializedObject _serializedObj;
 
-        protected SimpleUnityDrawable(SerializedObject obj, int order = 0)
+        protected SimpleUnityDrawable(SerializedObject obj, float order = 0)
         {
             //if (obj == null) throw new ArgumentNullException(nameof(obj));
             _serializedObj = obj;
@@ -81,7 +81,7 @@ namespace Rhinox.GUIUtils.Editor
     public abstract class SimpleDrawable : IOrderedDrawable
     {
         public Color? Colour { get; set; }
-        public int Order { get; set; }
+        public float Order { get; set; }
 
         private readonly object _targetObj;
 

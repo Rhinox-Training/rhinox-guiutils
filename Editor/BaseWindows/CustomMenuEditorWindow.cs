@@ -136,8 +136,8 @@ namespace Rhinox.GUIUtils.Editor
             Rect rect;
             GUILayout.BeginHorizontal();
             {
-                _menuScrollPosition = GUILayout.BeginScrollView(_menuScrollPosition, GUILayout.ExpandWidth(false));
-                GUILayout.BeginVertical(GUILayout.Width(MenuWidth), GUILayout.ExpandHeight(true));
+                _menuScrollPosition = GUILayout.BeginScrollView(_menuScrollPosition, GUILayout.Width(MenuWidth));
+                GUILayout.BeginVertical();
                 {
                     Rect currentLayoutRect = CustomEditorGUI.GetTopLevelLayoutRect();
                     if (menuTree != null)

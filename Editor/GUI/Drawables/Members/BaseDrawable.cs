@@ -11,7 +11,7 @@ namespace Rhinox.GUIUtils.Editor
 {
     public abstract class BaseDrawable<T> : IOrderedDrawable
     {
-        public int Order { get; set; }
+        public float Order { get; set; }
         public bool IsReadOnly { get; }
         public bool HideLabel { get; }
 

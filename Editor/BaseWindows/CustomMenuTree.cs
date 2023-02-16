@@ -20,10 +20,12 @@ namespace Rhinox.GUIUtils.Editor
 
         public bool IsFunc { get; }
 
-
         public CustomMenuTree MenuTree { get; private set; }
+        
         private Rect rect;
         private Rect labelRect;
+
+        public bool Selectable { get; set; }
 
         public bool IsHoveringItem { get; private set; }
         public bool MenuItemIsBeingRendered { get; private set; }
@@ -34,6 +36,7 @@ namespace Rhinox.GUIUtils.Editor
             Name = name;
             RawValue = value;
             IsFunc = value is Func<object>;
+            Selectable = true;
         }
 
         public object GetInstanceValue()
@@ -56,90 +59,82 @@ namespace Rhinox.GUIUtils.Editor
 
         public virtual void DrawMenuItem(Event currentEvent, int indentLevel, Func<string, string> nameTransformer = null)
         {
-            Rect rect1 = GUILayoutUtility.GetRect(0.0f, 30.0f);
+            Rect defaultRect = GUILayoutUtility.GetRect(0.0f, 30.0f);
 
             EventType currentEventType = currentEvent.type;
             if (currentEventType == EventType.Layout)
                 return;
 
             if (currentEventType == EventType.Repaint || rect.width == 0.0) 
-                rect = rect1;
+                rect = defaultRect;
 
-            float y1 = rect.y;
-            if (y1 > 1000f)
+            float cutoffY = rect.y;
+            if (cutoffY > 1000f)
             {
-                float y2 = MenuTree.VisibleRect.y;
-                if (y1 + (double) rect.height < y2 ||
-                    y1 > y2 + (double) MenuTree.VisibleRect.height)
+                float visibleY = MenuTree.VisibleRect.y;
+                if (cutoffY + (double) rect.height < visibleY ||
+                    cutoffY > visibleY + (double) MenuTree.VisibleRect.height)
                 {
                     this.MenuItemIsBeingRendered = false;
+                    IsHoveringItem = false;
                     return;
                 }
             }
 
             this.MenuItemIsBeingRendered = true;
-            if (currentEventType == EventType.Repaint)
+
+            if (currentEventType != EventType.Repaint) return;
+            
+            labelRect = rect;
+            labelRect.xMin += 16f + indentLevel * 15f;
+            bool isSelected = IsSelected;
+            IsHoveringItem = rect.Contains(currentEvent.mousePosition);
+
+            if (isSelected)
             {
-                labelRect = rect;
-                labelRect.xMin += 16f + indentLevel * 15f;
-                bool isSelected = IsSelected;
-                IsHoveringItem = rect.Contains(currentEvent.mousePosition);
+                bool windowInFocus = CustomMenuTree.ActiveMenuTree == MenuTree;
+                Color backgroundColor = windowInFocus
+                    ? new Color(0.243f, 0.373f, 0.588f, 1f)
+                    : new Color(0.838f, 0.838f, 0.838f, 0.134f);
 
-                if (isSelected)
+                EditorGUI.DrawRect(rect, backgroundColor);
+            }
+            else if (Selectable && IsHoveringItem)
+            {
+                EditorGUI.DrawRect(rect, new Color(0.243f, 0.372f, 0.588f, 1f));
+            }
+
+            if (_icon != null)
+            {
+                Rect position = labelRect.AlignLeft(16f).AlignCenter(16f);
+                //position.x += this.Style.IconOffset;
+                if (!isSelected)
+                    GUIContentHelper.PushColor(new Color(1f, 1f, 1f, 0.85f));
+                GUI.DrawTexture(position, _icon, ScaleMode.ScaleToFit);
+                labelRect.xMin += 16f + 3f; // size + padding
+                if (!isSelected)
+                    GUIContentHelper.PopColor();
+            }
+
+            GUIStyle style = isSelected ? CustomGUIStyles.BoldLabel : CustomGUIStyles.Label;
+            var actualLabelRect = labelRect.AlignCenterVertical(16f);
+            string name = nameTransformer != null ? nameTransformer.Invoke(Name) : Name;
+            GUI.Label(actualLabelRect, name, style);
+            if (UseBorders)
+            {
+                Rect borderRect = rect;
+                if (!isSelected)
                 {
-                    bool windowInFocus = CustomMenuTree.ActiveMenuTree == MenuTree;
-                    Color backgroundColor = windowInFocus
-                        ? new Color(0.243f, 0.373f, 0.588f, 1f)
-                        : new Color(0.838f, 0.838f, 0.838f, 0.134f);
-
-                    EditorGUI.DrawRect(rect, backgroundColor);
+                    borderRect.x += 1.0f;
+                    borderRect.width -= 2.0f;
                 }
-                else
-                {
-                    if (IsHoveringItem)
-                        EditorGUI.DrawRect(rect, new Color(0.243f, 0.372f, 0.588f, 1f));
-                }
-
-
-                Texture image = IconGetter();
-                if (image != null)
-                {
-                    Rect position = labelRect.AlignLeft(16f).AlignCenter(16f);
-                    //position.x += this.Style.IconOffset;
-                    if (!isSelected)
-                        GUIContentHelper.PushColor(new Color(1f, 1f, 1f, 0.85f));
-                    GUI.DrawTexture(position, image, ScaleMode.ScaleToFit);
-                    labelRect.xMin += 16f + 3f; // size + padding
-                    if (!isSelected)
-                        GUIContentHelper.PopColor();
-                }
-
-                GUIStyle style = isSelected ? CustomGUIStyles.BoldLabel : CustomGUIStyles.Label;
-                var actualLabelRect = labelRect.AlignCenterVertical(16f);
-                string name = nameTransformer != null ? nameTransformer.Invoke(Name) : Name;
-                GUI.Label(actualLabelRect, name, style);
-                if (UseBorders)
-                {
-                    Rect borderRect = rect;
-                    if (!isSelected)
-                    {
-                        borderRect.x += 1.0f;
-                        borderRect.width -= 2.0f;
-                    }
                     
-                    CustomEditorGUI.HorizontalLine(borderRect, new Color(1f, 1f, 1f, 0.103f));
-                }
+                CustomEditorGUI.HorizontalLine(borderRect, new Color(1f, 1f, 1f, 0.103f));
             }
         }
 
-        private Texture IconGetter()
-        {
-            return _icon;
-        }
-
         private static GUIStyle _whiteTextureStyle2;
-        private Texture _icon;
-        private bool wasMouseDownEvent;
+        protected Texture _icon;
 
         internal static GUIStyle whiteTextureStyle
         {
@@ -168,32 +163,71 @@ namespace Rhinox.GUIUtils.Editor
         public void Update()
         {
             EventType type = Event.current.type;
-            if (type == EventType.Used && this.wasMouseDownEvent)
-                this.wasMouseDownEvent = false;
 
-            if (type != EventType.MouseDown) // Only click on mousedown TODO: ? 
-                return;
+            if (IsHoveringItem && type == EventType.MouseDown)
+            {
+                if (PerformClick())
+                {
+                    CustomEditorGUI.RemoveFocusControl();
+                    Event.current.Use();
+                }
+            }
+        }
 
-            this.wasMouseDownEvent = false;
+        protected virtual bool PerformClick()
+        {
+            if (!Selectable)
+                return false;
             
-            if (!IsHoveringItem)
-                return;
-            
-            bool isSelected = this.IsSelected;
             if (Event.current.button == 0)
             {
                 bool addToSelection = Event.current.modifiers == EventModifiers.Control;
                 this.Select(addToSelection);
             }
 
-            CustomEditorGUI.RemoveFocusControl();
-            Event.current.Use();
+            return true;
         }
 
         public void Deselect()
         {
             IsSelected = false;
             //MenuTree.IsDirty = true;
+        }
+    }
+
+    public class HierarchyMenuItem : UIMenuItem
+    {
+        public List<UIMenuItem> Children;
+        public List<HierarchyMenuItem> SubGroups;
+
+        private Texture _closedIcon;
+        private Texture _openIcon;
+
+        public bool Expanded { get; private set; }
+        
+        public HierarchyMenuItem(CustomMenuTree customMenuTree, string name, bool expanded)
+            : base(customMenuTree, name, null)
+        {
+            _closedIcon = UnityIcon.InternalIcon("d_scrollright@2x");
+            _openIcon = UnityIcon.InternalIcon("d_scrolldown@2x");
+            SetExpanded(expanded);
+            Selectable = false;
+
+            Children = new List<UIMenuItem>();
+            SubGroups = new List<HierarchyMenuItem>();
+        }
+
+        protected override bool PerformClick()
+        {
+            SetExpanded(!Expanded);
+            return true;
+            
+        }
+
+        private void SetExpanded(bool value)
+        {
+            Expanded = value;
+            _icon = value ? _openIcon : _closedIcon;
         }
     }
 
@@ -212,6 +246,7 @@ namespace Rhinox.GUIUtils.Editor
         public bool ShowGrouped = true;
 
         public string GroupingString = "/";
+        private bool _groupingIsDirty;
 
         public Rect VisibleRect { get; set; }
 #if ODIN_INSPECTOR
@@ -222,6 +257,8 @@ namespace Rhinox.GUIUtils.Editor
         public event Action SelectionChanged; // TODO: how to
 
         private List<UIMenuItem> _items;
+        private List<HierarchyMenuItem> _groupingItems;
+        private HierarchyMenuItem _rootItems;
 
         public CustomMenuTree()
         {
@@ -232,20 +269,48 @@ namespace Rhinox.GUIUtils.Editor
         {
             return (IReadOnlyCollection<UIMenuItem>)_items ?? Array.Empty<UIMenuItem>();
         }
-
-
+        
         public virtual void Update()
         {
             //OdinMenuTree.HandleKeybaordMenuNavigation();
 
-            if (_items == null)
-                return;
-            foreach (var item in _items)
+            if (_items != null)
             {
-                if (item == null)
-                    continue;
+                foreach (var item in _items)
+                {
+                    if (item == null)
+                        continue;
 
-                item.Update();
+                    item.Update();
+                } 
+            }
+            
+            if (_groupingItems != null && ShowGrouped)
+            {
+                foreach (var item in _groupingItems)
+                {
+                    if (item == null)
+                        continue;
+
+                    item.Update();
+                } 
+            }
+        }
+
+        public void DrawGroupHeader(HierarchyMenuItem item, Event evt, int indent)
+        {
+            item.DrawMenuItem(evt, indent);
+            if (item.Expanded)
+            {
+                foreach (var subGroup in item.SubGroups)
+                {
+                    DrawGroupHeader(subGroup, evt, ++indent);
+                }
+                
+                foreach (var child in item.Children)
+                {
+                    child.DrawMenuItem(evt, indent+1, (x) => x.Substring(x.LastIndexOf(GroupingString) + GroupingString.Length));
+                }
             }
         }
 
@@ -257,19 +322,18 @@ namespace Rhinox.GUIUtils.Editor
 
             if (ShowGrouped)
             {
-                var grouped = _items.GroupBy(x => x.Name.Split(new string[] { GroupingString }, 
-                    StringSplitOptions.None).FirstOrDefault());
-                foreach (var group in grouped)
+                if (_groupingItems == null || _groupingIsDirty)
                 {
-                    if (!string.IsNullOrEmpty(group.Key))
-                        EditorGUILayout.LabelField(group.Key);
-                    foreach (var uiItem in group)
-                    {
-                        if (uiItem == null)
-                            continue;
-                        uiItem.DrawMenuItem(evt, 0, (x) => x.Replace(group.Key + GroupingString, ""));
-                    }
+                    CreateGroupingItems();
+
+                    _groupingIsDirty = false;
                 }
+                
+                foreach (var item in _groupingItems)
+                    DrawGroupHeader(item, evt, -1);
+                
+                foreach (var item in _rootItems.Children)
+                    item.DrawMenuItem(evt, 0);
             }
             else
             {
@@ -281,6 +345,48 @@ namespace Rhinox.GUIUtils.Editor
                 }
             }
         }
+
+        private void CreateGroupingItems()
+        {
+            _groupingItems = new List<HierarchyMenuItem>();
+            _rootItems = new HierarchyMenuItem(this, "", true);
+            
+            var dict = new Dictionary<string, HierarchyMenuItem>();
+            foreach (var item in _items)
+            {
+                var splitI = item.Name.LastIndexOf(GroupingString);
+                if (splitI < 0)
+                {
+                    _rootItems.Children.Add(item);
+                    continue;
+                }
+
+                var path = item.Name.Substring(0, splitI);
+                if (!dict.ContainsKey(path))
+                {
+                    var parts = path.Split(new[] { GroupingString }, StringSplitOptions.RemoveEmptyEntries);
+                    HierarchyMenuItem hierarchy = null;
+                    for (int i = 0; i < parts.Length; ++i)
+                    {
+                        string full = string.Join(GroupingString, parts.Take(i + 1));
+                        if (dict.ContainsKey(full))
+                        {
+                            hierarchy = dict[full];
+                            continue;
+                        }
+
+                        var next = new HierarchyMenuItem(this, parts[i], false);
+                        hierarchy?.SubGroups.Add(next);
+                        hierarchy = next;
+                        dict[full] = next;
+                        _groupingItems.Add(next);
+                    }
+                }
+
+                dict[path].Children.Add(item);
+            }
+        }
+
         public static Rect Expand(Rect rect, float expand)
         {
             rect.x -= expand;
@@ -330,6 +436,7 @@ namespace Rhinox.GUIUtils.Editor
             if (icon != null)
                 item.SetIcon(icon);
             _items.AddUnique(item);
+            _groupingIsDirty = true;
         }
 
         public void AddCustom(UIMenuItem customItem)
@@ -339,6 +446,7 @@ namespace Rhinox.GUIUtils.Editor
             if (_items == null)
                 _items = new List<UIMenuItem>(); ;
             _items.AddUnique(customItem);
+            _groupingIsDirty = true;
         }
 
         public void SortMenuItemsByName(bool reverseSort = false)
