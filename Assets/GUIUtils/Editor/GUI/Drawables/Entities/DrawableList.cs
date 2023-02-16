@@ -97,6 +97,16 @@ namespace Rhinox.GUIUtils.Editor
         private readonly MemberInfo _listMemberInfo;
         private readonly object _listContainerInstance;
 
+        public override float ElementHeight
+        {
+            get
+            {
+                if (_listRO != null)
+                    return _listRO.GetHeight();
+                return base.ElementHeight;
+            }
+        }
+
         public DrawableList(SerializedProperty listProperty)
             : base(listProperty.serializedObject)
         {
@@ -177,15 +187,15 @@ namespace Rhinox.GUIUtils.Editor
 
         protected override void Draw(Rect rect, object target)
         {
-            if (_listProperty != null && _listProperty.serializedObject != null)
+            if (_listRO != null && _listDrawerAttr != null)
             {
-                _listProperty.serializedObject.Update();
+                OnBeginDraw();
                 EditorGUI.BeginDisabledGroup(_listDrawerAttr.IsReadOnly);
                 {
                     _listRO.DoList(rect);
                 }
                 EditorGUI.EndDisabledGroup();
-                _listProperty.serializedObject.ApplyModifiedProperties();
+                OnEndDraw();
             }
         }
 
