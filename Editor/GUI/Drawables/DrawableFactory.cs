@@ -212,20 +212,20 @@ namespace Rhinox.GUIUtils.Editor
                     button.Colour = colour.Color;
                 
                 // Group or not
-                var buttonGroup = method.GetCustomAttribute<PropertyGroupAttribute>() ?? method.GetCustomAttribute<ButtonGroupAttribute>();
-                if (buttonGroup != null)
-                {
-                    var group = buttonGroups.FirstOrDefault(x => x.ID == buttonGroup.GroupID);
-                    if (group == null)
-                    {
-                        group = new DrawableButtonGroup(obj, buttonGroup.GroupID);
-                        group.Order = buttonGroup.Order;
-                        buttonGroups.Add(group);
-                    }
-                    
-                    group.AddButton(button);
-                }
-                else
+                // var buttonGroup = method.GetCustomAttribute<PropertyGroupAttribute>() ?? method.GetCustomAttribute<ButtonGroupAttribute>();
+                // if (buttonGroup != null)
+                // {
+                //     var group = buttonGroups.FirstOrDefault(x => x.ID == buttonGroup.GroupID);
+                //     if (group == null)
+                //     {
+                //         group = new DrawableButtonGroup(obj, buttonGroup.GroupID);
+                //         group.Order = buttonGroup.Order;
+                //         buttonGroups.Add(group);
+                //     }
+                //     
+                //     group.AddButton(button);
+                // }
+                // else
                 {
                     buttons.AddUnique(button);
                 }
@@ -256,10 +256,17 @@ namespace Rhinox.GUIUtils.Editor
                 IOrderedDrawable resultingMember = null;
                 if (!TryCreate(instance, memberInfo, out var drawableMember) && depth < MAX_DEPTH)
                 {
-                    var subInstance = memberInfo.GetValue(instance);
-                    var subtype = memberInfo.GetReturnType();
-                    var subdrawables = CreateDrawableMembersFor(subInstance, subtype, depth + 1);
-                    resultingMember = new CompositeDrawableMember(subdrawables);
+                    try
+                    {
+                        var subInstance = memberInfo.GetValue(instance);
+                        var subtype = memberInfo.GetReturnType();
+                        var subdrawables = CreateDrawableMembersFor(subInstance, subtype, depth + 1);
+                        resultingMember = new CompositeDrawableMember(subdrawables);
+                    }
+                    catch (Exception e)
+                    {
+                        resultingMember = null;
+                    }
                 }
                 else
                     resultingMember = drawableMember;
@@ -274,6 +281,12 @@ namespace Rhinox.GUIUtils.Editor
         private static bool TryCreate(object instance, MemberInfo info, out IOrderedDrawable drawableMember)
         {
             var type = info.GetReturnType();
+
+            if (type == null)
+            {
+                drawableMember = null;
+                return false;
+            }
 
             if (type == typeof(string))
             {
@@ -301,7 +314,7 @@ namespace Rhinox.GUIUtils.Editor
 
             if (type.InheritsFrom<IList>())
             {
-                drawableMember = new DrawableList(instance as IList);
+                drawableMember = new DrawableList(instance, info);
                 return true;
             }
 
