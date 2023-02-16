@@ -11,6 +11,8 @@ namespace Rhinox.GUIUtils.Editor
         public Color? Colour { get; set; }
         public float Order { get; set; }
 
+        public virtual float ElementHeight => 18.0f;
+
         private readonly SerializedObject _serializedObj;
 
         protected SimpleUnityDrawable(SerializedObject obj, float order = 0)
@@ -82,6 +84,8 @@ namespace Rhinox.GUIUtils.Editor
     {
         public Color? Colour { get; set; }
         public float Order { get; set; }
+
+        public virtual float ElementHeight => EditorGUIUtility.singleLineHeight;
 
         private readonly object _targetObj;
 
