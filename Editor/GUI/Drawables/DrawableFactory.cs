@@ -31,6 +31,12 @@ namespace Rhinox.GUIUtils.Editor
             Help(ref drawables);
             
 
+            foreach (var drawable in drawables)
+            {
+                if (drawable is CompositeDrawableMember compositeDrawableMember)
+                    compositeDrawableMember.Sort();
+            }
+            
             var result = drawables.OrderBy(x => x.Order).ToArray();
             return result;
         }
@@ -247,6 +253,13 @@ namespace Rhinox.GUIUtils.Editor
             
             HandleGrouping(ref drawables);
 
+
+            foreach (var drawable in drawables)
+            {
+                if (drawable is CompositeDrawableMember compositeDrawableMember)
+                    compositeDrawableMember.Sort();
+            }
+            
             var result = drawables.OrderBy(x => x.Order).ToArray();
             return result;
         }
@@ -314,8 +327,15 @@ namespace Rhinox.GUIUtils.Editor
                 if (memberInfo == null)
                     continue;
 
-                if (memberInfo is PropertyInfo && memberInfo.GetCustomAttribute<SerializeField>() == null)
-                    continue;
+                if (memberInfo is PropertyInfo propertyInfo)
+                {
+                    if (propertyInfo.GetGetMethod(false) == null)
+                        continue;
+                    
+                    if (memberInfo.GetCustomAttribute<SerializeField>() == null &&
+                        memberInfo.GetCustomAttribute<ShowInInspectorAttribute>() == null)
+                        continue;
+                }
 
                 IOrderedDrawable resultingMember = null;
                 if (!TryCreate(instance, memberInfo, out var drawableMember) && depth < MAX_DEPTH)
@@ -331,7 +351,11 @@ namespace Rhinox.GUIUtils.Editor
                         if (attributes != null)
                         {
                             foreach (var attr in attributes)
+                            {
+                                if (attr is PropertyGroupAttribute groupAttribute)
+                                    composite.Order = groupAttribute.Order;
                                 composite.AddAttribute(attr);
+                            }
                         }
 
                         composite.AddRange(subdrawables);
