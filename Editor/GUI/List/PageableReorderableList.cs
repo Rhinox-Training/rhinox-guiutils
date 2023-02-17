@@ -17,6 +17,8 @@ namespace Rhinox.GUIUtils.Editor
         private const int DEFAULT_ITEMS_PER_PAGE = 100;
         
         private ICollection<Type> m_AddOptionTypes;
+        private int _drawPageIndex;
+        
         private bool HasMultipleTypeOptions
         {
             get 
@@ -83,13 +85,39 @@ namespace Rhinox.GUIUtils.Editor
 
         protected override void OnDrawHeader(Rect rect)
         {
-            var nameRect = rect.AlignLeft(rect.width);
-            var sizeRect = rect.AlignRight(rect.width / 4.0f);
+            var nameRect = rect.AlignLeft(rect.width  * 0.6f);
+            var secondaryRect = rect.AlignRight(rect.width * 0.4f);
+            var sizeRect = secondaryRect.AlignLeft(secondaryRect.width * 0.5f);
+            var multiPageRect = secondaryRect.AlignRight(secondaryRect.width * 0.5f);
             if (serializedProperty != null)
                 EditorGUI.LabelField(nameRect, this.serializedProperty.displayName);
             else
                 EditorGUI.LabelField(nameRect, CustomTitle);
             EditorGUI.LabelField(sizeRect, $"{count} Items");
+
+            if (list.Count > GetListDrawCount())
+            {
+                var maxPagesCount = Mathf.CeilToInt((float)list.Count / MaxItemsPerPage);
+                var infoRect = multiPageRect.AlignLeft(multiPageRect.width * 0.4f);
+                EditorGUI.LabelField(infoRect, $"{_drawPageIndex + 1}/{maxPagesCount}");
+                var buttonsRect = multiPageRect.AlignRight(multiPageRect.width * 0.6f);
+                var leftButtonRect = buttonsRect.AlignLeft(buttonsRect.width * 0.5f);
+                var rightButtonRect = buttonsRect.AlignRight(buttonsRect.width * 0.5f);
+                EditorGUI.BeginDisabledGroup(_drawPageIndex <= 0);
+                if (GUI.Button(leftButtonRect, "<"))
+                {
+                    if (_drawPageIndex > 0)
+                        --_drawPageIndex;
+                }
+                EditorGUI.EndDisabledGroup();
+                EditorGUI.BeginDisabledGroup(_drawPageIndex >= maxPagesCount - 1);
+                if (GUI.Button(rightButtonRect, ">"))
+                {
+                    if (_drawPageIndex < maxPagesCount - 1)
+                        ++_drawPageIndex;
+                }
+                EditorGUI.EndDisabledGroup();
+            }
         }
 
         protected override void DoListFooter(Rect rect)
@@ -122,15 +150,17 @@ namespace Rhinox.GUIUtils.Editor
                 contentRect = contentRect.PadRight(9);
             }
 
-            base.DrawElement(contentRect, elementIndex, selected, focused);
+            base.DrawElement(contentRect, elementIndex + _drawPageIndex * MaxItemsPerPage, selected, focused);
 
             if (this.displayRemove)
             {
                 if (GUI.Button(removeButton, GUIContentHelper.TempContent(UnityIcon.AssetIcon("Fa_Times").Pad(2), tooltip: "Remove entry.")))
                 {
-                    this.index = elementIndex;
+                    this.index = elementIndex + _drawPageIndex * MaxItemsPerPage;
                     s_Defaults.OnRemoveElement(this);
                     onChangedCallback?.Invoke(this);
+                    if (_drawPageIndex * MaxItemsPerPage >= this.count)
+                        --_drawPageIndex;
                 }
             }
         }
@@ -146,7 +176,7 @@ namespace Rhinox.GUIUtils.Editor
         protected override int GetListDrawCount()
         {
             if (MaxItemsPerPage > 0)
-                return Mathf.Min(MaxItemsPerPage, base.GetListDrawCount());
+                return Mathf.Min(Mathf.Min(list.Count - _drawPageIndex * MaxItemsPerPage, MaxItemsPerPage), base.GetListDrawCount());
             return base.GetListDrawCount();
         }
 

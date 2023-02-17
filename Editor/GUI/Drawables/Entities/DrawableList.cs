@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
+using Rhinox.GUIUtils.Attributes;
 using Rhinox.Lightspeed;
 using Rhinox.Lightspeed.Reflection;
 using Sirenix.OdinInspector;
@@ -45,22 +46,28 @@ namespace Rhinox.GUIUtils.Editor
         private readonly HostInfo _hostInfo;
         private readonly SerializedProperty _property;
 
-        public ListElementDrawable(SerializedProperty property, float defaultElementHeight = 18.0f)
+        // TODO: support DrawAsUnityObject?
+        public ListElementDrawable(SerializedProperty property, float defaultElementHeight = 18.0f, bool drawElementsAsUnity = false)
         {
             if (property == null) throw new ArgumentNullException(nameof(property));
             _defaultElementHeight = defaultElementHeight;
             _property = property;
             _hostInfo = property.GetHostInfo();
             if (property.exposedReferenceValue != null)
-                _drawables =
+            {
+                _drawables = drawElementsAsUnity ?
+                    new [] { new UnityDrawableProperty(property) } :
                     DrawableFactory.ParseSerializedObject(new SerializedObject(property.exposedReferenceValue));
+            }
         }
 
-        public ListElementDrawable(object element, float defaultElementHeight = 18.0f)
+        public ListElementDrawable(object element, float defaultElementHeight = 18.0f, bool drawElementsAsUnity = false)
         {
             if (element == null) throw new ArgumentNullException(nameof(element));
             _defaultElementHeight = defaultElementHeight;
-            _drawables = DrawableFactory.ParseNonUnityObject(element);
+            _drawables = drawElementsAsUnity && element is UnityEngine.Object ?
+                new [] { new DrawableUnityObject((UnityEngine.Object)element) } :
+                DrawableFactory.ParseNonUnityObject(element);
         }
 
         public void Draw(Rect r)
@@ -96,6 +103,7 @@ namespace Rhinox.GUIUtils.Editor
         private readonly SerializedProperty _listProperty;
         private readonly MemberInfo _listMemberInfo;
         private readonly object _listContainerInstance;
+        private readonly bool _drawElementsAsUnity;
 
         public override float ElementHeight
         {
@@ -116,6 +124,7 @@ namespace Rhinox.GUIUtils.Editor
             _listMemberInfo = null;
 
             _listDrawerAttr = listProperty.GetAttributeOrCreate<ListDrawerSettingsAttribute>(); // TODO: handle defaults
+            _drawElementsAsUnity = listProperty.GetAttribute<DrawAsUnityObjectAttribute>() != null;
 
             _listRO = new PageableReorderableList(listProperty.serializedObject, listProperty,
                 _listDrawerAttr.DraggableItems, true,
@@ -137,6 +146,7 @@ namespace Rhinox.GUIUtils.Editor
             _listMemberInfo = memberInfo;
             _listDrawerAttr = memberInfo.GetCustomAttribute<ListDrawerSettingsAttribute>() ??
                               new ListDrawerSettingsAttribute(); // TODO: handle defaults
+            _drawElementsAsUnity = memberInfo.GetCustomAttribute<DrawAsUnityObjectAttribute>() != null;
 
             _listRO = new PageableReorderableList(containerInstance, memberInfo,
                 _listDrawerAttr.DraggableItems, true,
@@ -212,22 +222,22 @@ namespace Rhinox.GUIUtils.Editor
                 _listElements = new ListElementDrawable[_listRO.count];
 
             if (_listElements[index] == null)
-                _listElements[index] = CreateElementFor(index);
+                _listElements[index] = CreateElementFor(index, _drawElementsAsUnity);
             _listElements[index].Draw(listEntryRect);
         }
 
-        private ListElementDrawable CreateElementFor(int index)
+        private ListElementDrawable CreateElementFor(int index, bool drawElementsAsUnity = false)
         {
             if (_listProperty != null)
             {
                 var element = _listProperty.GetArrayElementAtIndex(index);
-                return new ListElementDrawable(element, _listRO.elementHeight);
+                return new ListElementDrawable(element, _listRO.elementHeight, drawElementsAsUnity);
             }
             else
             {
                 var value = _listMemberInfo.GetValue(_listContainerInstance) as IList;
                 var nonUnityElement = value[index];
-                return new ListElementDrawable(nonUnityElement, _listRO.elementHeight);
+                return new ListElementDrawable(nonUnityElement, _listRO.elementHeight, drawElementsAsUnity);
             }
         }
 
