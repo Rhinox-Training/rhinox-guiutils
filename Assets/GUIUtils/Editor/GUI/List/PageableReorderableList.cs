@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using Rhinox.GUIUtils.Editor;
 using Rhinox.Lightspeed;
 using Rhinox.Lightspeed.Reflection;
@@ -32,10 +33,13 @@ namespace Rhinox.GUIUtils.Editor
             }
         }
 
+        public string CustomTitle { get; private set; }
+
         public PageableReorderableList(IList elements, 
             bool draggable = true, bool displayHeader = true, bool displayAddButton = true, bool displayRemoveButton = true) 
             : base(elements, draggable, displayHeader, displayAddButton, displayRemoveButton)
         {
+            CustomTitle = elements.GetType().Name;
             MaxItemsPerPage = DEFAULT_ITEMS_PER_PAGE;
         }
 
@@ -44,6 +48,14 @@ namespace Rhinox.GUIUtils.Editor
             : base(serializedObject, elements, draggable, displayHeader, displayAddButton, displayRemoveButton)
         {
             MaxItemsPerPage = DEFAULT_ITEMS_PER_PAGE;
+        }
+
+        public PageableReorderableList(object containerInstance, MemberInfo memberInfo, 
+            bool draggable = true, bool displayHeader = true, bool displayAddButton = true, bool displayRemoveButton = true)
+            : base(memberInfo.GetValue(containerInstance) as IList, draggable, displayHeader, displayAddButton, displayRemoveButton)
+        {
+            MaxItemsPerPage = DEFAULT_ITEMS_PER_PAGE;
+            CustomTitle = memberInfo.Name;
         }
 
         protected override void InitList(SerializedObject serializedObject, SerializedProperty elements, IList elementList, bool draggable,
@@ -76,7 +88,7 @@ namespace Rhinox.GUIUtils.Editor
             if (serializedProperty != null)
                 EditorGUI.LabelField(nameRect, this.serializedProperty.displayName);
             else
-                EditorGUI.LabelField(nameRect, this.list.GetType().Name);
+                EditorGUI.LabelField(nameRect, CustomTitle);
             EditorGUI.LabelField(sizeRect, $"{count} Items");
         }
 
@@ -87,7 +99,7 @@ namespace Rhinox.GUIUtils.Editor
 
             if (MaxItemsPerPage > 0)
             {
-                var list = serializedProperty.GetValue() as IList;
+                var list = serializedProperty != null ?  serializedProperty.GetValue() as IList : this.list as IList;
                 if (list != null && list.Count > MaxItemsPerPage)
                     rect.y -= (list.Count - MaxItemsPerPage - 1) * elementHeight;
             }

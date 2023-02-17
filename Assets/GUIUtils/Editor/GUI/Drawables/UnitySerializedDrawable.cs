@@ -6,7 +6,7 @@ using Object = UnityEngine.Object;
 
 namespace Rhinox.GUIUtils.Editor
 {
-    public abstract class SimpleUnityDrawable : IOrderedDrawable
+    public abstract class UnitySerializedDrawable : IOrderedDrawable
     {
         public Color? Colour { get; set; }
         public float Order { get; set; }
@@ -15,7 +15,7 @@ namespace Rhinox.GUIUtils.Editor
 
         private readonly SerializedObject _serializedObj;
 
-        protected SimpleUnityDrawable(SerializedObject obj, float order = 0)
+        protected UnitySerializedDrawable(SerializedObject obj, float order = 0)
         {
             //if (obj == null) throw new ArgumentNullException(nameof(obj));
             _serializedObj = obj;

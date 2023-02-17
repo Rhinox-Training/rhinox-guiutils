@@ -138,7 +138,7 @@ namespace Rhinox.GUIUtils.Editor
             _listDrawerAttr = memberInfo.GetCustomAttribute<ListDrawerSettingsAttribute>() ??
                               new ListDrawerSettingsAttribute(); // TODO: handle defaults
 
-            _listRO = new PageableReorderableList(memberInfo.GetValue(containerInstance) as IList,
+            _listRO = new PageableReorderableList(containerInstance, memberInfo,
                 _listDrawerAttr.DraggableItems, true,
                 !_listDrawerAttr.IsReadOnly && !_listDrawerAttr.HideAddButton,
                 !_listDrawerAttr.IsReadOnly && !_listDrawerAttr.HideRemoveButton)
@@ -207,6 +207,9 @@ namespace Rhinox.GUIUtils.Editor
         private void DrawElement(Rect rect, int index, bool isActive, bool isFocused)
         {
             var listEntryRect = _listDrawerAttr.IsReadOnly ? rect : rect.AlignLeft(rect.width - 16);
+
+            if (_listElements.Length != _listRO.count)
+                _listElements = new ListElementDrawable[_listRO.count];
 
             if (_listElements[index] == null)
                 _listElements[index] = CreateElementFor(index);
