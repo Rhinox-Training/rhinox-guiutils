@@ -6,7 +6,6 @@ using Rhinox.Lightspeed.Reflection;
 using Sirenix.OdinInspector;
 using UnityEditor;
 using UnityEngine;
-using UnityEngine.PlayerLoop;
 
 namespace Rhinox.GUIUtils.Editor
 {

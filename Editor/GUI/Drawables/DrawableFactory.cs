@@ -24,20 +24,17 @@ namespace Rhinox.GUIUtils.Editor
             var type = obj.GetType();
 
             var drawables = CreateDrawableMembersFor(obj, type);
+            
+            if (drawables.Count == 0 && obj is UnityEngine.Object unityObj)
+                drawables.Add(new DrawableUnityObject(unityObj));
 
             var buttons = FindButtons(obj);
             drawables.AddRange(buttons);
 
             HandleGrouping(ref drawables);
 
-            foreach (var drawable in drawables)
-            {
-                if (drawable is CompositeDrawableMember compositeDrawableMember)
-                    compositeDrawableMember.Sort();
-            }
-
-            var result = drawables.OrderBy(x => x.Order).ToArray();
-            return result;
+            drawables.SortDrawables();
+            return drawables;
         }
 
         public static ICollection<IOrderedDrawable> ParseSerializedObject(SerializedObject obj)

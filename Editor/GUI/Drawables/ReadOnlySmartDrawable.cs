@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace Rhinox.GUIUtils.Editor
 {
-    public class ReadOnlySmartDrawable : SimpleUnityDrawable
+    public class ReadOnlySmartDrawable : UnitySerializedDrawable
     {
         private readonly FieldInfo _info;
         private ICollection<IOrderedDrawable> _drawable;
@@ -57,7 +57,7 @@ namespace Rhinox.GUIUtils.Editor
         }
     }
     
-    public class ReadOnlySmartPropertyDrawable : SimpleUnityDrawable
+    public class ReadOnlySmartPropertyDrawable : UnitySerializedDrawable
     {
         private readonly PropertyInfo _info;
         private ICollection<IOrderedDrawable> _drawable;

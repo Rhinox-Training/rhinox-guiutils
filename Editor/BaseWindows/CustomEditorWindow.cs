@@ -478,11 +478,31 @@ namespace Rhinox.GUIUtils.Editor
                             curEditor = TryCreateGenericEditor(targetObject);
                         }
                     }
+                    else if (obj is System.Object systemObj)
+                    {
+                        curEditor = TryCreateGenericNonUnityEditor(systemObj);
+                    }
                     _editors[index] = curEditor;
                 }
             }
 
             _currentTargetsImm = new ReadOnlyCollection<object>(_currentPaintedTargets);
+        }
+
+        private UnityEditor.Editor TryCreateGenericNonUnityEditor(object systemObj)
+        {
+            UnityEditor.Editor customEditor = null;
+            try
+            {
+                customEditor = GenericSmartObjectEditor.Create(systemObj);
+            }
+            catch (Exception e)
+            {
+                Debug.LogError(e);
+                customEditor = null;
+            }
+
+            return customEditor;
         }
 
         private static UnityEditor.Editor CreateStandardEditor(UnityEngine.Object targetObject)
