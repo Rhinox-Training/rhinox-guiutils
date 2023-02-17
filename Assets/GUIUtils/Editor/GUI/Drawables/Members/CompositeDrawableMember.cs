@@ -5,6 +5,7 @@ using Rhinox.Lightspeed;
 using Sirenix.OdinInspector;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 namespace Rhinox.GUIUtils.Editor
 {
@@ -12,7 +13,11 @@ namespace Rhinox.GUIUtils.Editor
     {
         public string Name { get; }
         public float Order { get; set; }
-        public PropertyGroupAttribute Grouping { get; private set; }
+        //public PropertyGroupAttribute Grouping { get; private set; }
+        
+        public string Title { get; private set; }
+        public GUIStyle TitleStyle { get; private set; }
+        
         
         public virtual float ElementHeight
         {
@@ -20,7 +25,7 @@ namespace Rhinox.GUIUtils.Editor
             {
                 if (Children != null)
                 {
-                    if (IsHorizontalGrouping())
+                    if (_groupHorizontally)
                         return Children.Max(x => x.ElementHeight);
                     else
                     {
@@ -37,6 +42,7 @@ namespace Rhinox.GUIUtils.Editor
 
         private readonly List<IOrderedDrawable> _drawableMemberChildren;
         private List<Attribute> _attributes;
+        private bool _groupHorizontally;
 
         public IReadOnlyCollection<IOrderedDrawable> Children => _drawableMemberChildren;
 
@@ -58,6 +64,25 @@ namespace Rhinox.GUIUtils.Editor
 
             return null;
         }
+
+        public static CompositeDrawableMember CreateFrom(PropertyGroupAttribute groupingAttr)
+        {
+            var drawableMember = new CompositeDrawableMember(groupingAttr.GroupID, groupingAttr.Order);
+            if (groupingAttr is HorizontalGroupAttribute || groupingAttr is ButtonGroupAttribute)
+                drawableMember.GroupHorizontal();
+            else
+                drawableMember.GroupVertical();
+
+            if (groupingAttr is TitleGroupAttribute titleAttr)
+            {
+                drawableMember.Title = titleAttr.GroupName;
+                drawableMember.TitleStyle = titleAttr.BoldTitle ? CustomGUIStyles.BoldTitle : CustomGUIStyles.Title;
+            }
+
+            return drawableMember;
+        }
+
+
 
         public CompositeDrawableMember(string name = null, float order = 0)
         {
@@ -98,8 +123,8 @@ namespace Rhinox.GUIUtils.Editor
                 return;
 
             StartGrouping();
-            if (Grouping is TitleGroupAttribute titleGroupAttribute)
-                EditorGUILayout.LabelField(GUIContentHelper.TempContent(titleGroupAttribute.GroupName), CustomGUIStyles.BoldTitle);
+            if (!string.IsNullOrWhiteSpace(Title))
+                EditorGUILayout.LabelField(GUIContentHelper.TempContent(Title), TitleStyle);
             foreach (var childDrawable in _drawableMemberChildren)
             {
                 if (childDrawable == null)
@@ -114,8 +139,8 @@ namespace Rhinox.GUIUtils.Editor
             if (_drawableMemberChildren == null)
                 return;
             
-            if (Grouping is TitleGroupAttribute titleGroupAttribute)
-                EditorGUI.LabelField(rect, GUIContentHelper.TempContent(titleGroupAttribute.GroupName), CustomGUIStyles.BoldTitle);
+            if (!string.IsNullOrWhiteSpace(Title))
+                EditorGUI.LabelField(rect, GUIContentHelper.TempContent(Title), TitleStyle);
 
             HandleRectGrouping(ref rect);
             foreach (var childDrawable in _drawableMemberChildren)
@@ -124,7 +149,7 @@ namespace Rhinox.GUIUtils.Editor
                     continue;
                 childDrawable.Draw(rect);
 
-                if (IsHorizontalGrouping())
+                if (_groupHorizontally)
                     rect.x += rect.width;
                 else
                     rect.y += rect.height;
@@ -133,19 +158,17 @@ namespace Rhinox.GUIUtils.Editor
 
         private void HandleRectGrouping(ref Rect rect)
         {
-            if (Grouping == null)
-                return;
-            
-            if (Grouping is HorizontalGroupAttribute horizontalAttr)
-            {
-                if (horizontalAttr.Width > 0.0f)
-                {
-                    rect.width = horizontalAttr.Width > 1.0f ? horizontalAttr.Width : horizontalAttr.Width * rect.width;
-                }
-                else
-                    rect.width = rect.width / _drawableMemberChildren.Count;
-            }
-            else if (Grouping is VerticalGroupAttribute || Grouping is TitleGroupAttribute)
+            // if (Grouping is HorizontalGroupAttribute horizontalAttr)
+            // {
+            //     if (horizontalAttr.Width > 0.0f)
+            //     {
+            //         rect.width = horizontalAttr.Width > 1.0f ? horizontalAttr.Width : horizontalAttr.Width * rect.width;
+            //     }
+            //     else
+            //         rect.width = rect.width / _drawableMemberChildren.Count;
+            // }
+            // else
+            if (!_groupHorizontally)
             {
                 rect.height /= _drawableMemberChildren.Count;
             }
@@ -155,29 +178,25 @@ namespace Rhinox.GUIUtils.Editor
             }
         }
 
-        private bool IsHorizontalGrouping()
-        {
-            return !(Grouping is VerticalGroupAttribute) && !(Grouping is TitleGroupAttribute);
-        }
-
-        public void GroupBy(PropertyGroupAttribute grouping)
-        {
-            Grouping = grouping;
-        }
+        // public void GroupBy(PropertyGroupAttribute grouping)
+        // {
+        //     Grouping = grouping;
+        // }
 
         private void StartGrouping()
         {
-            if (Grouping == null)
-                return;
-
-            if (Grouping is HorizontalGroupAttribute horizontalAttr)
-            {
-                if (horizontalAttr.Width > 0.0f)
-                    GUILayout.BeginHorizontal(GUILayout.Width(horizontalAttr.Width));
-                else
-                    GUILayout.BeginHorizontal();
-            }
-            else if (Grouping is VerticalGroupAttribute || Grouping is TitleGroupAttribute)
+            // if (Grouping == null)
+            //     return;
+            //
+            // if (Grouping is HorizontalGroupAttribute horizontalAttr)
+            // {
+            //     if (horizontalAttr.Width > 0.0f)
+            //         GUILayout.BeginHorizontal(GUILayout.Width(horizontalAttr.Width));
+            //     else
+            //         GUILayout.BeginHorizontal();
+            // }
+            // else if (Grouping is VerticalGroupAttribute || Grouping is TitleGroupAttribute)
+            if (!_groupHorizontally)
             {
                 GUILayout.BeginVertical();
             }
@@ -189,14 +208,15 @@ namespace Rhinox.GUIUtils.Editor
 
         private void EndGrouping()
         {
-            if (Grouping == null)
-                return;
-
-            if (Grouping is HorizontalGroupAttribute horizontalAttr)
-            {
-                GUILayout.EndHorizontal();
-            }
-            else if (Grouping is VerticalGroupAttribute || Grouping is TitleGroupAttribute)
+            // if (Grouping == null)
+            //     return;
+            //
+            // if (Grouping is HorizontalGroupAttribute horizontalAttr)
+            // {
+            //     GUILayout.EndHorizontal();
+            // }
+            // else if (Grouping is VerticalGroupAttribute || Grouping is TitleGroupAttribute)
+            if (!_groupHorizontally)
             {
                 GUILayout.EndVertical();
             }
@@ -215,6 +235,16 @@ namespace Rhinox.GUIUtils.Editor
             }
 
             _drawableMemberChildren.SortBy(x => x.Order);
+        }
+        
+        private void GroupVertical()
+        {
+            _groupHorizontally = false;
+        }
+
+        private void GroupHorizontal()
+        {
+            _groupHorizontally = true;
         }
     }
 }
