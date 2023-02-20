@@ -70,12 +70,11 @@ namespace Rhinox.GUIUtils.Editor
             menuTree.SelectionChanged += OnSelectionChanged;
         }
 
-        private void OnSelectionChanged()
+        private void OnSelectionChanged(SelectionChangedType items)
         {
             Repaint();
             CustomEditorGUI.RemoveFocusControl();
-            selectedItems = menuTree.Selection
-                .Select(x => x.FullPath).ToList();
+            selectedItems = menuTree.Selection.Select(x => x.FullPath).ToList();
             EditorUtility.SetDirty(this);
         }
 
@@ -174,7 +173,7 @@ namespace Rhinox.GUIUtils.Editor
         {
             if (menuTree == null)
                 return;
-            menuTree.Draw(Event.current);
+            menuTree.Draw();
         }
     }
 }

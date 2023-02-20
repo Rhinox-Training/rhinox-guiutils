@@ -5,9 +5,6 @@ using Rhinox.GUIUtils.Editor;
 using Sirenix.OdinInspector;
 using UnityEditor;
 using UnityEngine;
-#if ODIN_INSPECTOR
-using Sirenix.OdinInspector;
-#endif
 
 namespace Rhinox.GUIUtils.Editor
 {
