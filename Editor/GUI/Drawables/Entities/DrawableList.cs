@@ -53,12 +53,24 @@ namespace Rhinox.GUIUtils.Editor
             _defaultElementHeight = defaultElementHeight;
             _property = property;
             _hostInfo = property.GetHostInfo();
-            if (property.exposedReferenceValue != null)
+            if (drawElementsAsUnity)
+                _drawables = new[] {new UnityDrawableProperty(property)};
+            else
             {
-                _drawables = drawElementsAsUnity ?
-                    new [] { new UnityDrawableProperty(property) } :
-                    DrawableFactory.ParseSerializedObject(new SerializedObject(property.exposedReferenceValue));
+                if (property.exposedReferenceValue != null)
+                {
+                    _drawables = DrawableFactory.ParseSerializedObject(new SerializedObject(property.exposedReferenceValue));
+                }
+                else
+                {
+                    var reflectedValue = _hostInfo.GetValue();
+                    if (reflectedValue is UnityEngine.Object unityReflectedVal)
+                        _drawables = DrawableFactory.ParseSerializedObject(new SerializedObject(unityReflectedVal));
+                    else if (reflectedValue != null)
+                        _drawables = DrawableFactory.ParseNonUnityObject(reflectedValue);
+                }
             }
+            
         }
 
         public ListElementDrawable(object element, float defaultElementHeight = 18.0f, bool drawElementsAsUnity = false)

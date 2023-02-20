@@ -95,7 +95,7 @@ namespace Rhinox.GUIUtils.Editor
                 EditorGUI.LabelField(nameRect, CustomTitle);
             EditorGUI.LabelField(sizeRect, $"{count} Items");
 
-            if (list.Count > GetListDrawCount())
+            if (list != null && list.Count > GetListDrawCount())
             {
                 var maxPagesCount = Mathf.CeilToInt((float)list.Count / MaxItemsPerPage);
                 var infoRect = multiPageRect.AlignLeft(multiPageRect.width * 0.4f);
