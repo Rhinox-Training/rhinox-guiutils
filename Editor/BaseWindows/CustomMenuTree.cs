@@ -5,232 +5,10 @@ using Rhinox.Lightspeed;
 #if ODIN_INSPECTOR
 using Sirenix.OdinInspector.Editor;
 #endif
-using UnityEditor;
 using UnityEngine;
 
 namespace Rhinox.GUIUtils.Editor
 {
-    public class UIMenuItem
-    {
-        public string Name { get; }
-
-        public string FullPath => Name; // TODO: how to
-
-        public object RawValue { get; }
-
-        public bool IsFunc { get; }
-
-        public CustomMenuTree MenuTree { get; private set; }
-        
-        private Rect rect;
-        private Rect labelRect;
-
-        public bool Selectable { get; set; }
-
-        public bool IsHoveringItem { get; private set; }
-        public bool MenuItemIsBeingRendered { get; private set; }
-
-        public UIMenuItem(CustomMenuTree customMenuTree, string name, object value)
-        {
-            MenuTree = customMenuTree;
-            Name = name;
-            RawValue = value;
-            IsFunc = value is Func<object>;
-            Selectable = true;
-        }
-
-        public object GetInstanceValue()
-        {
-            if (IsFunc)
-            {
-                var func = RawValue as Func<object>;
-                return func?.Invoke();
-            }
-
-            return RawValue;
-        }
-
-        public void Select(bool addToSelection = false)
-        {
-            if (MenuTree != null)
-                MenuTree.AddSelection(this, !addToSelection);
-            IsSelected = true;
-        }
-
-        public virtual void DrawMenuItem(Event currentEvent, int indentLevel, Func<string, string> nameTransformer = null)
-        {
-            Rect defaultRect = GUILayoutUtility.GetRect(0.0f, 30.0f);
-
-            EventType currentEventType = currentEvent.type;
-            if (currentEventType == EventType.Layout)
-                return;
-
-            if (currentEventType == EventType.Repaint || rect.width == 0.0) 
-                rect = defaultRect;
-
-            float cutoffY = rect.y;
-            if (cutoffY > 1000f)
-            {
-                float visibleY = MenuTree.VisibleRect.y;
-                if (cutoffY + (double) rect.height < visibleY ||
-                    cutoffY > visibleY + (double) MenuTree.VisibleRect.height)
-                {
-                    this.MenuItemIsBeingRendered = false;
-                    IsHoveringItem = false;
-                    return;
-                }
-            }
-
-            this.MenuItemIsBeingRendered = true;
-
-            if (currentEventType != EventType.Repaint) return;
-            
-            labelRect = rect;
-            labelRect.xMin += 16f + indentLevel * 15f;
-            bool isSelected = IsSelected;
-            IsHoveringItem = rect.Contains(currentEvent.mousePosition);
-
-            if (isSelected)
-            {
-                bool windowInFocus = CustomMenuTree.ActiveMenuTree == MenuTree;
-                Color backgroundColor = windowInFocus
-                    ? new Color(0.243f, 0.373f, 0.588f, 1f)
-                    : new Color(0.838f, 0.838f, 0.838f, 0.134f);
-
-                EditorGUI.DrawRect(rect, backgroundColor);
-            }
-            else if (Selectable && IsHoveringItem)
-            {
-                EditorGUI.DrawRect(rect, new Color(0.243f, 0.372f, 0.588f, 1f));
-            }
-
-            if (_icon != null)
-            {
-                Rect position = labelRect.AlignLeft(16f).AlignCenter(16f);
-                //position.x += this.Style.IconOffset;
-                if (!isSelected)
-                    GUIContentHelper.PushColor(new Color(1f, 1f, 1f, 0.85f));
-                GUI.DrawTexture(position, _icon, ScaleMode.ScaleToFit);
-                labelRect.xMin += 16f + 3f; // size + padding
-                if (!isSelected)
-                    GUIContentHelper.PopColor();
-            }
-
-            GUIStyle style = isSelected ? CustomGUIStyles.BoldLabel : CustomGUIStyles.Label;
-            var actualLabelRect = labelRect.AlignCenterVertical(16f);
-            string name = nameTransformer != null ? nameTransformer.Invoke(Name) : Name;
-            GUI.Label(actualLabelRect, name, style);
-            if (UseBorders)
-            {
-                Rect borderRect = rect;
-                if (!isSelected)
-                {
-                    borderRect.x += 1.0f;
-                    borderRect.width -= 2.0f;
-                }
-                    
-                CustomEditorGUI.HorizontalLine(borderRect, new Color(1f, 1f, 1f, 0.103f));
-            }
-        }
-
-        private static GUIStyle _whiteTextureStyle2;
-        protected Texture _icon;
-
-        internal static GUIStyle whiteTextureStyle
-        {
-            get
-            {
-                if (_whiteTextureStyle2 == null)
-                {
-                    GUIStyle whiteTextureStyle2 = new GUIStyle();
-                    whiteTextureStyle2.normal.background = EditorGUIUtility.whiteTexture;
-                    _whiteTextureStyle2 = whiteTextureStyle2;
-                }
-
-                return _whiteTextureStyle2;
-            }
-        }
-
-        public const bool UseBorders = true;
-
-        public bool IsSelected { get; set; }
-
-        public void SetIcon(Texture icon)
-        {
-            _icon = icon;
-        }
-
-        public void Update()
-        {
-            EventType type = Event.current.type;
-
-            if (IsHoveringItem && type == EventType.MouseDown)
-            {
-                if (PerformClick())
-                {
-                    CustomEditorGUI.RemoveFocusControl();
-                    Event.current.Use();
-                }
-            }
-        }
-
-        protected virtual bool PerformClick()
-        {
-            if (!Selectable)
-                return false;
-            
-            if (Event.current.button == 0)
-            {
-                bool addToSelection = Event.current.modifiers == EventModifiers.Control;
-                this.Select(addToSelection);
-            }
-
-            return true;
-        }
-
-        public void Deselect()
-        {
-            IsSelected = false;
-            //MenuTree.IsDirty = true;
-        }
-    }
-
-    public class HierarchyMenuItem : UIMenuItem
-    {
-        public List<UIMenuItem> Children;
-        public List<HierarchyMenuItem> SubGroups;
-
-        private Texture _closedIcon;
-        private Texture _openIcon;
-
-        public bool Expanded { get; private set; }
-        
-        public HierarchyMenuItem(CustomMenuTree customMenuTree, string name, bool expanded)
-            : base(customMenuTree, name, null)
-        {
-            _closedIcon = UnityIcon.InternalIcon("d_scrollright@2x");
-            _openIcon = UnityIcon.InternalIcon("d_scrolldown@2x");
-            SetExpanded(expanded);
-            Selectable = false;
-
-            Children = new List<UIMenuItem>();
-            SubGroups = new List<HierarchyMenuItem>();
-        }
-
-        protected override bool PerformClick()
-        {
-            SetExpanded(!Expanded);
-            return true;
-            
-        }
-
-        private void SetExpanded(bool value)
-        {
-            Expanded = value;
-            _icon = value ? _openIcon : _closedIcon;
-        }
-    }
-
     [Serializable]
     public class CustomMenuTree
     {
@@ -249,21 +27,45 @@ namespace Rhinox.GUIUtils.Editor
         private bool _groupingIsDirty;
 
         public Rect VisibleRect { get; set; }
-#if ODIN_INSPECTOR
-        public OdinMenuStyle DefaultMenuStyle;
-        public bool DrawSearchToolbar;
-#endif
 
-        public event Action SelectionChanged; // TODO: how to
+        public delegate void SelectionHandler(SelectionChangedType type);
+        public event SelectionHandler SelectionChanged; // TODO: how to
+        public event Action SelectionConfirmed;
 
         private List<UIMenuItem> _items;
         private List<HierarchyMenuItem> _groupingItems;
         private HierarchyMenuItem _rootItems;
 
+        public IReadOnlyList<UIMenuItem> MenuItems => _items.AsReadOnly();
+        public object SelectedValue => Selection.IsNullOrEmpty() ? null : Selection[0].RawValue;
+
+#if ODIN_INSPECTOR
+        private OdinMenuTree _menuTree;
+
+        public OdinMenuStyle DefaultMenuStyle
+        {
+            get => _menuTree?.DefaultMenuStyle;
+            set => _menuTree.DefaultMenuStyle = value;
+        }
+        public bool DrawSearchToolbar
+        {
+            get => _menuTree?.Config.DrawSearchToolbar ?? false;
+            set => _menuTree.Config.DrawSearchToolbar = value;
+        }
+#endif
+
         public CustomMenuTree()
         {
             Selection = new List<UIMenuItem>();
         }
+        
+#if ODIN_INSPECTOR
+        public CustomMenuTree(OdinMenuTree tree)
+        {
+            _menuTree = tree;
+            Selection = new List<UIMenuItem>();
+        }
+#endif
 
         public IReadOnlyCollection<UIMenuItem> Enumerate() // TODO: how to
         {
@@ -314,8 +116,9 @@ namespace Rhinox.GUIUtils.Editor
             }
         }
 
-        public virtual void Draw(Event evt)
+        public virtual void Draw()
         {
+            var evt = Event.current;
             VisibleRect = Expand(CustomEditorGUI.GetVisibleRect(), 300f);
             if (_items == null) 
                 return;
@@ -398,11 +201,17 @@ namespace Rhinox.GUIUtils.Editor
 
         public void ClearSelection()
         {
-            if (Selection != null)
-            {
-                Selection.Clear();
-                SelectionChanged?.Invoke();
-            }
+            if (Selection == null) return;
+            
+            Selection.Clear();
+            OnSelectionChanged(SelectionChangedType.SelectionCleared);
+        }
+
+        private void OnSelectionChanged(SelectionChangedType type)
+        {
+            SelectionChanged?.Invoke(type);
+            // TODO what is confirmed? Should we do it by default when it changes?
+            SelectionConfirmed?.Invoke();
         }
 
         public void HandleRefocus(Rect currentLayoutRect)
@@ -424,7 +233,7 @@ namespace Rhinox.GUIUtils.Editor
 
             Selection.AddUnique(uiMenuItem);
 
-            SelectionChanged?.Invoke();
+            OnSelectionChanged(SelectionChangedType.ItemAdded);
         }
 
         public void Add(string path, object test, Texture icon = null)
