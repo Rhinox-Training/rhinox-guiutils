@@ -314,5 +314,25 @@ namespace Rhinox.GUIUtils.Editor
             string result = _toolbarSearchFieldMethodInfo.Invoke(null, new object[] {searchText, layoutOptions}) as string;
             return result ?? string.Empty;
         }
+        
+        public static void SelectObject(UnityEngine.Object obj)
+        {
+            if (obj == null)
+                return;
+            
+            if (AssetDatabase.Contains(obj) && !AssetDatabase.IsMainAsset(obj))
+            {
+                UnityEngine.Object o = AssetDatabase.LoadMainAssetAtPath(AssetDatabase.GetAssetPath(obj));
+                if (o is Component)
+                    o = (o as Component).gameObject;
+                Selection.activeObject = o;
+            }
+            else
+            {
+                if (obj is Component)
+                    obj = (obj as Component).gameObject;
+                Selection.activeObject = obj;
+            }
+        }
     }
 }

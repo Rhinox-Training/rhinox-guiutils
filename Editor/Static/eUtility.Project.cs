@@ -8,6 +8,7 @@ namespace Rhinox.GUIUtils.Editor
 {
     public static partial class eUtility
     {
+        // TODO: move to lightspeed?
         public static void CreateAssetsDirectory(string directory)
         {
             var directories = directory.Split('\\', '/', Path.PathSeparator);
