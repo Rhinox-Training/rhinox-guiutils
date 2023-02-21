@@ -156,7 +156,7 @@ namespace Rhinox.GUIUtils.Editor
             return GetValueInfo(property.serializedObject, property.propertyPath);
         }
         
-        public static Type GetParentType(this SerializedProperty prop)
+        public static Type GetHostType(this SerializedProperty prop)
         {
             return prop.serializedObject?.targetObject.GetType();
         }
