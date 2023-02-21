@@ -332,7 +332,13 @@ namespace Rhinox.GUIUtils
             get
             {
                 if (_toolbarCentered == null)
-                    _toolbarCentered = new GUIStyle(EditorStyles.toolbarButton)
+                    _toolbarCentered = new GUIStyle(
+                        #if UNITY_EDITOR
+                            EditorStyles.toolbarButton
+                        #else
+                            "Button"
+                        #endif
+                        )
                     {
                         fixedHeight = 0.0f,
                         alignment = TextAnchor.MiddleCenter,
