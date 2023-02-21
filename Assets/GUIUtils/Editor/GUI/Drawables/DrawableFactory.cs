@@ -37,10 +37,22 @@ namespace Rhinox.GUIUtils.Editor
             return drawables;
         }
 
+        public static ICollection<IOrderedDrawable> ParseSerializedProperty(SerializedProperty prop)
+        {
+            if (prop == null)
+                return Array.Empty<IOrderedDrawable>();
+
+            var hostInfo = prop.GetHostInfo();
+            var type = hostInfo.GetReturnType();
+            
+            
+            return null;
+        }
+
         public static ICollection<IOrderedDrawable> ParseSerializedObject(SerializedObject obj)
         {
             if (obj == null || obj.targetObject == null)
-                return Array.Empty<SimpleDrawable>();
+                return Array.Empty<IOrderedDrawable>();
 
             var type = obj.targetObject.GetType();
 
@@ -67,17 +79,7 @@ namespace Rhinox.GUIUtils.Editor
                     continue;
                 }
 
-                IOrderedDrawable drawable = null;
-
-                if (field.FieldType.InheritsFrom(typeof(IList)))
-                    drawable = new DrawableList(prop);
-                else
-                    drawable = new UnityDrawableProperty(prop);
-
-                var propOrder = field.GetCustomAttribute<PropertyOrderAttribute>();
-                if (propOrder != null)
-                    drawable.Order = propOrder.Order;
-
+                var drawable = CreateDrawableForProperty(field, prop);
                 drawables.Add(drawable);
             }
 
@@ -103,6 +105,20 @@ namespace Rhinox.GUIUtils.Editor
 
             drawables.SortDrawables();
             return drawables;
+        }
+
+        private static IOrderedDrawable CreateDrawableForProperty(FieldInfo field, SerializedProperty prop)
+        {
+            IOrderedDrawable drawable;
+            if (field.FieldType.InheritsFrom(typeof(IList)))
+                drawable = new DrawableList(prop);
+            else
+                drawable = new UnityDrawableProperty(prop);
+
+            var propOrder = field.GetCustomAttribute<PropertyOrderAttribute>();
+            if (propOrder != null)
+                drawable.Order = propOrder.Order;
+            return drawable;
         }
 
         private static void SortDrawables(this List<IOrderedDrawable> drawables)
