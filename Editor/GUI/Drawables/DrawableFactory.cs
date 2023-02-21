@@ -97,15 +97,7 @@ namespace Rhinox.GUIUtils.Editor
 
             return drawables;
         }
-
-
-        private static void SetOrderFromAttribute(IOrderedDrawable drawable, MemberInfo memberInfo)
-        {
-            var propertyOrderAttr = memberInfo.GetCustomAttribute<PropertyOrderAttribute>();
-            if (propertyOrderAttr != null)
-                drawable.Order = propertyOrderAttr.Order;
-        }
-
+        
         public static ICollection<IOrderedDrawable> ParseSerializedObject(SerializedObject obj)
         {
             if (obj == null || obj.targetObject == null)
@@ -187,6 +179,13 @@ namespace Rhinox.GUIUtils.Editor
             }
 
             drawables.SortBy(x => x.Order);
+        }
+        
+        private static void SetOrderFromAttribute(IOrderedDrawable drawable, MemberInfo memberInfo)
+        {
+            var propertyOrderAttr = memberInfo.GetCustomAttribute<PropertyOrderAttribute>();
+            if (propertyOrderAttr != null)
+                drawable.Order = propertyOrderAttr.Order;
         }
         
         private static ICollection<IOrderedDrawable> FindButtons(object instance)

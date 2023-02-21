@@ -14,21 +14,17 @@ namespace Rhinox.GUIUtils.Editor
     [UnityEditor.CustomEditor(typeof(SmartInternalObject))]
     public class GenericSmartObjectEditor : UnityEditor.Editor
     {
-        private ICollection<IOrderedDrawable> _drawables;
+        private DrawablePropertyView _propertyView;
 
         private void OnEnable()
         {
-            _drawables = DrawableFactory.ParseNonUnityObject((serializedObject.targetObject as SmartInternalObject).Target);
+            if (_propertyView == null)
+                _propertyView = new DrawablePropertyView((serializedObject.targetObject as SmartInternalObject).Target);
         }
 
         public override void OnInspectorGUI()
         {
-            foreach (var drawable in _drawables)
-            {
-                if (drawable == null)
-                    continue;
-                drawable.Draw();
-            }
+            _propertyView.DrawLayout();
         }
 
         public static GenericSmartObjectEditor Create(object systemObj)

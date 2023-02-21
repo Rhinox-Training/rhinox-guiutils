@@ -1,17 +1,16 @@
 ﻿using System.Collections.Generic;
 using System.Reflection;
-using Rhinox.Lightspeed.Reflection;
 using UnityEditor;
 using UnityEngine;
 
 namespace Rhinox.GUIUtils.Editor
 {
-    public class ReadOnlySmartDrawable : BaseUnitySerializedDrawable
+    public class ReadOnlySmartPropertyDrawable : BaseUnitySerializedDrawable
     {
-        private readonly FieldInfo _info;
+        private readonly PropertyInfo _info;
         private ICollection<IOrderedDrawable> _drawable;
 
-        public ReadOnlySmartDrawable(SerializedObject obj, FieldInfo info, int order = 0) 
+        public ReadOnlySmartPropertyDrawable(SerializedObject obj, PropertyInfo info, int order = 0) 
             : base(obj, order)
         {
             _info = info;
@@ -29,25 +28,25 @@ namespace Rhinox.GUIUtils.Editor
         protected override void Draw(Rect rect, Object target)
         {
             EditorGUI.BeginDisabledGroup(true);
-            if (_info.FieldType == typeof(string))
+            if (_info.PropertyType == typeof(string))
             {
                 EditorGUI.TextField(rect, _info.GetValue(target) as string);
             }
-            else if (_info.FieldType == typeof(int))
+            else if (_info.PropertyType == typeof(int))
             {
                 EditorGUI.IntField(rect, (int)_info.GetValue(target));
             }
-            else if (_info.FieldType == typeof(float))
+            else if (_info.PropertyType == typeof(float))
             {
                 EditorGUI.FloatField(rect, (float)_info.GetValue(target));
             }
-            else if (_info.FieldType == typeof(bool))
+            else if (_info.PropertyType == typeof(bool))
             {
                 EditorGUI.Toggle(rect, (bool)_info.GetValue(target));
             }
-            else if (_info.FieldType == typeof(UnityEngine.Object))
+            else if (_info.PropertyType == typeof(Object))
             {
-                EditorGUI.ObjectField(rect, _info.GetValue(target) as UnityEngine.Object, _info.FieldType, true);
+                EditorGUI.ObjectField(rect, _info.GetValue(target) as Object, _info.PropertyType, true);
             }
             else
             {
