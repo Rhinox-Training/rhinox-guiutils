@@ -13,18 +13,45 @@ namespace Rhinox.GUIUtils.Editor
         private readonly object _instance;
         private readonly ICollection<IOrderedDrawable> _drawables;
 
-        public DrawablePropertyView(object nonUnityObjInstance)
+        public float Height
         {
-            if (nonUnityObjInstance == null) throw new ArgumentNullException(nameof(nonUnityObjInstance));
-            _instance = nonUnityObjInstance;
-            _drawables = DrawableFactory.ParseNonUnityObject(nonUnityObjInstance);
+            get
+            {
+                float height = 0.0f;
+                foreach (var drawable in _drawables)
+                    height += drawable.ElementHeight;
+                return height;
+            }
         }
-        
-        public DrawablePropertyView(SerializedObject unityObjInstance)
+
+        public DrawablePropertyView(object unityObjInstance, bool forceDrawAsUnityObject = false)
         {
             if (unityObjInstance == null) throw new ArgumentNullException(nameof(unityObjInstance));
             _instance = unityObjInstance;
-            _drawables = DrawableFactory.ParseSerializedObject(unityObjInstance);
+            if (forceDrawAsUnityObject)
+                _drawables = new[] {new DrawableUnityObject(unityObjInstance)};
+            else
+                _drawables = DrawableFactory.ParseNonUnityObject(unityObjInstance);
+        }
+        
+        public DrawablePropertyView(SerializedObject serializedObject, bool forceDrawAsUnityObject = false)
+        {
+            if (serializedObject == null) throw new ArgumentNullException(nameof(serializedObject));
+            _instance = serializedObject;
+            if (forceDrawAsUnityObject)
+                _drawables = new[] {new DrawableUnityObject(serializedObject.targetObject)};
+            else
+                _drawables = DrawableFactory.ParseSerializedObject(serializedObject);
+        }
+        
+        public DrawablePropertyView(SerializedProperty property, bool forceDrawAsUnityObject = false)
+        {
+            if (property == null) throw new ArgumentNullException(nameof(property));
+            _instance = property;
+            if (forceDrawAsUnityObject)
+                _drawables = new[] {new DrawableUnityObject(property.GetValue())};
+            else
+                _drawables = DrawableFactory.ParseSerializedProperty(property);
         }
         
         public void DrawLayout()
@@ -43,7 +70,9 @@ namespace Rhinox.GUIUtils.Editor
             {
                 if (drawable == null)
                     continue;
+                rect.height = drawable.ElementHeight;
                 drawable.Draw(rect);
+                rect.y += rect.height;
             }
         }
     }
