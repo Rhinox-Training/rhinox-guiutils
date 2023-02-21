@@ -55,7 +55,7 @@ namespace Rhinox.GUIUtils.Editor
         /// /// <param name="text">The input string. If the first character is a '$', then StringMemberHelper will look for a member string field, property or method.</param>
         private SerializedPropertyMemberHelper(bool isStatic, string text, SerializedProperty property)
         {
-            _objectType = property.GetParentType();
+            _objectType = property.GetHostType();
             
             if (string.IsNullOrEmpty(text) || _objectType == null || text.Length <= 0)
                 return;
