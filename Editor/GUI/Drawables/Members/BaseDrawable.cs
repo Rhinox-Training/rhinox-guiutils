@@ -33,9 +33,8 @@ namespace Rhinox.GUIUtils.Editor
             var orderAttr = _info.GetCustomAttribute<PropertyOrderAttribute>();
             if (orderAttr != null)
                 Order = orderAttr.Order;
-            
-            var readonlyAttr = _info.GetCustomAttribute<ReadOnlyAttribute>();
-            IsReadOnly = readonlyAttr != null || (_info is PropertyInfo propertyInfo && propertyInfo.GetSetMethod(true) == null);
+
+            IsReadOnly = AttributeParser.ParseReadOnly(_info);
 
             HideLabel = _info.GetCustomAttribute<HideLabelAttribute>() != null;
 

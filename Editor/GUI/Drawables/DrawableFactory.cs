@@ -3,6 +3,8 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using NUnit.Framework.Internal;
+using Rhinox.GUIUtils.Attributes;
 using Rhinox.Lightspeed;
 using Rhinox.Lightspeed.Reflection;
 using Sirenix.OdinInspector;
@@ -14,7 +16,6 @@ namespace Rhinox.GUIUtils.Editor
     public static class DrawableFactory
     {
         private const int MAX_DEPTH = 10;
-        private const string GroupingString = "/";
 
         public static ICollection<IOrderedDrawable> ParseNonUnityObject(object obj)
         {
@@ -24,29 +25,85 @@ namespace Rhinox.GUIUtils.Editor
             var type = obj.GetType();
 
             var drawables = CreateDrawableMembersFor(obj, type);
-            
+
             if (drawables.Count == 0 && obj is UnityEngine.Object unityObj)
                 drawables.Add(new DrawableUnityObject(unityObj));
 
             var buttons = FindButtons(obj);
             drawables.AddRange(buttons);
 
-            HandleGrouping(ref drawables);
+            DrawableGroupingHelper.Process(ref drawables);
 
             drawables.SortDrawables();
             return drawables;
         }
 
-        public static ICollection<IOrderedDrawable> ParseSerializedProperty(SerializedProperty prop)
+        public static ICollection<IOrderedDrawable> ParseSerializedProperty(SerializedProperty property)
         {
-            if (prop == null)
+            if (property == null)
                 return Array.Empty<IOrderedDrawable>();
 
-            var hostInfo = prop.GetHostInfo();
+            var hostInfo = property.GetHostInfo();
             var type = hostInfo.GetReturnType();
+            var drawables = new List<IOrderedDrawable>();
+
+            if (AttributeParser.ParseDrawAsUnity(hostInfo.FieldInfo))
+            {
+                drawables.Add(new DrawableUnityObject(property.GetValue()));
+                return drawables;
+            }
             
-            
-            return null;
+            foreach (var fieldData in property.EnumerateEditorVisibleFields())
+            {
+                IOrderedDrawable fieldDrawable = null;
+                if (!fieldData.IsSerialized)
+                {
+                    var val = property.GetValue();
+                    if (val is UnityEngine.Object unityVal)
+                        fieldDrawable = new ReadOnlySmartDrawable(new SerializedObject(unityVal), fieldData.FieldInfo);
+                    else
+                        fieldDrawable = new ObjectDrawableField(val, fieldData.FieldInfo);
+
+                    AttributeParser.Parse(fieldData.FieldInfo, ref fieldDrawable);
+                }
+                else
+                {
+                    fieldDrawable = CreateDrawableForProperty(fieldData.FieldInfo, fieldData.SerializedProperty);
+                }
+
+                if (fieldDrawable != null)
+                    drawables.Add(fieldDrawable);
+            }
+
+            var properties = type.GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
+                .ToList();
+            foreach (var propertyMember in properties)
+            {
+                var showInInspector = propertyMember.GetCustomAttribute<ShowInInspectorAttribute>();
+                if (showInInspector != null)
+                {
+                    var readonlyDraw = new ReadOnlySmartPropertyDrawable(property.serializedObject, propertyMember);
+                    SetOrderFromAttribute(readonlyDraw, propertyMember);
+                    drawables.Add(readonlyDraw);
+                }
+            }
+
+            var buttons = FindButtons(property.GetValue());
+            drawables.AddRange(buttons);
+
+            DrawableGroupingHelper.Process(ref drawables);
+
+            drawables.SortDrawables();
+
+            return drawables;
+        }
+
+
+        private static void SetOrderFromAttribute(IOrderedDrawable drawable, MemberInfo memberInfo)
+        {
+            var propertyOrderAttr = memberInfo.GetCustomAttribute<PropertyOrderAttribute>();
+            if (propertyOrderAttr != null)
+                drawable.Order = propertyOrderAttr.Order;
         }
 
         public static ICollection<IOrderedDrawable> ParseSerializedObject(SerializedObject obj)
@@ -101,7 +158,7 @@ namespace Rhinox.GUIUtils.Editor
             var buttons = FindButtons(obj);
             drawables.AddRange(buttons);
 
-            HandleGrouping(ref drawables);
+            DrawableGroupingHelper.Process(ref drawables);
 
             drawables.SortDrawables();
             return drawables;
@@ -131,112 +188,12 @@ namespace Rhinox.GUIUtils.Editor
 
             drawables.SortBy(x => x.Order);
         }
-
-        private static void HandleGrouping(ref List<IOrderedDrawable> drawables)
+        
+        private static ICollection<IOrderedDrawable> FindButtons(object instance)
         {
-            var drawablesByGroup = CreateLookupByGroupAttribute(drawables);
-
-            var remainingGroupings = drawablesByGroup.Keys.ToList();
-            remainingGroupings.SortByDescending(x => x.GroupID.Length);
-
-            // Create composites (unconnected)
-            var idLookup = new Dictionary<string, CompositeDrawableMember>();
-            while (remainingGroupings.Count > 0)
-            {
-                var currentGroupAttr = remainingGroupings.First();
-                remainingGroupings.RemoveAt(0);
-
-                var compositeMember = CompositeDrawableMember.CreateFrom(currentGroupAttr);
-                var childDrawables = drawablesByGroup[currentGroupAttr];
-
-                compositeMember.AddRange(childDrawables);
-
-                // Clean entries from higher located composite groups
-                foreach (var key in drawablesByGroup.Keys)
-                {
-                    var curDrawables = drawablesByGroup[key];
-                    curDrawables.RemoveRange(childDrawables);
-                }
-
-                // Store in lookup
-                idLookup.Add(currentGroupAttr.GroupID, compositeMember);
-            }
-
-            var finalList = new List<IOrderedDrawable>();
-            // Create tree structure
-            foreach (var drawable in drawables)
-            {
-                var groupingAttributes = drawable.GetMemberAttributes<PropertyGroupAttribute>();
-                if (groupingAttributes.IsNullOrEmpty())
-                {
-                    finalList.Add(drawable);
-                    continue;
-                }
-
-                foreach (var groupingAttribute in groupingAttributes.OrderByDescending(x => x.GroupID.Length))
-                {
-                    string groupId = groupingAttribute.GroupID;
-
-                    var parts = groupId.Split(new[] {GroupingString}, StringSplitOptions.RemoveEmptyEntries);
-                    CompositeDrawableMember curParent = null;
-                    for (int i = 0; i < parts.Length; ++i)
-                    {
-                        string idAtCurrentDepth = string.Join(GroupingString, parts.Take(i + 1));
-                        if (idLookup.ContainsKey(idAtCurrentDepth))
-                        {
-                            if (curParent != null)
-                            {
-                                if (!curParent.Children.Contains(idLookup[idAtCurrentDepth]))
-                                    curParent.Add(idLookup[idAtCurrentDepth]);
-                            }
-
-                            curParent = idLookup[idAtCurrentDepth];
-                        }
-                        else
-                        {
-                            var next = new CompositeDrawableMember(idAtCurrentDepth, groupingAttribute.Order);
-                            if (curParent == null)
-                                finalList.Add(next);
-                            else
-                                curParent.Add(next);
-                            curParent = next;
-                            idLookup.Add(idAtCurrentDepth, next);
-                        }
-                    }
-                }
-            }
-
-            // Add root most groupings to finalList
-            foreach (var entry in idLookup.Keys.ToArray())
-            {
-                var group = idLookup[entry];
-                bool isTopLevel = true;
-                foreach (var otherGroup in idLookup.Values)
-                {
-                    if (otherGroup == group)
-                        continue;
-
-                    if (otherGroup.Children.Contains(group))
-                    {
-                        isTopLevel = false;
-                        break;
-                    }
-                }
-
-                if (isTopLevel)
-                    finalList.Add(group);
-            }
-
-            // Return list
-            drawables = finalList;
-        }
-
-        private static ICollection<IOrderedDrawable> FindButtons(object obj)
-        {
-            var type = obj.GetType();
+            var type = instance.GetType();
 
             var buttons = new List<IOrderedDrawable>();
-            var buttonGroups = new List<DrawableButtonGroup>();
             var methods = type.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
             foreach (var method in methods)
             {
@@ -244,8 +201,7 @@ namespace Rhinox.GUIUtils.Editor
                 if (buttonAttr == null)
                     continue;
 
-                var button = new DrawableButton(obj, method, buttonAttr);
-
+                var button = new DrawableButton(instance, method, buttonAttr);
 
                 var propOrderAttr = method.GetCustomAttribute<PropertyOrderAttribute>();
                 if (propOrderAttr != null)
@@ -255,27 +211,8 @@ namespace Rhinox.GUIUtils.Editor
                 if (colour != null)
                     button.Colour = colour.Color;
 
-                // Group or not
-                // var buttonGroup = method.GetCustomAttribute<PropertyGroupAttribute>() ?? method.GetCustomAttribute<ButtonGroupAttribute>();
-                // if (buttonGroup != null)
-                // {
-                //     var group = buttonGroups.FirstOrDefault(x => x.ID == buttonGroup.GroupID);
-                //     if (group == null)
-                //     {
-                //         group = new DrawableButtonGroup(obj, buttonGroup.GroupID);
-                //         group.Order = buttonGroup.Order;
-                //         buttonGroups.Add(group);
-                //     }
-                //     
-                //     group.AddButton(button);
-                // }
-                // else
-                {
-                    buttons.AddUnique(button);
-                }
+                buttons.AddUnique(button);
             }
-
-            buttons.AddRange(buttonGroups);
 
             return buttons;
         }
@@ -312,7 +249,7 @@ namespace Rhinox.GUIUtils.Editor
                         var subInstance = memberInfo.GetValue(instance);
                         var subtype = memberInfo.GetReturnType();
                         var subdrawables = CreateDrawableMembersFor(subInstance, subtype, depth + 1);
-                        HandleGrouping(ref subdrawables);
+                        DrawableGroupingHelper.Process(ref subdrawables);
                         var composite = new CompositeDrawableMember();
                         var attributes = memberInfo.GetCustomAttributes<Attribute>();
                         if (attributes != null)
@@ -405,54 +342,6 @@ namespace Rhinox.GUIUtils.Editor
             return false;
         }
 
-        private static Dictionary<PropertyGroupAttribute, List<IOrderedDrawable>> CreateLookupByGroupAttribute(
-            List<IOrderedDrawable> drawables)
-        {
-            var grouping = new Dictionary<PropertyGroupAttribute, List<IOrderedDrawable>>();
-            foreach (var drawable in drawables)
-            {
-                if (drawable == null)
-                    continue;
-
-                var groupingAttributes = drawable.GetMemberAttributes<PropertyGroupAttribute>();
-                if (groupingAttributes.IsNullOrEmpty())
-                {
-                    continue;
-                }
-
-                foreach (var attr in groupingAttributes)
-                {
-                    var key = FindKey(grouping, attr);
-                    if (key == null)
-                    {
-                        grouping.Add(attr, new List<IOrderedDrawable>());
-                        key = attr;
-                    }
-
-                    var list = grouping[key];
-                    list.AddUnique(drawable);
-                    grouping[key] = list;
-                }
-            }
-
-            return grouping;
-        }
-
-        private static PropertyGroupAttribute FindKey(
-            Dictionary<PropertyGroupAttribute, List<IOrderedDrawable>> grouping, PropertyGroupAttribute attr)
-        {
-            foreach (var group in grouping)
-            {
-                if (group.Key.GetType() != attr.GetType())
-                    continue;
-
-                if (group.Key.GroupID != null && group.Key.GroupID.Equals(attr.GroupID))
-                {
-                    return group.Key;
-                }
-            }
-
-            return null;
-        }
+        
     }
 }

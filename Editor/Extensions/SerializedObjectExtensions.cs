@@ -1,7 +1,10 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
+using Rhinox.Lightspeed.Reflection;
+using Sirenix.OdinInspector;
 using UnityEditor;
 using UnityEngine;
 
@@ -176,6 +179,93 @@ namespace Rhinox.GUIUtils.Editor
             if (instance == null)
                 instance = new T();
             return instance;
+        }
+        
+        public struct FieldData
+        {
+            public object Host;
+            public FieldInfo FieldInfo;
+            public SerializedProperty SerializedProperty;
+
+            public bool IsSerialized => SerializedProperty != null;
+            public bool HoldsUnityObject => FieldInfo.FieldType.InheritsFrom(typeof(UnityEngine.Object));
+        }
+        
+        public static IEnumerable<FieldData> EnumerateEditorVisibleFields(this SerializedProperty property)
+        {
+            if (property == null)
+                yield break;
+
+            var hostInfo = property.GetHostInfo();
+            var type = hostInfo.GetReturnType();
+            var fields = type.GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic).ToList();
+            foreach (var field in fields)
+            {
+                var fieldProperty = property.FindPropertyRelative(field.Name);
+                if (fieldProperty == null)
+                {
+                    if (field.IsPrivate)
+                    {
+                        var showInInspector = field.GetCustomAttribute<ShowInInspectorAttribute>();
+                        if (showInInspector != null)
+                        {
+                            yield return new FieldData()
+                            {
+                                Host = property,
+                                FieldInfo = field,
+                                SerializedProperty = null
+                            };
+                        }
+                    }
+
+                    continue;
+                }
+
+                yield return new FieldData()
+                {
+                    Host = property,
+                    FieldInfo = field,
+                    SerializedProperty = fieldProperty
+                };
+            }
+        }
+        
+        public static IEnumerable<FieldData> EnumerateEditorVisibleFields(this SerializedObject serializedObject)
+        {
+            if (serializedObject == null || serializedObject.targetObject == null)
+                yield break;
+            
+            var type = serializedObject.targetObject.GetType();
+            var fields = type.GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic).ToList();
+            foreach (var field in fields)
+            {
+                var fieldProperty = serializedObject.FindProperty(field.Name);
+                if (fieldProperty == null)
+                {
+                    if (field.IsPrivate)
+                    {
+                        var showInInspector = field.GetCustomAttribute<ShowInInspectorAttribute>();
+                        if (showInInspector != null)
+                        {
+                            yield return new FieldData()
+                            {
+                                Host = serializedObject,
+                                FieldInfo = field,
+                                SerializedProperty = null
+                            };
+                        }
+                    }
+
+                    continue;
+                }
+
+                yield return new FieldData()
+                {
+                    Host = serializedObject,
+                    FieldInfo = field,
+                    SerializedProperty = fieldProperty
+                };
+            }
         }
     }
 }
