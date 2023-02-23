@@ -20,7 +20,7 @@ namespace Rhinox.GUIUtils.Editor
         public static ICollection<IOrderedDrawable> ParseNonUnityObject(object obj)
         {
             if (obj == null)
-                return Array.Empty<SimpleDrawable>();
+                return Array.Empty<BaseEntityDrawable>();
 
             var type = obj.GetType();
 

@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace Rhinox.GUIUtils.Editor
 {
-    public abstract class SimpleDrawable : IOrderedDrawable
+    public abstract class BaseEntityDrawable : IOrderedDrawable
     {
         public Color? Colour { get; set; }
         public float Order { get; set; }
@@ -14,10 +14,9 @@ namespace Rhinox.GUIUtils.Editor
 
         private readonly object _targetObj;
 
-        protected SimpleDrawable(object obj, int order = 0)
+        protected BaseEntityDrawable(object obj)
         {
             _targetObj = obj;
-            Order = order;
         }
 
         public void Draw(Rect rect)
