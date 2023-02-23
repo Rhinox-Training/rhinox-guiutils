@@ -99,7 +99,7 @@ namespace Rhinox.GUIUtils.Editor
         }
     }
 
-    public class DrawableList : SimpleDrawable
+    public class DrawableList : BaseEntityDrawable
     {
         private BetterReorderableList _listRO;
         private readonly ListDrawerSettingsAttribute _listDrawerAttr;

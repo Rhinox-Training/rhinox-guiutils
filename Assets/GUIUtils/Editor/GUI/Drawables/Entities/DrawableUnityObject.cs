@@ -3,9 +3,9 @@ using UnityEngine;
 
 namespace Rhinox.GUIUtils.Editor
 {
-    public class DrawableUnityObject : SimpleDrawable
+    public class DrawableUnityObject : BaseEntityDrawable
     {
-        public DrawableUnityObject(object obj, int order = 0) : base(obj, order)
+        public DrawableUnityObject(object obj) : base(obj)
         {
         }
 

@@ -11,7 +11,7 @@ using Object = UnityEngine.Object;
 
 namespace Rhinox.GUIUtils.Editor
 {
-    public class DrawableButton : SimpleDrawable
+    public class DrawableButton : BaseEntityDrawable
     {
         public string Name { get; }
 
