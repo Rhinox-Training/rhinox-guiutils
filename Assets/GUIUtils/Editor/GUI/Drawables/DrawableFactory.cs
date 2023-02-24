@@ -163,6 +163,11 @@ namespace Rhinox.GUIUtils.Editor
                 if (resultingMember != null)
                     drawableMembers.Add(resultingMember);
             }
+            
+            
+            var buttons = FindButtons(instance);
+            drawableMembers.AddRange(buttons);
+
 
             return drawableMembers;
         }

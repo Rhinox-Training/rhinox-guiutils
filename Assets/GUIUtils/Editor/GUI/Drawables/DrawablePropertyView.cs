@@ -66,9 +66,6 @@ namespace Rhinox.GUIUtils.Editor
             if (drawables.Count == 0 && obj is UnityEngine.Object unityObj)
                 drawables.Add(new DrawableUnityObject(unityObj));
 
-            var buttons = DrawableFactory.FindButtons(obj);
-            drawables.AddRange(buttons);
-
             DrawableGroupingHelper.Process(ref drawables);
 
             drawables.SortDrawables();
