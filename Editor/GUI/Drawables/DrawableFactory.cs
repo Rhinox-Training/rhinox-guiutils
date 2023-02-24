@@ -3,8 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using NUnit.Framework.Internal;
-using Rhinox.GUIUtils.Attributes;
 using Rhinox.Lightspeed;
 using Rhinox.Lightspeed.Reflection;
 using Sirenix.OdinInspector;
@@ -16,64 +14,8 @@ namespace Rhinox.GUIUtils.Editor
     public static class DrawableFactory
     {
         private const int MAX_DEPTH = 10;
-
-        public static ICollection<IOrderedDrawable> ParseNonUnityObject(object obj)
-        {
-            if (obj == null)
-                return Array.Empty<BaseEntityDrawable>();
-
-            var type = obj.GetType();
-
-            var drawables = CreateDrawableMembersFor(obj, type);
-
-            if (drawables.Count == 0 && obj is UnityEngine.Object unityObj)
-                drawables.Add(new DrawableUnityObject(unityObj));
-
-            var buttons = FindButtons(obj);
-            drawables.AddRange(buttons);
-
-            DrawableGroupingHelper.Process(ref drawables);
-
-            drawables.SortDrawables();
-            return drawables;
-        }
-
-        public static ICollection<IOrderedDrawable> ParseSerializedProperty(SerializedProperty property)
-        {
-            if (property == null)
-                return Array.Empty<IOrderedDrawable>();
-
-            var hostInfo = property.GetHostInfo();
-            var type = hostInfo.GetReturnType();
-
-            if (AttributeParser.ParseDrawAsUnity(hostInfo.FieldInfo))
-                return new[] {new DrawableUnityObject(property.GetValue())};
-
-            var drawables = CreateDrawableMembersFor(property, type);
-
-            DrawableGroupingHelper.Process(ref drawables);
-
-            drawables.SortDrawables();
-
-            return drawables;
-        }
-
-        public static ICollection<IOrderedDrawable> ParseSerializedObject(SerializedObject obj)
-        {
-            if (obj == null || obj.targetObject == null)
-                return Array.Empty<IOrderedDrawable>();
-
-            var type = obj.targetObject.GetType();
-
-            var drawables = CreateDrawableMembersFor(obj, type);
-
-            DrawableGroupingHelper.Process(ref drawables);
-
-            drawables.SortDrawables();
-            return drawables;
-        }
-
-        private static IOrderedDrawable CreateDrawableForProperty(FieldInfo field, SerializedProperty prop)
+        
+        public static IOrderedDrawable CreateDrawableForProperty(FieldInfo field, SerializedProperty prop)
         {
             IOrderedDrawable drawable;
             if (field.FieldType.InheritsFrom(typeof(IList)))
@@ -87,7 +29,7 @@ namespace Rhinox.GUIUtils.Editor
             return drawable;
         }
 
-        private static void SortDrawables(this List<IOrderedDrawable> drawables)
+        public static void SortDrawables(this List<IOrderedDrawable> drawables)
         {
             foreach (var drawable in drawables)
             {
@@ -98,7 +40,7 @@ namespace Rhinox.GUIUtils.Editor
             drawables.SortBy(x => x.Order);
         }
 
-        private static ICollection<IOrderedDrawable> FindButtons(object instance)
+        public static ICollection<IOrderedDrawable> FindButtons(object instance)
         {
             var type = instance.GetType();
 
@@ -117,7 +59,7 @@ namespace Rhinox.GUIUtils.Editor
             return buttons;
         }
 
-        private static List<IOrderedDrawable> CreateDrawableMembersFor(SerializedProperty property, Type type)
+        public static List<IOrderedDrawable> CreateDrawableMembersFor(SerializedProperty property, Type type)
         {
             return CreateDrawableMembersFor(property, type, 0);
         }
@@ -173,7 +115,7 @@ namespace Rhinox.GUIUtils.Editor
         }
 
 
-        private static List<IOrderedDrawable> CreateDrawableMembersFor(SerializedObject obj, Type t)
+        public static List<IOrderedDrawable> CreateDrawableMembersFor(SerializedObject obj, Type t)
         {
             return CreateDrawableMembersFor(obj, t, 0);
         }
@@ -186,7 +128,7 @@ namespace Rhinox.GUIUtils.Editor
             return DrawableMembersFor(instanceVal, type, visibleFields, depth);
         }
 
-        private static List<IOrderedDrawable> CreateDrawableMembersFor(object instance, Type t)
+        public static List<IOrderedDrawable> CreateDrawableMembersFor(object instance, Type t)
         {
             return CreateDrawableMembersFor(instance, t, 0);
         }
