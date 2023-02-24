@@ -31,7 +31,7 @@ namespace Rhinox.GUIUtils.Editor
             if (forceDrawAsUnityObject)
                 _drawables = new[] {new DrawableUnityObject(unityObjInstance)};
             else
-                _drawables = DrawableFactory.ParseNonUnityObject(unityObjInstance);
+                _drawables = ParseNonUnityObject(unityObjInstance);
         }
         
         public DrawablePropertyView(SerializedObject serializedObject, bool forceDrawAsUnityObject = false)
@@ -41,7 +41,7 @@ namespace Rhinox.GUIUtils.Editor
             if (forceDrawAsUnityObject)
                 _drawables = new[] {new DrawableUnityObject(serializedObject.targetObject)};
             else
-                _drawables = DrawableFactory.ParseSerializedObject(serializedObject);
+                _drawables = ParseSerializedObject(serializedObject);
         }
         
         public DrawablePropertyView(SerializedProperty property, bool forceDrawAsUnityObject = false)
@@ -51,7 +51,63 @@ namespace Rhinox.GUIUtils.Editor
             if (forceDrawAsUnityObject)
                 _drawables = new[] {new DrawableUnityObject(property.GetValue())};
             else
-                _drawables = DrawableFactory.ParseSerializedProperty(property);
+                _drawables = ParseSerializedProperty(property);
+        }
+        
+        public static ICollection<IOrderedDrawable> ParseNonUnityObject(object obj)
+        {
+            if (obj == null)
+                return Array.Empty<BaseEntityDrawable>();
+
+            var type = obj.GetType();
+
+            var drawables = DrawableFactory.CreateDrawableMembersFor(obj, type);
+
+            if (drawables.Count == 0 && obj is UnityEngine.Object unityObj)
+                drawables.Add(new DrawableUnityObject(unityObj));
+
+            var buttons = DrawableFactory.FindButtons(obj);
+            drawables.AddRange(buttons);
+
+            DrawableGroupingHelper.Process(ref drawables);
+
+            drawables.SortDrawables();
+            return drawables;
+        }
+
+        public static ICollection<IOrderedDrawable> ParseSerializedProperty(SerializedProperty property)
+        {
+            if (property == null)
+                return Array.Empty<IOrderedDrawable>();
+
+            var hostInfo = property.GetHostInfo();
+            var type = hostInfo.GetReturnType();
+
+            if (AttributeParser.ParseDrawAsUnity(hostInfo.FieldInfo))
+                return new[] {new DrawableUnityObject(property.GetValue())};
+
+            var drawables = DrawableFactory.CreateDrawableMembersFor(property, type);
+
+            DrawableGroupingHelper.Process(ref drawables);
+
+            drawables.SortDrawables();
+
+            return drawables;
+        }
+
+        public static ICollection<IOrderedDrawable> ParseSerializedObject(SerializedObject obj)
+        {
+            if (obj == null || obj.targetObject == null)
+                return Array.Empty<IOrderedDrawable>();
+
+            var type = obj.targetObject.GetType();
+
+            var drawables = DrawableFactory.CreateDrawableMembersFor(obj, type);
+
+            DrawableGroupingHelper.Process(ref drawables);
+
+            drawables.SortDrawables();
+            return drawables;
         }
         
         public void DrawLayout()
