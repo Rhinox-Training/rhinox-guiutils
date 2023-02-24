@@ -111,15 +111,6 @@ namespace Rhinox.GUIUtils.Editor
                     continue;
 
                 var button = new DrawableButton(instance, method, buttonAttr);
-
-                var propOrderAttr = method.GetCustomAttribute<PropertyOrderAttribute>();
-                if (propOrderAttr != null)
-                    button.Order = propOrderAttr.Order;
-
-                var colour = method.GetCustomAttribute<GUIColorAttribute>();
-                if (colour != null)
-                    button.Colour = colour.Color;
-
                 buttons.AddUnique(button);
             }
 

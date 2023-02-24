@@ -5,18 +5,19 @@ namespace Rhinox.GUIUtils.Editor
 {
     public class DrawableUnityObject : BaseEntityDrawable
     {
-        public DrawableUnityObject(object obj) : base(obj)
+        public DrawableUnityObject(object obj) 
+            : base(obj)
         {
         }
 
         protected override void Draw(object target)
         {
-            EditorGUILayout.ObjectField(GUIContentHelper.TempContent(target.GetType().Name), target as UnityEngine.Object, target.GetType(), true);
+            EditorGUILayout.ObjectField(Label, target as UnityEngine.Object, target.GetType(), true);
         }
 
         protected override void Draw(Rect rect, object target)
         {
-            EditorGUI.ObjectField(rect, GUIContentHelper.TempContent(target.GetType().Name), target as UnityEngine.Object, target.GetType(), true);
+            EditorGUI.ObjectField(rect, Label, target as UnityEngine.Object, target.GetType(), true);
         }
     }
 }

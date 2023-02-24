@@ -44,7 +44,7 @@ namespace Rhinox.GUIUtils.Editor
             // Create tree structure
             foreach (var drawable in drawables)
             {
-                var groupingAttributes = drawable.GetMemberAttributes<PropertyGroupAttribute>();
+                var groupingAttributes = drawable.GetDrawableAttributes<PropertyGroupAttribute>();
                 if (groupingAttributes.IsNullOrEmpty())
                 {
                     finalList.Add(drawable);
@@ -118,7 +118,7 @@ namespace Rhinox.GUIUtils.Editor
                 if (drawable == null)
                     continue;
 
-                var groupingAttributes = drawable.GetMemberAttributes<PropertyGroupAttribute>();
+                var groupingAttributes = drawable.GetDrawableAttributes<PropertyGroupAttribute>();
                 if (groupingAttributes.IsNullOrEmpty())
                 {
                     continue;

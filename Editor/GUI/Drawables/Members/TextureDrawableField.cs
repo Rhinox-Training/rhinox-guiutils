@@ -8,7 +8,7 @@ using UnityEngine.PlayerLoop;
 
 namespace Rhinox.GUIUtils.Editor
 {
-    public class TextureDrawableField : BaseDrawable<UnityEngine.Texture>
+    public class TextureDrawableField : BaseMemberDrawable<UnityEngine.Texture>
     {
         private readonly PreviewFieldAttribute _previewAttr;
         private const int DEFAULT_SIZE = 64;
@@ -47,9 +47,9 @@ namespace Rhinox.GUIUtils.Editor
             return EditorGUI.ObjectField(rect, memberVal, _info.GetReturnType(), true) as Texture;
         }
 
-        protected override void Update()
+        protected override void OnPreDraw()
         {
-            base.Update();
+            base.OnPreDraw();
             string commandName = Event.current.commandName;
             if (commandName == "ObjectSelectorUpdated") {
                 SetSmartValue(EditorGUIUtility.GetObjectPickerObject() as Texture2D);

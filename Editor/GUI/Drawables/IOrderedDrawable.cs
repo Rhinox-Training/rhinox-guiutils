@@ -8,7 +8,7 @@ namespace Rhinox.GUIUtils.Editor
     {
         float Order { get; set; }
         float ElementHeight { get; }
-        ICollection<TAttribute> GetMemberAttributes<TAttribute>() where TAttribute : Attribute;
+        ICollection<TAttribute> GetDrawableAttributes<TAttribute>() where TAttribute : Attribute;
         void Draw();
         void Draw(Rect rect);
     }

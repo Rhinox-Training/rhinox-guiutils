@@ -110,7 +110,7 @@ namespace Rhinox.GUIUtils.Editor
                 _drawableMemberChildren.AddRange(children);
         }
 
-        public ICollection<TAttribute> GetMemberAttributes<TAttribute>() where TAttribute : Attribute
+        public ICollection<TAttribute> GetDrawableAttributes<TAttribute>() where TAttribute : Attribute
         {
             if (_attributes == null)
                 return Array.Empty<TAttribute>();
