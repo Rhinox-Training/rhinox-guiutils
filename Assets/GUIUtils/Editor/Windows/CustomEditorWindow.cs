@@ -471,9 +471,7 @@ namespace Rhinox.GUIUtils.Editor
                     else if (obj is UnityEngine.Object targetObject)
                     {
                         curEditor = CreateStandardEditor(targetObject);
-                        if (curEditor == null ||
-                            curEditor.GetType().Name
-                                .Contains("OdinEditor")) // TODO: remove once odin-less testing is done
+                        if (curEditor == null)
                         {
                             curEditor = TryCreateGenericEditor(targetObject);
                         }

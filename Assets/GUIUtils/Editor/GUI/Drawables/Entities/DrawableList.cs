@@ -128,7 +128,7 @@ namespace Rhinox.GUIUtils.Editor
             _listContainerInstance = null;
             _listMemberInfo = null;
 
-            _listDrawerAttr = listProperty.GetAttributeOrCreate<ListDrawerSettingsAttribute>(); // TODO: handle defaults
+            _listDrawerAttr = listProperty.GetAttributeOrCreate<ListDrawerSettingsAttribute>();
             _drawElementsAsUnity = listProperty.GetAttribute<DrawAsUnityObjectAttribute>() != null;
 
             _listRO = new PageableReorderableList(listProperty.serializedObject, listProperty,
@@ -150,7 +150,7 @@ namespace Rhinox.GUIUtils.Editor
             _listContainerInstance = containerInstance;
             _listMemberInfo = memberInfo;
             _listDrawerAttr = memberInfo.GetCustomAttribute<ListDrawerSettingsAttribute>() ??
-                              new ListDrawerSettingsAttribute(); // TODO: handle defaults
+                              new ListDrawerSettingsAttribute();
             _drawElementsAsUnity = memberInfo.GetCustomAttribute<DrawAsUnityObjectAttribute>() != null;
 
             _listRO = new PageableReorderableList(containerInstance, memberInfo,

@@ -13,31 +13,43 @@ namespace Rhinox.GUIUtils.Editor
         public static void Process(ref List<IOrderedDrawable> drawables)
         {
             var drawablesByGroup = CreateLookupByGroupAttribute(drawables);
+            if (drawablesByGroup.IsNullOrEmpty())
+                return;
 
             var remainingGroupings = drawablesByGroup.Keys.ToList();
             remainingGroupings.SortByDescending(x => x.GroupID.Length);
 
             // Create composites (unconnected)
             var idLookup = new Dictionary<string, CompositeDrawableMember>();
+            var groupingAttrLookup = new Dictionary<CompositeDrawableMember, PropertyGroupAttribute>();
             while (remainingGroupings.Count > 0)
             {
                 var currentGroupAttr = remainingGroupings.First();
                 remainingGroupings.RemoveAt(0);
 
                 var compositeMember = CompositeDrawableMember.CreateFrom(currentGroupAttr);
-                var childDrawables = drawablesByGroup[currentGroupAttr];
+                var entries = drawablesByGroup[currentGroupAttr];
 
-                compositeMember.AddRange(childDrawables);
+                foreach (var entry in entries)
+                {
+                    if (entry == null)
+                        continue;
+                    compositeMember.Add(entry.Drawable, entry.Attribute);
+                }
 
                 // Clean entries from higher located composite groups
                 foreach (var key in drawablesByGroup.Keys)
                 {
+                    if (!IsParentOf(currentGroupAttr, key))
+                        continue;
                     var curDrawables = drawablesByGroup[key];
-                    curDrawables.RemoveRange(childDrawables);
+
+                    curDrawables.RemoveAll(x => entries.Any(e => e.Drawable == x.Drawable));
                 }
 
                 // Store in lookup
                 idLookup.Add(currentGroupAttr.GroupID, compositeMember);
+                groupingAttrLookup.Add(compositeMember, currentGroupAttr);
             }
 
             var finalList = new List<IOrderedDrawable>();
@@ -65,7 +77,7 @@ namespace Rhinox.GUIUtils.Editor
                             if (curParent != null)
                             {
                                 if (!curParent.Children.Contains(idLookup[idAtCurrentDepth]))
-                                    curParent.Add(idLookup[idAtCurrentDepth]);
+                                    curParent.Add(idLookup[idAtCurrentDepth], groupingAttrLookup.GetOrDefault(idLookup[idAtCurrentDepth]));
                             }
 
                             curParent = idLookup[idAtCurrentDepth];
@@ -108,11 +120,24 @@ namespace Rhinox.GUIUtils.Editor
             // Return list
             drawables = finalList;
         }
+
+        private static bool IsParentOf(PropertyGroupAttribute entry, PropertyGroupAttribute potentialParent)
+        {
+            if (entry.GroupID == null)
+                return false;
+            return entry.GroupID.StartsWith(potentialParent.GroupID);
+        }
+
+        private class DrawableGroupEntry
+        {
+            public IOrderedDrawable Drawable;
+            public PropertyGroupAttribute Attribute;
+        }
         
-        private static Dictionary<PropertyGroupAttribute, List<IOrderedDrawable>> CreateLookupByGroupAttribute(
+        private static Dictionary<PropertyGroupAttribute, List<DrawableGroupEntry>> CreateLookupByGroupAttribute(
             List<IOrderedDrawable> drawables)
         {
-            var grouping = new Dictionary<PropertyGroupAttribute, List<IOrderedDrawable>>();
+            var grouping = new Dictionary<PropertyGroupAttribute, List<DrawableGroupEntry>>();
             foreach (var drawable in drawables)
             {
                 if (drawable == null)
@@ -129,12 +154,19 @@ namespace Rhinox.GUIUtils.Editor
                     var key = FindKey(grouping, attr);
                     if (key == null)
                     {
-                        grouping.Add(attr, new List<IOrderedDrawable>());
+                        grouping.Add(attr, new List<DrawableGroupEntry>());
                         key = attr;
                     }
 
                     var list = grouping[key];
-                    list.AddUnique(drawable);
+
+                    var entry = new DrawableGroupEntry()
+                    {
+                        Drawable = drawable,
+                        Attribute = attr
+                    };
+                    
+                    list.AddUnique(entry);
                     grouping[key] = list;
                 }
             }
@@ -143,7 +175,7 @@ namespace Rhinox.GUIUtils.Editor
         }
 
         private static PropertyGroupAttribute FindKey(
-            Dictionary<PropertyGroupAttribute, List<IOrderedDrawable>> grouping, PropertyGroupAttribute attr)
+            Dictionary<PropertyGroupAttribute, List<DrawableGroupEntry>> grouping, PropertyGroupAttribute attr)
         {
             foreach (var group in grouping)
             {
