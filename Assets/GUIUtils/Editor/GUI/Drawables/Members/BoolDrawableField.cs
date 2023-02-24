@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace Rhinox.GUIUtils.Editor
 {
-    public class BoolDrawableField : BaseDrawable<bool>
+    public class BoolDrawableField : BaseMemberDrawable<bool>
     {
         public BoolDrawableField(object instance, MemberInfo info) : base(instance, info) { }
         

@@ -13,6 +13,8 @@ namespace Rhinox.GUIUtils.Editor
 {
     public class DrawableButton : BaseEntityDrawable
     {
+        protected override string LabelString => null; // TODO: Button has no label?
+        
         public string Name { get; }
 
         private readonly MethodInfo _methodInfo;
@@ -96,10 +98,10 @@ namespace Rhinox.GUIUtils.Editor
             return true;
         }
 
-        public override ICollection<TAttribute> GetMemberAttributes<TAttribute>()
+        public override ICollection<TAttribute> GetDrawableAttributes<TAttribute>()
         {
             if (_methodInfo == null)
-                return base.GetMemberAttributes<TAttribute>();
+                return base.GetDrawableAttributes<TAttribute>();
             return _methodInfo.GetCustomAttributes<TAttribute>().ToArray();
         }
     }

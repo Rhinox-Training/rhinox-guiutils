@@ -5,7 +5,7 @@ using Object = System.Object;
 
 namespace Rhinox.GUIUtils.Editor
 {
-    public class IntDrawableField : BaseDrawable<int>
+    public class IntDrawableField : BaseMemberDrawable<int>
     {
         public IntDrawableField(object instance, MemberInfo info) : base(instance, info) { }
 

@@ -5,6 +5,9 @@ namespace Rhinox.GUIUtils.Editor
 {
     public class DrawableUnityProperty : BaseEntityDrawable
     {
+        protected override string LabelString =>
+            _targetObj != null ? ((SerializedProperty) _targetObj).displayName : null;
+
         public DrawableUnityProperty(SerializedProperty prop)
             : base(prop)
         {
@@ -13,13 +16,13 @@ namespace Rhinox.GUIUtils.Editor
         protected override void Draw(object target)
         {
             var property = (SerializedProperty) target;
-            EditorGUILayout.PropertyField(property, GUIContentHelper.TempContent(property.displayName));
+            EditorGUILayout.PropertyField(property, Label);
         }
 
         protected override void Draw(Rect rect, object target)
         {
             var property = (SerializedProperty) target; 
-            EditorGUI.PropertyField(rect, property, GUIContentHelper.TempContent(property.displayName));
+            EditorGUI.PropertyField(rect, property, Label);
         }
     }
 }
