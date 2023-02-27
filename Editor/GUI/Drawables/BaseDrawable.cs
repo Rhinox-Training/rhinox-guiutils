@@ -15,6 +15,8 @@ namespace Rhinox.GUIUtils.Editor
         
         public bool IsReadOnly { get; protected set; }
         public bool HideLabel { get; protected set; }
+
+        public float? LabelWidth { get; protected set; }
         public string Title { get; protected set; }
         
         public Color? Colour { get; protected set; }
@@ -46,7 +48,12 @@ namespace Rhinox.GUIUtils.Editor
                 eUtility.GuiBackgroundColor backgroundColorModifier =
                     Colour.HasValue ? new eUtility.GuiBackgroundColor(Colour.Value) : null;
                 {
-                    DrawInner(Label);
+                    eUtility.LabelWidth lblWidthModifier =
+                        LabelWidth.HasValue ? new eUtility.LabelWidth(LabelWidth.Value) : null;
+                    {
+                        DrawInner(Label);
+                    }
+                    lblWidthModifier?.Dispose();
                 }
                 backgroundColorModifier?.Dispose();
             }
@@ -66,7 +73,12 @@ namespace Rhinox.GUIUtils.Editor
                 eUtility.GuiBackgroundColor backgroundColorModifier =
                     Colour.HasValue ? new eUtility.GuiBackgroundColor(Colour.Value) : null;
                 {
-                    DrawInner(rect, Label);
+                    eUtility.LabelWidth lblWidthModifier =
+                        LabelWidth.HasValue ? new eUtility.LabelWidth(LabelWidth.Value) : null;
+                    {
+                        DrawInner(rect, Label);
+                    }
+                    lblWidthModifier?.Dispose();
                 }
                 backgroundColorModifier?.Dispose();
             }
@@ -102,6 +114,12 @@ namespace Rhinox.GUIUtils.Editor
                 Order = orderAttr.Order;
 
             IsReadOnly = !GetDrawableAttributes<ReadOnlyAttribute>().IsNullOrEmpty();
+
+            var labelWidth = GetDrawableAttributes<LabelWidthAttribute>().FirstOrDefault();
+            if (labelWidth != null)
+                LabelWidth = labelWidth.Width;
+            else
+                LabelWidth = null;
 
             HideLabel = !GetDrawableAttributes<HideLabelAttribute>().IsNullOrEmpty();
 
