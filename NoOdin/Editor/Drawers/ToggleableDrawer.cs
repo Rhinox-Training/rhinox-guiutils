@@ -6,29 +6,31 @@ using Rhinox.Lightspeed.Collections;
 using UnityEditor;
 using UnityEngine;
 
-
-[CustomPropertyDrawer(typeof(Toggleable<>))]
-public class ToggleableDrawer : PropertyDrawer
+namespace Rhinox.GUIUtils.NoOdin.Editor
 {
-    private const float _padding = 2;
-    private const float _toggleWidth = 15;
-    
-    public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
+    [CustomPropertyDrawer(typeof(Toggleable<>))]
+    public class ToggleableDrawer : PropertyDrawer
     {
-        position = position.HorizontalPadding(_padding);
-        var togglePos = position.AlignLeft(_toggleWidth);
-        var itemPos = position.AlignRight(position.width - _toggleWidth - _padding);
-        
-        // Toggled Prop
-        property.Next(true);
-        EditorGUI.PropertyField(togglePos, property, GUIContent.none, false);
+        private const float _padding = 2;
+        private const float _toggleWidth = 15;
 
-        GUIContentHelper.PushDisabled(!property.boolValue);
+        public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
+        {
+            position = position.HorizontalPadding(_padding);
+            var togglePos = position.AlignLeft(_toggleWidth);
+            var itemPos = position.AlignRight(position.width - _toggleWidth - _padding);
 
-        // Item Prop
-        property.Next(false);
-        EditorGUI.PropertyField(itemPos, property, GUIContent.none, false);
+            // Toggled Prop
+            property.Next(true);
+            EditorGUI.PropertyField(togglePos, property, GUIContent.none, false);
 
-        GUIContentHelper.PopDisabled();
+            GUIContentHelper.PushDisabled(!property.boolValue);
+
+            // Item Prop
+            property.Next(false);
+            EditorGUI.PropertyField(itemPos, property, GUIContent.none, false);
+
+            GUIContentHelper.PopDisabled();
+        }
     }
 }

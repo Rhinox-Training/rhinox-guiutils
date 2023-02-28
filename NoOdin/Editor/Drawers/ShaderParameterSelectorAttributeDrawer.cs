@@ -9,7 +9,6 @@ using Rhinox.Lightspeed;
 
 namespace Rhinox.GUIUtils.NoOdin.Editor
 {
-
     [CustomPropertyDrawer(typeof(ShaderParameterSelectorAttribute))]
     public class ShaderParameterSelectorAttributeDrawer : PropertyDrawer
     {
