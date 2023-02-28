@@ -1,4 +1,4 @@
-namespace Rhinox.GUIUtils.Odin.Editor
+namespace Rhinox.GUIUtils.Editor
 {
     public interface ITerminatable
     {

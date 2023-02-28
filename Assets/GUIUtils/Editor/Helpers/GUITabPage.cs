@@ -3,7 +3,7 @@ using Rhinox.GUIUtils.Editor;
 using UnityEditor;
 using UnityEngine;
 
-namespace GUIUtils.Editor.BaseWindows
+namespace Rhinox.GUIUtils.Editor
 {
   /// <summary>
   /// A tab page created by <see cref="T:Sirenix.Utilities.Editor.GUITabGroup" />.

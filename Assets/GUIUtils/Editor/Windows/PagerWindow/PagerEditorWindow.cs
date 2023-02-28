@@ -11,7 +11,7 @@ using Sirenix.OdinInspector.Editor;
 using UnityEditor;
 using UnityEngine;
 
-namespace Rhinox.GUIUtils.Odin.Editor
+namespace Rhinox.GUIUtils.Editor
 {
     public abstract class PagerEditorWindow<T> :
 #if ODIN_INSPECTOR

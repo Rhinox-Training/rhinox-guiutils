@@ -14,7 +14,7 @@ using UnityEngine;
 using Sirenix.OdinValidator.Editor;
 #endif
 
-namespace Rhinox.GUIUtils.Odin.Editor
+namespace Rhinox.GUIUtils.Editor
 {
 
     /// <summary>

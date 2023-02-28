@@ -4,7 +4,7 @@ using Rhinox.Lightspeed;
 using UnityEditor;
 using UnityEngine;
 
-namespace Rhinox.GUIUtils.Odin.Editor
+namespace Rhinox.GUIUtils.Editor
 {
     public abstract class PagerTreePage : PagerPage
     {
@@ -84,6 +84,9 @@ namespace Rhinox.GUIUtils.Odin.Editor
             return 0;
         }
 
+#if ODIN_INSPECTOR
+        [Sirenix.OdinInspector.OnInspectorGUI]
+#endif
         public void Draw()
         {
             _topWidth = CalculateTopWidth();
