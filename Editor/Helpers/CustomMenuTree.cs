@@ -22,9 +22,9 @@ namespace Rhinox.GUIUtils.Editor
     [Serializable]
     public class CustomMenuTree
     {
-        public static CustomMenuTree ActiveMenuTree; // TODO: how to
+        public static CustomMenuTree ActiveMenuTree;
 
-        public List<UIMenuItem> Selection; // TODO: how to
+        public List<UIMenuItem> Selection;
 
         public bool HasSelection => !Selection.IsNullOrEmpty();
         public int SelectionCount => Selection?.Count ?? 0;
