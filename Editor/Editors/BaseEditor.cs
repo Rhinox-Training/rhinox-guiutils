@@ -11,7 +11,6 @@ using Sirenix.OdinInspector.Editor;
 
 namespace Rhinox.GUIUtils.Editor
 {
-
     public abstract class BaseEditor
 #if ODIN_INSPECTOR
     : OdinEditor

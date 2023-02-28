@@ -2,11 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using Rhinox.GUIUtils;
-using Rhinox.GUIUtils.Editor;
 using UnityEditor;
 using UnityEngine;
 
-namespace GUIUtils.Editor.BaseWindows
+namespace Rhinox.GUIUtils.Editor
 {
     public class GUITabGroup
     {
