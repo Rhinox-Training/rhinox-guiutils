@@ -52,9 +52,11 @@ namespace Rhinox.GUIUtils.Editor
                     .FirstOrDefault(x => x.RawValue != null);
                 if (menuItem != null)
                 {
-                    // TODO: no nested support
-                    // menuItem.GetParentMenuItemsRecursive(false)
-                    //     .ForEach<UIMenuItem>((Action<UIMenuItem>) (x => x.Toggled = true));
+                    foreach (var entry in menuTree.GetParentMenuItemsRecursive(menuItem, false))
+                    {
+                        if (entry is HierarchyMenuItem hierarchyMenuItem)
+                            hierarchyMenuItem.SetExpanded(true);
+                    }
                     menuItem.Select();
                 }
             }

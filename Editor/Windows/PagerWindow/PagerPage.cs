@@ -8,7 +8,7 @@ namespace Rhinox.GUIUtils.Editor
 {
     public abstract class PagerTreePage : PagerPage
     {
-        protected EditorWrapper _targetWrapper;
+        protected Rhinox.GUIUtils.Editor.EditorWrapper _targetWrapper;
 
         protected PagerTreePage(SlidePagedWindowNavigationHelper<object> pager) : base(pager)
         {

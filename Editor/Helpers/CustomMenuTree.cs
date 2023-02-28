@@ -24,7 +24,7 @@ namespace Rhinox.GUIUtils.Editor
     {
         public static CustomMenuTree ActiveMenuTree;
 
-        public List<UIMenuItem> Selection;
+        public List<IMenuItem> Selection;
 
         public bool HasSelection => !Selection.IsNullOrEmpty();
         public int SelectionCount => Selection?.Count ?? 0;
@@ -42,11 +42,11 @@ namespace Rhinox.GUIUtils.Editor
         public event SelectionHandler SelectionChanged; // TODO: how to
         public event Action SelectionConfirmed;
 
-        private List<UIMenuItem> _items;
+        private List<IMenuItem> _items;
         private List<HierarchyMenuItem> _groupingItems;
         private HierarchyMenuItem _rootItems;
 
-        public IReadOnlyList<UIMenuItem> MenuItems => _items.AsReadOnly();
+        public IReadOnlyList<IMenuItem> MenuItems => _items.AsReadOnly();
         public object SelectedValue => Selection.IsNullOrEmpty() ? null : Selection[0].RawValue;
 
 #if ODIN_INSPECTOR
@@ -66,18 +66,18 @@ namespace Rhinox.GUIUtils.Editor
 
         public CustomMenuTree()
         {
-            Selection = new List<UIMenuItem>();
+            Selection = new List<IMenuItem>();
         }
         
 #if ODIN_INSPECTOR
         public CustomMenuTree(OdinMenuTree tree)
         {
             _menuTree = tree;
-            Selection = new List<UIMenuItem>();
+            Selection = new List<IMenuItem>();
         }
 #endif
 
-        public IReadOnlyCollection<UIMenuItem> Enumerate() // TODO: how to
+        public IReadOnlyCollection<UIMenuItem> Enumerate()
         {
             return (IReadOnlyCollection<UIMenuItem>)_items ?? Array.Empty<UIMenuItem>();
         }
@@ -106,6 +106,52 @@ namespace Rhinox.GUIUtils.Editor
 
                     item.Update();
                 } 
+            }
+        }
+
+        public ICollection<UIMenuItem> GetParentMenuItemsRecursive(UIMenuItem item, bool includeSelf = false)
+        {
+            if (item == null)
+                return Array.Empty<UIMenuItem>();
+            
+            var list = new List<UIMenuItem>();
+            foreach (var parentItem in _groupingItems)
+            {
+                if (!parentItem.Contains(item))
+                    continue;
+
+                list.Add(parentItem);
+
+                if (parentItem.Children != null && parentItem.Children.Contains(item))
+                {
+                    list.Add(item);
+                    break;
+                }
+                
+                EnumerateSubgroupsAndAddToList(item, parentItem, ref list);
+            }
+
+            if (!includeSelf)
+                list.Remove(item);
+            return list;
+        }
+
+        private static void EnumerateSubgroupsAndAddToList(UIMenuItem item, HierarchyMenuItem parentItem, ref List<UIMenuItem> resultSet)
+        {
+            foreach (var childItems in parentItem.SubGroups)
+            {
+                if (!childItems.Contains(item))
+                    continue;
+
+                resultSet.Add(childItems);
+
+                if (childItems.Children != null && childItems.Children.Contains(item))
+                {
+                    resultSet.Add(item);
+                    break;
+                }
+
+                EnumerateSubgroupsAndAddToList(item, childItems, ref resultSet);
             }
         }
 
@@ -226,13 +272,25 @@ namespace Rhinox.GUIUtils.Editor
 
         public void HandleRefocus(Rect currentLayoutRect)
         {
-            // TODO
+#if ODIN_INSPECTOR
+            if (CustomMenuTree.ActiveMenuTree == this 
+                || Event.current.rawType != UnityEngine.EventType.MouseDown 
+                || !currentLayoutRect.Contains(Event.current.mousePosition) 
+                || !Sirenix.Utilities.Editor.GUIHelper.CurrentWindowHasFocus)
+                return;
+            // TODO: handle autofocus of search field not implemented
+            //this.regainSearchFieldFocus = true;
+            //OdinMenuTree.preventAutoFocus = true;
+            CustomMenuTree.ActiveMenuTree = this;
+            //UnityEditorEventUtility.EditorApplication_delayCall += (Action) (() => OdinMenuTree.preventAutoFocus = false);
+            Sirenix.Utilities.Editor.GUIHelper.RequestRepaint();
+#endif
         }
 
-        public void AddSelection(UIMenuItem uiMenuItem, bool clearList)
+        public void AddSelection(IMenuItem uiMenuItem, bool clearList)
         {
             if (Selection == null)
-                Selection = new List<UIMenuItem>();
+                Selection = new List<IMenuItem>();
 
             if (clearList)
             {
@@ -249,21 +307,25 @@ namespace Rhinox.GUIUtils.Editor
         public void Add(string path, object test, Texture icon = null)
         {
             if (_items == null)
-                _items = new List<UIMenuItem>();
+                _items = new List<IMenuItem>();
 
             var item = new UIMenuItem(this, path, test);
             if (icon != null)
                 item.SetIcon(icon);
             _items.AddUnique(item);
+    #if ODIN_INSPECTOR
+            _menuTree.Add(path, test, icon);
+    #endif
+            
             _groupingIsDirty = true;
         }
 
-        public void AddCustom(UIMenuItem customItem)
+        public void AddCustom(IMenuItem customItem)
         {
             if (customItem == null || customItem.MenuTree != this)
                 return;
             if (_items == null)
-                _items = new List<UIMenuItem>(); ;
+                _items = new List<IMenuItem>(); ;
             _items.AddUnique(customItem);
             _groupingIsDirty = true;
         }
