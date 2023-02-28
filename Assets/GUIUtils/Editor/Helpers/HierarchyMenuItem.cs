@@ -5,7 +5,7 @@ namespace Rhinox.GUIUtils.Editor
 {
     public class HierarchyMenuItem : UIMenuItem
     {
-        public List<UIMenuItem> Children;
+        public List<IMenuItem> Children;
         public List<HierarchyMenuItem> SubGroups;
 
         private Texture _closedIcon;
@@ -21,7 +21,7 @@ namespace Rhinox.GUIUtils.Editor
             SetExpanded(expanded);
             Selectable = false;
 
-            Children = new List<UIMenuItem>();
+            Children = new List<IMenuItem>();
             SubGroups = new List<HierarchyMenuItem>();
         }
 
@@ -32,10 +32,26 @@ namespace Rhinox.GUIUtils.Editor
             
         }
 
-        private void SetExpanded(bool value)
+        public void SetExpanded(bool value)
         {
             Expanded = value;
             _icon = value ? _openIcon : _closedIcon;
+        }
+
+        public bool Contains(UIMenuItem menuItem)
+        {
+            if (Children != null && Children.Contains(menuItem))
+                return true;
+
+            if (SubGroups == null)
+                return false;
+            foreach (var group in SubGroups)
+            {
+                if (group.Contains(menuItem))
+                    return true;
+            }
+
+            return false;
         }
     }
 }

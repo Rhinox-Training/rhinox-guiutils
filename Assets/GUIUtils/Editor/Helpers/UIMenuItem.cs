@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace Rhinox.GUIUtils.Editor
 {
-    public class UIMenuItem
+    public class UIMenuItem : IMenuItem
     {
         public string Name { get; }
 
