@@ -38,7 +38,7 @@ namespace Rhinox.GUIUtils.Editor
             _icon = value ? _openIcon : _closedIcon;
         }
 
-        public bool Contains(UIMenuItem menuItem)
+        public bool Contains(IMenuItem menuItem)
         {
             if (Children != null && Children.Contains(menuItem))
                 return true;

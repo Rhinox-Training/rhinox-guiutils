@@ -52,11 +52,7 @@ namespace Rhinox.GUIUtils.Editor
                     .FirstOrDefault(x => x.RawValue != null);
                 if (menuItem != null)
                 {
-                    foreach (var entry in menuTree.GetParentMenuItemsRecursive(menuItem, false))
-                    {
-                        if (entry is HierarchyMenuItem hierarchyMenuItem)
-                            hierarchyMenuItem.SetExpanded(true);
-                    }
+                    menuTree.TryExpandAllParentItems(menuItem);
                     menuItem.Select();
                 }
             }

@@ -18,5 +18,14 @@ namespace Rhinox.GUIUtils.Editor
             Array.Copy(otherOptions, 0, result, options.Length, otherOptions.Length);
             return result;
         }
+        
+        public static Rect Expand(this Rect rect, float expand)
+        {
+            rect.x -= expand;
+            rect.y -= expand;
+            rect.height += expand * 2f;
+            rect.width += expand * 2f;
+            return rect;
+        }
     }
 }

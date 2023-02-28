@@ -7,13 +7,18 @@ namespace Rhinox.GUIUtils.Editor
     {
         string Name { get; }
         string FullPath { get; }
+        CustomMenuTree MenuTree { get; }
+        
         object RawValue { get; }
         bool IsFunc { get; }
-        CustomMenuTree MenuTree { get; }
-        Rect Rect { get; }
-        void Update();
-        void DrawMenuItem(Event evt, int i, Func<string, string> nameTransformer = null);
-        void Deselect();
         object GetInstanceValue();
+        
+        Rect Rect { get; }
+        
+        void DrawMenuItem(Event evt, int i, Func<string, string> nameTransformer = null);
+        void Update();
+        
+        void Select(bool addToSelection = false);
+        void Deselect();
     }
 }
