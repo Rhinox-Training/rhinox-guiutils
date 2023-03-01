@@ -84,9 +84,7 @@ namespace Rhinox.GUIUtils.Editor
             return 0;
         }
 
-#if ODIN_INSPECTOR
         [Sirenix.OdinInspector.OnInspectorGUI]
-#endif
         public void Draw()
         {
             _topWidth = CalculateTopWidth();
