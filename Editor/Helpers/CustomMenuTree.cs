@@ -49,7 +49,7 @@ namespace Rhinox.GUIUtils.Editor
         private HierarchyMenuItem _rootItems;
 #endif
 
-        public IReadOnlyList<IMenuItem> MenuItems => _items.AsReadOnly();        
+        public IReadOnlyList<IMenuItem> MenuItems => _items != null ? (IReadOnlyList<IMenuItem>) _items.AsReadOnly() : Array.Empty<IMenuItem>();        
         public IReadOnlyCollection<IMenuItem> Enumerate()
         {
             return (IReadOnlyCollection<IMenuItem>)_items ?? Array.Empty<IMenuItem>();
