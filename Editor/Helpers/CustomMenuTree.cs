@@ -101,7 +101,7 @@ namespace Rhinox.GUIUtils.Editor
             _menuTree.DrawMenuTree();
 #else
             var evt = Event.current;
-            VisibleRect = CustomEditorGUI.GetVisibleRect().Expand(300f);
+            VisibleRect = CustomEditorGUI.GetVisibleRect().Padding(-300f);
             if (_items == null) 
                 return;
 
