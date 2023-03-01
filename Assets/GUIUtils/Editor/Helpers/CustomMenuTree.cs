@@ -491,6 +491,12 @@ namespace Rhinox.GUIUtils.Editor
             }
         }
 #endif
+        public IMenuItem GetMenuItem(string menuItemName)
+        {
+            if (_items == null)
+                return null;
+            return _items.FirstOrDefault(x => x.Name == null ? menuItemName == null : x.Name.Equals(menuItemName));
+        }
     }
 
 
