@@ -458,5 +458,21 @@ namespace Rhinox.GUIUtils.Editor
                 EditorGUIUtility.labelWidth = this.m_LabelWidth;
             }
         }
+        
+        public class IndentedLayout : IDisposable
+        {
+            private readonly int _originalIndentLevel;
+
+            public IndentedLayout(int increment = 1)
+            {
+                _originalIndentLevel = EditorGUI.indentLevel;
+                EditorGUI.indentLevel = EditorGUI.indentLevel + increment;
+            }
+            
+            public void Dispose()
+            {
+                EditorGUI.indentLevel = _originalIndentLevel;
+            }
+        }
     }
 }
