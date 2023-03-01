@@ -3,6 +3,8 @@ using UnityEngine;
 
 namespace Rhinox.GUIUtils.Editor
 {
+    public delegate void MenuItemEventHandler(IMenuItem item);
+    
     public interface IMenuItem
     {
         string Name { get; }
@@ -15,6 +17,8 @@ namespace Rhinox.GUIUtils.Editor
         
         Rect Rect { get; }
         
+        event MenuItemEventHandler RightMouseClicked;
+
         void DrawMenuItem(Event evt, int i, Func<string, string> nameTransformer = null);
         void Update();
         

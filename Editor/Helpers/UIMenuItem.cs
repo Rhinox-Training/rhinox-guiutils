@@ -18,6 +18,8 @@ namespace Rhinox.GUIUtils.Editor
         public CustomMenuTree MenuTree { get; private set; }
         
         public Rect Rect { get; private set; }
+        public event MenuItemEventHandler RightMouseClicked;
+        
         private Rect labelRect;
 
         public bool Selectable { get; set; }
@@ -178,6 +180,10 @@ namespace Rhinox.GUIUtils.Editor
             {
                 bool addToSelection = Event.current.modifiers == EventModifiers.Control;
                 this.Select(addToSelection);
+            }
+            else if (Event.current.button == 1)
+            {
+                RightMouseClicked?.Invoke(this);
             }
 
             return true;
