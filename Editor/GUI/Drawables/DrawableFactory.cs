@@ -67,6 +67,9 @@ namespace Rhinox.GUIUtils.Editor
 
         private static List<IOrderedDrawable> CreateDrawableMembersFor(SerializedProperty property, Type type, int depth)
         {
+            if (property == null)
+                return null;
+            
             var visibleFields = property.EnumerateEditorVisibleFields();
             object instanceVal = property.GetValue();
             
