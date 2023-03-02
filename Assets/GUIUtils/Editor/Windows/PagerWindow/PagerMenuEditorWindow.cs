@@ -13,12 +13,7 @@ using UnityEngine;
 
 namespace Rhinox.GUIUtils.Editor
 {
-    public abstract class PagerMenuEditorWindow<T> : 
-#if ODIN_INSPECTOR
-        OdinMenuEditorWindow where T : OdinMenuEditorWindow
-#else
-        CustomMenuEditorWindow where T : CustomMenuEditorWindow
-#endif
+    public abstract class PagerMenuEditorWindow<T> : CustomMenuEditorWindow where T : CustomMenuEditorWindow
     {
         protected SlidePagedWindowNavigationHelper<object> _pager;
 
@@ -71,11 +66,7 @@ namespace Rhinox.GUIUtils.Editor
 
         protected override void OnBeginDrawEditors()
         {
-#if ODIN_INSPECTOR
-            var toolbarHeight = MenuTree.Config.SearchToolbarHeight;
-#else
             var toolbarHeight = MenuTree.ToolbarHeight;
-#endif
 
             // Draws a toolbar 
             CustomEditorGUI.BeginHorizontalToolbar(height: toolbarHeight);
