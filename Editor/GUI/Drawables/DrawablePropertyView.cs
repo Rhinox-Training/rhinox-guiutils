@@ -141,7 +141,7 @@ namespace Rhinox.GUIUtils.Editor
                     continue;
                 rect.height = drawable.ElementHeight;
                 drawable.Draw(rect);
-                rect.y += rect.height;
+                rect.y += rect.height + 2.0f;
             }
         }
     }
