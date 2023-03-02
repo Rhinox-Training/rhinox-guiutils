@@ -69,6 +69,8 @@ namespace Rhinox.GUIUtils.Editor
             get => _menuTree?.Config.DrawSearchToolbar ?? false;
             set => _menuTree.Config.DrawSearchToolbar = value;
         }
+
+        public OdinMenuTreeDrawingConfig Config => _menuTree.Config;
 #endif
         
         // =============================================================================================================
@@ -449,6 +451,13 @@ namespace Rhinox.GUIUtils.Editor
                 _innerItem = item;
                 MenuTree = customMenuTree;
                 IsFunc = item.Value is Func<object>;
+                item.OnRightClick += HandleRightClick;
+            }
+
+            private void HandleRightClick(OdinMenuItem obj)
+            {
+                if (obj == _innerItem)
+                    RightMouseClicked?.Invoke(this);
             }
 
             public string Name => _innerItem.Name;
@@ -457,6 +466,9 @@ namespace Rhinox.GUIUtils.Editor
             public bool IsFunc { get; private set; }
             public CustomMenuTree MenuTree { get; private set;  }
             public Rect Rect => _innerItem.Rect;
+            
+            public event MenuItemEventHandler RightMouseClicked;
+
             public void Update()
             {
                 //_innerItem.
