@@ -39,6 +39,45 @@ namespace Rhinox.GUIUtils
             }
         }
         
+        private static GUIStyle _titleBackgroundStyle;
+        public static GUIStyle TitleBackground
+        {
+            get
+            {
+                if (_titleBackgroundStyle == null)
+                    _titleBackgroundStyle = new GUIStyle("ShurikenModuleTitle")
+                    {
+                        padding = new RectOffset(0, 1, 0, 0),
+                        fontStyle = FontStyle.Bold,
+                        fontSize = 12,
+                        alignment = TextAnchor.MiddleLeft,
+                        stretchHeight = false,
+                        stretchWidth = true,
+#if UNITY_EDITOR
+                        fixedHeight = 1.3333f * EditorGUIUtility.singleLineHeight
+#else
+                        fixedHeight = 24.0f
+#endif
+                    };
+                return _titleBackgroundStyle;
+            }
+        }
+        
+        
+        private static GUIStyle _titleBackgroundStyleCentered;
+        public static GUIStyle TitleBackgroundCentered
+        {
+            get
+            {
+                if (_titleBackgroundStyleCentered == null)
+                    _titleBackgroundStyleCentered = new GUIStyle(TitleBackground)
+                    {
+                        alignment = TextAnchor.MiddleCenter
+                    };
+                return _titleBackgroundStyleCentered;
+            }
+        }
+        
         private static GUIStyle _boldTitleStyle;
         public static GUIStyle BoldTitle
         {
