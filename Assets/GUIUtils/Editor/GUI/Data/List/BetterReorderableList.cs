@@ -105,9 +105,7 @@ namespace Rhinox.GUIUtils.Editor
             }
             else
             {
-                System.Type parentType = elements.serializedObject.targetObject.GetType();
-                System.Reflection.FieldInfo fi = parentType.GetField(elements.propertyPath);
-
+                System.Reflection.FieldInfo fi = elements.FindFieldInfo();
                 this.m_ListType = fi.FieldType;
                 this.m_ElementType = GetItemType(this.m_ListType);
             }
