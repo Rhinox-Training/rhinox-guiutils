@@ -47,7 +47,7 @@ namespace Rhinox.GUIUtils.Editor
             get
             {
                 if (_closedIcon == null)
-                    _closedIcon = UnityIcon.AssetIcon("Fa_AngleRight").Pad(10);
+                    _closedIcon = UnityIcon.AssetIcon("Fa_AngleRight").MakeSquare().Pad(10);
                 return _closedIcon;
             }
         }
@@ -58,7 +58,7 @@ namespace Rhinox.GUIUtils.Editor
             get
             {
                 if (_openIcon == null)
-                    _openIcon = UnityIcon.AssetIcon("Fa_AngleDown").Pad(10);
+                    _openIcon = UnityIcon.AssetIcon("Fa_AngleDown").MakeSquare().Pad(10);
                 return _openIcon;
             }
         }
@@ -83,21 +83,26 @@ namespace Rhinox.GUIUtils.Editor
                 return;
             
             CustomEditorGUI.BeginHorizontalToolbar(HeaderStyle);
-
-            var icon = _expanded ? OpenIcon : ClosedIcon;
-
-            int iconSize = (int)HeaderStyle.fixedHeight;
-            if (CustomEditorGUI.IconButton(icon, iconSize, iconSize))
-                _expanded = !_expanded;
-
-            using (new eUtility.DisabledGroup(true))
             {
-                if (Target is Object unityTarget)
-                    EditorGUILayout.ObjectField(GUIContent.none, unityTarget, unityTarget.GetType(), true);
-                else
-                    EditorGUILayout.LabelField(Target.GetType().Name, CustomGUIStyles.SubtitleCentered);
+                var icon = _expanded ? OpenIcon : ClosedIcon;
+
+                int iconSize = (int) HeaderStyle.fixedHeight;
+                if (CustomEditorGUI.IconButton(icon, iconSize, iconSize))
+                    _expanded = !_expanded;
+
+                EditorGUILayout.BeginVertical();
+                GUILayout.FlexibleSpace();
+                GUILayout.FlexibleSpace();
+                using (new eUtility.DisabledGroup(true))
+                {
+                    if (Target is Object unityTarget)
+                        EditorGUILayout.ObjectField(GUIContent.none, unityTarget, unityTarget.GetType(), true);
+                    else
+                        EditorGUILayout.LabelField(Target.GetType().Name, CustomGUIStyles.SubtitleCentered);
+                }
+                GUILayout.FlexibleSpace();
+                EditorGUILayout.EndVertical();
             }
-            
             CustomEditorGUI.EndHorizontalToolbar();
         }
 
