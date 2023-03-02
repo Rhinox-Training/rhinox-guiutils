@@ -15,7 +15,6 @@ namespace Rhinox.GUIUtils.Editor
         [NonSerialized] private CustomMenuTree menuTree;
         [NonSerialized] private object trySelectObject;
         [SerializeField] [HideInInspector] private List<string> selectedItems = new List<string>();
-        [SerializeField] [HideInInspector] private bool resizableMenuWidth = true;
         [HideInInspector] private Vector2 _menuScrollPosition;
 
         private void ProjectWindowChanged() => isDirty = true;
