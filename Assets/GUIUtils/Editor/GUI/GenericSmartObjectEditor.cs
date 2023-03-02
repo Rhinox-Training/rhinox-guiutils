@@ -31,20 +31,24 @@ namespace Rhinox.GUIUtils.Editor
             _target = smartInternalObj.Target;
             if (TryGetInspectorGUIMethod(_target, out MethodInfo methodInfo))
                 _drawerMethod = methodInfo;
-            else if (_propertyView == null)
-                _propertyView = new DrawablePropertyView(smartInternalObj.Target);
+            _propertyView = new DrawablePropertyView(smartInternalObj.Target);
         }
 
         public override void OnInspectorGUI()
         {
+            _propertyView.DrawLayout();
             if (_drawerMethod != null)
                 _drawerMethod.Invoke(_target, null);
-            else
-                _propertyView.DrawLayout();
         }
         
         private bool TryGetInspectorGUIMethod(object o, out MethodInfo methodInfo)
         {
+            if (o == null)
+            {
+                methodInfo = null;
+                return false;
+            }
+
             var methods = o.GetType().GetMethods(BindingFlags.FlattenHierarchy | BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
                 .Where(x => x.GetCustomAttribute<OnInspectorGUIAttribute>() != null)
                 .ToArray();
