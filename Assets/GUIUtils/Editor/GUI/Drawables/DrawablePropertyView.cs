@@ -66,9 +66,13 @@ namespace Rhinox.GUIUtils.Editor
             if (drawables.Count == 0 && obj is UnityEngine.Object unityObj)
                 drawables.Add(new DrawableUnityObject(unityObj));
 
-            DrawableGroupingHelper.Process(ref drawables);
+            if (!drawables.IsNullOrEmpty())
+            {
+                DrawableGroupingHelper.Process(ref drawables);
 
-            drawables.SortDrawables();
+                drawables.SortDrawables();
+            }
+
             return drawables;
         }
 
@@ -85,9 +89,12 @@ namespace Rhinox.GUIUtils.Editor
 
             var drawables = DrawableFactory.CreateDrawableMembersFor(property, type);
 
-            DrawableGroupingHelper.Process(ref drawables);
+            if (!drawables.IsNullOrEmpty())
+            {
+                DrawableGroupingHelper.Process(ref drawables);
 
-            drawables.SortDrawables();
+                drawables.SortDrawables();
+            }
 
             return drawables;
         }
@@ -101,14 +108,20 @@ namespace Rhinox.GUIUtils.Editor
 
             var drawables = DrawableFactory.CreateDrawableMembersFor(obj, type);
 
-            DrawableGroupingHelper.Process(ref drawables);
+            if (!drawables.IsNullOrEmpty())
+            {
+                DrawableGroupingHelper.Process(ref drawables);
 
-            drawables.SortDrawables();
+                drawables.SortDrawables();
+            }
             return drawables;
         }
         
         public void DrawLayout()
         {
+            if (_drawables == null)
+                return;
+            
             foreach (var drawable in _drawables)
             {
                 if (drawable == null)
@@ -119,6 +132,9 @@ namespace Rhinox.GUIUtils.Editor
         
         public void Draw(Rect rect)
         {
+            if (_drawables == null)
+                return;
+            
             foreach (var drawable in _drawables)
             {
                 if (drawable == null)
