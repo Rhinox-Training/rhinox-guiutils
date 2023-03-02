@@ -18,7 +18,9 @@ namespace Rhinox.GUIUtils.Editor
         {
             get
             {
-                if (_property != null)
+                if (_propertyView != null)
+                    return _propertyView.Height;
+                else if (_property != null)
                 {
                     if (_property.isExpanded)
                     {
@@ -26,9 +28,6 @@ namespace Rhinox.GUIUtils.Editor
                         return height;
                     }
                 }
-                else if (_propertyView != null)
-                    return _propertyView.Height;
-
                 return _defaultElementHeight;
             }
         }
@@ -115,7 +114,7 @@ namespace Rhinox.GUIUtils.Editor
             get
             {
                 if (_listRO != null)
-                    return _listRO.GetHeight();
+                    return IsReadOnly ? _listRO.GetHeight() : _listRO.GetHeight() + 24.0f; // (+) icon include
                 return base.ElementHeight;
             }
         }
