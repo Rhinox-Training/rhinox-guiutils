@@ -197,7 +197,7 @@ namespace Rhinox.GUIUtils.Editor
                 composite.AddRange(subdrawables);
                 resultingMember = composite;
             }
-            catch (Exception e)
+            catch (Exception /*e*/)
             {
                 resultingMember = null;
             }
