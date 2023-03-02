@@ -2,19 +2,24 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Rhinox.GUIUtils.Editor;
+using Sirenix.OdinInspector;
 using UnityEditor;
 using UnityEngine;
-#if ODIN_INSPECTOR
-using Sirenix.OdinInspector;
-#endif
 
 namespace Rhinox.GUIUtils.Editor
 {
     public class DialogBuilder
     {
-        public abstract class ValueReference<T>
+        public interface IValueReference
+        {
+            object GenericValue { get; }
+        }
+        
+        public abstract class ValueReference<T> : IValueReference
         {
             public abstract T Value { get; }
+
+            public object GenericValue => Value;
 
             public static implicit operator T(ValueReference<T> reference) => reference.Value;
         }
@@ -31,19 +36,17 @@ namespace Rhinox.GUIUtils.Editor
             public override T Value => Field.SmartValue;
         }
 
-#if ODIN_INSPECTOR
-    public class ValueDropdownItemWrapper<T> : ValueReference<T>
-    {
-        public DropdownInputField<T> Field;
-        
-        public ValueDropdownItemWrapper(DropdownInputField<T> field)
+        public class ValueDropdownItemWrapper<T> : ValueReference<T>
         {
-            Field = field;
-        }
+            public DropdownInputField<T> Field;
+            
+            public ValueDropdownItemWrapper(DropdownInputField<T> field)
+            {
+                Field = field;
+            }
 
-        public override T Value => Field.SmartValue.Value;
-    }
-#endif
+            public override T Value => Field.SmartValue.Value;
+        }
 
         private DialogData _dialogData;
 
@@ -125,39 +128,37 @@ namespace Rhinox.GUIUtils.Editor
             return Add(field, out reference, initialValue);
         }
 
-#if ODIN_INSPECTOR
-    public DialogBuilder Dropdown<T>(string name, ICollection<T> options, Func<T, string> nameSelector, out ValueReference<T> reference, T initialValue
- = default, string tooltip = null)
-    {
-        var valueOptions = new ValueDropdownList<T>();
-        foreach (var val in options)
-            valueOptions.Add(nameSelector(val), val);
-        return Dropdown(name, valueOptions, out reference, initialValue, tooltip);
-    }
-    
-    public DialogBuilder Dropdown<T>(string name, ICollection<ValueDropdownItem<T>> options, out ValueReference<T> reference, ValueDropdownItem<T> initialValue
- = default, string tooltip = null)
-    {
-        var field = new DropdownInputField<T>(name, options, tooltip);
-        _dialogData.Add(field, initialValue);
-        reference = new ValueDropdownItemWrapper<T>(field);
-        return this;
-    }
-    
-    public DialogBuilder Dropdown<T>(string name, ICollection<ValueDropdownItem<T>> options, out ValueReference<T> reference, T initialValue, string tooltip
- = null)
-    {
-        var initialPick = options.FirstOrDefault(x => Equals(x.Value, initialValue));
-        return Dropdown(name, options, out reference, initialPick, tooltip);
-    }
-    
-    public DialogBuilder Dropdown(string name, ICollection<ValueDropdownItem> options, out ValueReference<ValueDropdownItem> reference, ValueDropdownItem initialValue
- = default, string tooltip = null)
-    {
-        var field = new DropdownInputField(name, options, tooltip);
-        return Add(field, out reference, initialValue);
-    }
-#endif
+        public DialogBuilder Dropdown<T>(string name, ICollection<T> options, Func<T, string> nameSelector, out ValueReference<T> reference, T initialValue
+     = default, string tooltip = null)
+        {
+            var valueOptions = new ValueDropdownList<T>();
+            foreach (var val in options)
+                valueOptions.Add(nameSelector(val), val);
+            return Dropdown(name, valueOptions, out reference, initialValue, tooltip);
+        }
+        
+        public DialogBuilder Dropdown<T>(string name, ICollection<ValueDropdownItem<T>> options, out ValueReference<T> reference, ValueDropdownItem<T> initialValue
+     = default, string tooltip = null)
+        {
+            var field = new DropdownInputField<T>(name, options, tooltip);
+            _dialogData.Add(field, initialValue);
+            reference = new ValueDropdownItemWrapper<T>(field);
+            return this;
+        }
+        
+        public DialogBuilder Dropdown<T>(string name, ICollection<ValueDropdownItem<T>> options, out ValueReference<T> reference, T initialValue, string tooltip
+     = null)
+        {
+            var initialPick = options.FirstOrDefault(x => Equals(x.Value, initialValue));
+            return Dropdown(name, options, out reference, initialPick, tooltip);
+        }
+        
+        public DialogBuilder Dropdown(string name, ICollection<ValueDropdownItem> options, out ValueReference<ValueDropdownItem> reference, ValueDropdownItem initialValue
+     = default, string tooltip = null)
+        {
+            var field = new DropdownInputField(name, options, tooltip);
+            return Add(field, out reference, initialValue);
+        }
 
         public DialogBuilder OnAccept(Action action)
         {

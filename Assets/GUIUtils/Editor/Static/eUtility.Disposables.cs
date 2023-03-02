@@ -1,7 +1,9 @@
 using System;
 using System.Reflection;
 using UnityEditor;
+using UnityEditor.Experimental;
 using UnityEngine;
+using UnityEngine.Experimental.TerrainAPI;
 
 #if ODIN_INSPECTOR
 using Sirenix.Utilities;
@@ -152,6 +154,22 @@ namespace Rhinox.GUIUtils.Editor
             }
         }
         
+        public class GuiBackgroundColor : IDisposable
+        {
+            private readonly Color _old;
+
+            public GuiBackgroundColor(Color color)
+            {
+                _old = GUI.backgroundColor;
+                GUI.backgroundColor = color;
+            }
+
+            public virtual void Dispose()
+            {
+                GUI.backgroundColor = _old;
+            }
+        }
+        
         public class HandleColor : IDisposable
         {
             private Color _prevColor;
@@ -210,6 +228,40 @@ namespace Rhinox.GUIUtils.Editor
             public void Dispose()
             {
                 GUI.matrix = _originalMatrix;
+            }
+        }
+
+        public class HierarchyMode : IDisposable
+        {
+            private readonly bool _originalHierachyMode;
+
+            public HierarchyMode(bool state)
+            {
+                _originalHierachyMode = EditorGUIUtility.hierarchyMode;
+                EditorGUIUtility.hierarchyMode = state;
+            }
+            
+            public void Dispose()
+            {
+                
+                EditorGUIUtility.hierarchyMode = _originalHierachyMode;
+            }
+        }
+
+        public class LabelWidth : IDisposable
+        {
+            private readonly float _originalLabelWidth;
+
+            public LabelWidth(float width)
+            {
+                _originalLabelWidth = EditorGUIUtility.labelWidth;
+                EditorGUIUtility.labelWidth = width;
+            }
+            
+            public void Dispose()
+            {
+                
+                EditorGUIUtility.labelWidth = _originalLabelWidth;
             }
         }
         
@@ -380,6 +432,46 @@ namespace Rhinox.GUIUtils.Editor
                     editor = (TextEditor) _recycledTextEditorField.GetValue(null);
                 }
                 return editor;
+            }
+        }
+        
+        public class PaddedGUIScope : GUI.Scope
+        {
+            private float m_LabelWidth;
+            private const string STYLESHEET_NAME = "sb-settings-panel-client-area";
+            public PaddedGUIScope(float? customMargin = null, float labelWidth = 0.5f)
+            {
+                this.m_LabelWidth = EditorGUIUtility.labelWidth;
+                EditorGUIUtility.labelWidth = labelWidth;
+                GUILayout.BeginHorizontal();
+                float marginLeft = customMargin.HasValue ? customMargin.Value : ExposedEditorResources.GetFloat(STYLESHEET_NAME, ExposedStyleCatalog.marginLeft);
+                float marginRight = customMargin.HasValue ? customMargin.Value : ExposedEditorResources.GetFloat(STYLESHEET_NAME, ExposedStyleCatalog.marginRight);
+                GUILayout.Space(marginLeft);
+                GUILayout.BeginVertical();
+                GUILayout.Space(marginRight);
+            }
+
+            protected override void CloseScope()
+            {
+                GUILayout.EndVertical();
+                GUILayout.EndHorizontal();
+                EditorGUIUtility.labelWidth = this.m_LabelWidth;
+            }
+        }
+        
+        public class IndentedLayout : IDisposable
+        {
+            private readonly int _originalIndentLevel;
+
+            public IndentedLayout(int increment = 1)
+            {
+                _originalIndentLevel = EditorGUI.indentLevel;
+                EditorGUI.indentLevel = EditorGUI.indentLevel + increment;
+            }
+            
+            public void Dispose()
+            {
+                EditorGUI.indentLevel = _originalIndentLevel;
             }
         }
     }

@@ -39,6 +39,45 @@ namespace Rhinox.GUIUtils
             }
         }
         
+        private static GUIStyle _titleBackgroundStyle;
+        public static GUIStyle TitleBackground
+        {
+            get
+            {
+                if (_titleBackgroundStyle == null)
+                    _titleBackgroundStyle = new GUIStyle("ShurikenModuleTitle")
+                    {
+                        padding = new RectOffset(0, 1, 0, 0),
+                        fontStyle = FontStyle.Bold,
+                        fontSize = 12,
+                        alignment = TextAnchor.MiddleLeft,
+                        stretchHeight = false,
+                        stretchWidth = true,
+#if UNITY_EDITOR
+                        fixedHeight = 1.3333f * EditorGUIUtility.singleLineHeight
+#else
+                        fixedHeight = 24.0f
+#endif
+                    };
+                return _titleBackgroundStyle;
+            }
+        }
+        
+        
+        private static GUIStyle _titleBackgroundStyleCentered;
+        public static GUIStyle TitleBackgroundCentered
+        {
+            get
+            {
+                if (_titleBackgroundStyleCentered == null)
+                    _titleBackgroundStyleCentered = new GUIStyle(TitleBackground)
+                    {
+                        alignment = TextAnchor.MiddleCenter
+                    };
+                return _titleBackgroundStyleCentered;
+            }
+        }
+        
         private static GUIStyle _boldTitleStyle;
         public static GUIStyle BoldTitle
         {
@@ -196,6 +235,26 @@ namespace Rhinox.GUIUtils
         }
 
 #if UNITY_EDITOR
+        private static GUIStyle _miniLabelStyleCentered;
+        public static GUIStyle MiniLabel
+        {
+            get
+            {
+                if (_miniLabelStyleCentered == null)
+                {
+                    _miniLabelStyleCentered = new GUIStyle(EditorStyles.centeredGreyMiniLabel)
+                    {
+                        alignment = TextAnchor.MiddleCenter,
+                        clipping = TextClipping.Clip
+                    };
+#if UNITY_2019_3_OR_NEWER
+                    _miniLabelStyleCentered.margin = new RectOffset(4, 4, 4, 4);
+#endif
+                }
+                return _miniLabelStyleCentered;
+            }
+        }
+        
         private static GUIStyle _miniLabelStyleLeft;
         public static GUIStyle MiniLabelLeft
         {
@@ -262,6 +321,27 @@ namespace Rhinox.GUIUtils
                 return _toolbarBackground;
             }
         }
+        
+#if UNITY_EDITOR
+        private static GUIStyle _toggleGroupBackground;
+        public static GUIStyle ToggleGroupBackground
+        {
+            get
+            {
+                if (_toggleGroupBackground == null)
+                {
+                    _toggleGroupBackground = new GUIStyle(EditorStyles.helpBox)
+                    {
+                        overflow = new RectOffset(0, 0, 0, 0),
+                        margin = new RectOffset(0, 0, 0, 0),
+                        padding = new RectOffset(0, 0, 0, 0)
+                    };
+                }
+
+                return _toggleGroupBackground;
+            }
+        }
+#endif
 
         private static GUIStyle _toolbarTab;
         public static GUIStyle ToolbarTab
@@ -282,6 +362,29 @@ namespace Rhinox.GUIUtils
                         stretchWidth = true
                     };
                 return _toolbarTab;
+            }
+        }
+        
+        private static GUIStyle _toolbarCentered;
+        public static GUIStyle ToolbarButtonCentered
+        {
+            get
+            {
+                if (_toolbarCentered == null)
+                    _toolbarCentered = new GUIStyle(
+                        #if UNITY_EDITOR
+                            EditorStyles.toolbarButton
+                        #else
+                            "Button"
+                        #endif
+                        )
+                    {
+                        fixedHeight = 0.0f,
+                        alignment = TextAnchor.MiddleCenter,
+                        stretchHeight = true,
+                        stretchWidth = false
+                    };
+                return _toolbarCentered;
             }
         }
         

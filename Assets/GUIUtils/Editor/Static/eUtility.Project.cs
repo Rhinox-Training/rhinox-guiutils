@@ -8,18 +8,6 @@ namespace Rhinox.GUIUtils.Editor
 {
     public static partial class eUtility
     {
-        public static void CreateAssetsDirectory(string directory)
-        {
-            var directories = directory.Split('\\', '/', Path.PathSeparator);
-            var currentPath = string.Empty;
-            foreach (var dir in directories)
-            {
-                currentPath = Path.Combine(currentPath, dir);
-                if (!AssetDatabase.IsValidFolder(currentPath))
-                    AssetDatabase.CreateFolder(Path.GetDirectoryName(currentPath), Path.GetFileName(currentPath));
-            }
-        }
-        
         /// <summary>
         /// Selects a folder in the project window and shows its content.
         /// Opens a new project window, if none is open yet.
