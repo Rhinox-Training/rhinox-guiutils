@@ -70,9 +70,12 @@ namespace Rhinox.GUIUtils.Editor
             if (property == null)
                 return null;
             
-            var visibleFields = property.EnumerateEditorVisibleFields();
             object instanceVal = property.GetValue();
             
+            if (type == typeof(GameObject))
+                return new List<IOrderedDrawable>() {new DrawableUnityObject(instanceVal)};
+            
+            var visibleFields = property.EnumerateEditorVisibleFields();
             return DrawableMembersFor(instanceVal, type, visibleFields, depth);
         }
 
@@ -125,14 +128,19 @@ namespace Rhinox.GUIUtils.Editor
 
         private static List<IOrderedDrawable> CreateDrawableMembersFor(SerializedObject obj, Type type, int depth)
         {
-            var visibleFields = obj.EnumerateEditorVisibleFields();
             object instanceVal = obj.targetObject;
             
+            if (type == typeof(GameObject))
+                return new List<IOrderedDrawable>() {new DrawableUnityObject(instanceVal)};
+            
+            var visibleFields = obj.EnumerateEditorVisibleFields();
             return DrawableMembersFor(instanceVal, type, visibleFields, depth);
         }
 
         public static List<IOrderedDrawable> CreateDrawableMembersFor(object instance, Type t)
         {
+            if (t == typeof(GameObject))
+                return new List<IOrderedDrawable>() {new DrawableUnityObject(instance)};
             return CreateDrawableMembersFor(instance, t, 0);
         }
 
