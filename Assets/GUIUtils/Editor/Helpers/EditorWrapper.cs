@@ -1,6 +1,8 @@
+using System;
 using Rhinox.GUIUtils.Editor;
 using System.Collections.Generic;
 using System.Linq;
+using Rhinox.Lightspeed;
 using Sirenix.OdinInspector;
 #if ODIN_INSPECTOR
 using Sirenix.OdinInspector.Editor;
@@ -9,6 +11,7 @@ using Sirenix.Utilities.Editor;
 #endif
 using UnityEditor;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 #if ODIN_INSPECTOR_3 && ODIN_VALIDATOR
 using Sirenix.OdinValidator.Editor;
@@ -39,10 +42,34 @@ namespace Rhinox.GUIUtils.Editor
             fixedHeight = 26
         });
 
+        public Texture ClosedIcon
+        {
+            get
+            {
+                if (_closedIcon == null)
+                    _closedIcon = UnityIcon.AssetIcon("Fa_AngleRight").Pad(10);
+                return _closedIcon;
+            }
+        }
+        private Texture _closedIcon;
+        
+        public Texture OpenIcon
+        {
+            get
+            {
+                if (_openIcon == null)
+                    _openIcon = UnityIcon.AssetIcon("Fa_AngleDown").Pad(10);
+                return _openIcon;
+            }
+        }
+        private Texture _openIcon;
+
         public EditorWrapper(object target, bool expanded = true)
         {
             Target = target;
             _expanded = expanded;
+            _closedIcon = null;
+            _openIcon = null;
 #if ODIN_INSPECTOR
             _tree = null;
 #else
@@ -56,7 +83,11 @@ namespace Rhinox.GUIUtils.Editor
                 return;
             
             CustomEditorGUI.BeginHorizontalToolbar(HeaderStyle);
-            if (CustomEditorGUI.IconButton(_expanded ? UnityIcon.AssetIcon("Fa_ArrowDown") : UnityIcon.AssetIcon("Fa_ArrowRight") , 20, 20))
+
+            var icon = _expanded ? OpenIcon : ClosedIcon;
+
+            int iconSize = (int)HeaderStyle.fixedHeight;
+            if (CustomEditorGUI.IconButton(icon, iconSize, iconSize))
                 _expanded = !_expanded;
 
             using (new eUtility.DisabledGroup(true))
