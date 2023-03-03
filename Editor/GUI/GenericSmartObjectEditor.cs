@@ -36,7 +36,8 @@ namespace Rhinox.GUIUtils.Editor
 
         public override void OnInspectorGUI()
         {
-            _propertyView.DrawLayout();
+            if (_propertyView != null)
+                _propertyView.DrawLayout();
             if (_drawerMethod != null)
                 _drawerMethod.Invoke(_target, null);
         }
