@@ -100,6 +100,10 @@ namespace Rhinox.GUIUtils.Editor
             {
                 EditorGUI.DrawRect(Rect, new Color(0.243f, 0.372f, 0.588f, 1f));
             }
+            else if (IsHoveringItem)
+            {
+                EditorGUI.DrawRect(Rect, new Color(0.838f, 0.838f, 0.838f, 0.034f));
+            }
 
             if (_icon != null)
             {
@@ -157,7 +161,7 @@ namespace Rhinox.GUIUtils.Editor
             _icon = icon;
         }
 
-        public void Update()
+        public virtual void Update()
         {
             EventType type = Event.current.type;
 

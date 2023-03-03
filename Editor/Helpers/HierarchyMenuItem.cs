@@ -53,5 +53,21 @@ namespace Rhinox.GUIUtils.Editor
 
             return false;
         }
+
+        public override void Update()
+        {
+            base.Update();
+            if (SubGroups != null)
+            {
+                foreach (var group in SubGroups)
+                    group.Update();
+            }
+
+            if (Children != null)
+            {
+                foreach (var entry in Children)
+                    entry.Update();
+            }
+        }
     }
 }
