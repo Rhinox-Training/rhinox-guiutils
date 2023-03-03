@@ -77,13 +77,11 @@ namespace Rhinox.GUIUtils.Editor
         // Constructor
         
         public CustomMenuTree()
+#if ODIN_INSPECTOR
+            : this(new OdinMenuTree())
+#endif
         {
             Selection = new List<IMenuItem>();
-#if ODIN_INSPECTOR
-            _menuTree = new OdinMenuTree();
-            _menuTree.Selection.SelectionChanged += OnOdinSelectionChanged;
-            _menuTree.Selection.SelectionConfirmed += OnOdinSelectionConfirmed;
-#endif
         }
 
 #if ODIN_INSPECTOR
@@ -91,6 +89,9 @@ namespace Rhinox.GUIUtils.Editor
         {
             _menuTree = tree;
             Selection = new List<IMenuItem>();
+            
+            _menuTree.Selection.SelectionChanged += OnOdinSelectionChanged;
+            _menuTree.Selection.SelectionConfirmed += OnOdinSelectionConfirmed;
         }
 #endif
 
