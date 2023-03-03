@@ -20,7 +20,7 @@ namespace Rhinox.GUIUtils.Editor
                 float height = 0.0f;
                 foreach (var drawable in _drawables)
                     height += drawable.ElementHeight;
-                return height;
+                return height + (Math.Max(0, _drawables.Count - 1) * 2.0f);
             }
         }
 
