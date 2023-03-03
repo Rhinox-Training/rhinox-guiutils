@@ -20,21 +20,11 @@ namespace Rhinox.GUIUtils.Editor
             {
                 if (_propertyView != null)
                     return _propertyView.Height;
-                else if (_property != null)
-                {
-                    if (_property.isExpanded)
-                    {
-                        float height = EditorGUI.GetPropertyHeight(_property, true);
-                        return height;
-                    }
-                }
                 return _defaultElementHeight;
             }
         }
 
-        //private readonly ICollection<IOrderedDrawable> _drawables;
         private readonly float _defaultElementHeight;
-        private readonly HostInfo _hostInfo;
         private readonly SerializedProperty _property;
         private readonly DrawablePropertyView _propertyView;
 
@@ -43,58 +33,22 @@ namespace Rhinox.GUIUtils.Editor
             if (property == null) throw new ArgumentNullException(nameof(property));
             _defaultElementHeight = defaultElementHeight;
             _property = property;
-            _hostInfo = property.GetHostInfo();
-            
             _propertyView = new DrawablePropertyView(property, drawElementsAsUnity);
-            //if (drawElementsAsUnity)
-            //    _drawables = new[] {new UnityDrawableProperty(property)};
-            //else
-            //{
-                //_propertyView = new DrawablePropertyView(property);
-                
-                // if (property.exposedReferenceValue != null)
-                // {
-                //     _drawables = DrawableFactory.ParseSerializedObject(new SerializedObject(property.exposedReferenceValue));
-                // }
-                // else
-                // {
-                //     var reflectedValue = _hostInfo.GetValue();
-                //     if (reflectedValue is UnityEngine.Object unityReflectedVal)
-                //         _drawables = DrawableFactory.ParseSerializedObject(new SerializedObject(unityReflectedVal));
-                //     else if (reflectedValue != null)
-                //         _drawables = DrawableFactory.ParseNonUnityObject(reflectedValue);
-                // }
-            //}
-            
         }
 
         public ListElementDrawable(object element, float defaultElementHeight = 18.0f, bool drawElementsAsUnity = false)
         {
             if (element == null) throw new ArgumentNullException(nameof(element));
             _defaultElementHeight = defaultElementHeight;
+            _property = null;
             _propertyView = new DrawablePropertyView(element, drawElementsAsUnity);
-            // _drawables = drawElementsAsUnity && element is UnityEngine.Object ?
-            //     new [] { new DrawableUnityObject((UnityEngine.Object)element) } :
-            //     DrawableFactory.ParseNonUnityObject(element);
         }
 
         public void Draw(Rect r)
         {
-            if (_propertyView == null && _hostInfo != null && _property != null)
-            {
-                var label = GUIContentHelper.TempContent(_hostInfo.GetReturnType().Name);
-                EditorGUI.BeginProperty(r, label, _property);
-                {
-                    EditorGUI.PropertyField(r, _property, label, true);
-                }
-                EditorGUI.EndProperty();
-                return;
-            }
-
-            //GUILayout.BeginArea(r);
+            r.y += 2.0f;
             if (_propertyView != null)
                 _propertyView.Draw(r);
-            // GUILayout.EndArea();
         }
     }
 
@@ -114,7 +68,7 @@ namespace Rhinox.GUIUtils.Editor
             get
             {
                 if (_listRO != null)
-                    return IsReadOnly ? _listRO.GetHeight() : _listRO.GetHeight() + 24.0f; // (+) icon include
+                    return _listRO.GetHeight();
                 return base.ElementHeight;
             }
         }
