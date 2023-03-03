@@ -143,12 +143,12 @@ namespace Rhinox.GUIUtils.Editor
             {
                 foreach (var subGroup in item.SubGroups)
                 {
-                    DrawGroupHeader(subGroup, evt, ++indent);
+                    DrawGroupHeader(subGroup, evt, indent + 1);
                 }
                 
                 foreach (var child in item.Children)
                 {
-                    child.DrawMenuItem(evt, indent+1, (x) => x.Substring(x.LastIndexOf(GroupingString) + GroupingString.Length));
+                    child.DrawMenuItem(evt, indent + 1, (x) => x.Substring(x.LastIndexOf(GroupingString) + GroupingString.Length));
                 }
             }
         }
@@ -186,7 +186,8 @@ namespace Rhinox.GUIUtils.Editor
                         hierarchy?.SubGroups.Add(next);
                         hierarchy = next;
                         dict[full] = next;
-                        _groupingItems.Add(next);
+                        if (i == 0)
+                            _groupingItems.Add(next);
                     }
                 }
 

@@ -2,13 +2,14 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Rhinox.GUIUtils.Attributes;
 using Rhinox.Lightspeed.Reflection;
 using Sirenix.OdinInspector;
 using UnityEngine;
 
 namespace Rhinox.GUIUtils.Editor
 {
-    [Serializable]
+    [Serializable, IgnoreInScriptableObjectCreator]
     public class SmartInternalObject : ScriptableObject
     {
         [SerializeField]
