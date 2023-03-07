@@ -2,13 +2,14 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Rhinox.GUIUtils.Attributes;
 using Rhinox.Lightspeed.Reflection;
 using Sirenix.OdinInspector;
 using UnityEngine;
 
 namespace Rhinox.GUIUtils.Editor
 {
-    [Serializable]
+    [Serializable, IgnoreInScriptableObjectCreator]
     public class SmartInternalObject : ScriptableObject
     {
         [SerializeField]
@@ -36,7 +37,8 @@ namespace Rhinox.GUIUtils.Editor
 
         public override void OnInspectorGUI()
         {
-            _propertyView.DrawLayout();
+            if (_propertyView != null)
+                _propertyView.DrawLayout();
             if (_drawerMethod != null)
                 _drawerMethod.Invoke(_target, null);
         }

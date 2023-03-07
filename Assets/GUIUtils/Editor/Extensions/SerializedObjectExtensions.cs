@@ -70,9 +70,7 @@ namespace Rhinox.GUIUtils.Editor
         
         public static void SetValue(this SerializedProperty property, object value)
         {
-            System.Type parentType = property.serializedObject.targetObject.GetType();
-            System.Reflection.FieldInfo
-                fi = parentType.GetField(property.propertyPath); //this FieldInfo contains the type.
+            var fi = property.FindFieldInfo();
             fi.SetValue(property.serializedObject.targetObject, value);
         }
         
@@ -132,12 +130,30 @@ namespace Rhinox.GUIUtils.Editor
                     return info.GetValue();
                 // Represents an array, list, struct or class.
                 case SerializedPropertyType.Generic:
+                    System.Reflection.FieldInfo genericFieldInfo = FindFieldInfo(prop);
+                    return genericFieldInfo.GetValue(prop.serializedObject.targetObject);
                 default:
                     System.Type parentType = prop.serializedObject.targetObject.GetType();
                     System.Reflection.FieldInfo fi = parentType.GetField(prop.propertyPath);
                     return fi.GetValue(prop.serializedObject.targetObject);
             }
             
+        }
+
+        public static FieldInfo FindFieldInfo(this SerializedProperty property)
+        {
+            if (property == null)
+                return null;
+            
+            if (property.propertyPath.Contains(".Array.data["))
+            {
+                var hostInfo = property.GetHostInfo();
+                return hostInfo.FieldInfo;
+            }
+            
+            System.Type parentType = property.serializedObject.targetObject.GetType();
+            System.Reflection.FieldInfo fi = parentType.GetField(property.propertyPath);
+            return fi;
         }
 
         private static HostInfo GetValueInfo(SerializedObject root, string element, int arrayIndex = -1)
@@ -166,16 +182,13 @@ namespace Rhinox.GUIUtils.Editor
 
         public static T GetAttribute<T>(this SerializedProperty property) where T : Attribute
         {
-            System.Type parentType = property.serializedObject.targetObject.GetType();
-            System.Reflection.FieldInfo fi = parentType.GetField(property.propertyPath);
+            System.Reflection.FieldInfo fi = FindFieldInfo(property);
             return fi.GetCustomAttribute(typeof(T)) as T;
         }
         
         public static T GetAttributeOrCreate<T>(this SerializedProperty property) where T : Attribute, new()
         {
-            System.Type parentType = property.serializedObject.targetObject.GetType();
-            System.Reflection.FieldInfo fi = parentType.GetField(property.propertyPath);
-            var instance = fi.GetCustomAttribute(typeof(T)) as T;
+            var instance = GetAttribute<T>(property);
             if (instance == null)
                 instance = new T();
             return instance;

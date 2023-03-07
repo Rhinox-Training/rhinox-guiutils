@@ -121,7 +121,7 @@ namespace Rhinox.GUIUtils.Editor
             }
         }
 
-        public static SimplePersistentContext<T> Create<TKey1, TKey2, T>(TKey1 key1, TKey2 key2,
+        public static SimplePersistentContext<T> Create<TKey1, TKey2>(TKey1 key1, TKey2 key2,
             T defaultVal = default(T))
         {
             string path = $"{SmartToString(key1)}//{SmartToString(key2)}";
@@ -129,7 +129,7 @@ namespace Rhinox.GUIUtils.Editor
             return context;
         }
         
-        public static SimplePersistentContext<T> Create<TKey1, TKey2, TKey3, T>(TKey1 key1, TKey2 key2, TKey3 key3,
+        public static SimplePersistentContext<T> Create<TKey1, TKey2, TKey3>(TKey1 key1, TKey2 key2, TKey3 key3,
             T defaultVal = default(T))
         {
             string path = $"{SmartToString(key1)}//{SmartToString(key2)}";

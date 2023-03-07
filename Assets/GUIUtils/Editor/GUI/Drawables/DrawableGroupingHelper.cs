@@ -10,11 +10,14 @@ namespace Rhinox.GUIUtils.Editor
     {
         private const string GroupingString = "/";
         
-        public static void Process(ref List<IOrderedDrawable> drawables)
+        public static bool Process(ref List<IOrderedDrawable> drawables)
         {
+            if (drawables == null)
+                return false;
+
             var drawablesByGroup = CreateLookupByGroupAttribute(drawables);
             if (drawablesByGroup.IsNullOrEmpty())
-                return;
+                return false;
 
             var remainingGroupings = drawablesByGroup.Keys.ToList();
             remainingGroupings.SortByDescending(x => x.GroupID.Length);
@@ -119,6 +122,7 @@ namespace Rhinox.GUIUtils.Editor
 
             // Return list
             drawables = finalList;
+            return true;
         }
 
         private static bool IsParentOf(PropertyGroupAttribute entry, PropertyGroupAttribute potentialParent)

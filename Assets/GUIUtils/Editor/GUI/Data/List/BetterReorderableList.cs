@@ -101,15 +101,13 @@ namespace Rhinox.GUIUtils.Editor
             if (elementList != null)
             {
                 this.m_ListType = elementList.GetType();
-                this.m_ElementType = this.m_ListType.GetElementType();
+                this.m_ElementType = this.m_ListType.GetCollectionElementType();
             }
             else
             {
-                System.Type parentType = elements.serializedObject.targetObject.GetType();
-                System.Reflection.FieldInfo fi = parentType.GetField(elements.propertyPath);
-
+                System.Reflection.FieldInfo fi = elements.FindFieldInfo();
                 this.m_ListType = fi.FieldType;
-                this.m_ElementType = GetItemType(this.m_ListType);
+                this.m_ElementType = this.m_ListType.GetCollectionElementType();
             }
             
             this.m_Draggable = draggable;
@@ -123,12 +121,6 @@ namespace Rhinox.GUIUtils.Editor
             if (this.m_Elements == null || this.m_Elements.isArray)
                 return;
             Debug.LogError((object) "Input elements should be an Array SerializedProperty");
-        }
-        
-        // TODO safe option?
-        static Type GetItemType(Type collectionType)
-        {
-            return collectionType.GetMethod("get_Item").ReturnType;
         }
 
         public SerializedProperty serializedProperty
@@ -763,7 +755,7 @@ namespace Rhinox.GUIUtils.Editor
                 }
                 else
                 {
-                    System.Type elementType = list.list.GetType().GetElementType();
+                    System.Type elementType = list.list.GetType().GetCollectionElementType();
                     if (elementType == typeof(string))
                         list.index = list.list.Add((object) "");
                     else if (elementType != null && elementType.GetConstructor(System.Type.EmptyTypes) == null)
