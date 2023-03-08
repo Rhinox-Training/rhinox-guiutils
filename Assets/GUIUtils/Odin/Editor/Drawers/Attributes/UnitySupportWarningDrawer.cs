@@ -10,6 +10,11 @@ namespace GUIUtils.Editor.Drawers
 {
     public class UnitySupportWarningDrawer: OdinAttributeDrawer<UnitySupportWarningAttribute> 
     {
+        protected override bool CanDrawAttributeProperty(InspectorProperty property)
+        {
+            return property.Info.TypeOfValue.IsGenericType;
+        }
+
         protected override void DrawPropertyLayout(GUIContent label)
         {
             base.DrawPropertyLayout(label);
@@ -24,7 +29,7 @@ namespace GUIUtils.Editor.Drawers
 
             if (minimumSupportedVersion > currentSemanticVersion)
             {
-                EditorGUILayout.HelpBox($"This GUI layout contains a property which is only properly supported from version {minimumSupportedVersion.ToString()} or higher.", MessageType.Warning);
+                EditorGUILayout.HelpBox($"This GUI layout contains a property ({Property.NiceName}) of type {Property.Info.TypeOfValue.Name} which is only properly supported from version {minimumSupportedVersion.ToString()} or higher.", MessageType.Warning);
             }
         }
     }
