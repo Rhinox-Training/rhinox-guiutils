@@ -85,7 +85,11 @@ namespace Rhinox.GUIUtils.Editor
             foreach (var fieldData in visibleFields)
             {
                 IOrderedDrawable fieldDrawable = null;
-                if (!fieldData.IsSerialized)
+                if (fieldData.OverrideDrawable != null)
+                {
+                    fieldDrawable = fieldData.OverrideDrawable;
+                }
+                else if (!fieldData.IsSerialized)
                 {
                     var val = fieldData.FieldInfo.GetValue(instanceVal);
                     fieldDrawable = CreateCompositeMemberForInstance(val, depth, fieldData.FieldInfo);
