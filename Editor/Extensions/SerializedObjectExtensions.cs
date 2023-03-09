@@ -202,6 +202,7 @@ namespace Rhinox.GUIUtils.Editor
 
             public bool IsSerialized => SerializedProperty != null;
             public bool HoldsUnityObject => FieldInfo.FieldType.InheritsFrom(typeof(UnityEngine.Object));
+            public IOrderedDrawable OverrideDrawable;
         }
         
         public static IEnumerable<FieldData> EnumerateEditorVisibleFields(this SerializedProperty property)
@@ -233,7 +234,21 @@ namespace Rhinox.GUIUtils.Editor
                             };
                         }
                     }
-
+                    else
+                    {
+                        // Unable to serialize
+                        // Check support flag
+                        if (ShouldDrawUnsupportedWarning(field, out string warning))
+                            yield return new FieldData()
+                            {
+                                Host = property,
+                                FieldInfo = field,
+                                SerializedProperty = null,
+                                OverrideDrawable = new DrawableHelpBox(warning, MessageType.Warning)
+                            };
+                            
+                    }
+                    
                     continue;
                 }
 
@@ -274,6 +289,20 @@ namespace Rhinox.GUIUtils.Editor
                             };
                         }
                     }
+                    else
+                    {
+                        // Unable to serialize
+                        // Check support flag
+                        if (ShouldDrawUnsupportedWarning(field, out string warning))
+                            yield return new FieldData()
+                            {
+                                Host = serializedObject,
+                                FieldInfo = field,
+                                SerializedProperty = null,
+                                OverrideDrawable = new DrawableHelpBox(warning, MessageType.Warning)
+                            };
+                            
+                    }
 
                     continue;
                 }
@@ -285,6 +314,34 @@ namespace Rhinox.GUIUtils.Editor
                     SerializedProperty = fieldProperty
                 };
             }
+        }
+        
+        
+        private static bool ShouldDrawUnsupportedWarning(FieldInfo fieldInfo, out string warning)
+        {
+            var attr = fieldInfo.GetReturnType().GetCustomAttribute<UnitySupportWarningAttribute>();
+            if (attr == null)
+            {
+                warning = null;
+                return false;
+            }
+
+            string unityVersionStr = Application.unityVersion;
+            int index = unityVersionStr.IndexOf("f", StringComparison.InvariantCultureIgnoreCase);
+            if (index != -1)
+                unityVersionStr = unityVersionStr.Substring(0, index);
+            
+            var currentSemanticVersion = new Version(unityVersionStr);
+            var minimumSupportedVersion = new Version(attr.Major, attr.Minor, 0);
+
+            if (minimumSupportedVersion > currentSemanticVersion)
+            {
+                warning = $"This SerializedObject contains a property ({fieldInfo.Name}) of type {fieldInfo.GetReturnType().Name} which is only properly supported from version {attr.VersionString} or higher.";
+                return true;
+            }
+
+            warning = null;
+            return false;
         }
     }
 }
