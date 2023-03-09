@@ -214,6 +214,9 @@ namespace Rhinox.GUIUtils.Editor
             var fields = type.GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic).ToList();
             foreach (var field in fields)
             {
+                if (field.GetCustomAttribute<HideInInspector>() != null)
+                    continue;
+                
                 var fieldProperty = property.FindPropertyRelative(field.Name);
                 if (fieldProperty == null)
                 {
@@ -252,6 +255,9 @@ namespace Rhinox.GUIUtils.Editor
             var fields = type.GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic).ToList();
             foreach (var field in fields)
             {
+                if (field.GetCustomAttribute<HideInInspector>() != null)
+                    continue;
+                
                 var fieldProperty = serializedObject.FindProperty(field.Name);
                 if (fieldProperty == null)
                 {
