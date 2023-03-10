@@ -59,7 +59,7 @@ public class EditorTest : MonoBehaviour
 
     [DrawAsUnityGeneric]
     public GenericTest TestList;
-    [DrawAsUnityGeneric]
+    [DrawAsUnityGeneric, Tooltip("Doesn't work pre-2020")]
     public ToggleableList<int> TestList2;
     
     [DrawAsUnityGeneric]
