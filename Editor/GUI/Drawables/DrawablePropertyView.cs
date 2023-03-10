@@ -64,7 +64,7 @@ namespace Rhinox.GUIUtils.Editor
             var drawables = DrawableFactory.CreateDrawableMembersFor(obj, type);
 
             if (drawables.Count == 0 && obj is UnityEngine.Object unityObj)
-                drawables.Add(new DrawableUnityObject(unityObj));
+                drawables.Add(new DrawableUnityObject(unityObj, null));
 
             if (!drawables.IsNullOrEmpty())
             {

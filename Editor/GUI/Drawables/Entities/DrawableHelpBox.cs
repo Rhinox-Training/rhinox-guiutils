@@ -1,4 +1,5 @@
-﻿using UnityEditor;
+﻿using System.Reflection;
+using UnityEditor;
 using UnityEngine;
 
 namespace Rhinox.GUIUtils.Editor
@@ -7,7 +8,7 @@ namespace Rhinox.GUIUtils.Editor
     {
         public MessageType MsgType { get; }
         
-        public DrawableHelpBox(string obj, MessageType type) : base(obj)
+        public DrawableHelpBox(string obj, MessageType type, FieldInfo fieldInfo = null) : base(obj, fieldInfo)
         {
             MsgType = type;
         }
