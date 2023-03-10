@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
+using Rhinox.Lightspeed;
 using Rhinox.Lightspeed.Reflection;
 using Sirenix.OdinInspector;
 using UnityEditor;
@@ -316,7 +317,6 @@ namespace Rhinox.GUIUtils.Editor
             }
         }
         
-        
         private static bool ShouldDrawUnsupportedWarning(FieldInfo fieldInfo, out string warning)
         {
             var attr = fieldInfo.GetReturnType().GetCustomAttribute<UnitySupportWarningAttribute>();
@@ -326,15 +326,8 @@ namespace Rhinox.GUIUtils.Editor
                 return false;
             }
 
-            string unityVersionStr = Application.unityVersion;
-            int index = unityVersionStr.IndexOf("f", StringComparison.InvariantCultureIgnoreCase);
-            if (index != -1)
-                unityVersionStr = unityVersionStr.Substring(0, index);
-            
-            var currentSemanticVersion = new Version(unityVersionStr);
-            var minimumSupportedVersion = new Version(attr.Major, attr.Minor, 0);
-
-            if (minimumSupportedVersion > currentSemanticVersion)
+            var currentRuntimeVersion = Utility.GetCurrentUnityRuntime();
+            if (attr.Version > currentRuntimeVersion)
             {
                 warning = $"This SerializedObject contains a property ({fieldInfo.Name}) of type {fieldInfo.GetReturnType().Name} which is only properly supported from version {attr.VersionString} or higher.";
                 return true;
