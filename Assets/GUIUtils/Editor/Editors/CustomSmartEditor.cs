@@ -6,6 +6,7 @@ using UnityEngine;
 namespace Rhinox.GUIUtils.Editor
 {
     [CustomEditor(typeof(MonoBehaviour), true)]
+    [CanEditMultipleObjects]
     public class CustomSmartEditor : UnityEditor.Editor
     {
         private DrawablePropertyView _propertyView;

@@ -1,4 +1,5 @@
-﻿using UnityEditor;
+﻿using System.Reflection;
+using UnityEditor;
 using UnityEngine;
 
 namespace Rhinox.GUIUtils.Editor
@@ -8,8 +9,8 @@ namespace Rhinox.GUIUtils.Editor
         protected override string LabelString =>
             _targetObj != null ? ((SerializedProperty) _targetObj).displayName : null;
 
-        public DrawableUnityProperty(SerializedProperty prop)
-            : base(prop)
+        public DrawableUnityProperty(SerializedProperty prop, MemberInfo memberInfo = null)
+            : base(prop, memberInfo)
         {
         }
         
