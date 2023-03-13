@@ -6,7 +6,7 @@ using Sirenix.OdinInspector.Editor;
 using UnityEditor;
 using UnityEngine;
 
-namespace GUIUtils.Editor.Drawers
+namespace Rhinox.GUIUtils.Odin.Editor
 {
     public class UnitySupportWarningDrawer: OdinAttributeDrawer<UnitySupportWarningAttribute> 
     {
