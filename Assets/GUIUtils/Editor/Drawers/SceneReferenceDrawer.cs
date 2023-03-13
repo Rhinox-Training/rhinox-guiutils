@@ -3,6 +3,8 @@ using Rhinox.Lightspeed;
 using UnityEditor;
 using UnityEngine;
 
+using BuildUtils = Rhinox.GUIUtils.Editor.BuildUtils;
+
 namespace Rhinox.GUIUtils.Editor
 {
     [CustomPropertyDrawer(typeof(SceneReferenceData), true)]
