@@ -3,7 +3,7 @@ using UnityEngine;
 using UnityEditor;
 using UnityEditorInternal;
 
-namespace Rhinox.Lightspeed.Editor
+namespace Rhinox.GUIUtils.Editor
 {
     [CustomPropertyDrawer(typeof(SerializableTupleCollection), true)]
     public class SerializableTupleCollectionDrawer : PropertyDrawer
