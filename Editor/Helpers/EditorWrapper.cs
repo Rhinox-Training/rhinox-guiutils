@@ -19,7 +19,6 @@ using Sirenix.OdinValidator.Editor;
 
 namespace Rhinox.GUIUtils.Editor
 {
-
     /// <summary>
     /// Wrapper for an object to draw a certain object keeping editing capabilities
     /// </summary>

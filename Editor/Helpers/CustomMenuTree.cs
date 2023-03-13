@@ -7,6 +7,7 @@ using Sirenix.Utilities;
 using Sirenix.OdinInspector.Editor;
 #endif
 using UnityEngine;
+using CollectionExtensions = Rhinox.Lightspeed.CollectionExtensions;
 
 namespace Rhinox.GUIUtils.Editor
 {
