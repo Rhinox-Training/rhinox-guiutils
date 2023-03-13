@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
+using Rhinox.Lightspeed;
 using Rhinox.Lightspeed.Reflection;
 using Sirenix.OdinInspector;
 using UnityEditor;
@@ -202,6 +203,7 @@ namespace Rhinox.GUIUtils.Editor
 
             public bool IsSerialized => SerializedProperty != null;
             public bool HoldsUnityObject => FieldInfo.FieldType.InheritsFrom(typeof(UnityEngine.Object));
+            public IOrderedDrawable OverrideDrawable;
         }
         
         public static IEnumerable<FieldData> EnumerateEditorVisibleFields(this SerializedProperty property)
@@ -214,6 +216,9 @@ namespace Rhinox.GUIUtils.Editor
             var fields = type.GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic).ToList();
             foreach (var field in fields)
             {
+                if (field.GetCustomAttribute<HideInInspector>() != null)
+                    continue;
+                
                 var fieldProperty = property.FindPropertyRelative(field.Name);
                 if (fieldProperty == null)
                 {
@@ -230,7 +235,21 @@ namespace Rhinox.GUIUtils.Editor
                             };
                         }
                     }
-
+                    else
+                    {
+                        // Unable to serialize
+                        // Check support flag
+                        if (ShouldDrawUnsupportedWarning(field, out string warning))
+                            yield return new FieldData()
+                            {
+                                Host = property,
+                                FieldInfo = field,
+                                SerializedProperty = null,
+                                OverrideDrawable = new DrawableHelpBox(warning, MessageType.Warning, field)
+                            };
+                            
+                    }
+                    
                     continue;
                 }
 
@@ -252,6 +271,9 @@ namespace Rhinox.GUIUtils.Editor
             var fields = type.GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic).ToList();
             foreach (var field in fields)
             {
+                if (field.GetCustomAttribute<HideInInspector>() != null)
+                    continue;
+                
                 var fieldProperty = serializedObject.FindProperty(field.Name);
                 if (fieldProperty == null)
                 {
@@ -268,6 +290,20 @@ namespace Rhinox.GUIUtils.Editor
                             };
                         }
                     }
+                    else
+                    {
+                        // Unable to serialize
+                        // Check support flag
+                        if (ShouldDrawUnsupportedWarning(field, out string warning))
+                            yield return new FieldData()
+                            {
+                                Host = serializedObject,
+                                FieldInfo = field,
+                                SerializedProperty = null,
+                                OverrideDrawable = new DrawableHelpBox(warning, MessageType.Warning)
+                            };
+                            
+                    }
 
                     continue;
                 }
@@ -279,6 +315,26 @@ namespace Rhinox.GUIUtils.Editor
                     SerializedProperty = fieldProperty
                 };
             }
+        }
+        
+        private static bool ShouldDrawUnsupportedWarning(FieldInfo fieldInfo, out string warning)
+        {
+            var attr = fieldInfo.GetReturnType().GetCustomAttribute<UnitySupportWarningAttribute>();
+            if (attr == null)
+            {
+                warning = null;
+                return false;
+            }
+
+            var currentRuntimeVersion = Utility.GetCurrentUnityRuntime();
+            if (attr.Version > currentRuntimeVersion)
+            {
+                warning = $"This SerializedObject contains a property ({fieldInfo.Name}) of type {fieldInfo.GetReturnType().Name} which is only properly supported from version {attr.VersionString} or higher.";
+                return true;
+            }
+
+            warning = null;
+            return false;
         }
     }
 }

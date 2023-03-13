@@ -96,7 +96,7 @@ namespace Rhinox.GUIUtils.Editor
         }
 
         public DrawableList(object containerInstance, MemberInfo memberInfo)
-            : base(null)
+            : base(null, memberInfo)
         {
             if (containerInstance == null) throw new ArgumentNullException(nameof(containerInstance));
             _listProperty = null;

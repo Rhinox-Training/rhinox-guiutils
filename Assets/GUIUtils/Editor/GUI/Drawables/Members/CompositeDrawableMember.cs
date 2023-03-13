@@ -45,23 +45,27 @@ namespace Rhinox.GUIUtils.Editor
         public IReadOnlyCollection<IOrderedDrawable> Children => _drawableMemberChildren != null ? 
             _drawableMemberChildren : (IReadOnlyCollection<IOrderedDrawable>)Array.Empty<IOrderedDrawable>();
 
-        public IOrderedDrawable FirstOrDefault(Func<IOrderedDrawable, bool> func = null)
+        
+        /// <summary>
+        /// DFS
+        /// </summary>
+        /// <returns></returns>
+        public IEnumerable<IOrderedDrawable> EnumerateTree(bool onlyLeaves = false)
         {
-            if (func == null)
-                return Children.FirstOrDefault();
-
             foreach (var child in Children)
             {
                 if (child is CompositeDrawableMember compositeChild)
                 {
-                    return compositeChild.FirstOrDefault(func);
+                    if (!onlyLeaves)
+                        yield return child;
+                    foreach (var grandChild in compositeChild.EnumerateTree())
+                        yield return grandChild;
                 }
-
-                if (func.Invoke(child))
-                    return child;
+                else
+                {
+                    yield return child;
+                }
             }
-
-            return null;
         }
 
         public static CompositeDrawableMember CreateFrom(PropertyGroupAttribute groupingAttr)

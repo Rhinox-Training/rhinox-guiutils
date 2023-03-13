@@ -117,7 +117,33 @@ namespace Rhinox.GUIUtils.Editor
                 }
 
                 if (isTopLevel)
-                    finalList.Add(group);
+                {
+                    int finalIndex = -1;
+                    foreach (var node in group.EnumerateTree(true))
+                    {
+                        int index = drawables.IndexOf(node);
+                        if (index == -1 || (finalIndex != -1 && finalIndex < index))
+                            continue;
+                        finalIndex = index;
+                    }
+
+                    if (finalIndex == -1 || finalIndex > finalList.Count)
+                        finalList.Add(group);
+                    else
+                    {
+                        if (finalList.HasIndex(finalIndex))
+                        {
+                            var curElement = finalList[finalIndex];
+                            int curElementOriginalIndex = drawables.IndexOf(curElement);
+                            if (curElementOriginalIndex > finalIndex)
+                                finalList.Insert(finalIndex, group);
+                            else
+                                finalList.Insert(finalIndex + 1, group);
+                        }
+                        else
+                            finalList.Insert(finalIndex, group);
+                    }
+                }
             }
 
             // Return list

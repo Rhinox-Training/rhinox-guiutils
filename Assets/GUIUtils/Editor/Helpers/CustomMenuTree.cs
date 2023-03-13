@@ -35,7 +35,6 @@ namespace Rhinox.GUIUtils.Editor
         public bool ShowGrouped = true;
 
         public string GroupingString = "/";
-        private bool _groupingIsDirty;
 
         public Rect VisibleRect { get; set; }
 
@@ -47,6 +46,7 @@ namespace Rhinox.GUIUtils.Editor
 #if !ODIN_INSPECTOR
         private List<HierarchyMenuItem> _groupingItems;
         private HierarchyMenuItem _rootItems;
+        private bool _groupingIsDirty;
 #endif
 
         public IReadOnlyList<IMenuItem> MenuItems => _items != null ? (IReadOnlyList<IMenuItem>) _items.AsReadOnly() : Array.Empty<IMenuItem>();        
@@ -269,9 +269,8 @@ namespace Rhinox.GUIUtils.Editor
             if (icon != null)
                 item.SetIcon(icon);
             _items.AddUnique(item);
-#endif
-            
             _groupingIsDirty = true;
+#endif
         }
 
         public void AddCustom(IMenuItem customItem)
@@ -281,7 +280,9 @@ namespace Rhinox.GUIUtils.Editor
             if (_items == null)
                 _items = new List<IMenuItem>(); ;
             _items.AddUnique(customItem);
+#if !ODIN_INSPECTOR
             _groupingIsDirty = true;
+#endif
         }
                
         

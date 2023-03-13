@@ -12,7 +12,9 @@ using UnityEngine;
 
 namespace Rhinox.GUIUtils.NoOdin.Editor
 {
+#if UNITY_2020_1_OR_NEWER
     [CustomPropertyDrawer(typeof(CustomCollection<>), true)]
+#endif
     public class CustomCollectionDrawer<T, TArg> : GenericPropertyDrawer<T>
         where T : CustomCollection<TArg>, new()
     {

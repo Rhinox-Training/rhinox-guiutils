@@ -1,12 +1,13 @@
-﻿using UnityEditor;
+﻿using System.Reflection;
+using UnityEditor;
 using UnityEngine;
 
 namespace Rhinox.GUIUtils.Editor
 {
     public class DrawableUnityObject : BaseEntityDrawable
     {
-        public DrawableUnityObject(object obj) 
-            : base(obj)
+        public DrawableUnityObject(object obj, MemberInfo info = null) 
+            : base(obj, info)
         {
         }
 
