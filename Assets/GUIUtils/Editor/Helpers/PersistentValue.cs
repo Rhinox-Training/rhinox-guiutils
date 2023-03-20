@@ -160,14 +160,14 @@ namespace Rhinox.GUIUtils.Editor
 #else
         private SimplePersistentContext<T> _context;
 #endif
-        private PersistentValue()
-        {
-        }
+        
+        private PersistentValue() { }
 
-        public void Set(T value)
+        public bool Set(T value)
         {
-            if (Equals(value, _context.Value)) return;
+            if (Equals(value, _context.Value)) return false;
             _context.Value = value;
+            return true;
         }
 
         public static implicit operator T(PersistentValue<T> value)

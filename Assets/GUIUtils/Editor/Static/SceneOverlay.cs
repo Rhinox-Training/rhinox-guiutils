@@ -42,8 +42,7 @@ namespace Rhinox.GUIUtils.Editor
             return OpenWindow(title, sceneViewFunc, order, option);
         }
 
-        private static object OpenWindow(GUIContent title, WindowFunction sceneViewFunc, int order,
-            WindowDisplayOption option)
+        private static object OpenWindow(GUIContent title, WindowFunction sceneViewFunc, int order, WindowDisplayOption option)
         {
             var t = EditorAssembly.GetType("UnityEditor.SceneViewOverlay");
 
