@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Rhinox.Lightspeed;
 using Rhinox.Lightspeed.Reflection;
 using Sirenix.OdinInspector;
 using Sirenix.OdinInspector.Editor;
