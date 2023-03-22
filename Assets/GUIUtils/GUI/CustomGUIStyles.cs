@@ -306,7 +306,7 @@ namespace Rhinox.GUIUtils
             {
                 if (_toolbarBackground == null)
                 {
-                    _toolbarBackground = new GUIStyle("Box")
+                    _toolbarBackground = new GUIStyle("toolbar")
                     {
                         padding = new RectOffset(0, 1, 0, 0),
                         stretchHeight = true,

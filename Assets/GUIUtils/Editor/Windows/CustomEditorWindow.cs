@@ -577,12 +577,21 @@ namespace Rhinox.GUIUtils.Editor
         /// </summary>
         protected virtual void DrawEditor(int index)
         {
-            UnityEditor.Editor editor = _editors[index];
-            if (editor != null && editor.target != null)
-                editor.OnInspectorGUI();
+            try
+            {
+                UnityEditor.Editor editor = _editors[index];
+                if (editor != null && editor.target != null)
+                    editor.OnInspectorGUI();
 
-            if (DrawUnityEditorPreview)
-                DrawEditorPreview(index, _defaultEditorPreviewHeight);
+                if (DrawUnityEditorPreview)
+                    DrawEditorPreview(index, _defaultEditorPreviewHeight);
+
+            }
+            catch (Exception e)
+            {
+                EditorGUILayout.HelpBox(e.ToString(), MessageType.Error);
+                //Debug.LogError(e.ToString());
+            }
         }
 
         /// <summary>
