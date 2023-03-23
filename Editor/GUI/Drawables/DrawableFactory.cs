@@ -42,6 +42,8 @@ namespace Rhinox.GUIUtils.Editor
 
         public static ICollection<IOrderedDrawable> FindButtons(object instance)
         {
+            if (instance == null) return Array.Empty<IOrderedDrawable>();
+            
             var type = instance.GetType();
 
             var buttons = new List<IOrderedDrawable>();
@@ -150,15 +152,16 @@ namespace Rhinox.GUIUtils.Editor
 
         private static List<IOrderedDrawable> CreateDrawableMembersFor(object instance, Type t, int depth)
         {
-            var publicAndSerializedMembers = SerializeHelper.GetPublicAndSerializedMembers(t);
+            var members = GetEditorVisibleFields(instance, t);
             var drawableMembers = new List<IOrderedDrawable>();
-            foreach (var memberInfo in publicAndSerializedMembers)
+            foreach (var memberInfo in members)
             {
                 if (memberInfo == null)
                     continue;
 
                 if (memberInfo is PropertyInfo propertyInfo)
                 {
+                    // If the property has no getter
                     if (propertyInfo.GetGetMethod(false) == null)
                         continue;
 
@@ -185,6 +188,30 @@ namespace Rhinox.GUIUtils.Editor
 
 
             return drawableMembers;
+        }
+
+        private static IReadOnlyCollection<MemberInfo> GetEditorVisibleFields(object instance, Type t)
+        {
+            // All public members
+            var publicMembers = t.GetMembers(BindingFlags.Instance | BindingFlags.Public |
+                                                BindingFlags.GetField | BindingFlags.GetProperty | BindingFlags.FlattenHierarchy);
+            publicMembers = publicMembers
+                .Where(x => !(x is MethodInfo))
+                .ToArray();
+            
+            // All non-publics that serialize or are visible
+            var serializedMembers = t.GetMembers(BindingFlags.Instance | BindingFlags.NonPublic |
+                                                    BindingFlags.GetField | BindingFlags.GetProperty | BindingFlags.FlattenHierarchy);
+            serializedMembers = serializedMembers
+                .Where(x => !(x is MethodInfo))
+                .Where(x => x.IsSerialized() || x.GetCustomAttribute<ShowInInspectorAttribute>() != null)
+                .ToArray();
+
+            var list = new List<MemberInfo>();
+            list.AddRange(publicMembers);
+            list.AddRange(serializedMembers);
+            
+            return list;
         }
 
         private static IOrderedDrawable CreateCompositeMemberForInstance(object instance, int depth,
@@ -266,7 +293,7 @@ namespace Rhinox.GUIUtils.Editor
                 return true;
             }
 
-            if (type.InheritsFrom<UnityEngine.Object>())
+            if (type.InheritsFrom<Texture>())
             {
                 drawableMember = new TextureDrawableField(instance, info);
                 return true;

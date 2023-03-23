@@ -218,25 +218,35 @@ namespace Rhinox.GUIUtils.Editor
             DrawSolidRect(rect2, color, usePlaymodeTint);
         }
 
-        public static bool IconButton(Texture icon, int width = DEFAULT_ICON_WIDTH, int height = DEFAULT_ICON_HEIGHT,
-            string tooltip = "")
+        public static bool IconButton(Texture icon, int width = DEFAULT_ICON_WIDTH, int height = DEFAULT_ICON_HEIGHT, string tooltip = "")
         {
             return IconButton(icon, null, width, height, tooltip);
         }
 
-        public static bool IconButton(Texture icon, GUIStyle style = null, int width = DEFAULT_ICON_WIDTH,
-            int height = DEFAULT_ICON_HEIGHT, string tooltip = "")
+        public static bool IconButton(Texture icon, GUIStyle style = null, int width = DEFAULT_ICON_WIDTH, int height = DEFAULT_ICON_HEIGHT, string tooltip = "")
         {
             return IconButton(GUIContentHelper.TempContent(icon, tooltip), style, width, height);
         }
-
-        public static bool IconButton(GUIContent content, GUIStyle style = null, int width = DEFAULT_ICON_WIDTH,
-            int height = DEFAULT_ICON_HEIGHT)
+        
+        public static bool IconButton(HoverTexture icon, GUIStyle style = null, int width = DEFAULT_ICON_WIDTH, int height = DEFAULT_ICON_HEIGHT, string tooltip = "")
         {
             style = style ?? CustomGUIStyles.IconButton;
-            var rect = GUILayoutUtility.GetRect(content, style, GUILayout.ExpandWidth(false), GUILayout.Width(width),
-                GUILayout.Height(height));
+            var rect = GUILayoutUtility.GetRect(GUIContentHelper.TempContent(icon.Normal, tooltip), style, GUILayout.ExpandWidth(false), GUILayout.Width(width), GUILayout.Height(height));
+            return IconButton(rect, icon, tooltip, style);
+        }
+
+        public static bool IconButton(GUIContent content, GUIStyle style = null, int width = DEFAULT_ICON_WIDTH, int height = DEFAULT_ICON_HEIGHT)
+        {
+            style = style ?? CustomGUIStyles.IconButton;
+            var rect = GUILayoutUtility.GetRect(content, style, GUILayout.ExpandWidth(false), GUILayout.Width(width), GUILayout.Height(height));
             return IconButton(rect, content, style);
+        }
+        
+        public static bool IconButton(Rect rect, HoverTexture icon, string tooltip = "", GUIStyle style = null)
+        {
+            var tex = GUI.enabled ? icon.GetNeededTexture(rect, out _) : icon.Normal;
+            style = style ?? CustomGUIStyles.IconButton;
+            return IconButton(rect, GUIContentHelper.TempContent(tex, tooltip), style);
         }
         
         public static bool IconButton(Rect rect, Texture icon, string tooltip = "", GUIStyle style = null)

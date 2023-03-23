@@ -213,7 +213,7 @@ namespace Rhinox.GUIUtils.Editor
 
             var hostInfo = property.GetHostInfo();
             var type = hostInfo.GetReturnType();
-            var fields = type.GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic).ToList();
+            var fields = type.GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
             foreach (var field in fields)
             {
                 if (field.GetCustomAttribute<HideInInspector>() != null)
@@ -268,7 +268,7 @@ namespace Rhinox.GUIUtils.Editor
                 yield break;
             
             var type = serializedObject.targetObject.GetType();
-            var fields = type.GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic).ToList();
+            var fields = type.GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
             foreach (var field in fields)
             {
                 if (field.GetCustomAttribute<HideInInspector>() != null)
