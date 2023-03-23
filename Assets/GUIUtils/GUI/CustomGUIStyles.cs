@@ -180,6 +180,26 @@ namespace Rhinox.GUIUtils
             }
         }
         
+        private static GUIStyle _labelStyleCenteredWithHover;
+        public static GUIStyle CenteredLabelWithHover
+        {
+            get
+            {
+                if (_labelStyleCenteredWithHover == null)
+                {
+                    _labelStyleCenteredWithHover = new GUIStyle(CustomGUIStyles.Label)
+                    {
+                        alignment = TextAnchor.MiddleCenter
+                    };
+                    _labelStyleCenteredWithHover.hover = new GUIStyleState() {
+                        textColor = Color.white
+                    };
+                }
+
+                return _labelStyleCenteredWithHover;
+            }
+        }
+        
         private static GUIStyle _labelStyleBold;
         public static GUIStyle BoldLabel
         {

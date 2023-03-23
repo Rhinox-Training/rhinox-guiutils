@@ -21,69 +21,75 @@ namespace Rhinox.GUIUtils.Editor.Helpers
     
     public class SlidePageNavigationHelper<T>
     {
-        private List<SlidePageNavigationHelper<T>.Page> pages;
-        private SlidePageNavigationHelper<T>.Page prev;
+        private List<Page> pages;
+        private Page prev;
         public GUITabGroup TabGroup;
+        
+        private HoverTexture _icon;
+        private List<HoverRect> _pageTitles;
 
         public SlidePageNavigationHelper()
         {
             this.TabGroup = new GUITabGroup();
             this.TabGroup.AnimationSpeed = 4f;
             this.TabGroup.ExpandHeight = true;
-            this.pages = new List<SlidePageNavigationHelper<T>.Page>();
+            this.pages = new List<Page>();
+
+            _icon = new HoverTexture(UnityIcon.InternalIcon("d_scrollleft@2x"));
+            _pageTitles = new List<HoverRect>();
         }
 
-        public IEnumerable<SlidePageNavigationHelper<T>.Page> EnumeratePages
+        public IEnumerable<Page> EnumeratePages
         {
             get
             {
                 bool doPrev = true;
-                for (int i = Math.Max(0, this.pages.Count - 3); i < this.pages.Count; ++i)
+                for (int i = Math.Max(0, pages.Count - 3); i < pages.Count; ++i)
                 {
-                    SlidePageNavigationHelper<T>.Page page = this.pages[i];
-                    if (page == this.prev)
+                    Page page = pages[i];
+                    if (page == prev)
                         doPrev = false;
                     yield return page;
                 }
 
-                if (this.prev != null & doPrev)
-                    yield return this.prev;
+                if (prev != null & doPrev)
+                    yield return prev;
             }
         }
         
-        public SlidePageNavigationHelper<T>.Page GetCurrentPage()
+        public Page GetCurrentPage()
         {
             if (pages == null)
                 return null;
-            Page page = this.pages.LastOrDefault();
+            Page page = pages.LastOrDefault();
             return page;
         }
 
         public void PushPage(T obj, string name)
         {
-            GUITabPage tab = this.TabGroup.RegisterTab(Guid.NewGuid().ToString());
-            SlidePageNavigationHelper<T>.Page page = new SlidePageNavigationHelper<T>.Page(obj, tab, name);
-            this.pages.Add(page);
-            this.TabGroup.GoToPage(page.Tab);
-            this.prev = (SlidePageNavigationHelper<T>.Page) null;
+            GUITabPage tab = TabGroup.RegisterTab(Guid.NewGuid().ToString());
+            Page page = new Page(obj, tab, name);
+            pages.Add(page);
+            TabGroup.GoToPage(page.Tab);
+            prev = null;
         }
 
         public void NavigateBack()
         {
-            if (this.IsOnFirstPage)
+            if (IsOnFirstPage)
                 return;
-            this.prev = this.pages.Last<SlidePageNavigationHelper<T>.Page>();
-            this.pages.RemoveAt(this.pages.Count - 1);
-            this.TabGroup.GoToPage(this.pages[this.pages.Count - 1].Tab);
+            prev = pages.Last();
+            pages.RemoveAt(pages.Count - 1);
+            TabGroup.GoToPage(pages[pages.Count - 1].Tab);
         }
 
         public void NavigateBack(int index)
         {
-            if (this.IsOnFirstPage)
+            if (IsOnFirstPage)
                 return;
-            this.prev = this.pages.Last<SlidePageNavigationHelper<T>.Page>();
-            Resize(this.pages, index);
-            this.TabGroup.GoToPage(this.pages[this.pages.Count - 1].Tab);
+            prev = pages.Last();
+            Resize(pages, index);
+            TabGroup.GoToPage(pages[pages.Count - 1].Tab);
         }
 
 #pragma warning disable CS0693
@@ -98,47 +104,63 @@ namespace Rhinox.GUIUtils.Editor.Helpers
 
         public void DrawPageNavigation(Rect rect)
         {
-            Rect rect1 = rect.AlignLeft(rect.height * 1.3f);
+            Rect titleSpacingRect = rect.AlignLeft(rect.height * 1.3f).AlignCenter(19f, 19f);
             bool oldGUIEnabled = GUI.enabled;
-            GUI.enabled = !this.IsOnFirstPage;
-            if (GUI.Button(rect1, GUIContent.none, GUIStyle.none))
-                this.NavigateBack();
+            GUI.enabled = !IsOnFirstPage;
+            if (CustomEditorGUI.IconButton(titleSpacingRect, _icon))
+                NavigateBack();
 
-            var icon = UnityIcon.InternalIcon("GameObject Icon");
-            var iconRect1 = rect1.AlignCenter(19f, 19f);
-            GUI.DrawTexture(iconRect1, icon);
-            
+            // if (GUI.Button(titleSpacingRect, GUIContent.none, GUIStyle.none))
+            //     NavigateBack();
+
+            // _icon.Draw(titleSpacingRect.AlignCenter(19f, 19f));
+
             GUI.enabled = oldGUIEnabled;
             rect.xMin += rect.height;
-            int num = 0;
-            for (int index = this.pages.Count - 1; index >= 0; --index)
+            int totalWidthPages = 0;
+            for (int i = pages.Count - 1; i >= 0; --i)
             {
-                SlidePageNavigationHelper<T>.Page page = this.pages[index];
+                Page page = pages[i];
                 if (!page.TitleWidth.HasValue)
-                    page.TitleWidth = new int?((int) CustomGUIStyles.Label.CalcSize(new GUIContent(page.Name)).x + 7);
-                num += page.TitleWidth.Value;
+                    page.TitleWidth = (int) CustomGUIStyles.Label.CalcSize(new GUIContent(page.Name)).x + 7;
+                totalWidthPages += page.TitleWidth.Value;
             }
 
             rect.width -= 8f;
-            float xMin = rect.xMin;
-            if ((double) num > (double) rect.width)
-                rect.xMin -= (float) num - rect.width;
-            for (int index = 0; index < this.pages.Count; ++index)
+            float startPages = rect.xMin;
+            if (totalWidthPages > rect.width)
+                rect.xMin -= totalWidthPages - rect.width;
+            
+            // Fill the hoverRect array to match pages
+            if (_pageTitles.Count < pages.Count)
             {
-                SlidePageNavigationHelper<T>.Page page = this.pages[index];
+                for (int i = _pageTitles.Count; i < pages.Count; ++i)
+                    _pageTitles.Add(new HoverRect { ClickColor = new Color(.45f, .6f, 1f)});
+            }
+            
+            for (int i = 0; i < pages.Count; ++i)
+            {
+                Page page = pages[i];
                 if (!page.TitleWidth.HasValue)
-                    page.TitleWidth = new int?((int) CustomGUIStyles.Label.CalcSize(new GUIContent(page.Name)).x + 7);
-                rect.width = (float) page.TitleWidth.Value;
-                Rect rect2 = rect;
-                rect2.width -= 6f;
-                rect2.xMin = Mathf.Max(xMin, rect2.xMin);
-                if (GUI.Button(rect2, page.Name, CustomGUIStyles.CenteredLabel))
-                    this.NavigateBack(index + 1);
-                if (index != this.pages.Count - 1)
+                    page.TitleWidth = (int) CustomGUIStyles.Label.CalcSize(new GUIContent(page.Name)).x + 7;
+                rect.width = page.TitleWidth.Value;
+                Rect pageTitleRect = rect;
+                pageTitleRect.width -= 6f;
+                pageTitleRect.xMin = Mathf.Max(startPages, pageTitleRect.xMin);
+
+                // Pushes ClickColor when clicking
+                _pageTitles[i].PushColor(pageTitleRect);
+                
+                if (GUI.Button(pageTitleRect, page.Name, CustomGUIStyles.CenteredLabelWithHover))
+                    NavigateBack(i + 1);
+                
+                _pageTitles[i].PopColor();
+                
+                if (i != pages.Count - 1)
                 {
-                    Rect position = rect2.AlignRight(10f);
+                    Rect position = pageTitleRect.AlignRight(12f);
                     position.x += 8f;
-                    position.xMin = Mathf.Max(xMin, position.xMin);
+                    position.xMin = Mathf.Max(startPages, position.xMin);
                     GUI.Label(position, "/", CustomGUIStyles.CenteredLabel);
                 }
 

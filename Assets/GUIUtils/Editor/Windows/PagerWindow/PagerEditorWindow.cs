@@ -94,15 +94,15 @@ namespace Rhinox.GUIUtils.Editor
 
             int headerHeight = DrawHeaderEditor();
 
-            // Draw top pager:
+            // Draw the pager
             var headerRect = CustomEditorGUI.GetTopLevelLayoutRect().AlignTop(34).AddY(headerHeight);
             CustomEditorGUI.DrawSolidRect(headerRect, CustomGUIStyles.BoxBackgroundColor);
             CustomEditorGUI.DrawBorders(headerRect, 0, 0, 0, 1);
-            var pageNavigationRect = headerRect;
             
-            pageNavigationRect.y = (float) ((double) headerRect.y + ((double) headerRect.height * 0.5 - 20.0) * 0.5);
-            pageNavigationRect.height = 20;
-            pageNavigationRect = pageNavigationRect.HorizontalPadding(10);
+            var pageNavigationRect = headerRect
+                .VerticalPadding((headerRect.height - 20) / 2)
+                .HorizontalPadding(10)
+                .SetHeight(20);
             
             _pager.DrawPageNavigation(pageNavigationRect);
             // Draw pages:

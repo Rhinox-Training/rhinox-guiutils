@@ -1,9 +1,11 @@
+using System;
 using Rhinox.Lightspeed;
+using UnityEditor;
 using UnityEngine;
 
 namespace Rhinox.GUIUtils.Editor
 {
-    public class HoverTexture
+    public class HoverTexture : HoverRect
     {
         private Texture2D _tex;
         private readonly Texture2D _unhoveredTexture;
@@ -18,8 +20,9 @@ namespace Rhinox.GUIUtils.Editor
         public HoverTexture(Texture2D tex, Color unhoveredColor)
         {
             _tex = tex;
-            _unhoveredTexture = Rhinox.Lightspeed.Utility.CopyTextureCPU(tex);
+            _unhoveredTexture = Utility.CopyTextureCPU(tex);
             
+            // TODO GUI.color also affects texture so is this still even needed?
             var pixels = _unhoveredTexture.GetPixels();
             for (var i = 0; i < pixels.Length; i++)
                 pixels[i] *= unhoveredColor;
@@ -28,18 +31,15 @@ namespace Rhinox.GUIUtils.Editor
             _unhoveredTexture.wrapMode = TextureWrapMode.Clamp;
             _unhoveredTexture.Apply();
         }
+        
+        public Texture GetNeededTexture(Rect rect, out bool changed) => IsHovering(rect, out changed) ? Hovered : Normal;
 
-        private Rect _cachedRect;
-        private bool _wasHovering;
-        public Texture GetNeededTexture(Rect rect, out bool changed)
+        public void Draw(Rect rect)
         {
-            if (rect.width > 1)
-                _cachedRect = rect;
-            bool isHovering = eUtility.IsMouseOver(_cachedRect);
-            changed = _wasHovering == isHovering;
-            _wasHovering = isHovering;
-            
-            return isHovering ? Hovered : Normal;
+            var tex = GetNeededTexture(rect, out _);
+            if (!GUI.enabled)
+                tex = Normal;
+            GUI.DrawTexture(rect, tex);
         }
     }
 }
