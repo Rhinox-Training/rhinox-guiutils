@@ -11,7 +11,7 @@ using UnityEngine;
 
 namespace Rhinox.GUIUtils.Editor
 {
-    public class DropdownWrapper : WrapperDrawable
+    public class DropdownBaseWrapper : BaseWrapperDrawable
     {
         private IPropertyMemberHelper<IEnumerable> _member;
         
@@ -23,7 +23,7 @@ namespace Rhinox.GUIUtils.Editor
         private Rect _dropdownRect;
         private bool _valueChanged;
 
-        public DropdownWrapper(IOrderedDrawable drawable) : base(drawable)
+        public DropdownBaseWrapper(IOrderedDrawable drawable) : base(drawable)
         {
             _activeItem = _defaultItem;
         }
@@ -111,10 +111,10 @@ namespace Rhinox.GUIUtils.Editor
         }
 
         [WrapDrawer(typeof(ValueDropdownAttribute))]
-        public static WrapperDrawable Create(ValueDropdownAttribute attr, IOrderedDrawable drawable)
+        public static BaseWrapperDrawable Create(ValueDropdownAttribute attr, IOrderedDrawable drawable)
         {
             var member = MemberHelper.Create<IEnumerable>(drawable.Host, attr.MemberName);
-            return new DropdownWrapper(drawable)
+            return new DropdownBaseWrapper(drawable)
             {
                 _member = member
             };

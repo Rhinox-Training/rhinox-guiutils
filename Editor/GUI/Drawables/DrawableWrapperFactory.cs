@@ -25,7 +25,7 @@ namespace Rhinox.GUIUtils.Editor
 
     public static class DrawableWrapperFactory
     {
-        public delegate WrapperDrawable WrapperCreator(Attribute attribute, IOrderedDrawable drawable);
+        public delegate BaseWrapperDrawable WrapperCreator(Attribute attribute, IOrderedDrawable drawable);
 
         private static readonly Dictionary<Type, WrapperCreator> _builderByAttribute = new Dictionary<Type, WrapperCreator>();
         private static readonly Dictionary<Type, int> _priorityByAttributeType = new Dictionary<Type, int>();
@@ -52,10 +52,10 @@ namespace Rhinox.GUIUtils.Editor
         
         private static void Register(Type attributeType, MethodInfo info, int priority = 0)
         {
-            WrapperDrawable Creator(Attribute targetAttr, IOrderedDrawable drawable)
+            BaseWrapperDrawable Creator(Attribute targetAttr, IOrderedDrawable drawable)
             {
                 // TODO, idk... better
-                return (WrapperDrawable)info.Invoke(null, new object[] { targetAttr, drawable });
+                return (BaseWrapperDrawable)info.Invoke(null, new object[] { targetAttr, drawable });
             }
 
             Register(attributeType, Creator, priority);
@@ -68,13 +68,13 @@ namespace Rhinox.GUIUtils.Editor
             
             foreach (var attr in attrs)
             {
-                if (TryCreateWrapper(attr, drawable, out WrapperDrawable wrappedDrawable))
+                if (TryCreateWrapper(attr, drawable, out BaseWrapperDrawable wrappedDrawable))
                     drawable = wrappedDrawable;
             }
             return drawable;
         }
 
-        private static bool TryCreateWrapper(Attribute attribute, IOrderedDrawable drawable, out WrapperDrawable wrapperDrawable)
+        private static bool TryCreateWrapper(Attribute attribute, IOrderedDrawable drawable, out BaseWrapperDrawable baseWrapperDrawable)
         {
             if (!_initialized)
                 Initialize();
@@ -82,12 +82,12 @@ namespace Rhinox.GUIUtils.Editor
             var attrType = attribute.GetType();
             if (!_builderByAttribute.ContainsKey(attrType))
             {
-                wrapperDrawable = null;
+                baseWrapperDrawable = null;
                 return false;
             }
 
             var creator = _builderByAttribute[attrType];
-            wrapperDrawable = creator?.Invoke(attribute, drawable);
+            baseWrapperDrawable = creator?.Invoke(attribute, drawable);
             return true;
         }
     }

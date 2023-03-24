@@ -20,13 +20,8 @@ namespace Rhinox.GUIUtils.Editor
         public abstract string LabelString { get; }
         
         public object Host { get; protected set; }
-        
-        public virtual ICollection<TAttribute> GetDrawableAttributes<TAttribute>() 
-            where TAttribute : Attribute
-        {
-            return Array.Empty<TAttribute>();
-        }
-        
+        public virtual bool IsVisible => true;
+
         private bool _initialized;
 
         protected BaseDrawable()
@@ -71,7 +66,13 @@ namespace Rhinox.GUIUtils.Editor
         {
             
         }
-
+        
+        public virtual ICollection<TAttribute> GetDrawableAttributes<TAttribute>() 
+            where TAttribute : Attribute
+        {
+            return Array.Empty<TAttribute>();
+        }
+        
         protected virtual void Initialize()
         {
             var orderAttr = GetDrawableAttributes<PropertyOrderAttribute>().FirstOrDefault();

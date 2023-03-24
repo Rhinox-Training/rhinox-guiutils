@@ -3,7 +3,7 @@ using UnityEditor;
 
 namespace Rhinox.GUIUtils.Editor
 {
-    public class LabelWidthWrapper : WrapperDrawable
+    public class LabelWidthWrapper : BaseWrapperDrawable
     {
         public float _width;
         private float _originalLabelWidth;
@@ -27,7 +27,7 @@ namespace Rhinox.GUIUtils.Editor
 
 
         [WrapDrawer(typeof(LabelWidthAttribute), -10000)]
-        public static WrapperDrawable Create(LabelWidthAttribute attr, IOrderedDrawable drawable)
+        public static BaseWrapperDrawable Create(LabelWidthAttribute attr, IOrderedDrawable drawable)
         {
             return new LabelWidthWrapper(drawable)
             {

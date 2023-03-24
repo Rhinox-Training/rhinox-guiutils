@@ -249,6 +249,8 @@ namespace Rhinox.GUIUtils.Editor
 
                 composite.AddRange(subdrawables);
                 resultingMember = composite;
+
+                resultingMember = DrawableWrapperFactory.TryWrapDrawable(resultingMember, attributes);
             }
             catch (Exception /*e*/)
             {

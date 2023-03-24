@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace Rhinox.GUIUtils.Editor
 {
-    public class GUIColorWrapper : WrapperDrawable
+    public class GUIColorWrapper : BaseWrapperDrawable
     {
         public Color _color;
         private Color _previousState;
@@ -28,7 +28,7 @@ namespace Rhinox.GUIUtils.Editor
         }
 
         [WrapDrawer(typeof(GUIColorAttribute), -10000)]
-        public static WrapperDrawable Create(GUIColorAttribute attr, IOrderedDrawable drawable)
+        public static BaseWrapperDrawable Create(GUIColorAttribute attr, IOrderedDrawable drawable)
         {
             return new GUIColorWrapper(drawable)
             {

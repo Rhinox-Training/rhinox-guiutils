@@ -16,6 +16,8 @@ namespace Rhinox.GUIUtils.Editor
         public string Title { get; private set; }
         public GUIStyle TitleStyle { get; private set; }
         public object Host { get; private set; }
+        
+        public bool IsVisible => true;
 
         private readonly List<IOrderedDrawable> _drawableMemberChildren;
         private readonly Dictionary<IOrderedDrawable, PropertyGroupAttribute> _propertyGroupAttrByDrawable;
@@ -29,20 +31,23 @@ namespace Rhinox.GUIUtils.Editor
         {
             get
             {
-                if (Children != null)
+                if (Children == null)
+                    return EditorGUIUtility.singleLineHeight;
+                
+                if (_groupHorizontally)
+                    return Children.Where(x => x.IsVisible).Max(x => x.ElementHeight);
+                    
+                float height = 0.0f;
+                foreach (var child in Children)
                 {
-                    if (_groupHorizontally)
-                        return Children.Max(x => x.ElementHeight);
-                    else
-                    {
-                        float height = 0.0f;
-                        foreach (var child in Children)
-                            height += child.ElementHeight;
-                        return height;
-                    }
+                    if (!child.IsVisible)
+                        continue;
+                    if (height > 0)
+                        height += 2; // padding
+                    height += child.ElementHeight;
                 }
+                return height;
 
-                return EditorGUIUtility.singleLineHeight;
             }
         }
 
@@ -139,11 +144,13 @@ namespace Rhinox.GUIUtils.Editor
                 return;
 
             StartGrouping();
+            
             if (!string.IsNullOrWhiteSpace(Title))
                 EditorGUILayout.LabelField(GUIContentHelper.TempContent(Title), TitleStyle);
+            
             foreach (var childDrawable in _drawableMemberChildren)
             {
-                if (childDrawable == null)
+                if (childDrawable == null || !childDrawable.IsVisible)
                     continue;
 
                 float width = 0.0f;
@@ -161,15 +168,20 @@ namespace Rhinox.GUIUtils.Editor
         {
             if (_drawableMemberChildren == null)
                 return;
-            
-            if (!string.IsNullOrWhiteSpace(Title))
-                EditorGUI.LabelField(rect, GUIContentHelper.TempContent(Title), TitleStyle);
 
-            HandleRectGrouping(ref rect);
+            if (!string.IsNullOrWhiteSpace(Title))
+            {
+                var labelRect = rect.AlignTop(EditorGUIUtility.singleLineHeight);
+                EditorGUI.LabelField(labelRect, GUIContentHelper.TempContent(Title), TitleStyle);
+                rect.yMin += labelRect.height + 2;
+            }
+
+            // HandleRectGrouping(ref rect);
             foreach (var childDrawable in _drawableMemberChildren)
             {
-                if (childDrawable == null)
+                if (childDrawable == null || !childDrawable.IsVisible)
                     continue;
+                
                 if (_groupHorizontally)
                 {
                     if (TryGetWidth(childDrawable, out float width))
@@ -180,25 +192,24 @@ namespace Rhinox.GUIUtils.Editor
                     }
                 }
 
+                rect.height = childDrawable.ElementHeight;
                 childDrawable.Draw(rect);
 
                 if (_groupHorizontally)
                 {
-                    rect.x += rect.width;
+                    rect.x += rect.width + 2; // 2 = padding
                 }
                 else
                 {
-                    rect.y += rect.height;
+                    rect.y += rect.height + 2; // 2 = padding
                 }
             }
         }
 
         private void HandleRectGrouping(ref Rect rect)
         {
-            if (!_groupHorizontally)
-                rect.height /= _drawableMemberChildren.Count;
-            else
-                rect.width /= _drawableMemberChildren.Count;
+            if (_groupHorizontally)
+                rect.width /= _drawableMemberChildren.Count(x => x.IsVisible);
         }
 
         private bool TryGetWidth(IOrderedDrawable drawable, out float width)
