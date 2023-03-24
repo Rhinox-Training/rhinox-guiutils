@@ -27,10 +27,11 @@ namespace Rhinox.GUIUtils.Editor
 
         private void TryDrawTitle()
         {
-            if (!string.IsNullOrEmpty(Title))
+            if (!string.IsNullOrEmpty(_title))
             {
-                EditorGUILayout.LabelField(Title, _bold ? CustomGUIStyles.BoldTitle : CustomGUIStyles.Title);
-                CustomEditorGUI.HorizontalLine(CustomGUIStyles.LightBorderColor, 1.5f);
+                EditorGUILayout.LabelField(_title, _bold ? CustomGUIStyles.BoldTitle : CustomGUIStyles.Title);
+                CustomEditorGUI.HorizontalLine(CustomGUIStyles.LightBorderColor, thickness: 1);
+                EditorGUILayout.Space(3.0f);
             }
         }
 

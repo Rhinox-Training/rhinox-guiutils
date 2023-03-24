@@ -10,7 +10,7 @@ namespace Rhinox.GUIUtils.Editor
 {
     public static class CustomEditorGUI
     {
-        private const float DEFAULT_LINE_WIDTH = 1.0f;
+        private const int DEFAULT_LINE_WIDTH = 1;
         private const int DEFAULT_ICON_WIDTH = 22;
         private const int DEFAULT_ICON_HEIGHT = 18;
 
@@ -106,14 +106,19 @@ namespace Rhinox.GUIUtils.Editor
             GUIUtility.keyboardControl = 0;
         }
 
-        public static void HorizontalLine(float width = DEFAULT_LINE_WIDTH, float lineWidth = DEFAULT_LINE_WIDTH) =>
-            CustomEditorGUI.HorizontalLine(CustomGUIStyles.BorderColor, width, lineWidth);
+        public static void HorizontalLine(int thickness = DEFAULT_LINE_WIDTH, float? width = null) =>
+            CustomEditorGUI.HorizontalLine(CustomGUIStyles.BorderColor, thickness, width);
 
-        public static void HorizontalLine(Color color, float width = DEFAULT_LINE_WIDTH, float lineWidth = DEFAULT_LINE_WIDTH) =>
-            CustomEditorGUI.DrawSolidRect(GUILayoutUtility.GetRect(lineWidth, lineWidth, GUILayout.Width(width)), color);
+        public static void HorizontalLine(Color color, int thickness = DEFAULT_LINE_WIDTH, float? width = null)
+        {
+            if (width.HasValue)
+                CustomEditorGUI.DrawSolidRect(GUILayoutUtility.GetRect(width.Value, thickness, GUILayout.Width(width.Value)), color);
+            else
+                CustomEditorGUI.DrawSolidRect(GUILayoutUtility.GetRect(thickness, thickness, GUILayout.ExpandWidth(true)), color);
+        }
 
 
-        public static void HorizontalLine(Rect r, Color color, float lineWidth = DEFAULT_LINE_WIDTH)
+        public static void HorizontalLine(Rect r, Color color, int lineWidth = DEFAULT_LINE_WIDTH)
         {
             r.height = lineWidth;
             CustomEditorGUI.DrawSolidRect(r, color);
