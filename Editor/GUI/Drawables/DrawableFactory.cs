@@ -54,7 +54,8 @@ namespace Rhinox.GUIUtils.Editor
                 if (buttonAttr == null)
                     continue;
 
-                var button = new DrawableButton(instance, method, buttonAttr);
+                IOrderedDrawable button = new DrawableButton(instance, method, buttonAttr);
+                button = DrawableWrapperFactory.TryWrapDrawable(button, method.GetCustomAttributes());
                 buttons.AddUnique(button);
             }
 
@@ -108,11 +109,7 @@ namespace Rhinox.GUIUtils.Editor
                     continue;
                 
                 // Check for decorators
-                foreach (var attr in fieldData.FieldInfo.GetCustomAttributes())
-                {
-                    if (DrawableWrapperFactory.TryCreateWrapper(attr, fieldDrawable, out WrapperDrawable wrappedDrawable))
-                        fieldDrawable = wrappedDrawable;
-                }
+                fieldDrawable = DrawableWrapperFactory.TryWrapDrawable(fieldDrawable, fieldData.FieldInfo.GetCustomAttributes());
 
                 drawables.Add(fieldDrawable);
             }
@@ -130,11 +127,7 @@ namespace Rhinox.GUIUtils.Editor
                         continue;
                     
                     // Check for decorators
-                    foreach (var attr in propertyMember.GetCustomAttributes())
-                    {
-                        if (DrawableWrapperFactory.TryCreateWrapper(attr, propertyDrawable, out WrapperDrawable wrappedDrawable))
-                            propertyDrawable = wrappedDrawable;
-                    }
+                    propertyDrawable = DrawableWrapperFactory.TryWrapDrawable(propertyDrawable, propertyMember.GetCustomAttributes());
 
                     drawables.Add(propertyDrawable);
                 }
@@ -194,11 +187,7 @@ namespace Rhinox.GUIUtils.Editor
                     continue;
 
                 // Check for decorators
-                foreach (var attr in memberInfo.GetCustomAttributes())
-                {
-                    if (DrawableWrapperFactory.TryCreateWrapper(attr, resultingMember, out WrapperDrawable wrappedDrawable))
-                        resultingMember = wrappedDrawable;
-                }
+                resultingMember = DrawableWrapperFactory.TryWrapDrawable(resultingMember, memberInfo.GetCustomAttributes());
 
                 drawableMembers.Add(resultingMember);
             }

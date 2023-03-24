@@ -22,6 +22,7 @@ namespace Rhinox.GUIUtils.Editor
         private Func<object, T> _instanceValueGetter;
         
         private HostInfo _info;
+        private NewFrameHandler _newFrameHandler;
 
         /// <summary>
         /// If any error occurred while looking for members, it will be stored here.
@@ -138,7 +139,7 @@ namespace Rhinox.GUIUtils.Editor
         /// </summary>
         public T GetValue()
         {
-            if (IsNewFrame())
+            if (_newFrameHandler.IsNewFrame())
             {
                 this._cachedValue = this.ForceGetValue(_info?.GetHost());
             }
@@ -174,29 +175,6 @@ namespace Rhinox.GUIUtils.Editor
                 return _instanceValueGetter(instance);
             
             return default;
-        }
-
-        private bool _isNewFrame, _nextEventIsNew;
-        private bool IsNewFrame()
-        {
-            if (Event.current == null)
-                return _isNewFrame;
-            EventType type = Event.current.type;
-            if (type == EventType.Repaint)
-            {
-                _nextEventIsNew = true;
-                _isNewFrame = false;
-                return _isNewFrame;
-            }
-            
-            if (_nextEventIsNew)
-            {
-                _nextEventIsNew = false;
-                _isNewFrame = true;
-                return _isNewFrame;
-            }
-            _isNewFrame = false;
-            return _isNewFrame;
         }
     }
 }
