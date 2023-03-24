@@ -3,24 +3,25 @@ using UnityEngine;
 
 namespace Rhinox.GUIUtils.Editor
 {
-    public class GuiStateWrapper : WrapperDrawable
+    public class GUIStateWrapper : WrapperDrawable
     {
         private bool _state;
         private bool _previousState;
 
         private IPropertyMemberHelper<bool> _stateMember;
 
-        public GuiStateWrapper(IOrderedDrawable drawable) : base(drawable)
+        public GUIStateWrapper(IOrderedDrawable drawable) : base(drawable)
         {
         }
 
         protected override void OnPreDraw()
         {
-            base.OnPreDraw();
             _previousState = GUI.enabled;
 
             if (GUI.enabled && ShouldDisable())
                 GUI.enabled = false;
+            
+            base.OnPreDraw();
         }
 
         protected override void OnPostDraw()
@@ -42,7 +43,7 @@ namespace Rhinox.GUIUtils.Editor
         public static WrapperDrawable Create(EnableIfAttribute attr, IOrderedDrawable drawable)
         {
             var member = MemberHelper.Create<bool>(drawable.Host, attr.MemberName);
-            return new GuiStateWrapper(drawable)
+            return new GUIStateWrapper(drawable)
             {
                 _state = true,
                 _stateMember = member
@@ -53,7 +54,7 @@ namespace Rhinox.GUIUtils.Editor
         public static WrapperDrawable Create(DisableIfAttribute attr, IOrderedDrawable drawable)
         {
             var member = MemberHelper.Create<bool>(drawable.Host, attr.MemberName);
-            return new GuiStateWrapper(drawable)
+            return new GUIStateWrapper(drawable)
             {
                 _state = false,
                 _stateMember = member
@@ -63,7 +64,7 @@ namespace Rhinox.GUIUtils.Editor
         [WrapDrawer(typeof(ReadOnlyAttribute), -10500)]
         public static WrapperDrawable Create(ReadOnlyAttribute attr, IOrderedDrawable drawable)
         {
-            return new GuiStateWrapper(drawable)
+            return new GUIStateWrapper(drawable)
             {
                 _state = false
             };
