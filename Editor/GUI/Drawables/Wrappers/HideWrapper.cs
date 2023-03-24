@@ -9,6 +9,8 @@ namespace Rhinox.GUIUtils.Editor
 
         private IPropertyMemberHelper<bool> _stateMember;
 
+        public override float ElementHeight => ShouldDraw() ? _innerDrawable.ElementHeight : 0;
+
         public HideWrapper(IOrderedDrawable drawable) : base(drawable)
         {
         }
@@ -25,7 +27,7 @@ namespace Rhinox.GUIUtils.Editor
                 base.DrawInner(rect, label);
         }
 
-        protected bool ShouldDraw()
+        public bool ShouldDraw()
         {
             if (_stateMember == null)
                 return _state;

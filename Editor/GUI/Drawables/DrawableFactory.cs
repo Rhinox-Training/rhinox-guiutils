@@ -206,14 +206,14 @@ namespace Rhinox.GUIUtils.Editor
             var publicMembers = t.GetMembers(BindingFlags.Instance | BindingFlags.Public |
                                                 BindingFlags.GetField | BindingFlags.GetProperty | BindingFlags.FlattenHierarchy);
             publicMembers = publicMembers
-                .Where(x => !(x is MethodInfo))
+                .Where(x => !(x is MethodBase))
                 .ToArray();
             
             // All non-publics that serialize or are visible
             var serializedMembers = t.GetMembers(BindingFlags.Instance | BindingFlags.NonPublic |
                                                     BindingFlags.GetField | BindingFlags.GetProperty | BindingFlags.FlattenHierarchy);
             serializedMembers = serializedMembers
-                .Where(x => !(x is MethodInfo))
+                .Where(x => !(x is MethodBase))
                 .Where(x => x.IsSerialized() || x.GetCustomAttribute<ShowInInspectorAttribute>() != null)
                 .ToArray();
 
@@ -231,9 +231,13 @@ namespace Rhinox.GUIUtils.Editor
             {
                 var subInstance = memberInfo.GetValue(instance);
                 var subtype = memberInfo.GetReturnType();
+                
+                if (instance != null)
+                    subtype = subInstance.GetType();
+                
                 var subdrawables = CreateDrawableMembersFor(subInstance, subtype, depth + 1);
                 DrawableGroupingHelper.Process(ref subdrawables);
-                var composite = new CompositeDrawableMember();
+                var composite = new ObjectCompositeDrawableMember(memberInfo.Name);
                 var attributes = memberInfo.GetCustomAttributes<Attribute>();
 
                 foreach (var attr in attributes)

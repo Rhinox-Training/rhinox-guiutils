@@ -16,6 +16,14 @@ namespace Rhinox.GUIUtils.Editor
         public string Title { get; private set; }
         public GUIStyle TitleStyle { get; private set; }
         public object Host { get; private set; }
+
+        private readonly List<IOrderedDrawable> _drawableMemberChildren;
+        private readonly Dictionary<IOrderedDrawable, PropertyGroupAttribute> _propertyGroupAttrByDrawable;
+        private List<Attribute> _attributes;
+        private bool _groupHorizontally;
+
+        public IReadOnlyCollection<IOrderedDrawable> Children => _drawableMemberChildren != null ? 
+            _drawableMemberChildren : (IReadOnlyCollection<IOrderedDrawable>)Array.Empty<IOrderedDrawable>();
         
         public virtual float ElementHeight
         {
@@ -38,19 +46,10 @@ namespace Rhinox.GUIUtils.Editor
             }
         }
 
-        private readonly List<IOrderedDrawable> _drawableMemberChildren;
-        private readonly Dictionary<IOrderedDrawable, PropertyGroupAttribute> _propertyGroupAttrByDrawable;
-        private List<Attribute> _attributes;
-        private bool _groupHorizontally;
-
-        public IReadOnlyCollection<IOrderedDrawable> Children => _drawableMemberChildren != null ? 
-            _drawableMemberChildren : (IReadOnlyCollection<IOrderedDrawable>)Array.Empty<IOrderedDrawable>();
-
         
         /// <summary>
-        /// DFS
+        /// Enumerates as Depth First Search
         /// </summary>
-        /// <returns></returns>
         public IEnumerable<IOrderedDrawable> EnumerateTree(bool onlyLeaves = false)
         {
             foreach (var child in Children)
@@ -134,7 +133,7 @@ namespace Rhinox.GUIUtils.Editor
             return _attributes.OfType<TAttribute>().ToList();
         }
 
-        public void Draw()
+        public virtual void Draw()
         {
             if (_drawableMemberChildren == null)
                 return;
@@ -158,7 +157,7 @@ namespace Rhinox.GUIUtils.Editor
             EndGrouping();
         }
 
-        public void Draw(Rect rect)
+        public virtual void Draw(Rect rect)
         {
             if (_drawableMemberChildren == null)
                 return;
@@ -197,13 +196,9 @@ namespace Rhinox.GUIUtils.Editor
         private void HandleRectGrouping(ref Rect rect)
         {
             if (!_groupHorizontally)
-            {
                 rect.height /= _drawableMemberChildren.Count;
-            }
             else
-            {
                 rect.width /= _drawableMemberChildren.Count;
-            }
         }
 
         private bool TryGetWidth(IOrderedDrawable drawable, out float width)
@@ -228,33 +223,17 @@ namespace Rhinox.GUIUtils.Editor
         private void StartGrouping()
         {
             if (!_groupHorizontally)
-            {
                 GUILayout.BeginVertical();
-            }
             else
-            {
                 GUILayout.BeginHorizontal();
-            }
         }
 
         private void EndGrouping()
         {
-            // if (Grouping == null)
-            //     return;
-            //
-            // if (Grouping is HorizontalGroupAttribute horizontalAttr)
-            // {
-            //     GUILayout.EndHorizontal();
-            // }
-            // else if (Grouping is VerticalGroupAttribute || Grouping is TitleGroupAttribute)
             if (!_groupHorizontally)
-            {
                 GUILayout.EndVertical();
-            }
             else
-            {
                 GUILayout.EndHorizontal();
-            }
         }
 
         public void Sort()
@@ -268,14 +247,8 @@ namespace Rhinox.GUIUtils.Editor
             _drawableMemberChildren.SortBy(x => x.Order);
         }
         
-        private void GroupVertical()
-        {
-            _groupHorizontally = false;
-        }
+        private void GroupVertical() => _groupHorizontally = false;
 
-        private void GroupHorizontal()
-        {
-            _groupHorizontally = true;
-        }
+        private void GroupHorizontal() => _groupHorizontally = true;
     }
 }
