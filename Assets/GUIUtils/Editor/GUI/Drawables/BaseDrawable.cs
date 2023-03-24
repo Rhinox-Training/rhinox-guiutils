@@ -17,7 +17,6 @@ namespace Rhinox.GUIUtils.Editor
         public bool HideLabel { get; protected set; }
 
         public float? LabelWidth { get; protected set; }
-        public string Title { get; protected set; }
         
         public Color? Colour { get; protected set; }
         public GUIContent Label => HideLabel || string.IsNullOrEmpty(LabelString) ? GUIContent.none : GUIContentHelper.TempContent(LabelString);
@@ -43,8 +42,6 @@ namespace Rhinox.GUIUtils.Editor
         {
             OnPreDraw();
             
-            //TryDrawTitle();
-            
             EditorGUI.BeginDisabledGroup(IsReadOnly);
             {
                 eUtility.GuiBackgroundColor backgroundColorModifier =
@@ -67,8 +64,6 @@ namespace Rhinox.GUIUtils.Editor
         public void Draw(Rect rect)
         {
             OnPreDraw();
-            
-            //TryDrawTitle();
             
             EditorGUI.BeginDisabledGroup(IsReadOnly);
             {
@@ -124,23 +119,10 @@ namespace Rhinox.GUIUtils.Editor
                 LabelWidth = null;
 
             HideLabel = !GetDrawableAttributes<HideLabelAttribute>().IsNullOrEmpty();
-
-            var titleAttribute = GetDrawableAttributes<TitleAttribute>().FirstOrDefault();
-            Title = titleAttribute != null ? titleAttribute.Title : null;
-            
-            
+          
             var colour = GetDrawableAttributes<GUIColorAttribute>().FirstOrDefault();
             if (colour != null)
                 Colour = colour.Color;
-        }
-
-        private void TryDrawTitle()
-        {
-            if (!string.IsNullOrEmpty(Title))
-            {
-                EditorGUILayout.LabelField(Title, CustomGUIStyles.BoldTitle);
-                CustomEditorGUI.HorizontalLine(CustomGUIStyles.LightBorderColor);
-            }
         }
     }
 }
