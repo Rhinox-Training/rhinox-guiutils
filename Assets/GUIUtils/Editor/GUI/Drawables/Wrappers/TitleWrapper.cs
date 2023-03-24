@@ -35,7 +35,7 @@ namespace Rhinox.GUIUtils.Editor
             }
         }
 
-        [WrapDrawer(typeof(TitleAttribute))]
+        [WrapDrawer(typeof(TitleAttribute), -10000)]
         public static WrapperDrawable Create(TitleAttribute attr, IOrderedDrawable drawable)
         {
             return new TitleWrapper(drawable)

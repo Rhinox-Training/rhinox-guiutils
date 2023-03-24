@@ -26,7 +26,6 @@ namespace Rhinox.GUIUtils.Editor
         {
             _activeItem = _defaultItem;
         }
-
         
         protected override void DrawInner(GUIContent label)
         {

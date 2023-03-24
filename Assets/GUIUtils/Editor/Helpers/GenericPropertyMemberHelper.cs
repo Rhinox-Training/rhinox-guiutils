@@ -16,6 +16,7 @@ namespace Rhinox.GUIUtils.Editor
         private Func<object, T> _instanceValueGetter;
         
         private object _host;
+        private NewFrameHandler _newFrameHandler;
 
         /// <summary>
         /// If any error occurred while looking for members, it will be stored here.
@@ -96,10 +97,12 @@ namespace Rhinox.GUIUtils.Editor
         
         /// <summary>
         /// Gets the value from the MemberHelper.
+        /// This caches the value during the same frame, so it can be used efficiently in draw code
+        /// This also means you aren't guaranteed to have an up-to-date value
         /// </summary>
         public T GetValue()
         {
-            if (IsNewFrame())
+            if (_newFrameHandler.IsNewFrame())
             {
                 this._cachedValue = this.ForceGetValue();
             }
@@ -116,7 +119,10 @@ namespace Rhinox.GUIUtils.Editor
             return newValue;
         }
 
-        /// <summary>Forcefully fetches a new value, ignoring any caches.</summary>
+        /// <summary>
+        /// Fetches an up-to-date value
+        /// Inefficient when called in standard draw code (layout, repaint, etc = multiple times per frame)
+        /// </summary>
         public T ForceGetValue()
         {
             if (this._errorMessage != null)
@@ -131,27 +137,6 @@ namespace Rhinox.GUIUtils.Editor
             return default;
         }
 
-        private bool _isNewFrame, _nextEventIsNew;
-        private bool IsNewFrame()
-        {
-            if (Event.current == null)
-                return _isNewFrame;
-            EventType type = Event.current.type;
-            if (type == EventType.Repaint)
-            {
-                _nextEventIsNew = true;
-                _isNewFrame = false;
-                return _isNewFrame;
-            }
-            
-            if (_nextEventIsNew)
-            {
-                _nextEventIsNew = false;
-                _isNewFrame = true;
-                return _isNewFrame;
-            }
-            _isNewFrame = false;
-            return _isNewFrame;
-        }
+        
     }
 }
