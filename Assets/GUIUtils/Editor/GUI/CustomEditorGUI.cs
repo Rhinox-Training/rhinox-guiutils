@@ -10,7 +10,7 @@ namespace Rhinox.GUIUtils.Editor
 {
     public static class CustomEditorGUI
     {
-        private const int DEFAULT_LINE_WIDTH = 1;
+        private const float DEFAULT_LINE_WIDTH = 1.0f;
         private const int DEFAULT_ICON_WIDTH = 22;
         private const int DEFAULT_ICON_HEIGHT = 18;
 
@@ -106,26 +106,23 @@ namespace Rhinox.GUIUtils.Editor
             GUIUtility.keyboardControl = 0;
         }
 
-        public static void HorizontalLine(int lineWidth = DEFAULT_LINE_WIDTH) =>
-            CustomEditorGUI.HorizontalLine(CustomGUIStyles.BorderColor, lineWidth);
+        public static void HorizontalLine(float width = DEFAULT_LINE_WIDTH, float lineWidth = DEFAULT_LINE_WIDTH) =>
+            CustomEditorGUI.HorizontalLine(CustomGUIStyles.BorderColor, width, lineWidth);
 
-        public static void HorizontalLine(Color color, int lineWidth = DEFAULT_LINE_WIDTH) =>
-            CustomEditorGUI.DrawSolidRect(GUILayoutUtility.GetRect(lineWidth, lineWidth, GUILayout.ExpandWidth(true)), color);
-        
-        public static void HorizontalLine(Color color, float width, int lineWidth = DEFAULT_LINE_WIDTH) =>
+        public static void HorizontalLine(Color color, float width = DEFAULT_LINE_WIDTH, float lineWidth = DEFAULT_LINE_WIDTH) =>
             CustomEditorGUI.DrawSolidRect(GUILayoutUtility.GetRect(lineWidth, lineWidth, GUILayout.Width(width)), color);
 
 
-        public static void HorizontalLine(Rect r, Color color, int lineWidth = DEFAULT_LINE_WIDTH)
+        public static void HorizontalLine(Rect r, Color color, float lineWidth = DEFAULT_LINE_WIDTH)
         {
             r.height = lineWidth;
             CustomEditorGUI.DrawSolidRect(r, color);
         }
 
-        public static void VerticalLine(int lineWidth = DEFAULT_LINE_WIDTH) =>
+        public static void VerticalLine(float lineWidth = DEFAULT_LINE_WIDTH) =>
             CustomEditorGUI.VerticalLine(CustomGUIStyles.BorderColor, lineWidth);
 
-        public static void VerticalLine(Color color, int lineWidth = DEFAULT_LINE_WIDTH) =>
+        public static void VerticalLine(Color color, float lineWidth = DEFAULT_LINE_WIDTH) =>
             CustomEditorGUI.DrawSolidRect(
                 GUILayoutUtility.GetRect((float) lineWidth, (float) lineWidth, GUILayout.ExpandHeight(true),
                     GUILayout.Width((float) lineWidth)), color);

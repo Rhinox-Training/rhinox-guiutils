@@ -43,7 +43,7 @@ namespace Rhinox.GUIUtils.Editor
         {
             OnPreDraw();
             
-            TryDrawTitle();
+            //TryDrawTitle();
             
             EditorGUI.BeginDisabledGroup(IsReadOnly);
             {
@@ -68,7 +68,7 @@ namespace Rhinox.GUIUtils.Editor
         {
             OnPreDraw();
             
-            TryDrawTitle();
+            //TryDrawTitle();
             
             EditorGUI.BeginDisabledGroup(IsReadOnly);
             {
