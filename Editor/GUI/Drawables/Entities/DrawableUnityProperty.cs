@@ -6,8 +6,7 @@ namespace Rhinox.GUIUtils.Editor
 {
     public class DrawableUnityProperty : BaseEntityDrawable
     {
-        protected override string LabelString =>
-            _targetObj != null ? ((SerializedProperty) _targetObj).displayName : null;
+        public override string LabelString => _targetObj != null ? ((SerializedProperty) _targetObj).displayName : null;
 
         public DrawableUnityProperty(SerializedProperty prop, MemberInfo memberInfo = null)
             : base(prop, memberInfo)

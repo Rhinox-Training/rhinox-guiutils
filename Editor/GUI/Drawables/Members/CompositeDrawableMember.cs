@@ -15,6 +15,7 @@ namespace Rhinox.GUIUtils.Editor
         public float Order { get; set; }
         public string Title { get; private set; }
         public GUIStyle TitleStyle { get; private set; }
+        public object Host { get; private set; }
         
         public virtual float ElementHeight
         {
