@@ -204,7 +204,11 @@ namespace Rhinox.GUIUtils.Editor
             if (_listProperty != null)
             {
                 if (_listProperty.serializedObject != null)
+                {
+                    // NOTE: Apply anything modified so nothing gets cleared when drawing nested
+                    _listProperty.serializedObject.ApplyModifiedProperties(); 
                     _listProperty.serializedObject.Update();
+                }
             }
         }
 
