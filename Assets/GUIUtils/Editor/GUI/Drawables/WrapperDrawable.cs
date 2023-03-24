@@ -6,12 +6,15 @@ namespace Rhinox.GUIUtils.Editor
     {
         protected IOrderedDrawable _innerDrawable;
 
+        public override float ElementHeight => _innerDrawable.ElementHeight;
+
         public override string LabelString => string.Empty; // Not used in wrapper
         
         protected WrapperDrawable(IOrderedDrawable drawable)
         {
             _innerDrawable = drawable;
             Host = _innerDrawable.Host;
+            Order = _innerDrawable.Order;
         }
         
         protected override void DrawInner(GUIContent label)

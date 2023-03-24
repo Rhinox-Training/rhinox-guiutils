@@ -13,10 +13,12 @@ namespace Rhinox.GUIUtils.Editor
 {
     public class DropdownWrapper : WrapperDrawable
     {
-        private GenericPropertyMemberHelper<IEnumerable> _member;
+        private IPropertyMemberHelper<IEnumerable> _member;
+        
+        public override float ElementHeight => EditorGUIUtility.singleLineHeight;
         
         private GUIContent _activeItem;
-        private GUIContent _defaultItem = new GUIContent("<none>");
+        private GUIContent _defaultItem = new GUIContent("<None>");
 
         private Rect _dropdownRect;
 
@@ -91,7 +93,11 @@ namespace Rhinox.GUIUtils.Editor
         [WrapDrawer(typeof(ValueDropdownAttribute))]
         public static WrapperDrawable Create(ValueDropdownAttribute attr, IOrderedDrawable drawable)
         {
-            var member = new GenericPropertyMemberHelper<IEnumerable>(drawable.Host, attr.MemberName);
+            IPropertyMemberHelper<IEnumerable> member;
+            if (drawable.Host is SerializedProperty prop)
+                member = new SerializedPropertyMemberHelper<IEnumerable>(prop, attr.MemberName);
+            else
+                member = new GenericPropertyMemberHelper<IEnumerable>(drawable.Host, attr.MemberName);
             return new DropdownWrapper(drawable)
             {
                 _member = member
