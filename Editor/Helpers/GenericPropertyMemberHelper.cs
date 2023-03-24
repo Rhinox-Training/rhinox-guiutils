@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace Rhinox.GUIUtils.Editor
 {
-    public class GenericPropertyMemberHelper<T>
+    public class GenericPropertyMemberHelper<T> : IPropertyMemberHelper<T>
     {
         private T _cachedValue;
         private string _errorMessage;

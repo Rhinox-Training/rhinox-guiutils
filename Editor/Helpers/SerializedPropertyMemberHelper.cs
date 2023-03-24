@@ -12,7 +12,7 @@ namespace Rhinox.GUIUtils.Editor
     /// Helper class to handle strings for labels and other similar purposes.
     /// Allows for a static string, or for referring to string member fields, properties or methods, by name
     /// </summary>
-    public class SerializedPropertyMemberHelper<T>
+    public class SerializedPropertyMemberHelper<T> : IPropertyMemberHelper<T>
     {
         private T _cachedValue;
         private string _errorMessage;
@@ -153,6 +153,12 @@ namespace Rhinox.GUIUtils.Editor
                 changed = true;
             
             return newValue;
+        }
+
+        public T ForceGetValue()
+        {
+            var instance = _info?.GetHost();
+            return ForceGetValue(instance);
         }
 
         /// <summary>Forcefully fetches a new value, ignoring any caches.</summary>
