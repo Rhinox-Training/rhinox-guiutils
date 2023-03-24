@@ -1,4 +1,5 @@
-﻿using Sirenix.OdinInspector;
+﻿using Rhinox.Lightspeed;
+using Sirenix.OdinInspector;
 using UnityEditor;
 using UnityEngine;
 
@@ -11,6 +12,9 @@ namespace Rhinox.GUIUtils.Editor
         public TitleAlignments _alignment;
 
         private GUIStyle _style;
+
+        public override float ElementHeight => base.ElementHeight + EditorGUIUtility.singleLineHeight + 4.0f;
+
 
         public TitleWrapper(IOrderedDrawable drawable) : base(drawable)
         {
@@ -26,20 +30,32 @@ namespace Rhinox.GUIUtils.Editor
                 _style.alignment = TextAnchor.MiddleCenter;
         }
 
-        protected override void OnPreDraw()
+
+        protected override void DrawInner(GUIContent label)
         {
-            base.OnPreDraw();
-            
-            TryDrawTitle();
+            if (!string.IsNullOrEmpty(_title))
+            {
+                EditorGUILayout.LabelField(_title, _bold ? CustomGUIStyles.BoldTitle : CustomGUIStyles.Title);
+                CustomEditorGUI.HorizontalLine(CustomGUIStyles.LightBorderColor, thickness: 1);
+                EditorGUILayout.Space(3.0f);
+            }
+            base.DrawInner(label);
         }
 
-        private void TryDrawTitle()
+        protected override void DrawInner(Rect rect, GUIContent label)
         {
-            if (string.IsNullOrEmpty(_title)) return;
-            
-            EditorGUILayout.LabelField(_title, _bold ? CustomGUIStyles.BoldTitle : CustomGUIStyles.Title);
-            CustomEditorGUI.HorizontalLine(CustomGUIStyles.LightBorderColor, thickness: 1);
-            EditorGUILayout.Space(3.0f);
+            if (!string.IsNullOrEmpty(_title))
+            {
+                var labelRect = rect.AlignTop(EditorGUIUtility.singleLineHeight);
+                rect.y += labelRect.height;
+                rect.height -= labelRect.height;
+                EditorGUI.LabelField(labelRect, _title, _bold ? CustomGUIStyles.BoldTitle : CustomGUIStyles.Title);
+                var lineRect = rect.AlignTop(1.0f);
+                CustomEditorGUI.HorizontalLine(lineRect, CustomGUIStyles.LightBorderColor, 1);
+                rect.y += 4.0f;
+                rect.height -= 4.0f;
+            }
+            base.DrawInner(rect, label);
         }
 
         [WrapDrawer(typeof(TitleAttribute), -10000)]
