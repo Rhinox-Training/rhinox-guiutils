@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace Rhinox.GUIUtils.Editor
 {
-    public class ValueChangedWrapper : WrapperDrawable
+    public class ValueChangedWrapper : BaseWrapperDrawable
     {
         private MethodMemberHelper _methodMember;
         
@@ -26,7 +26,7 @@ namespace Rhinox.GUIUtils.Editor
         }
         
         [WrapDrawer(typeof(OnValueChangedAttribute), -500)]
-        public static WrapperDrawable Create(OnValueChangedAttribute attr, IOrderedDrawable drawable)
+        public static BaseWrapperDrawable Create(OnValueChangedAttribute attr, IOrderedDrawable drawable)
         {
             var member = MemberHelper.CreateMethod(drawable.Host, attr.MethodName);
             return new ValueChangedWrapper(drawable)

@@ -1,4 +1,5 @@
 using System.Linq;
+using Rhinox.Lightspeed;
 using UnityEditor;
 using UnityEngine;
 
@@ -25,22 +26,57 @@ namespace Rhinox.GUIUtils.Editor
 
         public override void Draw()
         {
-            if (!IsFoldout())
-                GUILayout.BeginHorizontal();
+            var label = GUIContentHelper.TempContent(Name);
             
-            EditorGUILayout.PrefixLabel(GUIContentHelper.TempContent(Name));
-            GUILayout.BeginVertical();
-            
-            base.Draw();
-            
-            GUILayout.EndVertical();
-            if (!IsFoldout())
+            if (IsFoldout())
+            {
+                GUILayout.Label(label);
+                ++EditorGUI.indentLevel;
+                
+                base.Draw();
+                
+                --EditorGUI.indentLevel;
+            }
+            else
+            {
+                GUILayout.BeginHorizontal(GUILayout.ExpandWidth(true));
+
+                EditorGUILayout.PrefixLabel(label);
+                
+                var indent = EditorGUI.indentLevel;
+                EditorGUI.indentLevel = 0;
+
+                base.Draw();
+                
+                EditorGUI.indentLevel = indent;
                 GUILayout.EndHorizontal();
+            }
         }
 
         public override void Draw(Rect rect)
         {
+            bool isFoldout = IsFoldout();
+            var indentLevel = EditorGUI.indentLevel;
+            
+            if (isFoldout)
+            {
+                var height = EditorGUIUtility.singleLineHeight;
+                var labelRect = rect.AlignTop(height);
+                EditorGUI.LabelField(labelRect, GUIContentHelper.TempContent(Name));
+                rect.yMin += height;
+
+                ++EditorGUI.indentLevel;
+                rect = EditorGUI.IndentedRect(rect);
+                EditorGUI.indentLevel = 0;
+            }
+            else
+            {
+                rect = EditorGUI.PrefixLabel(rect, GUIContentHelper.TempContent(Name));
+            }
+            
             base.Draw(rect);
+
+            EditorGUI.indentLevel = indentLevel;
         }
         
         private bool IsFoldout()

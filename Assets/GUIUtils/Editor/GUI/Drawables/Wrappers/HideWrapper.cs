@@ -3,13 +3,13 @@ using UnityEngine;
 
 namespace Rhinox.GUIUtils.Editor
 {
-    public class HideWrapper : WrapperDrawable
+    public class HideWrapper : BaseWrapperDrawable
     {
         private bool _state;
 
         private IPropertyMemberHelper<bool> _stateMember;
-
-        public override float ElementHeight => ShouldDraw() ? _innerDrawable.ElementHeight : 0;
+        
+        public override bool IsVisible => _innerDrawable.IsVisible && ShouldDraw();
 
         public HideWrapper(IOrderedDrawable drawable) : base(drawable)
         {
@@ -36,7 +36,7 @@ namespace Rhinox.GUIUtils.Editor
         }
 
         [WrapDrawer(typeof(ShowIfAttribute), -11000)]
-        public static WrapperDrawable Create(ShowIfAttribute attr, IOrderedDrawable drawable)
+        public static BaseWrapperDrawable Create(ShowIfAttribute attr, IOrderedDrawable drawable)
         {
             var member = MemberHelper.Create<bool>(drawable.Host, attr.MemberName);
             return new HideWrapper(drawable)
@@ -47,7 +47,7 @@ namespace Rhinox.GUIUtils.Editor
         }
         
         [WrapDrawer(typeof(HideIfAttribute), -11000)]
-        public static WrapperDrawable Create(HideIfAttribute attr, IOrderedDrawable drawable)
+        public static BaseWrapperDrawable Create(HideIfAttribute attr, IOrderedDrawable drawable)
         {
             var member = MemberHelper.Create<bool>(drawable.Host, attr.MemberName);
             return new HideWrapper(drawable)
@@ -58,7 +58,7 @@ namespace Rhinox.GUIUtils.Editor
         }
         
         [WrapDrawer(typeof(HideInInspector), -11000)]
-        public static WrapperDrawable Create(HideInInspector attr, IOrderedDrawable drawable)
+        public static BaseWrapperDrawable Create(HideInInspector attr, IOrderedDrawable drawable)
         {
             return new HideWrapper(drawable)
             {

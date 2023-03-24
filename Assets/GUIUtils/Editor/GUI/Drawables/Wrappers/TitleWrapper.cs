@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace Rhinox.GUIUtils.Editor
 {
-    public class TitleWrapper : WrapperDrawable
+    public class TitleWrapper : BaseWrapperDrawable
     {
         public string _title;
         public bool _bold;
@@ -59,7 +59,7 @@ namespace Rhinox.GUIUtils.Editor
         }
 
         [WrapDrawer(typeof(TitleAttribute), -10000)]
-        public static WrapperDrawable Create(TitleAttribute attr, IOrderedDrawable drawable)
+        public static BaseWrapperDrawable Create(TitleAttribute attr, IOrderedDrawable drawable)
         {
             return new TitleWrapper(drawable)
             {

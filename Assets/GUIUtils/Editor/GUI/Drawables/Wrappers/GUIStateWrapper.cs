@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace Rhinox.GUIUtils.Editor
 {
-    public class GUIStateWrapper : WrapperDrawable
+    public class GUIStateWrapper : BaseWrapperDrawable
     {
         private bool _state;
         private bool _previousState;
@@ -40,7 +40,7 @@ namespace Rhinox.GUIUtils.Editor
         }
 
         [WrapDrawer(typeof(EnableIfAttribute), -10500)]
-        public static WrapperDrawable Create(EnableIfAttribute attr, IOrderedDrawable drawable)
+        public static BaseWrapperDrawable Create(EnableIfAttribute attr, IOrderedDrawable drawable)
         {
             var member = MemberHelper.Create<bool>(drawable.Host, attr.MemberName);
             return new GUIStateWrapper(drawable)
@@ -51,7 +51,7 @@ namespace Rhinox.GUIUtils.Editor
         }
         
         [WrapDrawer(typeof(DisableIfAttribute), -10500)]
-        public static WrapperDrawable Create(DisableIfAttribute attr, IOrderedDrawable drawable)
+        public static BaseWrapperDrawable Create(DisableIfAttribute attr, IOrderedDrawable drawable)
         {
             var member = MemberHelper.Create<bool>(drawable.Host, attr.MemberName);
             return new GUIStateWrapper(drawable)
@@ -62,7 +62,7 @@ namespace Rhinox.GUIUtils.Editor
         }
         
         [WrapDrawer(typeof(ReadOnlyAttribute), -10500)]
-        public static WrapperDrawable Create(ReadOnlyAttribute attr, IOrderedDrawable drawable)
+        public static BaseWrapperDrawable Create(ReadOnlyAttribute attr, IOrderedDrawable drawable)
         {
             return new GUIStateWrapper(drawable)
             {

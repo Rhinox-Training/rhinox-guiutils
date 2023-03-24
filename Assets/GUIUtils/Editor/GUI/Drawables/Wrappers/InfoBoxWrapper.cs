@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace Rhinox.GUIUtils.Editor
 {
-    public class InfoBoxWrapper : WrapperDrawable
+    public class InfoBoxWrapper : BaseWrapperDrawable
     {
         private IPropertyMemberHelper<bool> _member;
         private string _message;
@@ -64,7 +64,7 @@ namespace Rhinox.GUIUtils.Editor
         }
 
         [WrapDrawer(typeof(InfoBoxAttribute), -5000)]
-        public static WrapperDrawable Create(InfoBoxAttribute attr, IOrderedDrawable drawable)
+        public static BaseWrapperDrawable Create(InfoBoxAttribute attr, IOrderedDrawable drawable)
         {
             var member = MemberHelper.Create<bool>(drawable.Host, attr.VisibleIf);
             return new InfoBoxWrapper(drawable)

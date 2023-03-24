@@ -4,15 +4,17 @@ using UnityEngine;
 
 namespace Rhinox.GUIUtils.Editor
 {
-    public abstract class WrapperDrawable : BaseDrawable
+    public abstract class BaseWrapperDrawable : BaseDrawable
     {
         protected IOrderedDrawable _innerDrawable;
 
         public override float ElementHeight => _innerDrawable.ElementHeight;
 
+        public override bool IsVisible => _innerDrawable.IsVisible;
+
         public override string LabelString => string.Empty; // Not used in wrapper
 
-        protected WrapperDrawable(IOrderedDrawable drawable)
+        protected BaseWrapperDrawable(IOrderedDrawable drawable)
         {
             if (drawable == null) throw new ArgumentNullException(nameof(drawable));
             _innerDrawable = drawable;
