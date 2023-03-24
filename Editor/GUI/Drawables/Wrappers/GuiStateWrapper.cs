@@ -41,7 +41,7 @@ namespace Rhinox.GUIUtils.Editor
         [WrapDrawer(typeof(EnableIfAttribute), -10500)]
         public static WrapperDrawable Create(EnableIfAttribute attr, IOrderedDrawable drawable)
         {
-            var member = PropertyMemberHelper.Create<bool>(drawable.Host, attr.MemberName);
+            var member = MemberHelper.Create<bool>(drawable.Host, attr.MemberName);
             return new GuiStateWrapper(drawable)
             {
                 _state = true,
@@ -52,7 +52,7 @@ namespace Rhinox.GUIUtils.Editor
         [WrapDrawer(typeof(DisableIfAttribute), -10500)]
         public static WrapperDrawable Create(DisableIfAttribute attr, IOrderedDrawable drawable)
         {
-            var member = PropertyMemberHelper.Create<bool>(drawable.Host, attr.MemberName);
+            var member = MemberHelper.Create<bool>(drawable.Host, attr.MemberName);
             return new GuiStateWrapper(drawable)
             {
                 _state = false,

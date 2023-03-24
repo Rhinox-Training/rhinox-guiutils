@@ -36,7 +36,7 @@ namespace Rhinox.GUIUtils.Editor
         [WrapDrawer(typeof(ShowIfAttribute), -11000)]
         public static WrapperDrawable Create(ShowIfAttribute attr, IOrderedDrawable drawable)
         {
-            var member = PropertyMemberHelper.Create<bool>(drawable.Host, attr.MemberName);
+            var member = MemberHelper.Create<bool>(drawable.Host, attr.MemberName);
             return new HideWrapper(drawable)
             {
                 _state = true,
@@ -47,7 +47,7 @@ namespace Rhinox.GUIUtils.Editor
         [WrapDrawer(typeof(HideIfAttribute), -11000)]
         public static WrapperDrawable Create(HideIfAttribute attr, IOrderedDrawable drawable)
         {
-            var member = PropertyMemberHelper.Create<bool>(drawable.Host, attr.MemberName);
+            var member = MemberHelper.Create<bool>(drawable.Host, attr.MemberName);
             return new HideWrapper(drawable)
             {
                 _state = false,

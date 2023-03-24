@@ -1,8 +1,9 @@
+using System;
 using UnityEditor;
 
 namespace Rhinox.GUIUtils.Editor
 {
-    public static class PropertyMemberHelper
+    public static class MemberHelper
     {
         public static IPropertyMemberHelper<T> Create<T>(object target, string input)
         {
@@ -20,5 +21,11 @@ namespace Rhinox.GUIUtils.Editor
         {
             return new GenericPropertyMemberHelper<T>(target, input);
         }
+        
+        public static MethodMemberHelper CreateMethod(object target, string input)
+        {
+            return new MethodMemberHelper(target, input);
+        }
+
     }
 }
