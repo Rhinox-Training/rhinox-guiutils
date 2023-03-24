@@ -590,7 +590,7 @@ namespace Rhinox.GUIUtils.Editor
             catch (Exception e)
             {
                 EditorGUILayout.HelpBox(e.ToString(), MessageType.Error);
-                Debug.LogError(e.ToString());
+                Debug.LogException(e);
             }
         }
 

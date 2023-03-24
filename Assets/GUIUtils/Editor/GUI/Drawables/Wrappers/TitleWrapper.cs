@@ -8,9 +8,22 @@ namespace Rhinox.GUIUtils.Editor
     {
         public string _title;
         public bool _bold;
+        public TitleAlignments _alignment;
+
+        private GUIStyle _style;
 
         public TitleWrapper(IOrderedDrawable drawable) : base(drawable)
         {
+            _style = _bold ? CustomGUIStyles.BoldTitle : CustomGUIStyles.Title;
+
+            if (_alignment == TitleAlignments.Left) return;
+            
+            _style = new GUIStyle(_style);
+
+            if (_alignment == TitleAlignments.Right)
+                _style.alignment = TextAnchor.MiddleRight;
+            else if (_alignment == TitleAlignments.Centered)
+                _style.alignment = TextAnchor.MiddleCenter;
         }
 
         protected override void DrawInner(GUIContent label)
@@ -41,7 +54,8 @@ namespace Rhinox.GUIUtils.Editor
             return new TitleWrapper(drawable)
             {
                 _title = attr.Title,
-                _bold = attr.Bold
+                _bold = attr.Bold,
+                _alignment = attr.TitleAlignment
             };
         }
     }
