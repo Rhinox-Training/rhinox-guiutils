@@ -15,7 +15,7 @@ namespace Rhinox.GUIUtils.Editor
     {
         private const int MAX_DEPTH = 10;
         
-        public static IOrderedDrawable CreateDrawableForProperty(FieldInfo field, SerializedProperty prop)
+        private static IOrderedDrawable CreateDrawableForProperty(FieldInfo field, SerializedProperty prop)
         {
             IOrderedDrawable drawable;
             if (field.FieldType.InheritsFrom(typeof(IList)))
@@ -26,13 +26,6 @@ namespace Rhinox.GUIUtils.Editor
             if (propOrder != null)
                 drawable.Order = propOrder.Order;
             
-            // Check for decorators
-            foreach (var attr in field.GetCustomAttributes())
-            {
-                if (DrawableWrapperFactory.TryCreateWrapper(attr, drawable, out WrapperDrawable wrappedDrawable))
-                    drawable = wrappedDrawable;
-            }
-
             return drawable;
         }
 
@@ -111,8 +104,17 @@ namespace Rhinox.GUIUtils.Editor
                     AttributeParser.Parse(fieldData.FieldInfo, ref fieldDrawable);
                 }
 
-                if (fieldDrawable != null)
-                    drawables.Add(fieldDrawable);
+                if (fieldDrawable == null)
+                    continue;
+                
+                // Check for decorators
+                foreach (var attr in fieldData.FieldInfo.GetCustomAttributes())
+                {
+                    if (DrawableWrapperFactory.TryCreateWrapper(attr, fieldDrawable, out WrapperDrawable wrappedDrawable))
+                        fieldDrawable = wrappedDrawable;
+                }
+
+                drawables.Add(fieldDrawable);
             }
 
             var properties = type.GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
@@ -124,8 +126,17 @@ namespace Rhinox.GUIUtils.Editor
                 {
                     var propVal = propertyMember.GetValue(instanceVal);
                     var propertyDrawable = CreateCompositeMemberForInstance(propVal, depth, propertyMember);
-                    if (propertyDrawable != null)
-                        drawables.Add(propertyDrawable);
+                    if (propertyDrawable == null)
+                        continue;
+                    
+                    // Check for decorators
+                    foreach (var attr in propertyMember.GetCustomAttributes())
+                    {
+                        if (DrawableWrapperFactory.TryCreateWrapper(attr, propertyDrawable, out WrapperDrawable wrappedDrawable))
+                            propertyDrawable = wrappedDrawable;
+                    }
+
+                    drawables.Add(propertyDrawable);
                 }
             }
 
