@@ -23,6 +23,7 @@ namespace Rhinox.GUIUtils.Editor
         public DrawableButton(object obj, MethodInfo method, ButtonAttribute buttonAttr)
             : base(obj, method)
         {
+            Host = obj;
             _methodInfo = method;
             _buttonAttr = buttonAttr;
         }
