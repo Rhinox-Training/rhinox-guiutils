@@ -33,7 +33,7 @@ namespace Rhinox.GUIUtils.Editor
         protected bool ShouldDisable()
         {
             if (_stateMember == null)
-                return _state;
+                return !_state;
             
             return _stateMember.GetValue() != _state;
         }

@@ -42,21 +42,17 @@ namespace Rhinox.GUIUtils.Editor
         {
             OnPreDraw();
             
-            EditorGUI.BeginDisabledGroup(IsReadOnly);
+            eUtility.GuiBackgroundColor backgroundColorModifier =
+                Colour.HasValue ? new eUtility.GuiBackgroundColor(Colour.Value) : null;
             {
-                eUtility.GuiBackgroundColor backgroundColorModifier =
-                    Colour.HasValue ? new eUtility.GuiBackgroundColor(Colour.Value) : null;
+                eUtility.LabelWidth lblWidthModifier =
+                    LabelWidth.HasValue ? new eUtility.LabelWidth(LabelWidth.Value) : null;
                 {
-                    eUtility.LabelWidth lblWidthModifier =
-                        LabelWidth.HasValue ? new eUtility.LabelWidth(LabelWidth.Value) : null;
-                    {
-                        DrawInner(Label);
-                    }
-                    lblWidthModifier?.Dispose();
+                    DrawInner(Label);
                 }
-                backgroundColorModifier?.Dispose();
+                lblWidthModifier?.Dispose();
             }
-            EditorGUI.EndDisabledGroup();
+            backgroundColorModifier?.Dispose();
             
             OnPostDraw();
         }
@@ -65,21 +61,17 @@ namespace Rhinox.GUIUtils.Editor
         {
             OnPreDraw();
             
-            EditorGUI.BeginDisabledGroup(IsReadOnly);
+            eUtility.GuiBackgroundColor backgroundColorModifier =
+                Colour.HasValue ? new eUtility.GuiBackgroundColor(Colour.Value) : null;
             {
-                eUtility.GuiBackgroundColor backgroundColorModifier =
-                    Colour.HasValue ? new eUtility.GuiBackgroundColor(Colour.Value) : null;
+                eUtility.LabelWidth lblWidthModifier =
+                    LabelWidth.HasValue ? new eUtility.LabelWidth(LabelWidth.Value) : null;
                 {
-                    eUtility.LabelWidth lblWidthModifier =
-                        LabelWidth.HasValue ? new eUtility.LabelWidth(LabelWidth.Value) : null;
-                    {
-                        DrawInner(rect, Label);
-                    }
-                    lblWidthModifier?.Dispose();
+                    DrawInner(rect, Label);
                 }
-                backgroundColorModifier?.Dispose();
+                lblWidthModifier?.Dispose();
             }
-            EditorGUI.EndDisabledGroup();
+            backgroundColorModifier?.Dispose();
             
             OnPostDraw();
         }
