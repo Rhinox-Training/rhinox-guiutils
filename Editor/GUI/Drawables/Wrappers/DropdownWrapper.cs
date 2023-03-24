@@ -92,11 +92,7 @@ namespace Rhinox.GUIUtils.Editor
         [WrapDrawer(typeof(ValueDropdownAttribute))]
         public static WrapperDrawable Create(ValueDropdownAttribute attr, IOrderedDrawable drawable)
         {
-            IPropertyMemberHelper<IEnumerable> member;
-            if (drawable.Host is SerializedProperty prop)
-                member = new SerializedPropertyMemberHelper<IEnumerable>(prop, attr.MemberName);
-            else
-                member = new GenericPropertyMemberHelper<IEnumerable>(drawable.Host, attr.MemberName);
+            var member = PropertyMemberHelper.Create<IEnumerable>(drawable.Host, attr.MemberName);
             return new DropdownWrapper(drawable)
             {
                 _member = member

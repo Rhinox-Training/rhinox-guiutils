@@ -26,26 +26,20 @@ namespace Rhinox.GUIUtils.Editor
                 _style.alignment = TextAnchor.MiddleCenter;
         }
 
-        protected override void DrawInner(GUIContent label)
+        protected override void OnPreDraw()
         {
+            base.OnPreDraw();
+            
             TryDrawTitle();
-            base.DrawInner(label);
-        }
-
-        protected override void DrawInner(Rect rect, GUIContent label)
-        {
-            TryDrawTitle();
-            base.DrawInner(rect, label);
         }
 
         private void TryDrawTitle()
         {
-            if (!string.IsNullOrEmpty(_title))
-            {
-                EditorGUILayout.LabelField(_title, _bold ? CustomGUIStyles.BoldTitle : CustomGUIStyles.Title);
-                CustomEditorGUI.HorizontalLine(CustomGUIStyles.LightBorderColor, thickness: 1);
-                EditorGUILayout.Space(3.0f);
-            }
+            if (string.IsNullOrEmpty(_title)) return;
+            
+            EditorGUILayout.LabelField(_title, _bold ? CustomGUIStyles.BoldTitle : CustomGUIStyles.Title);
+            CustomEditorGUI.HorizontalLine(CustomGUIStyles.LightBorderColor, thickness: 1);
+            EditorGUILayout.Space(3.0f);
         }
 
         [WrapDrawer(typeof(TitleAttribute), -10000)]
