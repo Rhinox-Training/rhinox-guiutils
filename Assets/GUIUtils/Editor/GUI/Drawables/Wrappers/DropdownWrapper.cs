@@ -21,6 +21,7 @@ namespace Rhinox.GUIUtils.Editor
         private GUIContent _defaultItem = new GUIContent("<None>");
 
         private Rect _dropdownRect;
+        private bool _valueChanged;
 
         public DropdownWrapper(IOrderedDrawable drawable) : base(drawable)
         {
@@ -29,6 +30,8 @@ namespace Rhinox.GUIUtils.Editor
         
         protected override void DrawInner(GUIContent label)
         {
+            OnPreDraw();
+            
             if (_innerDrawable is BaseDrawable inner)
                 label = inner.Label;
 
@@ -45,10 +48,14 @@ namespace Rhinox.GUIUtils.Editor
                 MakeMenuItems(_dropdownRect);
             
             EditorGUILayout.EndHorizontal();
+            
+            OnPostDraw();
         }
         
         protected override void DrawInner(Rect rect, GUIContent label)
         {
+            OnPreDraw();
+            
             if (_innerDrawable is BaseDrawable inner)
                 label = inner.Label;
 
@@ -56,6 +63,19 @@ namespace Rhinox.GUIUtils.Editor
             
             if (EditorGUI.DropdownButton(rect, _activeItem, FocusType.Keyboard))
                 MakeMenuItems(rect);
+
+            OnPostDraw();
+        }
+
+        protected override void OnPostDraw()
+        {
+            base.OnPostDraw();
+            
+            if (_valueChanged)
+            {
+                GUI.changed = true;
+                _valueChanged = false;
+            }
         }
 
         private void MakeMenuItems(Rect rect)
@@ -87,12 +107,13 @@ namespace Rhinox.GUIUtils.Editor
             }
             
             _info.Invoke(_innerDrawable, new[] { value });
+            _valueChanged = true;
         }
 
         [WrapDrawer(typeof(ValueDropdownAttribute))]
         public static WrapperDrawable Create(ValueDropdownAttribute attr, IOrderedDrawable drawable)
         {
-            var member = PropertyMemberHelper.Create<IEnumerable>(drawable.Host, attr.MemberName);
+            var member = MemberHelper.Create<IEnumerable>(drawable.Host, attr.MemberName);
             return new DropdownWrapper(drawable)
             {
                 _member = member
