@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace Rhinox.GUIUtils.Editor
@@ -9,12 +11,18 @@ namespace Rhinox.GUIUtils.Editor
         public override float ElementHeight => _innerDrawable.ElementHeight;
 
         public override string LabelString => string.Empty; // Not used in wrapper
-        
+
         protected WrapperDrawable(IOrderedDrawable drawable)
         {
+            if (drawable == null) throw new ArgumentNullException(nameof(drawable));
             _innerDrawable = drawable;
             Host = _innerDrawable.Host;
             Order = _innerDrawable.Order;
+        }
+
+        public override ICollection<TAttribute> GetDrawableAttributes<TAttribute>()
+        {
+            return _innerDrawable.GetDrawableAttributes<TAttribute>();
         }
         
         protected override void DrawInner(GUIContent label)
