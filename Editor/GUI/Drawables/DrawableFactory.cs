@@ -76,6 +76,8 @@ namespace Rhinox.GUIUtils.Editor
             
             if (type == typeof(GameObject))
                 return new List<IOrderedDrawable>() {new DrawableUnityObject(instanceVal, property.FindFieldInfo())};
+            if (type.InheritsFrom<UnityEngine.Object>())
+                return new List<IOrderedDrawable>() {new DrawableUnityProperty(property, property.FindFieldInfo())};
             
             var visibleFields = property.EnumerateEditorVisibleFields();
             return DrawableMembersFor(instanceVal, type, visibleFields, depth);
