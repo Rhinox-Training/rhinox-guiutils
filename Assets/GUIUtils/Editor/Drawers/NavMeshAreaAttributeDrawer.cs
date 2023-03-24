@@ -41,8 +41,10 @@ namespace Rhinox.GUIUtils.Editor
 
                 if (!_areaNameByIndex.ContainsKey(property.intValue))
                     property.intValue = -1;
-                
-                if (EditorGUI.DropdownButton(position, GUIContentHelper.TempContent(property.intValue == -1 ? "<Select a value>" : _areaNameByIndex[property.intValue]), FocusType.Passive, EditorStyles.miniPullDown))
+
+                EditorGUILayout.BeginHorizontal();
+                var controlRect = EditorGUI.PrefixLabel(position, label);
+                if (EditorGUI.DropdownButton(controlRect, GUIContentHelper.TempContent(property.intValue == -1 ? "<Select a value>" : _areaNameByIndex[property.intValue]), FocusType.Passive, EditorStyles.miniPullDown))
                 {
                     var menu = new GenericMenu();
                     
@@ -54,8 +56,9 @@ namespace Rhinox.GUIUtils.Editor
                             property.serializedObject.ApplyModifiedProperties();
                         });
                     }
-                    menu.DropDown(position);
+                    menu.DropDown(controlRect);
                 }
+                EditorGUILayout.EndHorizontal();
             }
         }
     }
