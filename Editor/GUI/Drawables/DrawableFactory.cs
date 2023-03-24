@@ -22,10 +22,17 @@ namespace Rhinox.GUIUtils.Editor
                 drawable = new DrawableList(prop);
             else
                 drawable = new DrawableUnityProperty(prop, field);
-
             var propOrder = field.GetCustomAttribute<PropertyOrderAttribute>();
             if (propOrder != null)
                 drawable.Order = propOrder.Order;
+            
+            // Check for decorators
+            foreach (var attr in field.GetCustomAttributes())
+            {
+                if (DrawableWrapperFactory.TryCreateWrapper(attr, drawable, out WrapperDrawable wrappedDrawable))
+                    drawable = wrappedDrawable;
+            }
+
             return drawable;
         }
 
@@ -127,14 +134,8 @@ namespace Rhinox.GUIUtils.Editor
 
             return drawables;
         }
-
-
-        public static List<IOrderedDrawable> CreateDrawableMembersFor(SerializedObject obj, Type t)
-        {
-            return CreateDrawableMembersFor(obj, t, 0);
-        }
-
-        private static List<IOrderedDrawable> CreateDrawableMembersFor(SerializedObject obj, Type type, int depth)
+        
+        public static List<IOrderedDrawable> CreateDrawableMembersFor(SerializedObject obj, Type type)
         {
             object instanceVal = obj.targetObject;
             
@@ -142,7 +143,7 @@ namespace Rhinox.GUIUtils.Editor
                 return new List<IOrderedDrawable>() {new DrawableUnityObject(instanceVal, null)};
             
             var visibleFields = obj.EnumerateEditorVisibleFields();
-            return DrawableMembersFor(instanceVal, type, visibleFields, depth);
+            return DrawableMembersFor(instanceVal, type, visibleFields, 0);
         }
 
         public static List<IOrderedDrawable> CreateDrawableMembersFor(object instance, Type t)
