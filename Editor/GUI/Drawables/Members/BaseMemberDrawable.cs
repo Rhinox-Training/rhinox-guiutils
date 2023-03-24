@@ -28,26 +28,18 @@ namespace Rhinox.GUIUtils.Editor
             _info = info;
         }
 
-        protected override void Initialize()
-        {
-            base.Initialize();
-            IsReadOnly = AttributeParser.ParseReadOnly(_info);
-        }
-
         protected override void DrawInner(GUIContent label)
         {
             var smartVal = GetSmartValue();
             var newVal = DrawValue(Host, smartVal);
-            if (!IsReadOnly)
-                SetSmartValue(newVal);
+            SetSmartValue(newVal);
         }
 
         protected override void DrawInner(Rect rect, GUIContent label)
         {
             var smartVal = GetSmartValue();
             var newVal = DrawValue(rect, Host, smartVal);
-            if (!IsReadOnly)
-                SetSmartValue(newVal);
+            SetSmartValue(newVal);
         }
 
         protected T GetSmartValue() => (T) _info.GetValue(Host);
