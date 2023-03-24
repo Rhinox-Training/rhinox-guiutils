@@ -182,7 +182,7 @@ namespace Rhinox.GUIUtils.Editor
 
         protected override void OnAddElement(Rect rect1)
         {
-            if (!HasMultipleTypeOptions)
+            if (!HasMultipleTypeOptions || this.m_ElementType.InheritsFrom<UnityEngine.Object>())
             {
                 base.OnAddElement(rect1);
                 return;
@@ -198,8 +198,15 @@ namespace Rhinox.GUIUtils.Editor
                         ++serializedProperty.arraySize;
                         var serializedPropElement = serializedProperty.GetArrayElementAtIndex(serializedProperty.arraySize - 1);
                         var hostInfo = serializedPropElement.GetHostInfo();
-                        var instance = Activator.CreateInstance(option);
-                        hostInfo.SetValue(instance);
+                        if (option.InheritsFrom(typeof(UnityEngine.Object)))
+                        {
+                            hostInfo.SetValue((UnityEngine.Object)null);
+                        }
+                        else
+                        {
+                            var instance = Activator.CreateInstance(option);
+                            hostInfo.SetValue(instance);
+                        }
                     }
                     else
                     {
@@ -218,7 +225,7 @@ namespace Rhinox.GUIUtils.Editor
 
         protected override GUIContent GetAddIcon()
         {
-            if (HasMultipleTypeOptions)
+            if (HasMultipleTypeOptions && !this.m_ElementType.InheritsFrom<UnityEngine.Object>())
                 return s_Defaults.iconToolbarPlusMore;
             return base.GetAddIcon();
         }
