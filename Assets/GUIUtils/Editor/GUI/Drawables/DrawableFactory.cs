@@ -173,15 +173,22 @@ namespace Rhinox.GUIUtils.Editor
                 }
 
                 IOrderedDrawable resultingMember = null;
-                if (!TryCreate(instance, memberInfo, out var drawableMember) && depth < MAX_DEPTH)
-                {
-                    resultingMember = CreateCompositeMemberForInstance(instance, depth, memberInfo);
-                }
-                else
+                if (TryCreate(instance, memberInfo, out var drawableMember) || depth >= MAX_DEPTH)
                     resultingMember = drawableMember;
+                else
+                    resultingMember = CreateCompositeMemberForInstance(instance, depth, memberInfo);
 
-                if (resultingMember != null)
-                    drawableMembers.Add(resultingMember);
+                if (resultingMember == null)
+                    continue;
+
+                // Check for decorators
+                foreach (var attr in memberInfo.GetCustomAttributes())
+                {
+                    if (DrawableWrapperFactory.TryCreateWrapper(attr, resultingMember, out WrapperDrawable wrappedDrawable))
+                        resultingMember = wrappedDrawable;
+                }
+
+                drawableMembers.Add(resultingMember);
             }
             
             
@@ -216,8 +223,7 @@ namespace Rhinox.GUIUtils.Editor
             return list;
         }
 
-        private static IOrderedDrawable CreateCompositeMemberForInstance(object instance, int depth,
-            MemberInfo memberInfo)
+        private static IOrderedDrawable CreateCompositeMemberForInstance(object instance, int depth, MemberInfo memberInfo)
         {
             IOrderedDrawable resultingMember;
             try
@@ -228,14 +234,12 @@ namespace Rhinox.GUIUtils.Editor
                 DrawableGroupingHelper.Process(ref subdrawables);
                 var composite = new CompositeDrawableMember();
                 var attributes = memberInfo.GetCustomAttributes<Attribute>();
-                if (attributes != null)
+
+                foreach (var attr in attributes)
                 {
-                    foreach (var attr in attributes)
-                    {
-                        if (attr is PropertyGroupAttribute groupAttribute)
-                            composite.Order = groupAttribute.Order;
-                        composite.AddAttribute(attr);
-                    }
+                    if (attr is PropertyGroupAttribute groupAttribute)
+                        composite.Order = groupAttribute.Order;
+                    composite.AddAttribute(attr);
                 }
 
                 composite.AddRange(subdrawables);
@@ -286,6 +290,12 @@ namespace Rhinox.GUIUtils.Editor
             if (type == typeof(bool))
             {
                 drawableMember = new BoolDrawableField(instance, info);
+                return true;
+            }
+            
+            if (type == typeof(Type))
+            {
+                drawableMember = new UndrawableField<Type>(instance, info);
                 return true;
             }
 

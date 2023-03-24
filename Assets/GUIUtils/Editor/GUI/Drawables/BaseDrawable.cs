@@ -22,7 +22,9 @@ namespace Rhinox.GUIUtils.Editor
         public Color? Colour { get; protected set; }
         public GUIContent Label => HideLabel || string.IsNullOrEmpty(LabelString) ? GUIContent.none : GUIContentHelper.TempContent(LabelString);
         
-        protected abstract string LabelString { get; }
+        public abstract string LabelString { get; }
+        
+        public object Host { get; protected set; }
         
         public virtual ICollection<TAttribute> GetDrawableAttributes<TAttribute>() 
             where TAttribute : Attribute
@@ -88,7 +90,7 @@ namespace Rhinox.GUIUtils.Editor
         }
         
         protected abstract void DrawInner(GUIContent label);
-        protected abstract void DrawInner(Rect label, GUIContent guiContent);
+        protected abstract void DrawInner(Rect rect, GUIContent label);
 
         /// <summary>
         /// Gets called predraw to refresh fields
@@ -137,7 +139,7 @@ namespace Rhinox.GUIUtils.Editor
             if (!string.IsNullOrEmpty(Title))
             {
                 EditorGUILayout.LabelField(Title, CustomGUIStyles.BoldTitle);
-                CustomEditorGUI.HorizontalLine(new Color(200, 200, 200));
+                CustomEditorGUI.HorizontalLine(CustomGUIStyles.LightBorderColor);
             }
         }
     }

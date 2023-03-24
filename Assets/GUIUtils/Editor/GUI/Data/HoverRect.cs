@@ -1,8 +1,9 @@
+using Rhinox.Lightspeed;
 using UnityEngine;
 
 namespace Rhinox.GUIUtils.Editor
 {
-    public class HoverRect
+    public class HoverRect 
     {
         public Color? HoverColor;
         public Color? ClickColor;
@@ -16,7 +17,7 @@ namespace Rhinox.GUIUtils.Editor
 
         public bool IsHovering(Rect rect, out bool changed)
         {
-            if (rect.width > 1)
+            if (rect.IsValid())
                 _cachedRect = rect;
 
             var eType = Event.current.type;
