@@ -32,18 +32,20 @@ namespace Rhinox.GUIUtils.Editor
         {
             var smartVal = GetSmartValue();
             var newVal = DrawValue(Host, smartVal);
-            SetSmartValue(newVal);
+            if (!object.Equals(newVal, smartVal))
+                SetSmartValue(newVal);
         }
 
         protected override void DrawInner(Rect rect, GUIContent label)
         {
             var smartVal = GetSmartValue();
             var newVal = DrawValue(rect, Host, smartVal);
-            SetSmartValue(newVal);
+            if (!object.Equals(newVal, smartVal))
+                SetSmartValue(newVal);
         }
 
         protected T GetSmartValue() => (T) _info.GetValue(Host);
-        protected void SetSmartValue(T val) => _info.SetValue(Host, val);
+        protected void SetSmartValue(T val) => _info.TrySetValue(Host, val);
 
         protected abstract T DrawValue(object instance, T memberVal);
         protected abstract T DrawValue(Rect rect, object instance, T memberVal);

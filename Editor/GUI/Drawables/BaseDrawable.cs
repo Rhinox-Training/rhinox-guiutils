@@ -13,12 +13,8 @@ namespace Rhinox.GUIUtils.Editor
         public float Order { get; set; }
         public virtual float ElementHeight => EditorGUIUtility.singleLineHeight;
         
-        public bool IsReadOnly { get; protected set; }
         public bool HideLabel { get; protected set; }
-
-        public float? LabelWidth { get; protected set; }
         
-        public Color? Colour { get; protected set; }
         public GUIContent Label => HideLabel || string.IsNullOrEmpty(LabelString) ? GUIContent.none : GUIContentHelper.TempContent(LabelString);
         
         public abstract string LabelString { get; }
@@ -42,17 +38,7 @@ namespace Rhinox.GUIUtils.Editor
         {
             OnPreDraw();
             
-            eUtility.GuiBackgroundColor backgroundColorModifier =
-                Colour.HasValue ? new eUtility.GuiBackgroundColor(Colour.Value) : null;
-            {
-                eUtility.LabelWidth lblWidthModifier =
-                    LabelWidth.HasValue ? new eUtility.LabelWidth(LabelWidth.Value) : null;
-                {
-                    DrawInner(Label);
-                }
-                lblWidthModifier?.Dispose();
-            }
-            backgroundColorModifier?.Dispose();
+            DrawInner(Label);
             
             OnPostDraw();
         }
@@ -61,17 +47,7 @@ namespace Rhinox.GUIUtils.Editor
         {
             OnPreDraw();
             
-            eUtility.GuiBackgroundColor backgroundColorModifier =
-                Colour.HasValue ? new eUtility.GuiBackgroundColor(Colour.Value) : null;
-            {
-                eUtility.LabelWidth lblWidthModifier =
-                    LabelWidth.HasValue ? new eUtility.LabelWidth(LabelWidth.Value) : null;
-                {
-                    DrawInner(rect, Label);
-                }
-                lblWidthModifier?.Dispose();
-            }
-            backgroundColorModifier?.Dispose();
+            DrawInner(rect, Label);
             
             OnPostDraw();
         }
@@ -102,19 +78,7 @@ namespace Rhinox.GUIUtils.Editor
             if (orderAttr != null)
                 Order = orderAttr.Order;
 
-            IsReadOnly = !GetDrawableAttributes<ReadOnlyAttribute>().IsNullOrEmpty();
-
-            var labelWidth = GetDrawableAttributes<LabelWidthAttribute>().FirstOrDefault();
-            if (labelWidth != null)
-                LabelWidth = labelWidth.Width;
-            else
-                LabelWidth = null;
-
             HideLabel = !GetDrawableAttributes<HideLabelAttribute>().IsNullOrEmpty();
-          
-            var colour = GetDrawableAttributes<GUIColorAttribute>().FirstOrDefault();
-            if (colour != null)
-                Colour = colour.Color;
         }
     }
 }
