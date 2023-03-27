@@ -15,7 +15,7 @@ namespace Rhinox.GUIUtils.Editor
         
         public bool HideLabel { get; protected set; }
         
-        public GUIContent Label => HideLabel || string.IsNullOrEmpty(LabelString) ? GUIContent.none : GUIContentHelper.TempContent(LabelString);
+        public virtual GUIContent Label => HideLabel || string.IsNullOrEmpty(LabelString) ? null : GUIContentHelper.TempContent(LabelString);
         
         public abstract string LabelString { get; }
         
@@ -29,20 +29,20 @@ namespace Rhinox.GUIUtils.Editor
             _initialized = false;
         }
 
-        public void Draw()
+        public void Draw(GUIContent label)
         {
             OnPreDraw();
             
-            DrawInner(Label);
+            DrawInner(label);
             
             OnPostDraw();
         }
 
-        public void Draw(Rect rect)
+        public void Draw(Rect rect, GUIContent label)
         {
             OnPreDraw();
             
-            DrawInner(rect, Label);
+            DrawInner(rect, label);
             
             OnPostDraw();
         }

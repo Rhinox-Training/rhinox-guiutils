@@ -15,14 +15,14 @@ namespace Rhinox.GUIUtils.Editor
             
         }
         
-        protected override UnityEngine.Object DrawValue(object instance, UnityEngine.Object memberVal)
+        protected override UnityEngine.Object DrawValue(GUIContent label, UnityEngine.Object memberVal)
         {
-            return EditorGUILayout.ObjectField(Label, memberVal, _info.GetReturnType(), AllowSceneObjects);
+            return EditorGUILayout.ObjectField(label, memberVal, _info.GetReturnType(), AllowSceneObjects);
         }
 
-        protected override UnityEngine.Object DrawValue(Rect rect, object instance, UnityEngine.Object memberVal)
+        protected override UnityEngine.Object DrawValue(Rect rect, GUIContent label, UnityEngine.Object memberVal)
         {
-            return EditorGUI.ObjectField(rect, Label, memberVal, _info.GetReturnType(), AllowSceneObjects);
+            return EditorGUI.ObjectField(rect, label, memberVal, _info.GetReturnType(), AllowSceneObjects);
         }
     }
 }

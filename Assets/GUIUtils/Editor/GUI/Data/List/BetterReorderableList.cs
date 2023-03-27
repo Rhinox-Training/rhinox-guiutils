@@ -66,7 +66,7 @@ namespace Rhinox.GUIUtils.Editor
             bool displayAddButton = true,
             bool displayRemoveButton = true)
         {
-            this.InitList((SerializedObject) null, (SerializedProperty) null, elements, 
+            this.InitList(null, null, elements, 
                 draggable, displayHeader,
                 displayAddButton, displayRemoveButton);
         }
@@ -79,7 +79,7 @@ namespace Rhinox.GUIUtils.Editor
             bool displayAddButton = true,
             bool displayRemoveButton = true)
         {
-            this.InitList(serializedObject, elements, (IList) null, 
+            this.InitList(serializedObject, elements, null, 
                 draggable, displayHeader, 
                 displayAddButton, displayRemoveButton);
         }
@@ -120,39 +120,39 @@ namespace Rhinox.GUIUtils.Editor
                 this.m_Draggable = false;
             if (this.m_Elements == null || this.m_Elements.isArray)
                 return;
-            Debug.LogError((object) "Input elements should be an Array SerializedProperty");
+            Debug.LogError("Input elements should be an Array SerializedProperty");
         }
 
         public SerializedProperty serializedProperty
         {
-            get => this.m_Elements;
-            set => this.m_Elements = value;
+            get => m_Elements;
+            set => m_Elements = value;
         }
 
         public IList list
         {
-            get => this.m_ElementList;
-            set => this.m_ElementList = value;
+            get => m_ElementList;
+            set => m_ElementList = value;
         }
 
         public int index
         {
-            get => this.m_ActiveElement;
-            set => this.m_ActiveElement = value;
+            get => m_ActiveElement;
+            set => m_ActiveElement = value;
         }
 
-        private float listElementTopPadding => (double) this.headerHeight > 5.0 ? 4f : 1f;
+        private float listElementTopPadding => headerHeight > 5.0 ? 4f : 1f;
 
         public bool draggable
         {
-            get => this.m_Draggable;
-            set => this.m_Draggable = value;
+            get => m_Draggable;
+            set => m_Draggable = value;
         }
 
         private Rect GetContentRect(Rect rect)
         {
             Rect contentRect = rect;
-            if (this.draggable)
+            if (draggable)
                 contentRect.xMin += 20f;
             else
                 contentRect.xMin += 6f;
@@ -160,7 +160,7 @@ namespace Rhinox.GUIUtils.Editor
             return contentRect;
         }
 
-        private float GetElementYOffset(int index) => this.GetElementYOffset(index, -1);
+        private float GetElementYOffset(int index) => GetElementYOffset(index, -1);
 
         private float GetElementYOffset(int index, int skipIndex)
         {

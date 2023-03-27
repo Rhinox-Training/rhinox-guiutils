@@ -18,7 +18,9 @@ namespace Rhinox.GUIUtils.Editor
         
         private ICollection<Type> m_AddOptionTypes;
         private int _drawPageIndex;
-        
+
+        private static Dictionary<Type, TypeCache.TypeCollection> _typeOptionsByType = new Dictionary<Type, TypeCache.TypeCollection>();
+
         private bool HasMultipleTypeOptions
         {
             get 
@@ -70,11 +72,14 @@ namespace Rhinox.GUIUtils.Editor
                 var options = new HashSet<Type>();
                 if (!m_ElementType.IsAbstract)
                     options.Add(this.m_ElementType);
-                var types = AppDomain.CurrentDomain.GetAssemblies().SelectMany(x => x.GetTypes())
-                    .Where(x => x.InheritsFrom(this.m_ElementType))
-                    .Where(x => !x.IsAbstract)
-                    .ToArray();
-                options.AddRange(types);
+                if (!_typeOptionsByType.ContainsKey(m_ElementType))
+                    _typeOptionsByType[m_ElementType] = TypeCache.GetTypesDerivedFrom(m_ElementType);
+                
+                foreach (var t in _typeOptionsByType[m_ElementType])
+                {
+                    if (!t.IsAbstract)
+                        options.Add(t);
+                }
                 this.m_AddOptionTypes = options;
             }
             else

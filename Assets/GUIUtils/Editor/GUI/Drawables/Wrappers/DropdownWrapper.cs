@@ -80,10 +80,10 @@ namespace Rhinox.GUIUtils.Editor
 
         private void MakeMenuItems(Rect rect)
         {
-            var options = _member.ForceGetValue();
+            var options = _member.ForceGetValue().Cast<IValueDropdownItem>().ToArray();
             var menu = new GenericMenu();
 
-            foreach (var item in options.Cast<IValueDropdownItem>())
+            foreach (var item in options)
             {
                 var text = item.GetText();
                 menu.AddItem(text, () =>
@@ -92,6 +92,9 @@ namespace Rhinox.GUIUtils.Editor
                     _activeItem = new GUIContent(text);
                 });
             }
+
+            if (!options.Any())
+                menu.AddDisabledItem(new GUIContent("No items..."), false);
             
             menu.DropDown(rect);
         }

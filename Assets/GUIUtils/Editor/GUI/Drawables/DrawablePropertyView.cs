@@ -132,7 +132,7 @@ namespace Rhinox.GUIUtils.Editor
             {
                 if (drawable == null)
                     continue;
-                drawable.Draw();
+                drawable.Draw(drawable.Label);
             }
 
             OnPostDraw();
@@ -150,7 +150,7 @@ namespace Rhinox.GUIUtils.Editor
                 if (drawable == null)
                     continue;
                 rect.height = drawable.ElementHeight;
-                drawable.Draw(rect);
+                drawable.Draw(rect, drawable.Label);
                 rect.y += rect.height + 2.0f;
             }
             

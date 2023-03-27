@@ -7,13 +7,19 @@ namespace Rhinox.GUIUtils.Editor
 {
     public class ObjectCompositeDrawableMember : CompositeDrawableMember
     {
+        private GUIContent _label;
+
+        public override GUIContent Label => _label;
+
+        private bool _hasLabel = false;
+
         public override float ElementHeight
         {
             get
             {
                 var height = base.ElementHeight;
-                if (IsFoldout())
-                    height += EditorGUIUtility.singleLineHeight;
+                if (IsFoldout() && _hasLabel)
+                    height += EditorGUIUtility.singleLineHeight + 2;
                 return height;
             }
         }
@@ -21,19 +27,22 @@ namespace Rhinox.GUIUtils.Editor
         public ObjectCompositeDrawableMember(string name, float order = 0)
             : base(name, order)
         {
-            
+            _label = new GUIContent(name);
         }
 
-        public override void Draw()
+        public override void Draw(GUIContent label)
         {
-            var label = GUIContentHelper.TempContent(Name);
-            
             if (IsFoldout())
             {
-                GUILayout.Label(label);
+                _hasLabel = label != GUIContent.none;
+                if (_hasLabel)
+                {
+                    GUILayout.Label(label);
+                    GUILayout.Space(2);
+                }
                 ++EditorGUI.indentLevel;
                 
-                base.Draw();
+                base.Draw(GUIContent.none);
                 
                 --EditorGUI.indentLevel;
             }
@@ -42,28 +51,32 @@ namespace Rhinox.GUIUtils.Editor
                 GUILayout.BeginHorizontal(GUILayout.ExpandWidth(true));
 
                 EditorGUILayout.PrefixLabel(label);
-                
+
                 var indent = EditorGUI.indentLevel;
                 EditorGUI.indentLevel = 0;
-
-                base.Draw();
+                
+                base.Draw(GUIContent.none);
                 
                 EditorGUI.indentLevel = indent;
                 GUILayout.EndHorizontal();
             }
         }
 
-        public override void Draw(Rect rect)
+        public override void Draw(Rect rect, GUIContent label)
         {
             bool isFoldout = IsFoldout();
             var indentLevel = EditorGUI.indentLevel;
             
             if (isFoldout)
             {
-                var height = EditorGUIUtility.singleLineHeight;
-                var labelRect = rect.AlignTop(height);
-                EditorGUI.LabelField(labelRect, GUIContentHelper.TempContent(Name));
-                rect.yMin += height;
+                _hasLabel = label != GUIContent.none;
+                if (_hasLabel)
+                {
+                    var height = EditorGUIUtility.singleLineHeight + 2;
+                    var labelRect = rect.AlignTop(height);
+                    EditorGUI.LabelField(labelRect, label);
+                    rect.yMin += height;
+                }
 
                 ++EditorGUI.indentLevel;
                 rect = EditorGUI.IndentedRect(rect);
@@ -71,10 +84,10 @@ namespace Rhinox.GUIUtils.Editor
             }
             else
             {
-                rect = EditorGUI.PrefixLabel(rect, GUIContentHelper.TempContent(Name));
+                rect = EditorGUI.PrefixLabel(rect, label);
             }
             
-            base.Draw(rect);
+            base.Draw(rect, GUIContent.none);
 
             EditorGUI.indentLevel = indentLevel;
         }

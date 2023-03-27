@@ -11,15 +11,15 @@ namespace Rhinox.GUIUtils.Editor
             
         }
         
-        protected override T DrawValue(object instance, T memberVal)
+        protected override T DrawValue(GUIContent label, T memberVal)
         {
-            EditorGUILayout.PrefixLabel(Label);
+            EditorGUILayout.PrefixLabel(label);
             return memberVal;
         }
 
-        protected override T DrawValue(Rect rect, object instance, T memberVal)
+        protected override T DrawValue(Rect rect, GUIContent label, T memberVal)
         {
-            EditorGUI.PrefixLabel(rect, Label);
+            EditorGUI.PrefixLabel(rect, label);
             return memberVal;
         }
     }
