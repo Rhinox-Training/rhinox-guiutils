@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace Rhinox.GUIUtils.Editor
+namespace Rhinox.GUIUtils
 {
     /// <summary>
     /// Checks for whether there is a new frame; To do this properly it needs to called during a repaint
