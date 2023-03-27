@@ -9,16 +9,20 @@ namespace Rhinox.GUIUtils.Editor
     public class UnityObjectDrawableField : BaseMemberDrawable<UnityEngine.Object>
     {
         public bool AllowSceneObjects = true;
-        public UnityObjectDrawableField(object instance, MemberInfo info) : base(instance, info) { }
-        
-        protected override UnityEngine.Object DrawValue(object instance, UnityEngine.Object memberVal)
+
+        public UnityObjectDrawableField(object instance, MemberInfo info) : base(instance, info)
         {
-            return EditorGUILayout.ObjectField(memberVal, _info.GetReturnType(), AllowSceneObjects);
+            
+        }
+        
+        protected override UnityEngine.Object DrawValue(GUIContent label, UnityEngine.Object memberVal)
+        {
+            return EditorGUILayout.ObjectField(label, memberVal, _info.GetReturnType(), AllowSceneObjects);
         }
 
-        protected override UnityEngine.Object DrawValue(Rect rect, object instance, UnityEngine.Object memberVal)
+        protected override UnityEngine.Object DrawValue(Rect rect, GUIContent label, UnityEngine.Object memberVal)
         {
-            return EditorGUI.ObjectField(rect, memberVal, _info.GetReturnType(), AllowSceneObjects);
+            return EditorGUI.ObjectField(rect, label, memberVal, _info.GetReturnType(), AllowSceneObjects);
         }
     }
 }

@@ -13,7 +13,7 @@ namespace Rhinox.GUIUtils.Editor
 {
     public class DrawableButton : BaseEntityDrawable
     {
-        protected override string LabelString => null; // TODO: Button has no label?
+        public override string LabelString => null; // TODO: Button has no label?
         
         public string Name { get; }
 
@@ -23,6 +23,7 @@ namespace Rhinox.GUIUtils.Editor
         public DrawableButton(object obj, MethodInfo method, ButtonAttribute buttonAttr)
             : base(obj, method)
         {
+            Host = obj;
             _methodInfo = method;
             _buttonAttr = buttonAttr;
         }

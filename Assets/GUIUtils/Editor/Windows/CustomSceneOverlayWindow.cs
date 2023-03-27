@@ -1,19 +1,32 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using Rhinox.Lightspeed;
+using Rhinox.Lightspeed.Reflection;
 using UnityEditor;
+using UnityEditor.Compilation;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
 namespace Rhinox.GUIUtils.Editor
 {
+    public interface ICustomSceneOverlayWindow
+    {
+        bool IsActive { get; }
+        void DockWindow();
+        void UndockWindow();
+    }
+
     /// <summary>
     /// Base class for creating a scene overlay window (like navmesh)
     /// NOTE: It doesn't need to be an EditorWindow, I chose it that so it falls in line with other similar things
     /// </summary>
-    public abstract class CustomSceneOverlayWindow<T> : EditorWindow where T : CustomSceneOverlayWindow<T>
+    public abstract class CustomSceneOverlayWindow<T> : ICustomSceneOverlayWindow where T : CustomSceneOverlayWindow<T>, new()
     {
-        protected bool _active;
+        protected PersistentValue<bool> _active;
+
+        public bool IsActive => _active;
 
         private static T _window;
         protected static T Window => _window != null ? _window : GetWindowInstance();
@@ -22,11 +35,8 @@ namespace Rhinox.GUIUtils.Editor
 
         private static T GetWindowInstance()
         {
-            var objects = Resources.FindObjectsOfTypeAll<T>();
-            if (!objects.IsNullOrEmpty())
-                _window = objects[0];
-            else
-                _window = CreateInstance<T>();
+            if (_window == null)
+                _window = new T();
             _window.Initialize();
             return _window;
         }
@@ -35,7 +45,7 @@ namespace Rhinox.GUIUtils.Editor
 
         protected virtual void Initialize()
         {
-            titleContent = new GUIContent(Name);
+            _active = PersistentValue<bool>.Create(typeof(T), nameof(_active), false);
         }
 
         protected virtual void Setup()
@@ -50,10 +60,11 @@ namespace Rhinox.GUIUtils.Editor
 
         protected virtual bool HandleValidateWindow()
         {
+            
             Menu.SetChecked(GetMenuPath(), _active);
             return IsActivatable(); // returns whether it is clickable
         }
-
+        
         protected virtual bool IsActivatable()
         {
             return true;
@@ -63,7 +74,7 @@ namespace Rhinox.GUIUtils.Editor
         {
             Utility.SubscribeToSceneGui(ShowSceneGUI);
             Selection.selectionChanged += OnSelectionChanged;
-            _active = true;
+            _active.Set(true);
             RepaintSceneAndGameViews();
         }
 
@@ -71,7 +82,8 @@ namespace Rhinox.GUIUtils.Editor
         {
             Utility.UnsubscribeFromSceneGui(ShowSceneGUI);
             Selection.selectionChanged -= OnSelectionChanged;
-            _active = false;
+            _active.Set(false);
+            
             RepaintSceneAndGameViews();
         }
 
@@ -105,7 +117,38 @@ namespace Rhinox.GUIUtils.Editor
         private static void RepaintSceneAndGameViews()
         {
             SceneView.RepaintAll();
-            // PlayModeView.RepaintAll();
+        }
+    }
+    
+    internal static class OverlayWindowResurrector
+    {
+        [UnityEditor.Callbacks.DidReloadScripts]
+        private static void OnReloadScripts()
+        {
+            // Is Unity still compiling or reloading assets
+            if(EditorApplication.isCompiling || EditorApplication.isUpdating)
+                AssemblyReloadEvents.afterAssemblyReload += RecreateOverlayWindowsIfNeeded; // Delay some more
+            else
+                EditorApplication.delayCall += RecreateOverlayWindowsIfNeeded;
+        }
+
+        private static void RecreateOverlayWindowsIfNeeded()
+        {
+            AssemblyReloadEvents.afterAssemblyReload -= RecreateOverlayWindowsIfNeeded;
+
+            var types = AppDomain.CurrentDomain.GetDefinedTypesOfType<ICustomSceneOverlayWindow>();
+
+            foreach (var type in types)
+            {
+                var supertype = typeof(CustomSceneOverlayWindow<>).MakeGenericType(type);
+                var prop = supertype.GetProperty("Window",
+                    BindingFlags.Static | BindingFlags.FlattenHierarchy | BindingFlags.NonPublic);
+
+                var window = prop.GetGetMethod(true).Invoke(null, null) as ICustomSceneOverlayWindow;
+                
+                if (window.IsActive)
+                    window.DockWindow();
+            }
         }
     }
 }

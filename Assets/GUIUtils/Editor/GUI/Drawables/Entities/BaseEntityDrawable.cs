@@ -13,7 +13,7 @@ namespace Rhinox.GUIUtils.Editor
         protected readonly object _targetObj;
         private readonly MemberInfo _memberInfo;
 
-        protected override string LabelString => _targetObj != null ? _targetObj.GetType().Name : null;
+        public override string LabelString => _targetObj != null ? _targetObj.GetType().Name : null;
 
         public override ICollection<TAttribute> GetDrawableAttributes<TAttribute>()
         {

@@ -11,6 +11,7 @@ namespace Rhinox.GUIUtils.Editor
     public class DrawablePropertyView
     {
         private readonly object _instance;
+        private readonly SerializedObject _serializedObject;
         private readonly ICollection<IOrderedDrawable> _drawables;
 
         public float Height
@@ -28,6 +29,7 @@ namespace Rhinox.GUIUtils.Editor
         {
             if (unityObjInstance == null) throw new ArgumentNullException(nameof(unityObjInstance));
             _instance = unityObjInstance;
+            _serializedObject = null;
             if (forceDrawAsUnityObject)
                 _drawables = new[] {new DrawableUnityObject(unityObjInstance)};
             else
@@ -38,6 +40,7 @@ namespace Rhinox.GUIUtils.Editor
         {
             if (serializedObject == null) throw new ArgumentNullException(nameof(serializedObject));
             _instance = serializedObject;
+            _serializedObject = serializedObject;
             if (forceDrawAsUnityObject)
                 _drawables = new[] {new DrawableUnityObject(serializedObject.targetObject)};
             else
@@ -48,6 +51,7 @@ namespace Rhinox.GUIUtils.Editor
         {
             if (property == null) throw new ArgumentNullException(nameof(property));
             _instance = property;
+            _serializedObject = property.serializedObject;
             if (forceDrawAsUnityObject)
                 _drawables = new[] {new DrawableUnityObject(property.GetValue())};
             else
@@ -121,28 +125,51 @@ namespace Rhinox.GUIUtils.Editor
         {
             if (_drawables == null)
                 return;
+
+            OnPreDraw();
             
             foreach (var drawable in _drawables)
             {
                 if (drawable == null)
                     continue;
-                drawable.Draw();
+                drawable.Draw(drawable.Label);
             }
+
+            OnPostDraw();
         }
-        
+
         public void Draw(Rect rect)
         {
             if (_drawables == null)
                 return;
+            
+            OnPreDraw();
             
             foreach (var drawable in _drawables)
             {
                 if (drawable == null)
                     continue;
                 rect.height = drawable.ElementHeight;
-                drawable.Draw(rect);
+                drawable.Draw(rect, drawable.Label);
                 rect.y += rect.height + 2.0f;
             }
+            
+            OnPostDraw();
+        }
+
+        private void OnPreDraw()
+        {
+            if (_serializedObject != null)
+            {
+                _serializedObject.ApplyModifiedProperties();
+                _serializedObject.Update();
+            }
+        }
+
+        private void OnPostDraw()
+        {
+            if (_serializedObject != null)
+                _serializedObject.ApplyModifiedProperties();
         }
     }
 }

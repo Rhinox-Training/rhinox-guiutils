@@ -15,17 +15,17 @@ namespace Rhinox.GUIUtils.Editor
     {
         private const int MAX_DEPTH = 10;
         
-        public static IOrderedDrawable CreateDrawableForProperty(FieldInfo field, SerializedProperty prop)
+        private static IOrderedDrawable CreateDrawableForProperty(FieldInfo field, SerializedProperty prop)
         {
             IOrderedDrawable drawable;
             if (field.FieldType.InheritsFrom(typeof(IList)))
                 drawable = new DrawableList(prop);
             else
                 drawable = new DrawableUnityProperty(prop, field);
-
             var propOrder = field.GetCustomAttribute<PropertyOrderAttribute>();
             if (propOrder != null)
                 drawable.Order = propOrder.Order;
+            
             return drawable;
         }
 
@@ -47,16 +47,28 @@ namespace Rhinox.GUIUtils.Editor
             var type = instance.GetType();
 
             var buttons = new List<IOrderedDrawable>();
-            var methods = type.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
-            foreach (var method in methods)
+            var types = TypeCache.GetMethodsWithAttribute<ButtonAttribute>();
+            foreach (var mi in types)
             {
-                var buttonAttr = method.GetCustomAttribute<ButtonAttribute>();
-                if (buttonAttr == null)
-                    continue;
-
-                var button = new DrawableButton(instance, method, buttonAttr);
+                if (mi.DeclaringType != type) continue;
+                var attributes = mi.GetCustomAttributes();
+                var attr = attributes.OfType<ButtonAttribute>().First();
+                
+                IOrderedDrawable button = new DrawableButton(instance, mi, attr);
+                button = DrawableWrapperFactory.TryWrapDrawable(button, attributes);
                 buttons.AddUnique(button);
             }
+            // var methods = type.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+            // foreach (var method in methods)
+            // {
+            //     var buttonAttr = method.GetCustomAttribute<ButtonAttribute>();
+            //     if (buttonAttr == null)
+            //         continue;
+// 
+            //     IOrderedDrawable button = new DrawableButton(instance, method, buttonAttr);
+            //     button = DrawableWrapperFactory.TryWrapDrawable(button, method.GetCustomAttributes());
+            //     buttons.AddUnique(button);
+            // }
 
             return buttons;
         }
@@ -76,6 +88,8 @@ namespace Rhinox.GUIUtils.Editor
             
             if (type == typeof(GameObject))
                 return new List<IOrderedDrawable>() {new DrawableUnityObject(instanceVal, property.FindFieldInfo())};
+            if (type.InheritsFrom<UnityEngine.Object>())
+                return new List<IOrderedDrawable>() {new DrawableUnityProperty(property, property.FindFieldInfo())};
             
             var visibleFields = property.EnumerateEditorVisibleFields();
             return DrawableMembersFor(instanceVal, type, visibleFields, depth);
@@ -102,8 +116,13 @@ namespace Rhinox.GUIUtils.Editor
                     AttributeParser.Parse(fieldData.FieldInfo, ref fieldDrawable);
                 }
 
-                if (fieldDrawable != null)
-                    drawables.Add(fieldDrawable);
+                if (fieldDrawable == null)
+                    continue;
+                
+                // Check for decorators
+                fieldDrawable = DrawableWrapperFactory.TryWrapDrawable(fieldDrawable, fieldData.FieldInfo.GetCustomAttributes());
+
+                drawables.Add(fieldDrawable);
             }
 
             var properties = type.GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
@@ -115,8 +134,13 @@ namespace Rhinox.GUIUtils.Editor
                 {
                     var propVal = propertyMember.GetValue(instanceVal);
                     var propertyDrawable = CreateCompositeMemberForInstance(propVal, depth, propertyMember);
-                    if (propertyDrawable != null)
-                        drawables.Add(propertyDrawable);
+                    if (propertyDrawable == null)
+                        continue;
+                    
+                    // Check for decorators
+                    propertyDrawable = DrawableWrapperFactory.TryWrapDrawable(propertyDrawable, propertyMember.GetCustomAttributes());
+
+                    drawables.Add(propertyDrawable);
                 }
             }
 
@@ -125,14 +149,8 @@ namespace Rhinox.GUIUtils.Editor
 
             return drawables;
         }
-
-
-        public static List<IOrderedDrawable> CreateDrawableMembersFor(SerializedObject obj, Type t)
-        {
-            return CreateDrawableMembersFor(obj, t, 0);
-        }
-
-        private static List<IOrderedDrawable> CreateDrawableMembersFor(SerializedObject obj, Type type, int depth)
+        
+        public static List<IOrderedDrawable> CreateDrawableMembersFor(SerializedObject obj, Type type)
         {
             object instanceVal = obj.targetObject;
             
@@ -140,7 +158,7 @@ namespace Rhinox.GUIUtils.Editor
                 return new List<IOrderedDrawable>() {new DrawableUnityObject(instanceVal, null)};
             
             var visibleFields = obj.EnumerateEditorVisibleFields();
-            return DrawableMembersFor(instanceVal, type, visibleFields, depth);
+            return DrawableMembersFor(instanceVal, type, visibleFields, 0);
         }
 
         public static List<IOrderedDrawable> CreateDrawableMembersFor(object instance, Type t)
@@ -171,15 +189,18 @@ namespace Rhinox.GUIUtils.Editor
                 }
 
                 IOrderedDrawable resultingMember = null;
-                if (!TryCreate(instance, memberInfo, out var drawableMember) && depth < MAX_DEPTH)
-                {
-                    resultingMember = CreateCompositeMemberForInstance(instance, depth, memberInfo);
-                }
-                else
+                if (TryCreate(instance, memberInfo, out var drawableMember) || depth >= MAX_DEPTH)
                     resultingMember = drawableMember;
+                else
+                    resultingMember = CreateCompositeMemberForInstance(instance, depth, memberInfo);
 
-                if (resultingMember != null)
-                    drawableMembers.Add(resultingMember);
+                if (resultingMember == null)
+                    continue;
+
+                // Check for decorators
+                resultingMember = DrawableWrapperFactory.TryWrapDrawable(resultingMember, memberInfo.GetCustomAttributes());
+
+                drawableMembers.Add(resultingMember);
             }
             
             
@@ -196,14 +217,14 @@ namespace Rhinox.GUIUtils.Editor
             var publicMembers = t.GetMembers(BindingFlags.Instance | BindingFlags.Public |
                                                 BindingFlags.GetField | BindingFlags.GetProperty | BindingFlags.FlattenHierarchy);
             publicMembers = publicMembers
-                .Where(x => !(x is MethodInfo))
+                .Where(x => !(x is MethodBase))
                 .ToArray();
             
             // All non-publics that serialize or are visible
             var serializedMembers = t.GetMembers(BindingFlags.Instance | BindingFlags.NonPublic |
                                                     BindingFlags.GetField | BindingFlags.GetProperty | BindingFlags.FlattenHierarchy);
             serializedMembers = serializedMembers
-                .Where(x => !(x is MethodInfo))
+                .Where(x => !(x is MethodBase))
                 .Where(x => x.IsSerialized() || x.GetCustomAttribute<ShowInInspectorAttribute>() != null)
                 .ToArray();
 
@@ -214,30 +235,33 @@ namespace Rhinox.GUIUtils.Editor
             return list;
         }
 
-        private static IOrderedDrawable CreateCompositeMemberForInstance(object instance, int depth,
-            MemberInfo memberInfo)
+        private static IOrderedDrawable CreateCompositeMemberForInstance(object instance, int depth, MemberInfo memberInfo)
         {
             IOrderedDrawable resultingMember;
             try
             {
                 var subInstance = memberInfo.GetValue(instance);
                 var subtype = memberInfo.GetReturnType();
+                
+                if (instance != null)
+                    subtype = subInstance.GetType();
+                
                 var subdrawables = CreateDrawableMembersFor(subInstance, subtype, depth + 1);
                 DrawableGroupingHelper.Process(ref subdrawables);
-                var composite = new CompositeDrawableMember();
+                var composite = new ObjectCompositeDrawableMember(memberInfo.Name);
                 var attributes = memberInfo.GetCustomAttributes<Attribute>();
-                if (attributes != null)
+
+                foreach (var attr in attributes)
                 {
-                    foreach (var attr in attributes)
-                    {
-                        if (attr is PropertyGroupAttribute groupAttribute)
-                            composite.Order = groupAttribute.Order;
-                        composite.AddAttribute(attr);
-                    }
+                    if (attr is PropertyGroupAttribute groupAttribute)
+                        composite.Order = groupAttribute.Order;
+                    composite.AddAttribute(attr);
                 }
 
                 composite.AddRange(subdrawables);
                 resultingMember = composite;
+
+                resultingMember = DrawableWrapperFactory.TryWrapDrawable(resultingMember, attributes);
             }
             catch (Exception /*e*/)
             {
@@ -284,6 +308,12 @@ namespace Rhinox.GUIUtils.Editor
             if (type == typeof(bool))
             {
                 drawableMember = new BoolDrawableField(instance, info);
+                return true;
+            }
+            
+            if (type == typeof(Type))
+            {
+                drawableMember = new UndrawableField<Type>(instance, info);
                 return true;
             }
 

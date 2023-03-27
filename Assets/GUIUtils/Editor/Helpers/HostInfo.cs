@@ -68,13 +68,40 @@ namespace Rhinox.GUIUtils.Editor
             if (value is IList e)
             {
                 if (ArrayIndex >= e.Count)
-                    e.Insert(ArrayIndex, obj);
+                {
+                    if (e is Array eArr)
+                    {
+                        object arr = eArr;
+                        ResizeArray(ref arr, ArrayIndex + 1);
+                        e = (IList)arr;
+                        e[ArrayIndex] = obj;
+                        FieldInfo.SetValue(GetHost(), e);
+                    }
+                    else
+                        e.Insert(ArrayIndex, obj);
+                }
                 else
                     e[ArrayIndex] = obj;
                 return;
             }
 
             throw new IndexOutOfRangeException($"Could not map found index {ArrayIndex} to value {value}");
+        }
+
+        private static MethodInfo _resizeMethod;
+        
+        private static void ResizeArray(ref object array, int n)
+        {
+            var type = array.GetType();
+            var elemType = type.GetElementType();
+            if (_resizeMethod == null)
+                _resizeMethod = typeof(Array).GetMethod("Resize", BindingFlags.Static | BindingFlags.Public);
+            if (_resizeMethod == null)
+                return;
+            var properResizeMethod = _resizeMethod.MakeGenericMethod(elemType);
+            var parameters = new object[] { array, n };
+            properResizeMethod.Invoke(null, parameters);
+            array = parameters[0];
         }
 
         public Type GetReturnType(bool preferValueType = true)

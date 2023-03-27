@@ -106,14 +106,16 @@ namespace Rhinox.GUIUtils.Editor
             GUIUtility.keyboardControl = 0;
         }
 
-        public static void HorizontalLine(int lineWidth = DEFAULT_LINE_WIDTH) =>
-            CustomEditorGUI.HorizontalLine(CustomGUIStyles.BorderColor, lineWidth);
+        public static void HorizontalLine(int thickness = DEFAULT_LINE_WIDTH, float? width = null) =>
+            CustomEditorGUI.HorizontalLine(CustomGUIStyles.BorderColor, thickness, width);
 
-        public static void HorizontalLine(Color color, int lineWidth = DEFAULT_LINE_WIDTH) =>
-            CustomEditorGUI.DrawSolidRect(GUILayoutUtility.GetRect(lineWidth, lineWidth, GUILayout.ExpandWidth(true)), color);
-        
-        public static void HorizontalLine(Color color, float width, int lineWidth = DEFAULT_LINE_WIDTH) =>
-            CustomEditorGUI.DrawSolidRect(GUILayoutUtility.GetRect(lineWidth, lineWidth, GUILayout.Width(width)), color);
+        public static void HorizontalLine(Color color, int thickness = DEFAULT_LINE_WIDTH, float? width = null)
+        {
+            if (width.HasValue)
+                CustomEditorGUI.DrawSolidRect(GUILayoutUtility.GetRect(width.Value, thickness, GUILayout.Width(width.Value)), color);
+            else
+                CustomEditorGUI.DrawSolidRect(GUILayoutUtility.GetRect(thickness, thickness, GUILayout.ExpandWidth(true)), color);
+        }
 
 
         public static void HorizontalLine(Rect r, Color color, int lineWidth = DEFAULT_LINE_WIDTH)
@@ -122,13 +124,13 @@ namespace Rhinox.GUIUtils.Editor
             CustomEditorGUI.DrawSolidRect(r, color);
         }
 
-        public static void VerticalLine(int lineWidth = DEFAULT_LINE_WIDTH) =>
-            CustomEditorGUI.VerticalLine(CustomGUIStyles.BorderColor, lineWidth);
+        public static void VerticalLine(int thickness = DEFAULT_LINE_WIDTH) =>
+            CustomEditorGUI.VerticalLine(CustomGUIStyles.BorderColor, thickness);
 
-        public static void VerticalLine(Color color, int lineWidth = DEFAULT_LINE_WIDTH) =>
+        public static void VerticalLine(Color color, int thickness = DEFAULT_LINE_WIDTH) =>
             CustomEditorGUI.DrawSolidRect(
-                GUILayoutUtility.GetRect((float) lineWidth, (float) lineWidth, GUILayout.ExpandHeight(true),
-                    GUILayout.Width((float) lineWidth)), color);
+                GUILayoutUtility.GetRect(thickness, thickness, GUILayout.ExpandHeight(true),
+                    GUILayout.Width(thickness)), color);
 
         public static void DrawSolidRect(Rect rect, Color color, bool usePlaymodeTint = true)
         {

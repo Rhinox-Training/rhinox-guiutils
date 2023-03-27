@@ -15,18 +15,18 @@ namespace Rhinox.GUIUtils.Editor
             HasFlags = info.GetReturnType().GetCustomAttribute<FlagsAttribute>() != null;
         }
 
-        protected override Enum DrawValue(object instance, Enum memberVal)
+        protected override Enum DrawValue(GUIContent label, Enum memberVal)
         {
             if (HasFlags)
-                return EditorGUILayout.EnumFlagsField(memberVal);
-            return EditorGUILayout.EnumPopup(memberVal);
+                return EditorGUILayout.EnumFlagsField(label, memberVal);
+            return EditorGUILayout.EnumPopup(label, memberVal);
         }
 
-        protected override Enum DrawValue(Rect rect, object instance, Enum memberVal)
+        protected override Enum DrawValue(Rect rect, GUIContent label, Enum memberVal)
         {
             if (HasFlags)
-                return EditorGUI.EnumFlagsField(rect, memberVal);
-            return EditorGUI.EnumPopup(rect, memberVal);
+                return EditorGUI.EnumFlagsField(rect, label, memberVal);
+            return EditorGUI.EnumPopup(rect, label, memberVal);
         }
     }
 }

@@ -32,7 +32,8 @@ namespace Rhinox.GUIUtils.Editor
             _target = smartInternalObj.Target;
             if (TryGetInspectorGUIMethod(_target, out MethodInfo methodInfo))
                 _drawerMethod = methodInfo;
-            _propertyView = new DrawablePropertyView(smartInternalObj.Target);
+            if (_target != null)
+                _propertyView = new DrawablePropertyView(_target);
         }
 
         public override void OnInspectorGUI()

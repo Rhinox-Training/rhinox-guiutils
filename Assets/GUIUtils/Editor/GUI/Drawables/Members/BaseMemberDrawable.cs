@@ -11,7 +11,7 @@ namespace Rhinox.GUIUtils.Editor
 {
     public abstract class BaseMemberDrawable<T> : BaseDrawable
     {
-        protected override string LabelString => _info != null ? _info.Name : null;
+        public override string LabelString => _info != null ? _info.Name : null;
 
         public override ICollection<TAttribute> GetDrawableAttributes<TAttribute>()
         {
@@ -21,40 +21,33 @@ namespace Rhinox.GUIUtils.Editor
         }
         
         protected MemberInfo _info;
-        private object _instance;
 
         public BaseMemberDrawable(object instance, MemberInfo info)
         {
-            _instance = instance;
+            Host = instance;
             _info = info;
-        }
-
-        protected override void Initialize()
-        {
-            base.Initialize();
-            IsReadOnly = AttributeParser.ParseReadOnly(_info);
         }
 
         protected override void DrawInner(GUIContent label)
         {
             var smartVal = GetSmartValue();
-            var newVal = DrawValue(_instance, smartVal);
-            if (!IsReadOnly)
+            var newVal = DrawValue(label, smartVal);
+            if (!object.Equals(newVal, smartVal))
                 SetSmartValue(newVal);
         }
 
         protected override void DrawInner(Rect rect, GUIContent label)
         {
             var smartVal = GetSmartValue();
-            var newVal = DrawValue(rect, _instance, smartVal);
-            if (!IsReadOnly)
+            var newVal = DrawValue(rect, label, smartVal);
+            if (!object.Equals(newVal, smartVal))
                 SetSmartValue(newVal);
         }
 
-        protected T GetSmartValue() => (T) _info.GetValue(_instance);
-        protected void SetSmartValue(T val) => _info.SetValue(_instance, val);
+        protected T GetSmartValue() => (T) _info.GetValue(Host);
+        protected void SetSmartValue(T val) => _info.TrySetValue(Host, val);
 
-        protected abstract T DrawValue(object instance, T memberVal);
-        protected abstract T DrawValue(Rect rect, object instance, T memberVal);
+        protected abstract T DrawValue(GUIContent label, T memberVal);
+        protected abstract T DrawValue(Rect rect, GUIContent label, T memberVal);
     }
 }
