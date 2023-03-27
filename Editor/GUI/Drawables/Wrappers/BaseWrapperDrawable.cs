@@ -31,28 +31,12 @@ namespace Rhinox.GUIUtils.Editor
         
         protected override void DrawInner(GUIContent label)
         {
-            OnPreDraw();
-            
             _innerDrawable.Draw(label);
-
-            OnPostDraw();
         }
 
         protected override void DrawInner(Rect rect, GUIContent label)
         {
-            OnPreDraw();
-
             _innerDrawable.Draw(rect, label);
-            
-            OnPostDraw();
-        }
-        
-        protected virtual void OnPreDraw()
-        {
-        }
-        
-        protected virtual void OnPostDraw()
-        {
         }
     }
 }
