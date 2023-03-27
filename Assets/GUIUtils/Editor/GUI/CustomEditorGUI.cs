@@ -124,13 +124,13 @@ namespace Rhinox.GUIUtils.Editor
             CustomEditorGUI.DrawSolidRect(r, color);
         }
 
-        public static void VerticalLine(float lineWidth = DEFAULT_LINE_WIDTH) =>
-            CustomEditorGUI.VerticalLine(CustomGUIStyles.BorderColor, lineWidth);
+        public static void VerticalLine(int thickness = DEFAULT_LINE_WIDTH) =>
+            CustomEditorGUI.VerticalLine(CustomGUIStyles.BorderColor, thickness);
 
-        public static void VerticalLine(Color color, float lineWidth = DEFAULT_LINE_WIDTH) =>
+        public static void VerticalLine(Color color, int thickness = DEFAULT_LINE_WIDTH) =>
             CustomEditorGUI.DrawSolidRect(
-                GUILayoutUtility.GetRect((float) lineWidth, (float) lineWidth, GUILayout.ExpandHeight(true),
-                    GUILayout.Width((float) lineWidth)), color);
+                GUILayoutUtility.GetRect(thickness, thickness, GUILayout.ExpandHeight(true),
+                    GUILayout.Width(thickness)), color);
 
         public static void DrawSolidRect(Rect rect, Color color, bool usePlaymodeTint = true)
         {
