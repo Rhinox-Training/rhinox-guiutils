@@ -107,8 +107,10 @@ namespace Rhinox.GUIUtils.Editor
                 }
                 else if (!fieldData.IsSerialized)
                 {
-                    var val = fieldData.FieldInfo.GetValue(instanceVal);
-                    fieldDrawable = CreateCompositeMemberForInstance(val, depth, fieldData.FieldInfo);
+                    if (TryCreate(instanceVal, fieldData.FieldInfo, out var drawableMember) || depth >= MAX_DEPTH)
+                        fieldDrawable = drawableMember;
+                    else
+                        fieldDrawable = CreateCompositeMemberForInstance(instanceVal, depth, fieldData.FieldInfo);
                 }
                 else
                 {
@@ -243,7 +245,7 @@ namespace Rhinox.GUIUtils.Editor
                 var subInstance = memberInfo.GetValue(instance);
                 var subtype = memberInfo.GetReturnType();
                 
-                if (instance != null)
+                if (subInstance != null)
                     subtype = subInstance.GetType();
                 
                 var subdrawables = CreateDrawableMembersFor(subInstance, subtype, depth + 1);
