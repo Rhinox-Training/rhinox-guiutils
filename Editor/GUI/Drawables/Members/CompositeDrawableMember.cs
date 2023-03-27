@@ -18,6 +18,7 @@ namespace Rhinox.GUIUtils.Editor
         public object Host { get; private set; }
         
         public bool IsVisible => true;
+        public virtual GUIContent Label => GUIContent.none;
 
         private readonly List<IOrderedDrawable> _drawableMemberChildren;
         private readonly Dictionary<IOrderedDrawable, PropertyGroupAttribute> _propertyGroupAttrByDrawable;
@@ -138,7 +139,7 @@ namespace Rhinox.GUIUtils.Editor
             return _attributes.OfType<TAttribute>().ToList();
         }
 
-        public virtual void Draw()
+        public virtual void Draw(GUIContent label)
         {
             if (_drawableMemberChildren == null)
                 return;
@@ -157,14 +158,18 @@ namespace Rhinox.GUIUtils.Editor
                 bool widthLimiting = _groupHorizontally && TryGetWidth(childDrawable, out width);
                 if (widthLimiting)
                     GUILayout.BeginVertical(GUILayout.MaxWidth(width));
-                childDrawable.Draw();
+                
+                childDrawable.Draw(childDrawable.Label);
+                
                 if (widthLimiting)
                     GUILayout.EndVertical();
+                
+                GUILayout.Space(1); // padding
             }
             EndGrouping();
         }
 
-        public virtual void Draw(Rect rect)
+        public virtual void Draw(Rect rect, GUIContent label)
         {
             if (_drawableMemberChildren == null)
                 return;
@@ -193,7 +198,7 @@ namespace Rhinox.GUIUtils.Editor
                 }
 
                 rect.height = childDrawable.ElementHeight;
-                childDrawable.Draw(rect);
+                childDrawable.Draw(rect, childDrawable.Label);
 
                 if (_groupHorizontally)
                 {

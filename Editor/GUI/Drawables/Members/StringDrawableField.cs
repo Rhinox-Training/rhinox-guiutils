@@ -9,14 +9,14 @@ namespace Rhinox.GUIUtils.Editor
     {
         public StringDrawableField(object instance, MemberInfo info) : base(instance, info) { }
 
-        protected override string DrawValue(object instance, string memberVal)
+        protected override string DrawValue(GUIContent label, string memberVal)
         {
-            return EditorGUILayout.TextField(Label, memberVal);
+            return EditorGUILayout.TextField(label, memberVal);
         }
 
-        protected override string DrawValue(Rect rect, object instance, string memberVal)
+        protected override string DrawValue(Rect rect, GUIContent label, string memberVal)
         {
-            return EditorGUI.TextField(rect, Label, memberVal);
+            return EditorGUI.TextField(rect, label, memberVal);
         }
     }
 }

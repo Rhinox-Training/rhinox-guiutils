@@ -12,6 +12,8 @@ namespace Rhinox.GUIUtils.Editor
 
         public override bool IsVisible => _innerDrawable.IsVisible;
 
+        public override GUIContent Label => _innerDrawable.Label;
+
         public override string LabelString => string.Empty; // Not used in wrapper
 
         protected BaseWrapperDrawable(IOrderedDrawable drawable)
@@ -31,7 +33,7 @@ namespace Rhinox.GUIUtils.Editor
         {
             OnPreDraw();
             
-            _innerDrawable.Draw();
+            _innerDrawable.Draw(label);
 
             OnPostDraw();
         }
@@ -40,7 +42,7 @@ namespace Rhinox.GUIUtils.Editor
         {
             OnPreDraw();
 
-            _innerDrawable.Draw(rect);
+            _innerDrawable.Draw(rect, label);
             
             OnPostDraw();
         }

@@ -9,14 +9,14 @@ namespace Rhinox.GUIUtils.Editor
     {
         public FloatDrawableField(object instance, MemberInfo info) : base(instance, info) { }
         
-        protected override float DrawValue(object instance, float memberVal)
+        protected override float DrawValue(GUIContent label, float memberVal)
         {
-            return EditorGUILayout.FloatField(Label, memberVal);
+            return EditorGUILayout.FloatField(label, memberVal);
         }
 
-        protected override float DrawValue(Rect rect, object instance, float memberVal)
+        protected override float DrawValue(Rect rect, GUIContent label, float memberVal)
         {
-            return EditorGUI.FloatField(rect, Label, memberVal);
+            return EditorGUI.FloatField(rect, label, memberVal);
         }
     }
 }

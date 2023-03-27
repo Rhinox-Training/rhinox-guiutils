@@ -47,17 +47,28 @@ namespace Rhinox.GUIUtils.Editor
             var type = instance.GetType();
 
             var buttons = new List<IOrderedDrawable>();
-            var methods = type.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
-            foreach (var method in methods)
+            var types = TypeCache.GetMethodsWithAttribute<ButtonAttribute>();
+            foreach (var mi in types)
             {
-                var buttonAttr = method.GetCustomAttribute<ButtonAttribute>();
-                if (buttonAttr == null)
-                    continue;
-
-                IOrderedDrawable button = new DrawableButton(instance, method, buttonAttr);
-                button = DrawableWrapperFactory.TryWrapDrawable(button, method.GetCustomAttributes());
+                if (mi.DeclaringType != type) continue;
+                var attributes = mi.GetCustomAttributes();
+                var attr = attributes.OfType<ButtonAttribute>().First();
+                
+                IOrderedDrawable button = new DrawableButton(instance, mi, attr);
+                button = DrawableWrapperFactory.TryWrapDrawable(button, attributes);
                 buttons.AddUnique(button);
             }
+            // var methods = type.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+            // foreach (var method in methods)
+            // {
+            //     var buttonAttr = method.GetCustomAttribute<ButtonAttribute>();
+            //     if (buttonAttr == null)
+            //         continue;
+// 
+            //     IOrderedDrawable button = new DrawableButton(instance, method, buttonAttr);
+            //     button = DrawableWrapperFactory.TryWrapDrawable(button, method.GetCustomAttributes());
+            //     buttons.AddUnique(button);
+            // }
 
             return buttons;
         }

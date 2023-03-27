@@ -18,7 +18,7 @@ namespace Rhinox.GUIUtils.Editor
             _previewAttr = info.GetCustomAttribute<PreviewFieldAttribute>();
         }
         
-        protected override UnityEngine.Texture DrawValue(object instance, UnityEngine.Texture memberVal)
+        protected override UnityEngine.Texture DrawValue(GUIContent label, UnityEngine.Texture memberVal)
         {
             if (_previewAttr != null)
             {
@@ -37,7 +37,7 @@ namespace Rhinox.GUIUtils.Editor
             return EditorGUILayout.ObjectField(memberVal, _info.GetReturnType(), true) as Texture;
         }
 
-        protected override UnityEngine.Texture DrawValue(Rect rect, object instance, UnityEngine.Texture memberVal)
+        protected override UnityEngine.Texture DrawValue(Rect rect, GUIContent label, UnityEngine.Texture memberVal)
         {
             if (_previewAttr != null)
             {

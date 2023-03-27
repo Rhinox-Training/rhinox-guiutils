@@ -11,9 +11,10 @@ namespace Rhinox.GUIUtils.Editor
         float ElementHeight { get; }
         object Host { get; }
         bool IsVisible { get; }
+        GUIContent Label { get; }
         
         ICollection<TAttribute> GetDrawableAttributes<TAttribute>() where TAttribute : Attribute;
-        void Draw();
-        void Draw(Rect rect);
+        void Draw(GUIContent label);
+        void Draw(Rect rect, GUIContent label);
     }
 }

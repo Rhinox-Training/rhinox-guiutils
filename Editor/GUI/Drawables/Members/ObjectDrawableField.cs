@@ -10,15 +10,15 @@ namespace Rhinox.GUIUtils.Editor
     {
         public ObjectDrawableField(object instance, MemberInfo info) : base(instance, info) { }
         
-        protected override object DrawValue(object instance, object memberVal)
+        protected override object DrawValue(GUIContent label, object memberVal)
         {
-            EditorGUILayout.LabelField(memberVal.ToString());
+            EditorGUILayout.LabelField(label);
             return memberVal;
         }
 
-        protected override object DrawValue(Rect rect, object instance, object memberVal)
+        protected override object DrawValue(Rect rect, GUIContent label, object memberVal)
         {
-            EditorGUI.LabelField(rect, memberVal.ToString());
+            EditorGUI.LabelField(rect, label);
             return memberVal;
         }
     }
