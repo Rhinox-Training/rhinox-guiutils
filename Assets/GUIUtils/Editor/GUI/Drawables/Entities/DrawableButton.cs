@@ -20,34 +20,34 @@ namespace Rhinox.GUIUtils.Editor
         private readonly MethodInfo _methodInfo;
         private readonly ButtonAttribute _buttonAttr;
 
-        public DrawableButton(object obj, MethodInfo method, ButtonAttribute buttonAttr)
-            : base(obj, method)
+        public DrawableButton(object instanceVal, MethodInfo method, ButtonAttribute buttonAttr)
+            : base(instanceVal, method)
         {
-            Host = obj;
+            Host = instanceVal;
             _methodInfo = method;
             _buttonAttr = buttonAttr;
         }
         
-        protected override void Draw(object target)
+        protected override void DrawInner(GUIContent label)
         {
             var buttonHeight = _buttonAttr.ButtonHeight;
             buttonHeight = buttonHeight == 0 ? (int)EditorGUIUtility.singleLineHeight : buttonHeight;
             if (GUILayout.Button((_buttonAttr.Name ?? _methodInfo.Name).SplitCamelCase(), GUILayout.Height(buttonHeight)))
             {
-                if (!TryCreateDialog(_methodInfo, target))
-                    _methodInfo.Invoke(target, null);
+                if (!TryCreateDialog(_methodInfo, Host))
+                    _methodInfo.Invoke(Host, null);
             }
         }
 
-        protected override void Draw(Rect rect, object target)
+        protected override void DrawInner(Rect rect, GUIContent label)
         {
             var buttonHeight = _buttonAttr.ButtonHeight;
             buttonHeight = buttonHeight == 0 ? (int)EditorGUIUtility.singleLineHeight : buttonHeight;
             rect.height = buttonHeight;
             if (GUI.Button(rect, (_buttonAttr.Name ?? _methodInfo.Name).SplitCamelCase()))
             {
-                if (!TryCreateDialog(_methodInfo, target))
-                    _methodInfo.Invoke(target, null);
+                if (!TryCreateDialog(_methodInfo, Host))
+                    _methodInfo.Invoke(Host, null);
             }
         }
 

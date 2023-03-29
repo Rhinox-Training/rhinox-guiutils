@@ -139,7 +139,7 @@ namespace Rhinox.GUIUtils.Editor
             return _listRO.elementHeight;
         }
 
-        protected override void Draw(object target)
+        protected override void DrawInner(GUIContent label)
         {
             if (_listRO != null && _listDrawerAttr != null)
             {
@@ -153,7 +153,7 @@ namespace Rhinox.GUIUtils.Editor
             }
         }
 
-        protected override void Draw(Rect rect, object target)
+        protected override void DrawInner(Rect rect, GUIContent label)
         {
             if (_listRO != null && _listDrawerAttr != null)
             {

@@ -15,18 +15,29 @@ namespace Rhinox.GUIUtils.Editor
     {
         private const int MAX_DEPTH = 10;
         
-        private static IOrderedDrawable CreateDrawableForProperty(FieldInfo field, SerializedProperty prop)
+        //==============================================================================================================
+        // Public API
+        public static List<IOrderedDrawable> CreateDrawableMembersFor(object instance, Type t)
         {
-            IOrderedDrawable drawable;
-            if (field.FieldType.InheritsFrom(typeof(IList)))
-                drawable = new DrawableList(prop);
-            else
-                drawable = new DrawableUnityProperty(prop, field);
-            var propOrder = field.GetCustomAttribute<PropertyOrderAttribute>();
-            if (propOrder != null)
-                drawable.Order = propOrder.Order;
+            if (t == typeof(GameObject))
+                return new List<IOrderedDrawable>() {new DrawableUnityObject((GameObject)instance)};
+            return CreateDrawableMembersFor(instance, t, 0);
+        }
+        
+        public static List<IOrderedDrawable> CreateDrawableMembersFor(SerializedObject obj, Type type)
+        {
+            object instanceVal = obj.targetObject;
             
-            return drawable;
+            if (type == typeof(GameObject))
+                return new List<IOrderedDrawable>() {new DrawableUnityObject((GameObject)instanceVal)};
+            
+            var visibleFields = obj.EnumerateEditorVisibleFields();
+            return DrawableMembersFor(instanceVal, type, visibleFields, 0);
+        }
+        
+        public static List<IOrderedDrawable> CreateDrawableMembersFor(SerializedProperty property, Type type)
+        {
+            return CreateDrawableMembersFor(property, type, 0);
         }
 
         public static void SortDrawables(this List<IOrderedDrawable> drawables)
@@ -40,44 +51,8 @@ namespace Rhinox.GUIUtils.Editor
             drawables.SortBy(x => x.Order);
         }
 
-        public static ICollection<IOrderedDrawable> FindButtons(object instance)
-        {
-            if (instance == null) return Array.Empty<IOrderedDrawable>();
-            
-            var type = instance.GetType();
-
-            var buttons = new List<IOrderedDrawable>();
-            var types = TypeCache.GetMethodsWithAttribute<ButtonAttribute>();
-            foreach (var mi in types)
-            {
-                if (mi.DeclaringType != type) continue;
-                var attributes = mi.GetCustomAttributes();
-                var attr = attributes.OfType<ButtonAttribute>().First();
-                
-                IOrderedDrawable button = new DrawableButton(instance, mi, attr);
-                button = DrawableWrapperFactory.TryWrapDrawable(button, attributes);
-                buttons.AddUnique(button);
-            }
-            // var methods = type.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
-            // foreach (var method in methods)
-            // {
-            //     var buttonAttr = method.GetCustomAttribute<ButtonAttribute>();
-            //     if (buttonAttr == null)
-            //         continue;
-// 
-            //     IOrderedDrawable button = new DrawableButton(instance, method, buttonAttr);
-            //     button = DrawableWrapperFactory.TryWrapDrawable(button, method.GetCustomAttributes());
-            //     buttons.AddUnique(button);
-            // }
-
-            return buttons;
-        }
-
-        public static List<IOrderedDrawable> CreateDrawableMembersFor(SerializedProperty property, Type type)
-        {
-            return CreateDrawableMembersFor(property, type, 0);
-        }
-
+        //==============================================================================================================
+        // Helper methods
 
         private static List<IOrderedDrawable> CreateDrawableMembersFor(SerializedProperty property, Type type, int depth)
         {
@@ -87,10 +62,13 @@ namespace Rhinox.GUIUtils.Editor
             object instanceVal = property.GetValue();
             
             if (type == typeof(GameObject))
-                return new List<IOrderedDrawable>() {new DrawableUnityObject(instanceVal, property.FindFieldInfo())};
+                return new List<IOrderedDrawable>() { new DrawableUnityObject((GameObject)instanceVal, property.FindFieldInfo()) };
             if (type.InheritsFrom<UnityEngine.Object>())
-                return new List<IOrderedDrawable>() {new DrawableUnityProperty(property, property.FindFieldInfo())};
-            
+                return new List<IOrderedDrawable>() { new DrawableUnityProperty(property, property.FindFieldInfo()) };
+
+            if (instanceVal == null)
+                return new List<IOrderedDrawable>() { new NullReferenceDrawable(property) };
+
             var visibleFields = property.EnumerateEditorVisibleFields();
             return DrawableMembersFor(instanceVal, type, visibleFields, depth);
         }
@@ -151,24 +129,6 @@ namespace Rhinox.GUIUtils.Editor
 
             return drawables;
         }
-        
-        public static List<IOrderedDrawable> CreateDrawableMembersFor(SerializedObject obj, Type type)
-        {
-            object instanceVal = obj.targetObject;
-            
-            if (type == typeof(GameObject))
-                return new List<IOrderedDrawable>() {new DrawableUnityObject(instanceVal, null)};
-            
-            var visibleFields = obj.EnumerateEditorVisibleFields();
-            return DrawableMembersFor(instanceVal, type, visibleFields, 0);
-        }
-
-        public static List<IOrderedDrawable> CreateDrawableMembersFor(object instance, Type t)
-        {
-            if (t == typeof(GameObject))
-                return new List<IOrderedDrawable>() {new DrawableUnityObject(instance, null)};
-            return CreateDrawableMembersFor(instance, t, 0);
-        }
 
         private static List<IOrderedDrawable> CreateDrawableMembersFor(object instance, Type t, int depth)
         {
@@ -211,6 +171,42 @@ namespace Rhinox.GUIUtils.Editor
 
 
             return drawableMembers;
+        }
+        
+        private static IOrderedDrawable CreateDrawableForProperty(FieldInfo field, SerializedProperty prop)
+        {
+            IOrderedDrawable drawable;
+            if (field.FieldType.InheritsFrom(typeof(IList)))
+                drawable = new DrawableList(prop);
+            else
+                drawable = new DrawableUnityProperty(prop, field);
+            var propOrder = field.GetCustomAttribute<PropertyOrderAttribute>();
+            if (propOrder != null)
+                drawable.Order = propOrder.Order;
+            
+            return drawable;
+        }
+
+        private static ICollection<IOrderedDrawable> FindButtons(object instance)
+        {
+            if (instance == null) return Array.Empty<IOrderedDrawable>();
+            
+            var type = instance.GetType();
+
+            var buttons = new List<IOrderedDrawable>();
+            var types = TypeCache.GetMethodsWithAttribute<ButtonAttribute>();
+            foreach (var mi in types)
+            {
+                if (mi.DeclaringType != type) continue;
+                var attributes = mi.GetCustomAttributes();
+                var attr = attributes.OfType<ButtonAttribute>().First();
+                
+                IOrderedDrawable button = new DrawableButton(instance, mi, attr);
+                button = DrawableWrapperFactory.TryWrapDrawable(button, attributes);
+                buttons.AddUnique(button);
+            }
+
+            return buttons;
         }
 
         private static IReadOnlyCollection<MemberInfo> GetEditorVisibleFields(object instance, Type t)
