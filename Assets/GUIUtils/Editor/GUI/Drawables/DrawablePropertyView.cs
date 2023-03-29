@@ -31,7 +31,7 @@ namespace Rhinox.GUIUtils.Editor
             _instance = unityObjInstance;
             _serializedObject = null;
             if (forceDrawAsUnityObject)
-                _drawables = new[] {new DrawableUnityObject(unityObjInstance)};
+                _drawables = new[] {new DrawableUnityObject((GameObject)unityObjInstance)};
             else
                 _drawables = ParseNonUnityObject(unityObjInstance);
         }
@@ -42,7 +42,7 @@ namespace Rhinox.GUIUtils.Editor
             _instance = serializedObject;
             _serializedObject = serializedObject;
             if (forceDrawAsUnityObject)
-                _drawables = new[] {new DrawableUnityObject(serializedObject.targetObject)};
+                _drawables = new[] {new DrawableUnityObject((GameObject)serializedObject.targetObject)};
             else
                 _drawables = ParseSerializedObject(serializedObject);
         }
@@ -53,7 +53,7 @@ namespace Rhinox.GUIUtils.Editor
             _instance = property;
             _serializedObject = property.serializedObject;
             if (forceDrawAsUnityObject)
-                _drawables = new[] {new DrawableUnityObject(property.GetValue())};
+                _drawables = new[] {new DrawableUnityObject((GameObject)property.GetValue())};
             else
                 _drawables = ParseSerializedProperty(property);
         }
@@ -68,7 +68,7 @@ namespace Rhinox.GUIUtils.Editor
             var drawables = DrawableFactory.CreateDrawableMembersFor(obj, type);
 
             if (drawables.Count == 0 && obj is UnityEngine.Object unityObj)
-                drawables.Add(new DrawableUnityObject(unityObj, null));
+                drawables.Add(new DrawableUnityObject((GameObject)unityObj, null));
 
             if (!drawables.IsNullOrEmpty())
             {
@@ -89,7 +89,7 @@ namespace Rhinox.GUIUtils.Editor
             var type = hostInfo.GetReturnType();
 
             if (AttributeParser.ParseDrawAsUnity(hostInfo.FieldInfo))
-                return new[] {new DrawableUnityObject(property.GetValue())};
+                return new[] {new DrawableUnityObject((UnityEngine.Object)property.GetValue(), property.FindFieldInfo())};
 
             var drawables = DrawableFactory.CreateDrawableMembersFor(property, type);
 

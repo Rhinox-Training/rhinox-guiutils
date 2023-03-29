@@ -215,14 +215,13 @@ namespace Rhinox.GUIUtils.Editor
                     }
                     else
                     {
-                        
                         if (list == null)
                             list = (IList)Activator.CreateInstance(this.m_ListType);
                         index = list.Add(Activator.CreateInstance(option));
                     }
 
                     if (onChangedCallback != null)
-                        onChangedCallback?.Invoke(this);
+                        onChangedCallback.Invoke(this);
                 });
             }
             genericMenu.DropDown(rect1);

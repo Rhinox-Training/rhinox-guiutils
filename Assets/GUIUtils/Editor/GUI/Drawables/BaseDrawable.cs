@@ -12,11 +12,20 @@ namespace Rhinox.GUIUtils.Editor
     {
         public float Order { get; set; }
         public virtual float ElementHeight => EditorGUIUtility.singleLineHeight;
-        
+
         public bool HideLabel { get; protected set; }
-        
-        public virtual GUIContent Label => HideLabel || string.IsNullOrEmpty(LabelString) ? null : GUIContentHelper.TempContent(LabelString);
-        
+
+        private GUIContent _cachedLabel;
+        public virtual GUIContent Label {
+            get
+            {
+                if (HideLabel) return GUIContent.none;
+                if (_cachedLabel == null)
+                    _cachedLabel = string.IsNullOrEmpty(LabelString) ? GUIContent.none : new GUIContent(LabelString);
+                return _cachedLabel; 
+            }
+        }
+
         public abstract string LabelString { get; }
         
         public object Host { get; protected set; }

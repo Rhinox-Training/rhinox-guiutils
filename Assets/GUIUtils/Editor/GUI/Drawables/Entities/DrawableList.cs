@@ -139,7 +139,7 @@ namespace Rhinox.GUIUtils.Editor
             return _listRO.elementHeight;
         }
 
-        protected override void Draw(object target)
+        protected override void DrawInner(GUIContent label)
         {
             if (_listRO != null && _listDrawerAttr != null)
             {
@@ -153,7 +153,7 @@ namespace Rhinox.GUIUtils.Editor
             }
         }
 
-        protected override void Draw(Rect rect, object target)
+        protected override void DrawInner(Rect rect, GUIContent label)
         {
             if (_listRO != null && _listDrawerAttr != null)
             {
@@ -179,6 +179,9 @@ namespace Rhinox.GUIUtils.Editor
             if (_listElements.Length != _listRO.count)
                 _listElements = new ListElementDrawable[_listRO.count];
 
+            if (!_listElements.HasIndex(index))
+                return;
+            
             if (_listElements[index] == null)
                 _listElements[index] = CreateElementFor(index, _drawElementsAsUnity);
             _listElements[index].Draw(listEntryRect);

@@ -4,23 +4,23 @@ using UnityEngine;
 
 namespace Rhinox.GUIUtils.Editor
 {
-    public class DrawableHelpBox : BaseEntityDrawable
+    public class DrawableHelpBox : BaseEntityDrawable<string>
     {
         public MessageType MsgType { get; }
         
-        public DrawableHelpBox(string obj, MessageType type, FieldInfo fieldInfo = null) : base(obj, fieldInfo)
+        public DrawableHelpBox(string helpMessage, MessageType type, FieldInfo fieldInfo = null) : base(helpMessage, fieldInfo)
         {
             MsgType = type;
         }
-        
-        protected override void Draw(object target)
+
+        protected override void DrawInner(GUIContent label)
         {
-            EditorGUILayout.HelpBox((string)target, MsgType);
+            EditorGUILayout.HelpBox(Entity, MsgType);
         }
 
-        protected override void Draw(Rect rect, object target)
+        protected override void DrawInner(Rect rect, GUIContent label)
         {
-            EditorGUI.HelpBox(rect, (string)target, MsgType);
+            EditorGUI.HelpBox(rect, Entity, MsgType);
         }
     }
 }
