@@ -17,15 +17,6 @@ namespace Rhinox.GUIUtils.Editor
         private readonly HostInfo _hostInfo;
         private object _managedReferenceValue;
 
-        public override float ElementHeight
-        {
-            get
-            {
-                if (_serializedProperty == null) return base.ElementHeight;
-                return EditorGUI.GetPropertyHeight(_serializedProperty, true);
-            }
-        }
-
         public NullReferenceDrawable(SerializedProperty property) : base(new UndrawableField<object>(null, property.FindFieldInfo()))
         {
             if (property == null)
@@ -41,29 +32,25 @@ namespace Rhinox.GUIUtils.Editor
         {
             if (_managedReferenceValue == null)
             {
-                Rect dropdownPosition =
-                    EditorGUILayout.GetControlRect(true).AlignTop(EditorGUIUtility.singleLineHeight);
-                DrawTypePicker(dropdownPosition, _serializedProperty, label);
+                Rect dropdownPosition = EditorGUILayout.GetControlRect(true).AlignTop(EditorGUIUtility.singleLineHeight);
+                DrawTypePicker(dropdownPosition, _serializedProperty, GUIContent.none);
             }
-
-            EditorGUILayout.PropertyField(_serializedProperty, label, true);
+            else
+            {
+                base.DrawInner(label);
+            }
         }
 
         protected override void DrawInner(Rect position, GUIContent label)
         {
-            bool shouldDrawReferencePicker = _managedReferenceValue == null;
-            if (shouldDrawReferencePicker)
+            if (_managedReferenceValue == null)
             {
-                EditorGUI.BeginProperty(position, label, _serializedProperty);
-
-                Rect dropdownPosition = position.AlignTop(EditorGUIUtility.singleLineHeight);
-
-                DrawTypePicker(dropdownPosition, _serializedProperty, label);
+                DrawTypePicker(position, _serializedProperty, GUIContent.none);
             }
-
-            EditorGUI.PropertyField(position, _serializedProperty, GUIContent.none, true);
-
-            EditorGUI.EndProperty();
+            else
+            {
+                base.DrawInner(position, label);
+            }
         }
 
         private void DrawTypePicker(Rect position, SerializedProperty property, GUIContent label)
@@ -86,10 +73,23 @@ namespace Rhinox.GUIUtils.Editor
         private void SetManagedReference(object data)
         {
             var value = (data as Type).CreateInstance();
+            
             _managedReferenceValue = value;
             _serializedProperty.managedReferenceValue = value;
             _serializedProperty.isExpanded = value != null;
             _serializedProperty.serializedObject.ApplyModifiedProperties();
+
+            UpdateInnerDrawable();
+        }
+
+        private void UpdateInnerDrawable()
+        {
+            var hostInfo = _serializedProperty.GetHostInfo();
+            var type = hostInfo.GetReturnType();
+            var drawables = DrawableFactory.CreateDrawableMembersFor(_serializedProperty, type);
+            var compositeDrawableMember = new CompositeDrawableMember();
+            compositeDrawableMember.AddRange(drawables);
+            _innerDrawable = compositeDrawableMember;
         }
 
         GUIContent GetTypeName(SerializedProperty property)
