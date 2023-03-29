@@ -60,13 +60,16 @@ namespace Rhinox.GUIUtils.Editor
         {
             if (ArrayIndex < 0)
             {
+                //_root.ApplyModifiedProperties(); // TODO: do we need ApplyModifiedProperties here?
                 FieldInfo.SetValue(GetHost(), obj);
+                _root.Update();
                 return;
             }
 
             var value = FieldInfo.GetValue(GetHost());
             if (value is IList e)
             {
+                //_root.ApplyModifiedProperties(); // TODO: do we need ApplyModifiedProperties here?
                 if (ArrayIndex >= e.Count)
                 {
                     if (e is Array eArr)
@@ -82,6 +85,8 @@ namespace Rhinox.GUIUtils.Editor
                 }
                 else
                     e[ArrayIndex] = obj;
+                
+                _root.Update();
                 return;
             }
 

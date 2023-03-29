@@ -179,6 +179,9 @@ namespace Rhinox.GUIUtils.Editor
             if (_listElements.Length != _listRO.count)
                 _listElements = new ListElementDrawable[_listRO.count];
 
+            if (!_listElements.HasIndex(index))
+                return;
+            
             if (_listElements[index] == null)
                 _listElements[index] = CreateElementFor(index, _drawElementsAsUnity);
             _listElements[index].Draw(listEntryRect);
