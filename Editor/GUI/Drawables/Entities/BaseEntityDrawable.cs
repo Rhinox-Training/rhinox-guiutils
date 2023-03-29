@@ -8,12 +8,21 @@ using UnityEngine.UIElements;
 
 namespace Rhinox.GUIUtils.Editor
 {
+    public abstract class BaseEntityDrawable<T> : BaseEntityDrawable
+    {
+        protected T Entity => (T) EntityInstance;
+        
+        protected BaseEntityDrawable(T instanceVal, MemberInfo memberInfo = null) : base(instanceVal, memberInfo)
+        {
+        }
+    }
+    
     public abstract class BaseEntityDrawable : BaseDrawable
     {
-        protected readonly object _targetObj;
-        private readonly MemberInfo _memberInfo;
+        protected object EntityInstance { get; }
+        protected readonly MemberInfo _memberInfo;
 
-        public override string LabelString => _targetObj != null ? _targetObj.GetType().Name : null;
+        public override string LabelString => Host != null ? Host.GetType().Name : null;
 
         public override ICollection<TAttribute> GetDrawableAttributes<TAttribute>()
         {
@@ -24,29 +33,11 @@ namespace Rhinox.GUIUtils.Editor
             return base.GetDrawableAttributes<TAttribute>();
         }
 
-        protected BaseEntityDrawable(object obj)
+        protected BaseEntityDrawable(object instanceVal, MemberInfo memberInfo = null)
         {
-            _targetObj = obj;
-            _memberInfo = null;
-        }
-        
-        protected BaseEntityDrawable(object obj, MemberInfo memberInfo)
-        {
-            _targetObj = obj;
+            Host = null;
+            EntityInstance = instanceVal;
             _memberInfo = memberInfo;
         }
-        
-        protected override void DrawInner(GUIContent label)
-        {
-            Draw(_targetObj);
-        }
-
-        protected override void DrawInner(Rect rect, GUIContent label)
-        {
-            Draw(rect, _targetObj);
-        }
-        
-        protected abstract void Draw(object target);
-        protected abstract void Draw(Rect rect, object target);
     }
 }

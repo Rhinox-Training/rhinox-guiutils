@@ -4,25 +4,23 @@ using UnityEngine;
 
 namespace Rhinox.GUIUtils.Editor
 {
-    public class DrawableUnityProperty : BaseEntityDrawable
+    public class DrawableUnityProperty : BaseEntityDrawable<SerializedProperty>
     {
-        public override string LabelString => _targetObj != null ? ((SerializedProperty) _targetObj).displayName : null;
+        public override string LabelString => Entity != null ? Entity.displayName : base.LabelString;
 
         public DrawableUnityProperty(SerializedProperty prop, MemberInfo memberInfo = null)
             : base(prop, memberInfo)
         {
         }
         
-        protected override void Draw(object target)
+        protected override void DrawInner(GUIContent label)
         {
-            var property = (SerializedProperty) target;
-            EditorGUILayout.PropertyField(property, Label);
+            EditorGUILayout.PropertyField(Entity, label);
         }
 
-        protected override void Draw(Rect rect, object target)
+        protected override void DrawInner(Rect rect, GUIContent label)
         {
-            var property = (SerializedProperty) target; 
-            EditorGUI.PropertyField(rect, property, Label);
+            EditorGUI.PropertyField(rect, Entity, label);
         }
     }
 }

@@ -437,10 +437,11 @@ namespace Rhinox.GUIUtils.Editor
         {
             private float m_LabelWidth;
             private const string STYLESHEET_NAME = "sb-settings-panel-client-area";
-            public PaddedGUIScope(float? customMargin = null, float labelWidth = 0.5f)
+            public PaddedGUIScope(float? customMargin = null, float? labelWidth = null)
             {
                 this.m_LabelWidth = EditorGUIUtility.labelWidth;
-                EditorGUIUtility.labelWidth = labelWidth;
+                if (labelWidth.HasValue)
+                    EditorGUIUtility.labelWidth = labelWidth.Value;
                 GUILayout.BeginHorizontal();
                 float marginLeft = customMargin.HasValue ? customMargin.Value : ExposedEditorResources.GetFloat(STYLESHEET_NAME, ExposedStyleCatalog.marginLeft);
                 float marginRight = customMargin.HasValue ? customMargin.Value : ExposedEditorResources.GetFloat(STYLESHEET_NAME, ExposedStyleCatalog.marginRight);
