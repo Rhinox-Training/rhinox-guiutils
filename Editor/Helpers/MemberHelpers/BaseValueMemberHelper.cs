@@ -51,7 +51,7 @@ namespace Rhinox.GUIUtils.Editor
             if (_instanceValueGetter != null)
                 return _instanceValueGetter(instance);
             
-            return default;
+            return _cachedValue;
         }
     }
 }

@@ -30,8 +30,14 @@ namespace Rhinox.GUIUtils.Editor
         {
             _objectType = type;
 
-            if (!TryParseInput(ref input))
+            if (!TryParseInput(ref input, out bool parameter))
                 return;
+            
+            if (!parameter && typeof(T) == typeof(string))
+            {
+                _cachedValue = (T) (object) input;
+                return;
+            }
 
             var members = FindMembers(isStatic, (info, _) => info.GetReturnType().InheritsFrom(typeof(T)) && info.Name == input);
 

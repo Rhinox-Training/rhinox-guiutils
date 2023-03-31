@@ -22,8 +22,10 @@ namespace Rhinox.GUIUtils.Editor
 
         protected virtual MemberTypes AllowedMembers => MemberTypes.Property | MemberTypes.Field | MemberTypes.Method;
 
-        protected virtual bool TryParseInput(ref string input)
+        protected virtual bool TryParseInput(ref string input, out bool parameter)
         {
+            parameter = false;
+            
             if (string.IsNullOrEmpty(input) || _objectType == null || input.Length <= 0)
                 return false;
             
@@ -38,6 +40,7 @@ namespace Rhinox.GUIUtils.Editor
             if (input[0] == '$')
             {
                 input = input.Substring(1);
+                parameter = true;
                 
                 if (!TryParseParameter(input))
                     return false;
