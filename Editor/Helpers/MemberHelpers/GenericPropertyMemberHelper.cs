@@ -15,20 +15,19 @@ namespace Rhinox.GUIUtils.Editor
         }
         
         public GenericPropertyMemberHelper(object property, string input)
-            : this(property == null, property?.GetType(), input)
+            : this(property?.GetType(), input, property)
         {
-            _host = property;
         }
         
         public GenericPropertyMemberHelper(Type type, string input)
-            : this(true, type, input)
+            : this(type, input, null)
         {
-            _host = null;
         }
 
-        private GenericPropertyMemberHelper(bool isStatic, Type type, string input)
+        private GenericPropertyMemberHelper(Type type, string input, object host)
         {
             _objectType = type;
+            _host = host;
 
             if (!TryParseInput(ref input, out bool parameter))
                 return;
@@ -39,7 +38,7 @@ namespace Rhinox.GUIUtils.Editor
                 return;
             }
 
-            var members = FindMembers(isStatic, (info, _) => info.GetReturnType().InheritsFrom(typeof(T)) && info.Name == input);
+            var members = FindMembers(true, (info, _) => info.GetReturnType().InheritsFrom(typeof(T)) && info.Name == input);
 
             var mi = members.FirstOrDefault();
             
