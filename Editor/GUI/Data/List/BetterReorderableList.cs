@@ -247,6 +247,9 @@ namespace Rhinox.GUIUtils.Editor
             if (this.showDefaultBackground && Event.current.type == UnityEngine.EventType.Repaint)
                 BetterReorderableList.s_Defaults.boxBackground.Draw(listRect, false, false, false, false);
             
+            if (!listRect.IsValid())
+                return;
+            
             listRect.yMin += this.listElementTopPadding;
             listRect.yMax -= 4f;
             if (this.showDefaultBackground)

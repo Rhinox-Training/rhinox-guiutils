@@ -20,13 +20,6 @@ namespace Rhinox.GUIUtils.Editor
             return false;
         }
 
-        public static bool ParseReadOnly(MemberInfo memberInfo)
-        {
-            var readonlyAttr = memberInfo.GetCustomAttribute<ReadOnlyAttribute>();
-            bool isReadOnly = readonlyAttr != null || (memberInfo is PropertyInfo propertyInfo && propertyInfo.GetSetMethod(true) == null);
-            return isReadOnly;
-        }
-
         public static bool ParseDrawAsUnity(MemberInfo memberInfo)
         {
             var attr = memberInfo.GetCustomAttribute<DrawAsUnityObjectAttribute>();

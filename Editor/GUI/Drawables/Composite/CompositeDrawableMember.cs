@@ -24,6 +24,8 @@ namespace Rhinox.GUIUtils.Editor
         private readonly Dictionary<IOrderedDrawable, PropertyGroupAttribute> _propertyGroupAttrByDrawable;
         private List<Attribute> _attributes;
         private bool _groupHorizontally;
+        private float[] _widths;
+        private const float DEFAULT_PADDING = 2.0f;
 
         public IReadOnlyCollection<IOrderedDrawable> Children => _drawableMemberChildren != null ? 
             _drawableMemberChildren : (IReadOnlyCollection<IOrderedDrawable>)Array.Empty<IOrderedDrawable>();
@@ -44,11 +46,10 @@ namespace Rhinox.GUIUtils.Editor
                     if (!child.IsVisible)
                         continue;
                     if (height > 0)
-                        height += 2; // padding
+                        height += DEFAULT_PADDING;
                     height += child.ElementHeight;
                 }
                 return height;
-
             }
         }
 
@@ -178,43 +179,73 @@ namespace Rhinox.GUIUtils.Editor
             {
                 var labelRect = rect.AlignTop(EditorGUIUtility.singleLineHeight);
                 EditorGUI.LabelField(labelRect, GUIContentHelper.TempContent(Title), TitleStyle);
-                rect.yMin += labelRect.height + 2;
+                rect.yMin += labelRect.height + DEFAULT_PADDING;
             }
 
-            // HandleRectGrouping(ref rect);
-            foreach (var childDrawable in _drawableMemberChildren)
+            Rect childRect = rect;
+            for (int i = 0; i < _drawableMemberChildren.Count; ++i)
             {
+                var childDrawable = _drawableMemberChildren[i];
                 if (childDrawable == null || !childDrawable.IsVisible)
                     continue;
-                
-                if (_groupHorizontally)
-                {
-                    if (TryGetWidth(childDrawable, out float width))
-                    {
-                        if (width <= 1.0f)
-                            width = rect.width * width;
-                        rect.width = width;
-                    }
-                }
 
-                rect.height = childDrawable.ElementHeight;
-                childDrawable.Draw(rect, childDrawable.Label);
 
-                if (_groupHorizontally)
-                {
-                    rect.x += rect.width + 2; // 2 = padding
-                }
-                else
-                {
-                    rect.y += rect.height + 2; // 2 = padding
-                }
+                childRect.width = HandleRectWidthGrouping(rect, i);
+
+                childRect.height = childDrawable.ElementHeight;
+                childDrawable.Draw(childRect, childDrawable.Label);
+
+                childRect.x += childRect.width + DEFAULT_PADDING;
             }
         }
 
-        private void HandleRectGrouping(ref Rect rect)
+        private float HandleRectWidthGrouping(Rect totalRect, int index)
         {
-            if (_groupHorizontally)
-                rect.width /= _drawableMemberChildren.Count(x => x.IsVisible);
+            if (!_groupHorizontally || !totalRect.IsValid())
+                return totalRect.width;
+            
+            if (_widths == null || _widths.Length != _drawableMemberChildren.Count)
+                RecreateWidthsArray(totalRect.width);
+
+            return _widths[index];
+        }
+
+        private void RecreateWidthsArray(float totalWidth)
+        {
+            int zeroCount = 0;
+            _widths = new float[_drawableMemberChildren.Count];
+            for (int i = 0; i < _drawableMemberChildren.Count; ++i)
+            {
+                var child = _drawableMemberChildren[i];
+                if (!TryGetWidth(child, out float width))
+                {
+                    ++zeroCount;
+                    continue;
+                }
+
+                _widths[i] = width;
+                if (width <= float.Epsilon)
+                    ++zeroCount;
+            }
+
+            float usedWidth = 0.0f;
+            for (int i = 0; i < _widths.Length; ++i)
+            {
+                var calcWidth = _widths[i];
+                if (calcWidth <= float.Epsilon)
+                    continue;
+
+                if (calcWidth < 1.0f)
+                    _widths[i] = calcWidth * totalWidth;
+                usedWidth += _widths[i];
+            }
+
+            for (int i = 0; i < _widths.Length; ++i)
+            {
+                var calcWidth = _widths[i];
+                if (calcWidth <= float.Epsilon)
+                    _widths[i] = Mathf.Max(0, totalWidth - usedWidth) / zeroCount;
+            }
         }
 
         private bool TryGetWidth(IOrderedDrawable drawable, out float width)
