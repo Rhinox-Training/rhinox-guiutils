@@ -195,7 +195,10 @@ namespace Rhinox.GUIUtils.Editor
                 childRect.height = childDrawable.ElementHeight;
                 childDrawable.Draw(childRect, childDrawable.Label);
 
-                childRect.x += childRect.width + DEFAULT_PADDING;
+                if (_groupHorizontally)
+                    childRect.x += childRect.width + DEFAULT_PADDING;
+                else
+                    childRect.y += childRect.height + DEFAULT_PADDING;
             }
         }
 

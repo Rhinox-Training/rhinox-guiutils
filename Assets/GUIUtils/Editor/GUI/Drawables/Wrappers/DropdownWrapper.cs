@@ -80,17 +80,30 @@ namespace Rhinox.GUIUtils.Editor
 
         private void MakeMenuItems(Rect rect)
         {
-            var options = _member.ForceGetValue().Cast<IValueDropdownItem>().ToArray();
+            var options = _member.ForceGetValue().Cast<object>().ToArray();
             var menu = new GenericMenu();
 
             foreach (var item in options)
             {
-                var text = item.GetText();
-                menu.AddItem(text, () =>
+                if (item is IValueDropdownItem dropdownItem)
                 {
-                    SetValue(item.GetValue());
-                    _activeItem = new GUIContent(text);
-                });
+                    var text = dropdownItem.GetText();
+                    menu.AddItem(text, () =>
+                    {
+                        SetValue(dropdownItem.GetValue());
+                        _activeItem = new GUIContent(text);
+                    });
+                }
+                else
+                {
+                    
+                    var text = item.ToString();
+                    menu.AddItem(text, () =>
+                    {
+                        SetValue(item);
+                        _activeItem = new GUIContent(text);
+                    });
+                }
             }
 
             if (!options.Any())
