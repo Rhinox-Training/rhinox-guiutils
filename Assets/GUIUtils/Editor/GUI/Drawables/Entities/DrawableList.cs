@@ -174,6 +174,9 @@ namespace Rhinox.GUIUtils.Editor
 
         private void DrawElement(Rect rect, int index, bool isActive, bool isFocused)
         {
+            if (!rect.IsValid())
+                return;
+            
             var listEntryRect = _listDrawerAttr.IsReadOnly ? rect : rect.AlignLeft(rect.width - 16);
 
             if (_listElements.Length != _listRO.count)
