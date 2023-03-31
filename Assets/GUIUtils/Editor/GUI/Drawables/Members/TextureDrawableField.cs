@@ -13,6 +13,16 @@ namespace Rhinox.GUIUtils.Editor
         private readonly PreviewFieldAttribute _previewAttr;
         private const int DEFAULT_SIZE = 64;
 
+        public override float ElementHeight
+        {
+            get
+            {
+                if (_previewAttr == null)
+                    return base.ElementHeight;
+                return _previewAttr.Height + 2.0f; // 2 x padding
+            }
+        }
+
         public TextureDrawableField(object instance, MemberInfo info) : base(instance, info)
         {
             _previewAttr = info.GetCustomAttribute<PreviewFieldAttribute>();

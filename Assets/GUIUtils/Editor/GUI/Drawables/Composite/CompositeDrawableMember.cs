@@ -25,6 +25,7 @@ namespace Rhinox.GUIUtils.Editor
         private List<Attribute> _attributes;
         private bool _groupHorizontally;
         private float[] _widths;
+        private float _totalCachedWidth;
         private const float DEFAULT_PADDING = 2.0f;
 
         public IReadOnlyCollection<IOrderedDrawable> Children => _drawableMemberChildren != null ? 
@@ -155,10 +156,10 @@ namespace Rhinox.GUIUtils.Editor
                 if (childDrawable == null || !childDrawable.IsVisible)
                     continue;
 
-                float width = 0.0f;
-                bool widthLimiting = _groupHorizontally && TryGetWidth(childDrawable, out width);
+                HorizontalGroupAttribute horizontalInfo = null;
+                bool widthLimiting = _groupHorizontally && TryGetHorizontalInfo(childDrawable, out horizontalInfo);
                 if (widthLimiting)
-                    GUILayout.BeginVertical(GUILayout.MaxWidth(width));
+                    GUILayout.BeginVertical(GetLayoutOptions(horizontalInfo));
                 
                 childDrawable.Draw(childDrawable.Label);
                 
@@ -188,10 +189,8 @@ namespace Rhinox.GUIUtils.Editor
                 var childDrawable = _drawableMemberChildren[i];
                 if (childDrawable == null || !childDrawable.IsVisible)
                     continue;
-
-
+                
                 childRect.width = HandleRectWidthGrouping(rect, i);
-
                 childRect.height = childDrawable.ElementHeight;
                 childDrawable.Draw(childRect, childDrawable.Label);
 
@@ -207,7 +206,7 @@ namespace Rhinox.GUIUtils.Editor
             if (!_groupHorizontally || !totalRect.IsValid())
                 return totalRect.width;
             
-            if (_widths == null || _widths.Length != _drawableMemberChildren.Count)
+            if (_widths == null || !totalRect.width.LossyEquals(_totalCachedWidth) || _widths.Length != _drawableMemberChildren.Count)
                 RecreateWidthsArray(totalRect.width);
 
             return _widths[index];
@@ -217,17 +216,18 @@ namespace Rhinox.GUIUtils.Editor
         {
             int zeroCount = 0;
             _widths = new float[_drawableMemberChildren.Count];
+            _totalCachedWidth = totalWidth;
             for (int i = 0; i < _drawableMemberChildren.Count; ++i)
             {
                 var child = _drawableMemberChildren[i];
-                if (!TryGetWidth(child, out float width))
+                if (!TryGetHorizontalInfo(child, out var horizontalInfo))
                 {
                     ++zeroCount;
                     continue;
                 }
 
-                _widths[i] = width;
-                if (width <= float.Epsilon)
+                _widths[i] = horizontalInfo.Width;
+                if (_widths[i] <= float.Epsilon)
                     ++zeroCount;
             }
 
@@ -247,26 +247,36 @@ namespace Rhinox.GUIUtils.Editor
             {
                 var calcWidth = _widths[i];
                 if (calcWidth <= float.Epsilon)
-                    _widths[i] = Mathf.Max(0, totalWidth - usedWidth) / zeroCount;
+                    calcWidth = Mathf.Max(0, totalWidth - usedWidth) / zeroCount;
+                if (TryGetHorizontalInfo(_drawableMemberChildren[i], out var horizontalInfo))
+                {
+                    if (horizontalInfo.MinWidth > 0.0f)
+                        calcWidth = Mathf.Max(horizontalInfo.MinWidth, calcWidth);
+                    
+                    if (horizontalInfo.MaxWidth > 0.0f)
+                        calcWidth = Mathf.Min(horizontalInfo.MaxWidth, calcWidth);
+                }
+
+                _widths[i] = calcWidth;
             }
         }
 
-        private bool TryGetWidth(IOrderedDrawable drawable, out float width)
+        private bool TryGetHorizontalInfo(IOrderedDrawable drawable, out HorizontalGroupAttribute horizontalInfo)
         {
             if (_propertyGroupAttrByDrawable.ContainsKey(drawable))
             {
                 var propAttr = _propertyGroupAttrByDrawable[drawable];
                 if (propAttr != null)
                 {
-                    if (propAttr is HorizontalGroupAttribute horPropAttr && horPropAttr.Width > 0.0f)
+                    if (propAttr is HorizontalGroupAttribute horPropAttr)
                     {
-                        width = horPropAttr.Width;
+                        horizontalInfo = horPropAttr;
                         return true;
                     }
                 }
             }
 
-            width = 1.0f;
+            horizontalInfo = null;
             return false;
         }
 
@@ -300,5 +310,17 @@ namespace Rhinox.GUIUtils.Editor
         private void GroupVertical() => _groupHorizontally = false;
 
         private void GroupHorizontal() => _groupHorizontally = true;
+
+        private GUILayoutOption[] GetLayoutOptions(HorizontalGroupAttribute horizontalInfo)
+        {
+            var list = new List<GUILayoutOption>();
+            if (horizontalInfo.MinWidth > 0.0f)
+                list.Add(GUILayout.MinWidth(horizontalInfo.MinWidth));
+            if (horizontalInfo.Width > 0.0f)
+                list.Add(GUILayout.Width(horizontalInfo.Width));
+            if (horizontalInfo.MaxWidth > 0.0f)
+                list.Add(GUILayout.MaxWidth(horizontalInfo.MaxWidth));
+            return list.ToArray();
+        }
     }
 }
