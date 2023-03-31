@@ -27,7 +27,7 @@ namespace Rhinox.GUIUtils.Editor
         {
             _objectType = type;
 
-            if (!TryParseInput(ref input))
+            if (!TryParseInput(ref input, out _))
                 return;
 
             var members = FindMembers(isStatic, (info, _) => info.Name == input);

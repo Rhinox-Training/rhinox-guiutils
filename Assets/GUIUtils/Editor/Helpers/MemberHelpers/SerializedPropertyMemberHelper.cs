@@ -47,8 +47,14 @@ namespace Rhinox.GUIUtils.Editor
             
             _info = property.GetHostInfo();
             
-            if (!TryParseInput(ref input))
+            if (!TryParseInput(ref input, out bool parameter))
                 return;
+
+            if (!parameter && typeof(T) == typeof(string))
+            {
+                _cachedValue = (T) (object) input;
+                return;
+            }
             
             // property might have changed
             _objectType = _info.GetHostType();
