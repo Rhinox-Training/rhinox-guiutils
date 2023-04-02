@@ -31,12 +31,80 @@ namespace Rhinox.GUIUtils
             get
             {
                 if (_titleStyle == null)
-#if UNITY_EDITOR
-                    _titleStyle = new GUIStyle(EditorStyles.label);
-#else
-                    _titleStyle = new GUIStyle("label");
-#endif
+                    _titleStyle = new GUIStyle("ControlLabel");
                 return _titleStyle;
+            }
+        }
+        
+        
+        private static GUIStyle _boldTitleStyle;
+        public static GUIStyle BoldTitle
+        {
+            get
+            {
+                if (_boldTitleStyle == null)
+                    _boldTitleStyle = new GUIStyle(CustomGUIStyles.Title)
+                    {
+                        fontStyle = FontStyle.Bold
+                    };
+                return _boldTitleStyle;
+            }
+        }
+        
+        private static GUIStyle _titleStyleCentered;
+        public static GUIStyle TitleCentered
+        {
+            get
+            {
+                if (_titleStyleCentered == null)
+                    _titleStyleCentered = new GUIStyle(Title)
+                    {
+                        alignment = TextAnchor.MiddleCenter
+                    };
+                return _titleStyleCentered;
+            }
+        }
+        
+        private static GUIStyle _boldTitleStyleCentered;
+        public static GUIStyle BoldTitleCentered
+        {
+            get
+            {
+                if (_boldTitleStyleCentered == null)
+                    _boldTitleStyleCentered = new GUIStyle(CustomGUIStyles.TitleCentered)
+                    {
+                        fontStyle = FontStyle.Bold
+                    };
+                return _boldTitleStyleCentered;
+            }
+        }
+        
+        private static GUIStyle _titleStyleRight;
+        
+        public static GUIStyle TitleRight
+        {
+            get
+            {
+                if (_titleStyleRight == null)
+                    _titleStyleRight = new GUIStyle(Title)
+                    {
+                        alignment = TextAnchor.MiddleRight
+                    };
+                return _titleStyleRight;
+            }
+        }
+        
+        private static GUIStyle _boldTitleStyleRight;
+        public static GUIStyle BoldTitleRight
+        {
+            get
+            {
+                if (_boldTitleStyleRight == null)
+                    _boldTitleStyleRight = new GUIStyle(CustomGUIStyles.TitleRight)
+                    {
+                        fontStyle = FontStyle.Bold
+                    };
+                return _boldTitleStyleRight;
             }
         }
         
@@ -54,11 +122,7 @@ namespace Rhinox.GUIUtils
                         alignment = TextAnchor.MiddleLeft,
                         stretchHeight = false,
                         stretchWidth = true,
-#if UNITY_EDITOR
-                        fixedHeight = 1.3333f * EditorGUIUtility.singleLineHeight
-#else
                         fixedHeight = 24.0f
-#endif
                     };
                 return _titleBackgroundStyle;
             }
@@ -76,21 +140,6 @@ namespace Rhinox.GUIUtils
                         alignment = TextAnchor.MiddleCenter
                     };
                 return _titleBackgroundStyleCentered;
-            }
-        }
-        
-        private static GUIStyle _boldTitleStyle;
-        public static GUIStyle BoldTitle
-        {
-            get
-            {
-                if (_boldTitleStyle == null)
-                    _boldTitleStyle = new GUIStyle(CustomGUIStyles.Title)
-                    {
-                        fontStyle = FontStyle.Bold,
-                        padding = new RectOffset(0, 0, 0, 0)
-                    };
-                return _boldTitleStyle;
             }
         }
 
@@ -130,17 +179,17 @@ namespace Rhinox.GUIUtils
             }
         }
 
-        private static GUIStyle _subtitleStyleRightAligned;
+        private static GUIStyle _subtitleStyleRight;
         public static GUIStyle SubtitleRight
         {
             get
             {
-                if (_subtitleStyleRightAligned == null)
-                    _subtitleStyleRightAligned = new GUIStyle(CustomGUIStyles.Subtitle)
+                if (_subtitleStyleRight == null)
+                    _subtitleStyleRight = new GUIStyle(CustomGUIStyles.Subtitle)
                     {
                         alignment = TextAnchor.MiddleRight
                     };
-                return _subtitleStyleRightAligned;
+                return _subtitleStyleRight;
             }
         }
         
@@ -151,13 +200,7 @@ namespace Rhinox.GUIUtils
             {
                 if (_labelStyle == null)
                 {
-                    _labelStyle = new GUIStyle(
-#if UNITY_EDITOR
-                        EditorStyles.label
-#else
-                        "label"
-#endif
-                    );
+                    _labelStyle = new GUIStyle("ControlLabel");
                 }
 
                 return _labelStyle;
@@ -254,48 +297,44 @@ namespace Rhinox.GUIUtils
                 return _labelStyleUnpadded;
             }
         }
-
-#if UNITY_EDITOR
-        private static GUIStyle _miniLabelStyleCentered;
-        public static GUIStyle MiniLabel
-        {
-            get
-            {
-                if (_miniLabelStyleCentered == null)
-                {
-                    _miniLabelStyleCentered = new GUIStyle(EditorStyles.centeredGreyMiniLabel)
-                    {
-                        alignment = TextAnchor.MiddleCenter,
-                        clipping = TextClipping.Clip
-                    };
-#if UNITY_2019_3_OR_NEWER
-                    _miniLabelStyleCentered.margin = new RectOffset(4, 4, 4, 4);
-#endif
-                }
-                return _miniLabelStyleCentered;
-            }
-        }
         
         private static GUIStyle _miniLabelStyleLeft;
-        public static GUIStyle MiniLabelLeft
+        public static GUIStyle MiniLabel
         {
             get
             {
                 if (_miniLabelStyleLeft == null)
                 {
-                    _miniLabelStyleLeft = new GUIStyle(EditorStyles.centeredGreyMiniLabel)
+                    _miniLabelStyleLeft = new GUIStyle("MiniLabel")
                     {
                         alignment = TextAnchor.MiddleLeft,
-                        clipping = TextClipping.Clip
+                        clipping = TextClipping.Clip,
+                        margin = new RectOffset(4, 4, 4, 4),
+                        normal = {
+                            textColor = Color.grey
+                        }
                     };
-#if UNITY_2019_3_OR_NEWER
-                    _miniLabelStyleLeft.margin = new RectOffset(4, 4, 4, 4);
-#endif
                 }
                 return _miniLabelStyleLeft;
             }
         }
-        
+
+        private static GUIStyle _miniLabelStyleCentered;
+        public static GUIStyle MiniLabelCentered
+        {
+            get
+            {
+                if (_miniLabelStyleCentered == null)
+                {
+                    _miniLabelStyleCentered = new GUIStyle(CustomGUIStyles.MiniLabel)
+                    {
+                        alignment = TextAnchor.MiddleCenter,
+                    };
+                }
+                return _miniLabelStyleCentered;
+            }
+        }
+
         private static GUIStyle _miniLabelStyleRight;
         public static GUIStyle MiniLabelRight
         {
@@ -303,19 +342,71 @@ namespace Rhinox.GUIUtils
             {
                 if (_miniLabelStyleRight == null)
                 {
-                    _miniLabelStyleRight = new GUIStyle(EditorStyles.centeredGreyMiniLabel)
+                    _miniLabelStyleRight = new GUIStyle(CustomGUIStyles.MiniLabel)
                     {
-                        alignment = TextAnchor.MiddleRight,
-                        clipping = TextClipping.Overflow
+                        alignment = TextAnchor.MiddleRight
                     };
-#if UNITY_2019_3_OR_NEWER
-                    _miniLabelStyleRight.margin = new RectOffset(4, 4, 4, 4);
-#endif
                 }
                 return _miniLabelStyleRight;
             }
         }
-#endif
+        
+        // =============================================================================================================
+        // Clean styles
+        private static GUIStyle _cleanStyle;
+        public static GUIStyle Clean
+        {
+            get
+            {
+                if (_cleanStyle == null)
+                {
+                    _cleanStyle = new GUIStyle()
+                    {
+                        overflow = new RectOffset(0, 0, 0, 0),
+                        margin = new RectOffset(0, 0, 0, 0),
+                        padding = new RectOffset(0, 0, 0, 0)
+                    };
+                }
+
+                return _cleanStyle;
+            }
+        }
+        
+        private static GUIStyle _cleanStyleTextField;
+        public static GUIStyle CleanTextField
+        {
+            get
+            {
+                if (_cleanStyleTextField == null)
+                {
+                    _cleanStyleTextField = new GUIStyle("TextField")
+                    {
+                        overflow = new RectOffset(0, 0, 0, 0),
+                        margin = new RectOffset(0, 0, 0, 0),
+                    };
+                }
+
+                return _cleanStyleTextField;
+            }
+        }
+        private static GUIStyle _cleanLabelField;
+        public static GUIStyle CleanLabelField
+        {
+            get
+            {
+                if (_cleanLabelField == null)
+                {
+                    _cleanLabelField = new GUIStyle("ControlLabel")
+                    {
+                        overflow = new RectOffset(0, 0, 0, 0),
+                        margin = new RectOffset(0, 0, 0, 0),
+                    };
+                }
+
+                return _cleanLabelField;
+            }
+        }
+        
         
         // =============================================================================================================
         // Toolbar styles
@@ -332,18 +423,13 @@ namespace Rhinox.GUIUtils
                         padding = new RectOffset(0, 1, 0, 0),
                         stretchHeight = true,
                         stretchWidth = true,
-                        fixedHeight = 0.0f
+                        fixedHeight = 0.0f,
                     };
-                    
-#if UNITY_2019_3_OR_NEWER
-                    _toolbarBackground.padding = new RectOffset(0, 0, 0, 0);
-#endif
                 }
                 return _toolbarBackground;
             }
         }
         
-#if UNITY_EDITOR
         private static GUIStyle _toggleGroupBackground;
         public static GUIStyle ToggleGroupBackground
         {
@@ -351,7 +437,7 @@ namespace Rhinox.GUIUtils
             {
                 if (_toggleGroupBackground == null)
                 {
-                    _toggleGroupBackground = new GUIStyle(EditorStyles.helpBox)
+                    _toggleGroupBackground = new GUIStyle("HelpBox")
                     {
                         overflow = new RectOffset(0, 0, 0, 0),
                         margin = new RectOffset(0, 0, 0, 0),
@@ -362,7 +448,6 @@ namespace Rhinox.GUIUtils
                 return _toggleGroupBackground;
             }
         }
-#endif
 
         private static GUIStyle _toolbarTab;
         public static GUIStyle ToolbarTab
@@ -370,13 +455,7 @@ namespace Rhinox.GUIUtils
             get
             {
                 if (_toolbarTab == null)
-                    _toolbarTab = new GUIStyle(
-                        #if UNITY_EDITOR
-                            EditorStyles.toolbarButton
-                        #else
-                            "Button"
-                        #endif
-                        )
+                    _toolbarTab = new GUIStyle("toolbarbutton")
                     {
                         fixedHeight = 0.0f,
                         stretchHeight = true,
@@ -392,13 +471,7 @@ namespace Rhinox.GUIUtils
             get
             {
                 if (_toolbarCentered == null)
-                    _toolbarCentered = new GUIStyle(
-                        #if UNITY_EDITOR
-                            EditorStyles.toolbarButton
-                        #else
-                            "Button"
-                        #endif
-                        )
+                    _toolbarCentered = new GUIStyle("toolbarbutton")
                     {
                         fixedHeight = 0.0f,
                         alignment = TextAnchor.MiddleCenter,
@@ -602,18 +675,17 @@ namespace Rhinox.GUIUtils
             return selected ? CustomGUIStyles.ButtonMidSelected : CustomGUIStyles.ButtonMid;
         }
 
-#if UNITY_EDITOR
         private static GUIStyle _miniButtonStyle;
         public static GUIStyle MiniButton
         {
             get
             {
                 if (_miniButtonStyle == null)
-                    _miniButtonStyle = new GUIStyle(EditorStyles.miniButton);
+                    _miniButtonStyle = new GUIStyle("miniButton");
                 return _miniButtonStyle;
             }
         }
-        
+
         private static GUIStyle _miniButtonStyleSelected;
         public static GUIStyle MiniButtonSelected
         {
@@ -634,7 +706,7 @@ namespace Rhinox.GUIUtils
             get
             {
                 if (_miniButtonStyleLeft == null)
-                    _miniButtonStyleLeft = new GUIStyle(EditorStyles.miniButtonLeft);
+                    _miniButtonStyleLeft = new GUIStyle("miniButtonLeft");
                 return _miniButtonStyleLeft;
             }
         }
@@ -659,7 +731,7 @@ namespace Rhinox.GUIUtils
             get
             {
                 if (_miniButtonStyleMid == null)
-                    _miniButtonStyleMid = new GUIStyle(EditorStyles.miniButtonMid);
+                    _miniButtonStyleMid = new GUIStyle("miniButtonMid");
                 return _miniButtonStyleMid;
             }
         }
@@ -684,7 +756,7 @@ namespace Rhinox.GUIUtils
             get
             {
                 if (_miniButtonStyleRight == null)
-                    _miniButtonStyleRight = new GUIStyle(EditorStyles.miniButtonRight);
+                    _miniButtonStyleRight = new GUIStyle("miniButtonRight");
                 return _miniButtonStyleRight;
             }
         }
@@ -711,6 +783,5 @@ namespace Rhinox.GUIUtils
             if (buttonI >= maxI - 1) return selected ? CustomGUIStyles.MiniButtonRightSelected : CustomGUIStyles.MiniButtonRight;
             return selected ? CustomGUIStyles.MiniButtonMidSelected : CustomGUIStyles.MiniButtonMid;
         }
-#endif
     }
 }
