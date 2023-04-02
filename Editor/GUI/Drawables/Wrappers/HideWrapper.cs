@@ -15,10 +15,10 @@ namespace Rhinox.GUIUtils.Editor
         {
         }
 
-        protected override void DrawInner(GUIContent label)
+        protected override void DrawInner(GUIContent label, params GUILayoutOption[] options)
         {
             if (ShouldDraw())
-                base.DrawInner(label);
+                base.DrawInner(label, options);
         }
 
         protected override void DrawInner(Rect rect, GUIContent label)

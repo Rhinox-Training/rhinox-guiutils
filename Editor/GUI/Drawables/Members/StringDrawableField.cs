@@ -9,9 +9,9 @@ namespace Rhinox.GUIUtils.Editor
     {
         public StringDrawableField(object instance, MemberInfo info) : base(instance, info) { }
 
-        protected override string DrawValue(GUIContent label, string memberVal)
+        protected override string DrawValue(GUIContent label, string memberVal, params GUILayoutOption[] options)
         {
-            return EditorGUILayout.TextField(label, memberVal);
+            return EditorGUILayout.TextField(label, memberVal, options);
         }
 
         protected override string DrawValue(Rect rect, GUIContent label, string memberVal)

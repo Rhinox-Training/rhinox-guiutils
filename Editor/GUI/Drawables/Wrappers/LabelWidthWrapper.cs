@@ -31,11 +31,11 @@ namespace Rhinox.GUIUtils.Editor
             return original;
         } 
 
-        protected override void DrawInner(GUIContent label)
+        protected override void DrawInner(GUIContent label, params GUILayoutOption[] options)
         {
             float restoreValue = HandleLabelWidth(label);
             
-            base.DrawInner(label);
+            base.DrawInner(label, options);
 
             EditorGUIUtility.labelWidth = restoreValue;
         }

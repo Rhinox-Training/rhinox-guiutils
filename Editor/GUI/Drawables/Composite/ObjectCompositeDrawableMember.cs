@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace Rhinox.GUIUtils.Editor
 {
-    public class ObjectCompositeDrawableMember : CompositeDrawableMember
+    public class ObjectCompositeDrawableMember : VerticalGroupDrawable
     {
         private GUIContent _label;
 
@@ -19,13 +19,13 @@ namespace Rhinox.GUIUtils.Editor
             {
                 var height = base.ElementHeight;
                 if (IsFoldout() && _hasLabel)
-                    height += EditorGUIUtility.singleLineHeight + 2;
+                    height += EditorGUIUtility.singleLineHeight + CustomGUIUtility.Padding;
                 return height;
             }
         }
 
         public ObjectCompositeDrawableMember(string name, float order = 0)
-            : base(name, order)
+            : base(null, name, order)
         {
             _label = new GUIContent(name);
         }

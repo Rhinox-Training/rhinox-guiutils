@@ -27,11 +27,11 @@ namespace Rhinox.GUIUtils.Editor
         {
         }
 
-        protected override void DrawInner(GUIContent label)
+        protected override void DrawInner(GUIContent label, params GUILayoutOption[] options)
         {
             if (_member == null || _member.GetValue())
                 EditorGUILayout.HelpBox(_message, _type);
-            base.DrawInner(label);
+            base.DrawInner(label, options);
         }
 
         protected override void DrawInner(Rect rect, GUIContent label)

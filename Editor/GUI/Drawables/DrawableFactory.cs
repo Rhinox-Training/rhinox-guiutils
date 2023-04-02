@@ -245,7 +245,6 @@ namespace Rhinox.GUIUtils.Editor
                     subtype = subInstance.GetType();
                 
                 var subdrawables = CreateDrawableMembersFor(subInstance, subtype, depth + 1);
-                DrawableGroupingHelper.Process(ref subdrawables);
                 var composite = new ObjectCompositeDrawableMember(memberInfo.Name);
                 var attributes = memberInfo.GetCustomAttributes<Attribute>();
 
