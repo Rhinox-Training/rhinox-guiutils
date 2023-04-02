@@ -14,15 +14,7 @@ namespace Rhinox.GUIUtils.Editor
 {
     public class ListElementDrawable
     {
-        public float ElementHeight
-        {
-            get
-            {
-                if (_propertyView != null)
-                    return _propertyView.Height;
-                return _defaultElementHeight;
-            }
-        }
+        public float ElementHeight => _propertyView?.Height ?? _defaultElementHeight;
 
         private readonly float _defaultElementHeight;
         private readonly SerializedProperty _property;
@@ -76,7 +68,9 @@ namespace Rhinox.GUIUtils.Editor
         public DrawableList(SerializedProperty listProperty)
             : base(listProperty.serializedObject)
         {
-            if (listProperty == null) throw new ArgumentNullException(nameof(listProperty));
+            if (listProperty == null)
+                throw new ArgumentNullException(nameof(listProperty));
+            
             _listProperty = listProperty;
             _listContainerInstance = null;
             _listMemberInfo = null;
@@ -95,18 +89,15 @@ namespace Rhinox.GUIUtils.Editor
             Initialize(_listRO);
         }
 
-        public DrawableList(object containerInstance, MemberInfo memberInfo)
-            : base(null, memberInfo)
+        public DrawableList(GenericMemberEntry entry) : base(entry)
         {
-            if (containerInstance == null) throw new ArgumentNullException(nameof(containerInstance));
             _listProperty = null;
-            _listContainerInstance = containerInstance;
-            _listMemberInfo = memberInfo;
-            _listDrawerAttr = memberInfo.GetCustomAttribute<ListDrawerSettingsAttribute>() ??
-                              new ListDrawerSettingsAttribute();
-            _drawElementsAsUnity = memberInfo.GetCustomAttribute<DrawAsUnityObjectAttribute>() != null;
+            _listContainerInstance = entry.Instance;
+            _listMemberInfo = entry.Info;
+            _listDrawerAttr = entry.GetAttribute<ListDrawerSettingsAttribute>() ?? new ListDrawerSettingsAttribute();
+            _drawElementsAsUnity = entry.GetAttribute<DrawAsUnityObjectAttribute>() != null;
 
-            _listRO = new PageableReorderableList(containerInstance, memberInfo,
+            _listRO = new PageableReorderableList(_listContainerInstance, _listMemberInfo,
                 _listDrawerAttr.DraggableItems, true,
                 !_listDrawerAttr.IsReadOnly && !_listDrawerAttr.HideAddButton,
                 !_listDrawerAttr.IsReadOnly && !_listDrawerAttr.HideRemoveButton)
@@ -174,10 +165,8 @@ namespace Rhinox.GUIUtils.Editor
 
         private void DrawElement(Rect rect, int index, bool isActive, bool isFocused)
         {
-            if (!rect.IsValid())
-                return;
-            
-            var listEntryRect = _listDrawerAttr.IsReadOnly ? rect : rect.AlignLeft(rect.width - 16);
+            if (rect.IsValid())
+                rect = _listDrawerAttr.IsReadOnly ? rect : rect.AlignLeft(rect.width - 16);
 
             if (_listElements.Length != _listRO.count)
                 _listElements = new ListElementDrawable[_listRO.count];
@@ -187,7 +176,7 @@ namespace Rhinox.GUIUtils.Editor
             
             if (_listElements[index] == null)
                 _listElements[index] = CreateElementFor(index, _drawElementsAsUnity);
-            _listElements[index].Draw(listEntryRect);
+            _listElements[index].Draw(rect);
         }
 
         private ListElementDrawable CreateElementFor(int index, bool drawElementsAsUnity = false)
@@ -207,14 +196,13 @@ namespace Rhinox.GUIUtils.Editor
 
         private void OnBeginDraw()
         {
-            if (_listProperty != null)
+            if (_listProperty == null) return;
+            
+            if (_listProperty.serializedObject != null)
             {
-                if (_listProperty.serializedObject != null)
-                {
-                    // NOTE: Apply anything modified so nothing gets cleared when drawing nested
-                    _listProperty.serializedObject.ApplyModifiedProperties(); 
-                    _listProperty.serializedObject.Update();
-                }
+                // NOTE: Apply anything modified so nothing gets cleared when drawing nested
+                _listProperty.serializedObject.ApplyModifiedProperties(); 
+                _listProperty.serializedObject.Update();
             }
         }
 

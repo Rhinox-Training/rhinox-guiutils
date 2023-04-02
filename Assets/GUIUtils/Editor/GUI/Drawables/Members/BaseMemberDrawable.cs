@@ -11,21 +11,19 @@ namespace Rhinox.GUIUtils.Editor
 {
     public abstract class BaseMemberDrawable<T> : BaseDrawable
     {
-        public override string LabelString => _info != null ? _info.Name : null;
+        public override string LabelString => Entry.NiceName;
         
-        public override ICollection<TAttribute> GetDrawableAttributes<TAttribute>()
-        {
-            if (_info == null)
-                return base.GetDrawableAttributes<TAttribute>();
-            return _info.GetCustomAttributes<TAttribute>().ToArray();
-        }
-        
-        protected readonly MemberInfo _info;
+        protected readonly GenericMemberEntry Entry;
 
         protected BaseMemberDrawable(object instance, MemberInfo info)
+            : this(new GenericMemberEntry(instance, info))
         {
-            Host = instance;
-            _info = info;
+        }
+        
+        protected BaseMemberDrawable(GenericMemberEntry entry)
+        {
+            Entry = entry;
+            Host = entry;
         }
 
         protected override void DrawInner(GUIContent label)
@@ -53,10 +51,20 @@ namespace Rhinox.GUIUtils.Editor
         {
         }
 
-        protected T GetSmartValue() => (T) _info.GetValue(Host);
-        protected void SetSmartValue(T val) => _info.TrySetValue(Host, val);
+        protected T GetSmartValue() => Entry.GetSmartValue<T>();
+        protected void SetSmartValue(T val) => Entry.TrySetValue(val);
 
         protected abstract T DrawValue(GUIContent label, T memberVal, params GUILayoutOption[] options);
         protected abstract T DrawValue(Rect rect, GUIContent label, T memberVal);
+
+        private Attribute[] _cachedAttributes;
+        
+        public override IEnumerable<TAttribute> GetDrawableAttributes<TAttribute>()
+        {
+            if (_cachedAttributes == null)
+                _cachedAttributes = Entry.GetAttributes();
+            
+            return _cachedAttributes.OfType<TAttribute>();
+        }
     }
 }

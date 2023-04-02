@@ -210,8 +210,8 @@ namespace Rhinox.GUIUtils.Editor
             Rect rect2 = GUILayoutUtility.GetRect(10f, this.GetListElementHeight(), GUILayout.ExpandWidth(true));
             Rect rect3 = GUILayoutUtility.GetRect(4f, this.footerHeight, GUILayout.ExpandWidth(true));
 
-            if (!rect2.IsValid())
-                return;
+            // if (!rect2.IsValid())
+            //     return;
             
             this.DoListHeader(rect1);
             this.DoListElements(rect2);
@@ -246,10 +246,7 @@ namespace Rhinox.GUIUtils.Editor
             int count = GetListDrawCount();
             if (this.showDefaultBackground && Event.current.type == UnityEngine.EventType.Repaint)
                 BetterReorderableList.s_Defaults.boxBackground.Draw(listRect, false, false, false, false);
-            
-            if (!listRect.IsValid())
-                return;
-            
+
             listRect.yMin += this.listElementTopPadding;
             listRect.yMax -= 4f;
             if (this.showDefaultBackground)

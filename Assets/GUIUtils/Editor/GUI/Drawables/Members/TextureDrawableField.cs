@@ -25,9 +25,9 @@ namespace Rhinox.GUIUtils.Editor
             }
         }
 
-        public TextureDrawableField(object instance, MemberInfo info) : base(instance, info)
+        public TextureDrawableField(GenericMemberEntry entry) : base(entry)
         {
-            _previewAttr = info.GetCustomAttribute<PreviewFieldAttribute>();
+            _previewAttr = entry.GetAttribute<PreviewFieldAttribute>();
         }
         
         protected override UnityEngine.Texture DrawValue(GUIContent label, UnityEngine.Texture memberVal, params GUILayoutOption[] options)
@@ -46,7 +46,7 @@ namespace Rhinox.GUIUtils.Editor
                 DrawTexturePreview(ref memberVal, rect);
                 return memberVal;
             }
-            return EditorGUILayout.ObjectField(memberVal, _info.GetReturnType(), true, options) as Texture;
+            return EditorGUILayout.ObjectField(memberVal, Entry.GetReturnType(), true, options) as Texture;
         }
 
         protected override UnityEngine.Texture DrawValue(Rect rect, GUIContent label, UnityEngine.Texture memberVal)
@@ -56,7 +56,7 @@ namespace Rhinox.GUIUtils.Editor
                 DrawTexturePreview(ref memberVal, rect);
                 return memberVal;
             }
-            return EditorGUI.ObjectField(rect, memberVal, _info.GetReturnType(), true) as Texture;
+            return EditorGUI.ObjectField(rect, memberVal, Entry.GetReturnType(), true) as Texture;
         }
 
         protected override void OnPreDraw()
@@ -105,13 +105,12 @@ namespace Rhinox.GUIUtils.Editor
         private bool CheckIfIsReadOnly()
         {
             bool isReadOnly = false;
-            if (this._info is PropertyInfo propertyInfo)
-            {
+            var info = Entry.Info;
+            if (info is PropertyInfo propertyInfo)
                 isReadOnly = propertyInfo.GetSetMethod(false) == null;
-            }
 
             if (!isReadOnly)
-                isReadOnly = _info.GetCustomAttribute<ReadOnlyAttribute>() != null;
+                isReadOnly = info.GetCustomAttribute<ReadOnlyAttribute>() != null;
             return isReadOnly;
         }
     }

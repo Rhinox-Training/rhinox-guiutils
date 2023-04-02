@@ -78,6 +78,7 @@ namespace Rhinox.GUIUtils.Editor
                 Initialize();
 
             var builderPairs = attributes
+                .Distinct() // IDK why but it's needed? are Attribute's Equal overridden?
                 .ToDictionary(
                     x => x,
                     x => _buildersByAttribute.GetOrDefault(x.GetType(), Array.Empty<AttributeBuilder>())

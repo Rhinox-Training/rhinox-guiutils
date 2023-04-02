@@ -15,7 +15,7 @@ public class SizeInfo
     public static SizeInfo Empty => _empty ?? (_empty = new SizeInfo());
 }
 
-public class SizeManager : List<SizeInfo>
+public class SizeResolver : List<SizeInfo>
 {
     private float _resolvedSize;
     private float _resolvedPadding;

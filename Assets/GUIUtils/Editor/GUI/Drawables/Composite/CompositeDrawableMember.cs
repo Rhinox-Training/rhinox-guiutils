@@ -31,11 +31,11 @@ namespace Rhinox.GUIUtils.Editor
             Order = order;
         }
         
-        public ICollection<TAttribute> GetDrawableAttributes<TAttribute>() where TAttribute : Attribute
+        public IEnumerable<TAttribute> GetDrawableAttributes<TAttribute>() where TAttribute : Attribute
         {
             if (_attributes == null)
                 return Array.Empty<TAttribute>();
-            return _attributes.OfType<TAttribute>().ToList();
+            return _attributes.OfType<TAttribute>();
         }
 
         public void AddAttribute(Attribute attribute)

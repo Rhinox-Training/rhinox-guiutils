@@ -10,9 +10,9 @@ namespace Rhinox.GUIUtils.Editor
     {
         public bool HasFlags { get; }
         
-        public EnumDrawableField(object instance, MemberInfo info) : base(instance, info)
+        public EnumDrawableField(GenericMemberEntry entry) : base(entry)
         {
-            HasFlags = info.GetReturnType().GetCustomAttribute<FlagsAttribute>() != null;
+            HasFlags = entry.GetReturnType().GetCustomAttribute<FlagsAttribute>() != null;
         }
 
         protected override Enum DrawValue(GUIContent label, Enum memberVal, params GUILayoutOption[] options)

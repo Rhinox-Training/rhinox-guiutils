@@ -44,7 +44,7 @@ namespace Rhinox.GUIUtils.Editor
 
         public override void Add(IOrderedDrawable child)
         {
-            var groupAttributes = child.GetDrawableAttributes<PropertyGroupAttribute>();
+            var groupAttributes = child.GetDrawableAttributes<PropertyGroupAttribute>().ToArray();
             if (groupAttributes.IsNullOrEmpty())
             {
                 base.Add(child);
@@ -76,7 +76,7 @@ namespace Rhinox.GUIUtils.Editor
             }
         }
 
-        private List<GroupInfo> EnsureAllGroupsExist(ICollection<PropertyGroupAttribute> groupAttributes)
+        private List<GroupInfo> EnsureAllGroupsExist(IEnumerable<PropertyGroupAttribute> groupAttributes)
         {
             var finalGroups = new List<GroupInfo>();
             // keep track of attempts
@@ -209,14 +209,14 @@ namespace Rhinox.GUIUtils.Editor
         {
             if (_size.MaxSize > 0)
             {
-                float width = _size.MaxSize - CustomGUIUtility.Padding;
+                float width = _size.MaxSize;
                 if (size.MaxSize <= float.Epsilon || size.MaxSize > width)
                     size.MaxSize = width;
             }
             
             if (_size.PreferredSize > 0)
             {
-                float width = _size.PreferredSize - CustomGUIUtility.Padding;
+                float width = _size.PreferredSize;
                 if (size.PreferredSize > width)
                     size.PreferredSize = width;
 

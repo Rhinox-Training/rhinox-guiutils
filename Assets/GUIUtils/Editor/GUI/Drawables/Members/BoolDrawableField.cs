@@ -11,7 +11,7 @@ namespace Rhinox.GUIUtils.Editor
     {
         private bool _left;
         
-        public BoolDrawableField(object instance, MemberInfo info) : base(instance, info)
+        public BoolDrawableField(GenericMemberEntry entry) : base(entry)
         {
         }
 
