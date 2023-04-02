@@ -22,11 +22,11 @@ namespace Rhinox.GUIUtils.Editor
 
         }
 
-        protected override void DrawInner(GUIContent label)
+        protected override void DrawInner(GUIContent label, params GUILayoutOption[] options)
         {
             if (_amountBefore > 0)
                 GUILayout.Space(_amountBefore);
-            base.DrawInner(label);
+            base.DrawInner(label, options);
             if (_amountAfter > 0)
                 GUILayout.Space(_amountAfter);
         }

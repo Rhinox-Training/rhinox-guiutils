@@ -28,17 +28,17 @@ namespace Rhinox.GUIUtils.Editor
             _activeItem = _defaultItem;
         }
         
-        protected override void DrawInner(GUIContent label)
+        protected override void DrawInner(GUIContent label, params GUILayoutOption[] options)
         {
             OnPreDraw();
             
             if (_innerDrawable is BaseDrawable inner)
                 label = inner.Label;
 
-            EditorGUILayout.BeginHorizontal();
+            EditorGUILayout.BeginHorizontal(options);
             EditorGUILayout.PrefixLabel(label);
 
-            var clicked = EditorGUILayout.DropdownButton(_activeItem, FocusType.Keyboard);
+            var clicked = EditorGUILayout.DropdownButton(_activeItem, FocusType.Keyboard, options);
             
             var rect = GUILayoutUtility.GetLastRect();
             if (rect.IsValid())

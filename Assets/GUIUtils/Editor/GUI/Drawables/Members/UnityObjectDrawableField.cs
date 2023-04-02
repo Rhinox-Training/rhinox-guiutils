@@ -15,9 +15,9 @@ namespace Rhinox.GUIUtils.Editor
             
         }
         
-        protected override UnityEngine.Object DrawValue(GUIContent label, UnityEngine.Object memberVal)
+        protected override UnityEngine.Object DrawValue(GUIContent label, UnityEngine.Object memberVal, params GUILayoutOption[] options)
         {
-            return EditorGUILayout.ObjectField(label, memberVal, _info.GetReturnType(), AllowSceneObjects);
+            return EditorGUILayout.ObjectField(label, memberVal, _info.GetReturnType(), AllowSceneObjects, options);
         }
 
         protected override UnityEngine.Object DrawValue(Rect rect, GUIContent label, UnityEngine.Object memberVal)

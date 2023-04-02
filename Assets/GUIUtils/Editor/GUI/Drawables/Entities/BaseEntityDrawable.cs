@@ -22,7 +22,7 @@ namespace Rhinox.GUIUtils.Editor
         protected object EntityInstance { get; }
         protected readonly MemberInfo _memberInfo;
 
-        public override string LabelString => Host != null ? Host.GetType().Name : null;
+        public override string LabelString => Host?.GetType().Name;
 
         public override ICollection<TAttribute> GetDrawableAttributes<TAttribute>()
         {

@@ -28,16 +28,16 @@ namespace Rhinox.GUIUtils.Editor
             _typeOptions = ReflectionUtility.GetTypesInheritingFrom(type);
         }
 
-        protected override void DrawInner(GUIContent label)
+        protected override void DrawInner(GUIContent label, params GUILayoutOption[] options)
         {
             if (_managedReferenceValue == null)
             {
-                Rect dropdownPosition = EditorGUILayout.GetControlRect(true).AlignTop(EditorGUIUtility.singleLineHeight);
+                Rect dropdownPosition = EditorGUILayout.GetControlRect(true, options).AlignTop(EditorGUIUtility.singleLineHeight);
                 DrawTypePicker(dropdownPosition, _serializedProperty, GUIContent.none);
             }
             else
             {
-                base.DrawInner(label);
+                base.DrawInner(label, options);
             }
         }
 
@@ -87,9 +87,8 @@ namespace Rhinox.GUIUtils.Editor
             var hostInfo = _serializedProperty.GetHostInfo();
             var type = hostInfo.GetReturnType();
             var drawables = DrawableFactory.CreateDrawableMembersFor(_serializedProperty, type);
-            var compositeDrawableMember = new CompositeDrawableMember();
-            compositeDrawableMember.AddRange(drawables);
-            _innerDrawable = compositeDrawableMember;
+            var group = GroupingHelper.Process(drawables);
+            _innerDrawable = group;
         }
 
         GUIContent GetTypeName(SerializedProperty property)

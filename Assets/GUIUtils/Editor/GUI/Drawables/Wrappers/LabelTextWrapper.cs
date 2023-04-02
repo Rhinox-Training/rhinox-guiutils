@@ -18,10 +18,10 @@ namespace Rhinox.GUIUtils.Editor
             base.DrawInner(rect, new GUIContent(text));
         }
 
-        protected override void DrawInner(GUIContent label)
+        protected override void DrawInner(GUIContent label, params GUILayoutOption[] options)
         {
             var text = _stringHelper.GetValue();
-            base.DrawInner(new GUIContent(text));
+            base.DrawInner(new GUIContent(text), options);
         }
         
         [WrapDrawer(typeof(LabelTextAttribute), -1000)]

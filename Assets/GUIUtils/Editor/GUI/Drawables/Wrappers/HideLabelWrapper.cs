@@ -9,14 +9,14 @@ namespace Rhinox.GUIUtils.Editor
         {
         }
 
+        protected override void DrawInner(GUIContent label, params GUILayoutOption[] options)
+        {
+            base.DrawInner(GUIContent.none, options);
+        }
+
         protected override void DrawInner(Rect rect, GUIContent label)
         {
             base.DrawInner(rect, GUIContent.none);
-        }
-
-        protected override void DrawInner(GUIContent label)
-        {
-            base.DrawInner(GUIContent.none);
         }
 
         [WrapDrawer(typeof(HideLabelAttribute), -8000)]

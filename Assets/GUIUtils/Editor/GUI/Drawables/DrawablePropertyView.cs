@@ -70,14 +70,12 @@ namespace Rhinox.GUIUtils.Editor
             if (drawables.Count == 0 && obj is UnityEngine.Object unityObj)
                 drawables.Add(new DrawableUnityObject((GameObject)unityObj, null));
 
-            if (!drawables.IsNullOrEmpty())
-            {
-                DrawableGroupingHelper.Process(ref drawables);
-
-                drawables.SortDrawables();
-            }
-
-            return drawables;
+            if (drawables.IsNullOrEmpty())
+                return drawables;
+            
+            var group = GroupingHelper.Process(drawables);
+            group.Sort();
+            return new IOrderedDrawable[] { group };
         }
 
         public static ICollection<IOrderedDrawable> ParseSerializedProperty(SerializedProperty property)
@@ -93,14 +91,11 @@ namespace Rhinox.GUIUtils.Editor
 
             var drawables = DrawableFactory.CreateDrawableMembersFor(property, type);
 
-            if (!drawables.IsNullOrEmpty())
-            {
-                DrawableGroupingHelper.Process(ref drawables);
-
-                drawables.SortDrawables();
-            }
-
-            return drawables;
+            if (drawables.IsNullOrEmpty()) return drawables;
+            
+            var group = GroupingHelper.Process(drawables);
+            group.Sort();
+            return new IOrderedDrawable[] { group };
         }
 
         public static ICollection<IOrderedDrawable> ParseSerializedObject(SerializedObject obj)
@@ -112,13 +107,11 @@ namespace Rhinox.GUIUtils.Editor
 
             var drawables = DrawableFactory.CreateDrawableMembersFor(obj, type);
 
-            if (!drawables.IsNullOrEmpty())
-            {
-                DrawableGroupingHelper.Process(ref drawables);
-
-                drawables.SortDrawables();
-            }
-            return drawables;
+            if (drawables.IsNullOrEmpty()) return drawables;
+            
+            var group = GroupingHelper.Process(drawables);
+            group.Sort();
+            return new IOrderedDrawable[] { group };
         }
         
         public void DrawLayout()

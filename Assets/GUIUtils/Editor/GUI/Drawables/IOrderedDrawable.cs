@@ -14,7 +14,7 @@ namespace Rhinox.GUIUtils.Editor
         GUIContent Label { get; }
         
         ICollection<TAttribute> GetDrawableAttributes<TAttribute>() where TAttribute : Attribute;
-        void Draw(GUIContent label);
+        void Draw(GUIContent label, params GUILayoutOption[] options);
         void Draw(Rect rect, GUIContent label);
     }
 }

@@ -13,6 +13,8 @@ namespace Rhinox.GUIUtils.Editor
         private readonly PreviewFieldAttribute _previewAttr;
         private const int DEFAULT_SIZE = 64;
 
+        private int _activeControlId;
+
         public override float ElementHeight
         {
             get
@@ -28,7 +30,7 @@ namespace Rhinox.GUIUtils.Editor
             _previewAttr = info.GetCustomAttribute<PreviewFieldAttribute>();
         }
         
-        protected override UnityEngine.Texture DrawValue(GUIContent label, UnityEngine.Texture memberVal)
+        protected override UnityEngine.Texture DrawValue(GUIContent label, UnityEngine.Texture memberVal, params GUILayoutOption[] options)
         {
             if (_previewAttr != null)
             {
@@ -44,7 +46,7 @@ namespace Rhinox.GUIUtils.Editor
                 DrawTexturePreview(ref memberVal, rect);
                 return memberVal;
             }
-            return EditorGUILayout.ObjectField(memberVal, _info.GetReturnType(), true) as Texture;
+            return EditorGUILayout.ObjectField(memberVal, _info.GetReturnType(), true, options) as Texture;
         }
 
         protected override UnityEngine.Texture DrawValue(Rect rect, GUIContent label, UnityEngine.Texture memberVal)
@@ -61,10 +63,20 @@ namespace Rhinox.GUIUtils.Editor
         {
             base.OnPreDraw();
             string commandName = Event.current.commandName;
-            if (commandName == "ObjectSelectorUpdated") {
-                SetSmartValue(EditorGUIUtility.GetObjectPickerObject() as Texture2D);
-            } else if (commandName == "ObjectSelectorClosed") {
-                SetSmartValue(EditorGUIUtility.GetObjectPickerObject() as Texture2D);
+            
+            if (EditorGUIUtility.GetObjectPickerControlID() != _activeControlId)
+                return;
+            
+            if (commandName == "ObjectSelectorUpdated")
+            {
+                var picker = EditorGUIUtility.GetObjectPickerObject();
+                SetSmartValue(picker as Texture2D);
+            }
+            else if (commandName == "ObjectSelectorClosed")
+            {
+                var picker = EditorGUIUtility.GetObjectPickerObject();
+                SetSmartValue(picker as Texture2D);
+                _activeControlId = 0;
             }
         }
 
@@ -84,8 +96,8 @@ namespace Rhinox.GUIUtils.Editor
                 rect = rect.AlignCenter(rect.width * 0.6f);
                 if (GUI.Button(rect, "Select"))
                 {
-                    int controlID = EditorGUIUtility.GetControlID (FocusType.Passive);
-                    EditorGUIUtility.ShowObjectPicker<Texture2D> (memberVal, true, "", controlID);
+                    _activeControlId = GUIUtility.GetControlID (FocusType.Passive);
+                    EditorGUIUtility.ShowObjectPicker<Texture2D> (memberVal, true, "", _activeControlId);
                 }
             }
         }
