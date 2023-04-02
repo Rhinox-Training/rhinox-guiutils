@@ -6,6 +6,11 @@ namespace Rhinox.GUIUtils.Editor
 {
     public class UndrawableField<T> : BaseMemberDrawable<T>
     {
+        public UndrawableField(GenericMemberEntry entry) : base(entry)
+        {
+            
+        }
+        
         public UndrawableField(object instance, MemberInfo info) : base(instance, info)
         {
             

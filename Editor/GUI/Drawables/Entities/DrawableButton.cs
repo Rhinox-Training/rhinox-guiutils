@@ -99,11 +99,11 @@ namespace Rhinox.GUIUtils.Editor
             return true;
         }
 
-        public override ICollection<TAttribute> GetDrawableAttributes<TAttribute>()
+        public override IEnumerable<TAttribute> GetDrawableAttributes<TAttribute>()
         {
             if (_methodInfo == null)
                 return base.GetDrawableAttributes<TAttribute>();
-            return _methodInfo.GetCustomAttributes<TAttribute>().ToArray();
+            return _methodInfo.GetCustomAttributes<TAttribute>();
         }
     }
 }

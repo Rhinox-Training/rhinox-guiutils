@@ -21,14 +21,14 @@ namespace Rhinox.GUIUtils.Editor
             }
         }
         
-        protected readonly SizeManager _widthManager;
+        protected readonly SizeResolver _widthResolver;
         private Rect _cachedRect;
         private float _totalCachedWidth;
 
         public HorizontalGroupDrawable(GroupedDrawable parent, string groupID, int order)
             : base(parent, groupID, order)
         {
-            _widthManager = new SizeManager();
+            _widthResolver = new SizeResolver();
         }
         
 
@@ -43,9 +43,9 @@ namespace Rhinox.GUIUtils.Editor
             if (_size.MaxSize > float.Epsilon)
                 width = Mathf.Min(_size.MaxSize, width);
 
-            var widths = _widthManager.Resolve(width, CustomGUIUtility.Padding);
+            var widths = _widthResolver.Resolve(width, CustomGUIUtility.Padding);
 
-            // Debug.Log($"{this.Name} - Outer {_size}");
+            // Debug.Log($"{this.Name} - Outer [{_size.MinSize} _{_size.PreferredSize}_ {_size.MaxSize}]");
             var rect = EditorGUILayout.BeginHorizontal(CustomGUIStyles.Clean, GetLayoutOptions(_size));
 
             for (var i = 0; i < _drawableMemberChildren.Count; i++)
@@ -55,7 +55,7 @@ namespace Rhinox.GUIUtils.Editor
                     continue;
 
                 Rect innerRect = default;
-                // Debug.Log($"\tInner {_widths[i]}");
+                // Debug.Log($"\tInner {widths[i]}");
                 GUILayoutOption[] options = new [] { GUILayout.Width(widths[i]) };
                 innerRect = EditorGUILayout.BeginVertical(CustomGUIStyles.Clean, options);
 
@@ -83,7 +83,7 @@ namespace Rhinox.GUIUtils.Editor
             if (rect.IsValid())
                 _cachedRect = rect;
             
-            var widths = _widthManager.Resolve(_cachedRect.width, CustomGUIUtility.Padding);
+            var widths = _widthResolver.Resolve(_cachedRect.width, CustomGUIUtility.Padding);
             
             Rect childRect = rect;
             for (int i = 0; i < _drawableMemberChildren.Count; ++i)
@@ -102,13 +102,13 @@ namespace Rhinox.GUIUtils.Editor
 
         private void UpdateWidthManager()
         {
-            _widthManager.Clear();
-            _widthManager.ClearCache();
+            _widthResolver.Clear();
+            _widthResolver.ClearCache();
 
             foreach (var member in _drawableMemberChildren)
             {
                 TryGetSizeInfo(member, out SizeInfo info);
-                _widthManager.Add(info);
+                _widthResolver.Add(info);
             }
         }
 
@@ -128,6 +128,9 @@ namespace Rhinox.GUIUtils.Editor
         {
             if (attr is HorizontalGroupAttribute groupAttribute)
             {
+                // No need to trigger ParseAttribute -> should have happened already, but it can't hurt
+                ParseAttribute(groupAttribute);
+                
                 var info = new SizeInfo
                 {
                     PreferredSize = groupAttribute.Width,
@@ -138,23 +141,32 @@ namespace Rhinox.GUIUtils.Editor
                 EnsureSizeFits(info);
             
                 _sizeInfoByDrawable.Add(child, info);
-                
-                // No need to trigger ParseAttribute -> should have happened already
-                // ParseAttribute(groupAttribute);
             }
             else // incorrect attribute
                 throw new ArgumentException(nameof(attr));
         }
 
+        private readonly List<HorizontalGroupAttribute> _parsedAttributes = new List<HorizontalGroupAttribute>();
+
         protected override void ParseAttribute(PropertyGroupAttribute attr)
         {
+            if (_parsedAttributes.Contains(attr))
+                return;
+            
             if (attr is HorizontalGroupAttribute groupAttribute)
             {
+                _parsedAttributes.Add(groupAttribute);
                 SetOrder(groupAttribute.Order);
                 
-                _size.MinSize = Mathf.Max(_size.MinSize, groupAttribute.MinWidth);
-                _size.PreferredSize = Mathf.Max(_size.PreferredSize, groupAttribute.Width);
-                _size.MaxSize = Mathf.Max(_size.MaxSize, groupAttribute.MaxWidth);
+                _size.MinSize = _parsedAttributes.Sum(x => x.Width > 0 ? x.Width : x.MinWidth);
+                if (_parsedAttributes.All(x => x.Width > 0))
+                    _size.PreferredSize = _parsedAttributes.Sum(x => x.Width);
+                else
+                    _size.PreferredSize = 0;
+                if (_parsedAttributes.All(x => x.Width > 0 || x.MaxWidth > 0))
+                    _size.MaxSize = _parsedAttributes.Sum(x => x.Width > 0 ? x.Width : x.MaxWidth);
+                else
+                    _size.MaxSize = 0;
                 
                 _parent?.EnsureSizeFits(_size);
             }

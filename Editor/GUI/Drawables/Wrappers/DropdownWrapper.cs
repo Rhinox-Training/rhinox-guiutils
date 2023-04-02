@@ -32,6 +32,8 @@ namespace Rhinox.GUIUtils.Editor
         {
             OnPreDraw();
             
+            _member.DrawError();
+
             if (_innerDrawable is BaseDrawable inner)
                 label = inner.Label;
 
@@ -63,6 +65,8 @@ namespace Rhinox.GUIUtils.Editor
             
             if (EditorGUI.DropdownButton(rect, _activeItem, FocusType.Keyboard))
                 MakeMenuItems(rect);
+            
+            _member.DrawError(rect);
 
             OnPostDraw();
         }

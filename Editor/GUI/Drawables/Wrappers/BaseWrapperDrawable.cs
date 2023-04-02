@@ -24,7 +24,7 @@ namespace Rhinox.GUIUtils.Editor
             Order = _innerDrawable.Order;
         }
 
-        public override ICollection<TAttribute> GetDrawableAttributes<TAttribute>()
+        public override IEnumerable<TAttribute> GetDrawableAttributes<TAttribute>()
         {
             return _innerDrawable.GetDrawableAttributes<TAttribute>();
         }

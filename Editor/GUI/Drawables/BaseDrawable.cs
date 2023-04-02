@@ -76,7 +76,7 @@ namespace Rhinox.GUIUtils.Editor
             
         }
         
-        public virtual ICollection<TAttribute> GetDrawableAttributes<TAttribute>() 
+        public virtual IEnumerable<TAttribute> GetDrawableAttributes<TAttribute>() 
             where TAttribute : Attribute
         {
             return Array.Empty<TAttribute>();

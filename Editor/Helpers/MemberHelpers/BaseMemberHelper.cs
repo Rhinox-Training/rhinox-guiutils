@@ -1,6 +1,10 @@
 using System;
+using System.Linq;
 using System.Reflection;
+using Rhinox.Lightspeed;
 using Rhinox.Lightspeed.Reflection;
+using UnityEditor;
+using UnityEngine;
 
 namespace Rhinox.GUIUtils.Editor
 {
@@ -22,7 +26,7 @@ namespace Rhinox.GUIUtils.Editor
 
         protected virtual MemberTypes AllowedMembers => MemberTypes.Property | MemberTypes.Field | MemberTypes.Method;
 
-        protected virtual bool TryParseInput(ref string input, out bool parameter)
+        protected bool TryParseInput(ref string input, out bool parameter)
         {
             parameter = false;
             
@@ -42,14 +46,14 @@ namespace Rhinox.GUIUtils.Editor
                 input = input.Substring(1);
                 parameter = true;
                 
-                if (!TryParseParameter(input))
+                if (!TryParseParameter(ref input))
                     return false;
             }
             
             return true;
         }
 
-        protected virtual bool TryParseParameter(string input)
+        protected virtual bool TryParseParameter(ref string input)
         {
             return true;
         }
@@ -60,9 +64,61 @@ namespace Rhinox.GUIUtils.Editor
             return false;
         }
         
+        public void DrawError()
+        {
+            if (_errorMessage.IsNullOrEmpty())
+                return;
+                
+            EditorGUILayout.HelpBox(_errorMessage, MessageType.Error, true);
+        }
+        
+        public void DrawError(Rect rect)
+        {
+            if (_errorMessage.IsNullOrEmpty())
+                return;
+                
+            EditorGUI.HelpBox(rect, _errorMessage, MessageType.Error);
+        }
+
+        private MemberFilter CreateMemberFilter(string input, Type type)
+        {
+            return new MemberFilter((info, _) =>
+            {
+                if (info.Name != input)
+                    return false;
+                if (type != null && !info.GetReturnType().InheritsFrom(type))
+                    return false;
+                return true;
+            });
+        }
+        
+        protected bool TryFindMemberInHost<T>(string input, bool isStatic, out Func<T> staticGetter, out Func<object, T> instanceGetter)
+        {
+            staticGetter = null;
+            instanceGetter = null;
+            
+            if (!TryFindMemberInHost(input, typeof(T), isStatic, out MemberInfo info))
+                return false;
+
+            if (info.IsStatic())
+                staticGetter = () => (T)info.GetValue(null);
+            else
+                instanceGetter = (i) => (T)info.GetValue(i);
+            
+            return true;
+        }
+        
+        protected bool TryFindMemberInHost(string input, Type type, bool isStatic, out MemberInfo info)
+        {
+            var members = FindMembers(isStatic, CreateMemberFilter(input, type));
+
+            info = members.FirstOrDefault();
+            return info != null;
+        }
+        
         protected MemberInfo[] FindMembers(bool isStatic, MemberFilter filter, object filterCriteria = null)
         {
-            var flags = isStatic ? BindingFlags.Static : BindingFlags.Instance;
+            var flags = isStatic ? BindingFlags.Static : (BindingFlags.Static | BindingFlags.Instance);
             flags |= BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.FlattenHierarchy;
             var members = _objectType.FindMembers(
                 AllowedMembers,

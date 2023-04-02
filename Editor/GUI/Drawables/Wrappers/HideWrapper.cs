@@ -17,6 +17,7 @@ namespace Rhinox.GUIUtils.Editor
 
         protected override void DrawInner(GUIContent label, params GUILayoutOption[] options)
         {
+            _stateMember?.DrawError();
             if (ShouldDraw())
                 base.DrawInner(label, options);
         }
@@ -25,6 +26,8 @@ namespace Rhinox.GUIUtils.Editor
         {
             if (ShouldDraw())
                 base.DrawInner(rect, label);
+            
+            _stateMember?.DrawError(rect);
         }
 
         public bool ShouldDraw()
@@ -32,6 +35,7 @@ namespace Rhinox.GUIUtils.Editor
             if (_stateMember == null)
                 return _state;
             
+            _stateMember.DrawError();
             return _stateMember.GetValue() == _state;
         }
 

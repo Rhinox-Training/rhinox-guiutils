@@ -10,19 +10,19 @@ namespace Rhinox.GUIUtils.Editor
     {
         public bool AllowSceneObjects = true;
 
-        public UnityObjectDrawableField(object instance, MemberInfo info) : base(instance, info)
+        public UnityObjectDrawableField(GenericMemberEntry entry) : base(entry)
         {
             
         }
         
         protected override UnityEngine.Object DrawValue(GUIContent label, UnityEngine.Object memberVal, params GUILayoutOption[] options)
         {
-            return EditorGUILayout.ObjectField(label, memberVal, _info.GetReturnType(), AllowSceneObjects, options);
+            return EditorGUILayout.ObjectField(label, memberVal, Entry.GetReturnType(), AllowSceneObjects, options);
         }
 
         protected override UnityEngine.Object DrawValue(Rect rect, GUIContent label, UnityEngine.Object memberVal)
         {
-            return EditorGUI.ObjectField(rect, label, memberVal, _info.GetReturnType(), AllowSceneObjects);
+            return EditorGUI.ObjectField(rect, label, memberVal, Entry.GetReturnType(), AllowSceneObjects);
         }
     }
 }

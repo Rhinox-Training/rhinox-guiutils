@@ -7,7 +7,7 @@ namespace Rhinox.GUIUtils.Editor
 {
     public class StringDrawableField : BaseMemberDrawable<string>
     {
-        public StringDrawableField(object instance, MemberInfo info) : base(instance, info) { }
+        public StringDrawableField(GenericMemberEntry entry) : base(entry) { }
 
         protected override string DrawValue(GUIContent label, string memberVal, params GUILayoutOption[] options)
         {
