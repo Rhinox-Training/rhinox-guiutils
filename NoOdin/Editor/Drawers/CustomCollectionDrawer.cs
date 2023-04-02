@@ -142,7 +142,7 @@ namespace Rhinox.GUIUtils.NoOdin.Editor
         {
             float lineHeight = EditorGUIUtility.singleLineHeight;
             position = position.AddY(lineHeight);
-            GUI.Label(position, text, CustomGUIStyles.MiniLabelLeft);
+            GUI.Label(position, text, CustomGUIStyles.MiniLabel);
             return lineHeight;
         }
 
