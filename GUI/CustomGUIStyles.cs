@@ -420,7 +420,7 @@ namespace Rhinox.GUIUtils
                 {
                     _toolbarBackground = new GUIStyle("toolbar")
                     {
-                        padding = new RectOffset(0, 1, 0, 0),
+                        padding = new RectOffset(0, 0, 0, 0),
                         stretchHeight = true,
                         stretchWidth = true,
                         fixedHeight = 0.0f,
