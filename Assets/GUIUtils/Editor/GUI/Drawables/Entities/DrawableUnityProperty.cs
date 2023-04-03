@@ -11,6 +11,7 @@ namespace Rhinox.GUIUtils.Editor
         public DrawableUnityProperty(SerializedProperty prop, MemberInfo memberInfo = null)
             : base(prop, memberInfo)
         {
+            Host = prop;
         }
         
         protected override void DrawInner(GUIContent label)

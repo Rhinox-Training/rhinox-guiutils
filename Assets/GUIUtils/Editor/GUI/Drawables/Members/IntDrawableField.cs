@@ -1,4 +1,6 @@
-﻿using System.Reflection;
+﻿using System;
+using System.Reflection;
+using Sirenix.OdinInspector;
 using UnityEditor;
 using UnityEngine;
 using Object = System.Object;
@@ -7,11 +9,34 @@ namespace Rhinox.GUIUtils.Editor
 {
     public class IntDrawableField : BaseMemberDrawable<int>
     {
-        public IntDrawableField(object instance, MemberInfo info) : base(instance, info) { }
+        private int? _min;
+        private int? _max;
 
-        protected override int DrawValue(GUIContent label, int memberVal)
+        public IntDrawableField(GenericMemberEntry entry) : base(entry) { }
+
+        protected override void Initialize()
         {
-            return EditorGUILayout.IntField(label, memberVal);
+            base.Initialize();
+
+            if (TryGetDrawableAttribute(out MinValueAttribute minAttr))
+                _min = (int) Math.Round(minAttr.MinValue);
+            if (TryGetDrawableAttribute(out MaxValueAttribute maxAttr))
+                _max = (int) Math.Round(maxAttr.MaxValue);
+        }
+
+        protected override void PostProcessValue(ref int value)
+        {
+            if (_min.HasValue && value < _min)
+                value = _min.Value;
+            if (_max.HasValue && value > _max)
+                value = _max.Value;
+            
+            base.PostProcessValue(ref value);
+        }
+
+        protected override int DrawValue(GUIContent label, int memberVal, params GUILayoutOption[] options)
+        {
+            return EditorGUILayout.IntField(label, memberVal, CustomGUIStyles.CleanTextField, options);
         }
 
         protected override int DrawValue(Rect rect, GUIContent label, int memberVal)

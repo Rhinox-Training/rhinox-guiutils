@@ -25,10 +25,15 @@ namespace Rhinox.GUIUtils.Editor
 
     public static class DrawableWrapperFactory
     {
+        public struct AttributeBuilder
+        {
+            public int Priority;
+            public WrapperCreator Creator;
+        }
+        
         public delegate BaseWrapperDrawable WrapperCreator(Attribute attribute, IOrderedDrawable drawable);
 
-        private static readonly Dictionary<Type, WrapperCreator> _builderByAttribute = new Dictionary<Type, WrapperCreator>();
-        private static readonly Dictionary<Type, int> _priorityByAttributeType = new Dictionary<Type, int>();
+        private static readonly Dictionary<Type, ICollection<AttributeBuilder>> _buildersByAttribute = new Dictionary<Type, ICollection<AttributeBuilder>>();
 
         private static bool _initialized;
 
@@ -46,8 +51,14 @@ namespace Rhinox.GUIUtils.Editor
 
         public static void Register(Type attributeType, WrapperCreator creator, int priority = 0)
         {
-            _builderByAttribute.Add(attributeType, creator);
-            _priorityByAttributeType.Add(attributeType, priority);
+            if (!_buildersByAttribute.ContainsKey(attributeType))
+                _buildersByAttribute.Add(attributeType, new List<AttributeBuilder>());
+            
+            _buildersByAttribute[attributeType].Add(new AttributeBuilder
+            {
+                Creator = creator,
+                Priority = priority
+            });
         }
         
         private static void Register(Type attributeType, MethodInfo info, int priority = 0)
@@ -63,32 +74,23 @@ namespace Rhinox.GUIUtils.Editor
 
         public static IOrderedDrawable TryWrapDrawable(IOrderedDrawable drawable, IEnumerable<Attribute> attributes)
         {
-            var attrs = attributes.ToList();
-            attrs.SortByDescending(x => _priorityByAttributeType.GetOrDefault(x.GetType()));
-            
-            foreach (var attr in attrs)
-            {
-                if (TryCreateWrapper(attr, drawable, out BaseWrapperDrawable wrappedDrawable))
-                    drawable = wrappedDrawable;
-            }
-            return drawable;
-        }
-
-        private static bool TryCreateWrapper(Attribute attribute, IOrderedDrawable drawable, out BaseWrapperDrawable baseWrapperDrawable)
-        {
             if (!_initialized)
                 Initialize();
 
-            var attrType = attribute.GetType();
-            if (!_builderByAttribute.ContainsKey(attrType))
-            {
-                baseWrapperDrawable = null;
-                return false;
-            }
+            var builderPairs = attributes
+                .Distinct() // IDK why but it's needed? are Attribute's Equal overridden?
+                .ToDictionary(
+                    x => x,
+                    x => _buildersByAttribute.GetOrDefault(x.GetType(), Array.Empty<AttributeBuilder>())
+                )
+                .Flatten(x => x.Value.Select(y => (Attribute : x.Key, Builder: y)))
+                .OrderByDescending(x => x.Builder.Priority)
+                .ToArray();
+            
+            foreach (var pair in builderPairs)
+                drawable = pair.Builder.Creator.Invoke(pair.Attribute, drawable);
 
-            var creator = _builderByAttribute[attrType];
-            baseWrapperDrawable = creator?.Invoke(attribute, drawable);
-            return true;
+            return drawable;
         }
     }
 }

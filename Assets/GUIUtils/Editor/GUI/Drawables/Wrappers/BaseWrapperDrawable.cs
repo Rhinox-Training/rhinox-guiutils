@@ -24,14 +24,17 @@ namespace Rhinox.GUIUtils.Editor
             Order = _innerDrawable.Order;
         }
 
-        public override ICollection<TAttribute> GetDrawableAttributes<TAttribute>()
+        public override IEnumerable<TAttribute> GetDrawableAttributes<TAttribute>()
         {
             return _innerDrawable.GetDrawableAttributes<TAttribute>();
         }
         
-        protected override void DrawInner(GUIContent label)
+        // Sealed because you need to override the GUILayoutOption one
+        protected sealed override void DrawInner(GUIContent label) => DrawInner(label, Array.Empty<GUILayoutOption>());
+
+        protected override void DrawInner(GUIContent label, params GUILayoutOption[] options)
         {
-            _innerDrawable.Draw(label);
+            _innerDrawable.Draw(label, options);
         }
 
         protected override void DrawInner(Rect rect, GUIContent label)

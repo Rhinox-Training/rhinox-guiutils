@@ -47,32 +47,30 @@ namespace Rhinox.GUIUtils.Editor
             
             _info = property.GetHostInfo();
             
-            if (!TryParseInput(ref input))
+            if (!TryParseInput(ref input, out bool parameter))
                 return;
+
+            if (!parameter && typeof(T) == typeof(string))
+            {
+                _cachedValue = (T) (object) input;
+                return;
+            }
             
             // property might have changed
             _objectType = _info.GetHostType();
             
-            var members = FindMembers(isStatic, (info, _) => info.GetReturnType().InheritsFrom(typeof(T)) && info.Name == input);
-
-            var mi = members.FirstOrDefault();
-            
-            if (mi == null)
+            if (!TryFindMemberInHost(input, isStatic, out _staticValueGetter, out _instanceValueGetter))
                 _errorMessage = $"Could not find field {input} on type {_objectType.Name}";
-            else if (mi.IsStatic())
-                this._staticValueGetter = () => (T) mi.GetValue(null);
-            else
-                this._instanceValueGetter = (i) => (T) mi.GetValue(i);
         }
         
-        protected override bool TryParseParameter(string input)
+        protected override bool TryParseParameter(ref string input)
         {
-            if (!base.TryParseParameter(input))
+            if (!base.TryParseParameter(ref input))
                 return false;
             
             const string PARENT_ID = "parent";
             const string ROOT_ID = "root";
-            
+
             int partI = -1;
             while ((partI = input.IndexOf(".", StringComparison.Ordinal)) >= 0)
             {
@@ -92,10 +90,10 @@ namespace Rhinox.GUIUtils.Editor
                         break;
                 }
 
-                if (actionTaken)
-                    input = input.Substring(part.Length+1);
-                else
+                if (!actionTaken)
                     break;
+                
+                input = input.Substring(part.Length + 1);
             }
             
             return true;

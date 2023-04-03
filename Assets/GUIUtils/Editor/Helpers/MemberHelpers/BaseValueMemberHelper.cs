@@ -1,5 +1,7 @@
 using System;
+using System.Linq;
 using System.Reflection;
+using Rhinox.Lightspeed.Reflection;
 
 namespace Rhinox.GUIUtils.Editor
 {
@@ -51,7 +53,7 @@ namespace Rhinox.GUIUtils.Editor
             if (_instanceValueGetter != null)
                 return _instanceValueGetter(instance);
             
-            return default;
+            return _cachedValue;
         }
     }
 }

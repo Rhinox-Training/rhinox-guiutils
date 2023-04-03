@@ -13,12 +13,24 @@ namespace Rhinox.GUIUtils.Editor
         private readonly PreviewFieldAttribute _previewAttr;
         private const int DEFAULT_SIZE = 64;
 
-        public TextureDrawableField(object instance, MemberInfo info) : base(instance, info)
+        private int _activeControlId;
+
+        public override float ElementHeight
         {
-            _previewAttr = info.GetCustomAttribute<PreviewFieldAttribute>();
+            get
+            {
+                if (_previewAttr == null)
+                    return base.ElementHeight;
+                return _previewAttr.Height + 2.0f; // 2 x padding
+            }
+        }
+
+        public TextureDrawableField(GenericMemberEntry entry) : base(entry)
+        {
+            _previewAttr = entry.GetAttribute<PreviewFieldAttribute>();
         }
         
-        protected override UnityEngine.Texture DrawValue(GUIContent label, UnityEngine.Texture memberVal)
+        protected override UnityEngine.Texture DrawValue(GUIContent label, UnityEngine.Texture memberVal, params GUILayoutOption[] options)
         {
             if (_previewAttr != null)
             {
@@ -34,7 +46,7 @@ namespace Rhinox.GUIUtils.Editor
                 DrawTexturePreview(ref memberVal, rect);
                 return memberVal;
             }
-            return EditorGUILayout.ObjectField(memberVal, _info.GetReturnType(), true) as Texture;
+            return EditorGUILayout.ObjectField(memberVal, Entry.GetReturnType(), true, options) as Texture;
         }
 
         protected override UnityEngine.Texture DrawValue(Rect rect, GUIContent label, UnityEngine.Texture memberVal)
@@ -44,17 +56,27 @@ namespace Rhinox.GUIUtils.Editor
                 DrawTexturePreview(ref memberVal, rect);
                 return memberVal;
             }
-            return EditorGUI.ObjectField(rect, memberVal, _info.GetReturnType(), true) as Texture;
+            return EditorGUI.ObjectField(rect, memberVal, Entry.GetReturnType(), true) as Texture;
         }
 
         protected override void OnPreDraw()
         {
             base.OnPreDraw();
             string commandName = Event.current.commandName;
-            if (commandName == "ObjectSelectorUpdated") {
-                SetSmartValue(EditorGUIUtility.GetObjectPickerObject() as Texture2D);
-            } else if (commandName == "ObjectSelectorClosed") {
-                SetSmartValue(EditorGUIUtility.GetObjectPickerObject() as Texture2D);
+            
+            if (EditorGUIUtility.GetObjectPickerControlID() != _activeControlId)
+                return;
+            
+            if (commandName == "ObjectSelectorUpdated")
+            {
+                var picker = EditorGUIUtility.GetObjectPickerObject();
+                SetSmartValue(picker as Texture2D);
+            }
+            else if (commandName == "ObjectSelectorClosed")
+            {
+                var picker = EditorGUIUtility.GetObjectPickerObject();
+                SetSmartValue(picker as Texture2D);
+                _activeControlId = 0;
             }
         }
 
@@ -74,8 +96,8 @@ namespace Rhinox.GUIUtils.Editor
                 rect = rect.AlignCenter(rect.width * 0.6f);
                 if (GUI.Button(rect, "Select"))
                 {
-                    int controlID = EditorGUIUtility.GetControlID (FocusType.Passive);
-                    EditorGUIUtility.ShowObjectPicker<Texture2D> (memberVal, true, "", controlID);
+                    _activeControlId = GUIUtility.GetControlID (FocusType.Passive);
+                    EditorGUIUtility.ShowObjectPicker<Texture2D> (memberVal, true, "", _activeControlId);
                 }
             }
         }
@@ -83,13 +105,12 @@ namespace Rhinox.GUIUtils.Editor
         private bool CheckIfIsReadOnly()
         {
             bool isReadOnly = false;
-            if (this._info is PropertyInfo propertyInfo)
-            {
+            var info = Entry.Info;
+            if (info is PropertyInfo propertyInfo)
                 isReadOnly = propertyInfo.GetSetMethod(false) == null;
-            }
 
             if (!isReadOnly)
-                isReadOnly = _info.GetCustomAttribute<ReadOnlyAttribute>() != null;
+                isReadOnly = info.GetCustomAttribute<ReadOnlyAttribute>() != null;
             return isReadOnly;
         }
     }

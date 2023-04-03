@@ -12,14 +12,11 @@ namespace Rhinox.GUIUtils.Editor
     {
         public float Order { get; set; }
         public virtual float ElementHeight => EditorGUIUtility.singleLineHeight;
-
-        public bool HideLabel { get; protected set; }
-
+        
         private GUIContent _cachedLabel;
         public virtual GUIContent Label {
             get
             {
-                if (HideLabel) return GUIContent.none;
                 if (_cachedLabel == null)
                     _cachedLabel = string.IsNullOrEmpty(LabelString) ? GUIContent.none : new GUIContent(LabelString);
                 return _cachedLabel; 
@@ -38,11 +35,11 @@ namespace Rhinox.GUIUtils.Editor
             _initialized = false;
         }
 
-        public void Draw(GUIContent label)
+        public void Draw(GUIContent label, params GUILayoutOption[] options)
         {
             OnPreDraw();
             
-            DrawInner(label);
+            DrawInner(label, options);
             
             OnPostDraw();
         }
@@ -56,6 +53,9 @@ namespace Rhinox.GUIUtils.Editor
             OnPostDraw();
         }
         
+        protected virtual void DrawInner(GUIContent label, params GUILayoutOption[] options)
+            => DrawInner(label);
+
         protected abstract void DrawInner(GUIContent label);
         protected abstract void DrawInner(Rect rect, GUIContent label);
 
@@ -76,10 +76,24 @@ namespace Rhinox.GUIUtils.Editor
             
         }
         
-        public virtual ICollection<TAttribute> GetDrawableAttributes<TAttribute>() 
+        public virtual IEnumerable<TAttribute> GetDrawableAttributes<TAttribute>() 
             where TAttribute : Attribute
         {
             return Array.Empty<TAttribute>();
+        }
+        
+        public TAttribute GetDrawableAttribute<TAttribute>() 
+            where TAttribute : Attribute
+        {
+            return GetDrawableAttributes<TAttribute>().FirstOrDefault();
+        }
+        
+        public bool TryGetDrawableAttribute<TAttribute>(out TAttribute attribute) 
+            where TAttribute : Attribute
+        {
+            var attributes = GetDrawableAttributes<TAttribute>();
+            attribute = attributes.FirstOrDefault();
+            return !attributes.IsNullOrEmpty();
         }
         
         protected virtual void Initialize()
@@ -87,8 +101,6 @@ namespace Rhinox.GUIUtils.Editor
             var orderAttr = GetDrawableAttributes<PropertyOrderAttribute>().FirstOrDefault();
             if (orderAttr != null)
                 Order = orderAttr.Order;
-
-            HideLabel = !GetDrawableAttributes<HideLabelAttribute>().IsNullOrEmpty();
         }
     }
 }

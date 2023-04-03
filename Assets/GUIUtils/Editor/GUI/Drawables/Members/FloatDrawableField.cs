@@ -1,4 +1,6 @@
-﻿using System.Reflection;
+﻿using System;
+using System.Reflection;
+using Sirenix.OdinInspector;
 using UnityEditor;
 using UnityEngine;
 using Object = System.Object;
@@ -7,11 +9,34 @@ namespace Rhinox.GUIUtils.Editor
 {
     public class FloatDrawableField : BaseMemberDrawable<float>
     {
-        public FloatDrawableField(object instance, MemberInfo info) : base(instance, info) { }
-        
-        protected override float DrawValue(GUIContent label, float memberVal)
+        private float? _min;
+        private float? _max;
+
+        public FloatDrawableField(GenericMemberEntry entry) : base(entry) { }
+
+        protected override void Initialize()
         {
-            return EditorGUILayout.FloatField(label, memberVal);
+            base.Initialize();
+
+            if (TryGetDrawableAttribute(out MinValueAttribute minAttr))
+                _min = (float) minAttr.MinValue;
+            if (TryGetDrawableAttribute(out MaxValueAttribute maxAttr))
+                _max = (float) maxAttr.MaxValue;
+        }
+
+        protected override void PostProcessValue(ref float value)
+        {
+            if (_min.HasValue && value < _min)
+                value = _min.Value;
+            if (_max.HasValue && value > _max)
+                value = _max.Value;
+            
+            base.PostProcessValue(ref value);
+        }
+        
+        protected override float DrawValue(GUIContent label, float memberVal, params GUILayoutOption[] options)
+        {
+            return EditorGUILayout.FloatField(label, memberVal, CustomGUIStyles.CleanTextField, options);
         }
 
         protected override float DrawValue(Rect rect, GUIContent label, float memberVal)

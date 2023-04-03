@@ -18,6 +18,12 @@ namespace Rhinox.GUIUtils.Editor
 
         public TitleWrapper(IOrderedDrawable drawable) : base(drawable)
         {
+        }
+
+        protected override void Initialize()
+        {
+            base.Initialize();
+            
             _style = _bold ? CustomGUIStyles.BoldTitle : CustomGUIStyles.Title;
 
             if (_alignment == TitleAlignments.Left) return;
@@ -30,16 +36,15 @@ namespace Rhinox.GUIUtils.Editor
                 _style.alignment = TextAnchor.MiddleCenter;
         }
 
-
-        protected override void DrawInner(GUIContent label)
+        protected override void DrawInner(GUIContent label, params GUILayoutOption[] options)
         {
             if (!string.IsNullOrEmpty(_title))
             {
-                EditorGUILayout.LabelField(_title, _bold ? CustomGUIStyles.BoldTitle : CustomGUIStyles.Title);
+                GUILayout.Label(_title, _bold ? CustomGUIStyles.BoldTitle : CustomGUIStyles.Title);
                 CustomEditorGUI.HorizontalLine(CustomGUIStyles.LightBorderColor, thickness: 1);
-                EditorGUILayout.Space(3.0f);
+                GUILayout.Space(3.0f);
             }
-            base.DrawInner(label);
+            base.DrawInner(label, options);
         }
 
         protected override void DrawInner(Rect rect, GUIContent label)

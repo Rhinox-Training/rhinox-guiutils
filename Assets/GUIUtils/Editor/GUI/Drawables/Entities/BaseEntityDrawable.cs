@@ -22,15 +22,13 @@ namespace Rhinox.GUIUtils.Editor
         protected object EntityInstance { get; }
         protected readonly MemberInfo _memberInfo;
 
-        public override string LabelString => Host != null ? Host.GetType().Name : null;
+        public override string LabelString => Host?.GetType().Name;
 
-        public override ICollection<TAttribute> GetDrawableAttributes<TAttribute>()
+        public override IEnumerable<TAttribute> GetDrawableAttributes<TAttribute>()
         {
-            if (_memberInfo != null)
-            {
-                return _memberInfo.GetCustomAttributes<TAttribute>().ToArray();
-            }
-            return base.GetDrawableAttributes<TAttribute>();
+            if (_memberInfo == null)
+                return base.GetDrawableAttributes<TAttribute>();
+            return _memberInfo.GetCustomAttributes<TAttribute>();
         }
 
         protected BaseEntityDrawable(object instanceVal, MemberInfo memberInfo = null)

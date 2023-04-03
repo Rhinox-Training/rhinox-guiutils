@@ -28,17 +28,19 @@ namespace Rhinox.GUIUtils.Editor
             _activeItem = _defaultItem;
         }
         
-        protected override void DrawInner(GUIContent label)
+        protected override void DrawInner(GUIContent label, params GUILayoutOption[] options)
         {
             OnPreDraw();
             
+            _member.DrawError();
+
             if (_innerDrawable is BaseDrawable inner)
                 label = inner.Label;
 
-            EditorGUILayout.BeginHorizontal();
+            EditorGUILayout.BeginHorizontal(options);
             EditorGUILayout.PrefixLabel(label);
 
-            var clicked = EditorGUILayout.DropdownButton(_activeItem, FocusType.Keyboard);
+            var clicked = EditorGUILayout.DropdownButton(_activeItem, FocusType.Keyboard, options);
             
             var rect = GUILayoutUtility.GetLastRect();
             if (rect.IsValid())
@@ -63,6 +65,8 @@ namespace Rhinox.GUIUtils.Editor
             
             if (EditorGUI.DropdownButton(rect, _activeItem, FocusType.Keyboard))
                 MakeMenuItems(rect);
+            
+            _member.DrawError(rect);
 
             OnPostDraw();
         }
@@ -80,17 +84,30 @@ namespace Rhinox.GUIUtils.Editor
 
         private void MakeMenuItems(Rect rect)
         {
-            var options = _member.ForceGetValue().Cast<IValueDropdownItem>().ToArray();
+            var options = _member.ForceGetValue().Cast<object>().ToArray();
             var menu = new GenericMenu();
 
             foreach (var item in options)
             {
-                var text = item.GetText();
-                menu.AddItem(text, () =>
+                if (item is IValueDropdownItem dropdownItem)
                 {
-                    SetValue(item.GetValue());
-                    _activeItem = new GUIContent(text);
-                });
+                    var text = dropdownItem.GetText();
+                    menu.AddItem(text, () =>
+                    {
+                        SetValue(dropdownItem.GetValue());
+                        _activeItem = new GUIContent(text);
+                    });
+                }
+                else
+                {
+                    
+                    var text = item.ToString();
+                    menu.AddItem(text, () =>
+                    {
+                        SetValue(item);
+                        _activeItem = new GUIContent(text);
+                    });
+                }
             }
 
             if (!options.Any())

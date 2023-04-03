@@ -1,11 +1,17 @@
 using System;
 using System.Linq;
+using System.Reflection;
+using Rhinox.Lightspeed;
 using Rhinox.Lightspeed.Reflection;
+using UnityEditor;
+using UnityEngine;
 
 namespace Rhinox.GUIUtils.Editor
 {
     public class GenericPropertyMemberHelper<T> : BaseValueMemberHelper<T>, IPropertyMemberHelper<T>
     {
+        private GenericMemberEntry _entry;
+        
         public GenericPropertyMemberHelper(object property, string input, ref string errorMessage)
             : this(property, input)
         {
@@ -15,34 +21,114 @@ namespace Rhinox.GUIUtils.Editor
         }
         
         public GenericPropertyMemberHelper(object property, string input)
-            : this(property == null, property?.GetType(), input)
+            : this(property?.GetType(), input, property)
         {
-            _host = property;
         }
         
         public GenericPropertyMemberHelper(Type type, string input)
-            : this(true, type, input)
+            : this(type, input, null)
         {
-            _host = null;
         }
 
-        private GenericPropertyMemberHelper(bool isStatic, Type type, string input)
+        private GenericPropertyMemberHelper(Type type, string input, object host)
         {
-            _objectType = type;
-
-            if (!TryParseInput(ref input))
+            if (host is GenericMemberEntry entry)
+            {
+                _entry = entry;
+                _host = _entry.Instance;
+                _objectType = _host?.GetType();
+            }
+            else
+            {
+                _objectType = type;
+                _host = host;
+            }
+            
+            if (!TryParseInput(ref input, out bool parameter))
                 return;
 
-            var members = FindMembers(isStatic, (info, _) => info.GetReturnType().InheritsFrom(typeof(T)) && info.Name == input);
+            if (!parameter && typeof(T) == typeof(string))
+            {
+                _cachedValue = (T) (object) input;
+                return;
+            }
 
-            var mi = members.FirstOrDefault();
-            
-            if (mi == null)
+            // target might have changed
+            if (_host != null)
+                _objectType = _host?.GetType();
+
+            if (!TryFindMemberInHost(input, _host == null, out _staticValueGetter, out _instanceValueGetter))
                 _errorMessage = $"Could not find field {input} on type {_objectType.Name}";
-            else if (mi.IsStatic())
-                _staticValueGetter = () => (T) mi.GetValue(null);
-            else
-                _instanceValueGetter = (i) => (T) mi.GetValue(i);
+        }
+
+        protected override bool TryParseParameter(ref string input)
+        {
+            if (!base.TryParseParameter(ref input))
+                return false;
+
+            if (input.IsNullOrEmpty())
+                return false;
+            
+            const string PARENT_ID = "parent";
+            const string ROOT_ID = "root";
+            const string PROPERTY_ID = "property";
+            
+            int partI = -1;
+            GenericMemberEntry usedEntry = null;
+            string[] parts = input.Split(new[] { "." }, StringSplitOptions.RemoveEmptyEntries);
+            for (int i = 0; i < parts.Length; ++i)
+            {
+                bool actionTaken = true;
+                
+                switch (parts[i])
+                {
+                    case PROPERTY_ID:
+                        if (_entry != null)
+                        {
+                            _host = _entry;
+                            _objectType = _host?.GetType();
+                        }
+                        break;
+                    case PARENT_ID:
+                        if (_entry != null)
+                            usedEntry = _entry.Parent;
+                        break;
+                    case ROOT_ID:
+                        if (usedEntry != null)
+                        {
+                            usedEntry = _entry;
+
+                            while (usedEntry.Parent != null)
+                                usedEntry = usedEntry.Parent;
+                        }
+                        break;
+                    default:
+                        if (i != parts.Length - 1) // if we're not at the last part
+                        {
+                            // try to resolve it
+                            if (TryFindMemberInHost(parts[i], null, false, out MemberInfo info))
+                            {
+                                _host = info.GetValue(_host);
+                                _objectType = info.GetReturnType();
+                            }
+                            else
+                                actionTaken = false;
+                        }
+                        else
+                            actionTaken = false;
+                        break;
+                }
+
+                if (usedEntry != null)
+                    _host = usedEntry.Instance;
+                        
+                if (!actionTaken)
+                    break;
+                
+                input = string.Join(".", parts.TakeSegment(i + 1));
+            }
+            
+            return true;
         }
 
         protected override object GetInstance() => _host;
