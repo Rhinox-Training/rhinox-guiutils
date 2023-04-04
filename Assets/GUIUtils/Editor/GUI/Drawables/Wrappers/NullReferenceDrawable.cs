@@ -86,9 +86,7 @@ namespace Rhinox.GUIUtils.Editor
         {
             var hostInfo = _serializedProperty.GetHostInfo();
             var type = hostInfo.GetReturnType();
-            var drawables = DrawableFactory.CreateDrawableMembersFor(_serializedProperty, type);
-            var group = GroupingHelper.Process(drawables);
-            _innerDrawable = group;
+            _innerDrawable = DrawableFactory.CreateDrawableFor(_serializedProperty, type);
         }
 
         GUIContent GetTypeName(SerializedProperty property)
