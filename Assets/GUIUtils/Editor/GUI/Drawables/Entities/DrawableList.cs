@@ -18,6 +18,7 @@ namespace Rhinox.GUIUtils.Editor
 
         private readonly float _defaultElementHeight;
         private readonly SerializedProperty _property;
+        private readonly GenericElementMemberEntry _entry;
         private readonly DrawablePropertyView _propertyView;
 
         public ListElementDrawable(SerializedProperty property, float defaultElementHeight = 18.0f, bool drawElementsAsUnity = false)
@@ -28,12 +29,12 @@ namespace Rhinox.GUIUtils.Editor
             _propertyView = new DrawablePropertyView(property, drawElementsAsUnity);
         }
 
-        public ListElementDrawable(object element, float defaultElementHeight = 18.0f, bool drawElementsAsUnity = false)
+        public ListElementDrawable(GenericElementMemberEntry entry, float defaultElementHeight = 18.0f, bool drawElementsAsUnity = false)
         {
-            if (element == null) throw new ArgumentNullException(nameof(element));
+            _entry = entry;
             _defaultElementHeight = defaultElementHeight;
             _property = null;
-            _propertyView = new DrawablePropertyView(element, drawElementsAsUnity);
+            _propertyView = new DrawablePropertyView(_entry, drawElementsAsUnity);
         }
 
         public void Draw(Rect r)
@@ -51,8 +52,7 @@ namespace Rhinox.GUIUtils.Editor
         private ListElementDrawable[] _listElements;
 
         private readonly SerializedProperty _listProperty;
-        private readonly MemberInfo _listMemberInfo;
-        private readonly object _listContainerInstance;
+        private readonly GenericMemberEntry _entry;
         private readonly bool _drawElementsAsUnity;
 
         public override float ElementHeight
@@ -72,8 +72,7 @@ namespace Rhinox.GUIUtils.Editor
                 throw new ArgumentNullException(nameof(listProperty));
             
             _listProperty = listProperty;
-            _listContainerInstance = null;
-            _listMemberInfo = null;
+            _entry = null;
 
             _listDrawerAttr = listProperty.GetAttributeOrCreate<ListDrawerSettingsAttribute>();
             _drawElementsAsUnity = listProperty.GetAttribute<DrawAsUnityObjectAttribute>() != null;
@@ -92,12 +91,11 @@ namespace Rhinox.GUIUtils.Editor
         public DrawableList(GenericMemberEntry entry) : base(entry)
         {
             _listProperty = null;
-            _listContainerInstance = entry.Instance;
-            _listMemberInfo = entry.Info;
+            _entry = entry;
             _listDrawerAttr = entry.GetAttribute<ListDrawerSettingsAttribute>() ?? new ListDrawerSettingsAttribute();
             _drawElementsAsUnity = entry.GetAttribute<DrawAsUnityObjectAttribute>() != null;
 
-            _listRO = new PageableReorderableList(_listContainerInstance, _listMemberInfo,
+            _listRO = new PageableReorderableList(_entry.Instance, _entry.Info,
                 _listDrawerAttr.DraggableItems, true,
                 !_listDrawerAttr.IsReadOnly && !_listDrawerAttr.HideAddButton,
                 !_listDrawerAttr.IsReadOnly && !_listDrawerAttr.HideRemoveButton)
@@ -186,12 +184,9 @@ namespace Rhinox.GUIUtils.Editor
                 var element = _listProperty.GetArrayElementAtIndex(index);
                 return new ListElementDrawable(element, _listRO.elementHeight, drawElementsAsUnity);
             }
-            else
-            {
-                var value = _listMemberInfo.GetValue(_listContainerInstance) as IList;
-                var nonUnityElement = value[index];
-                return new ListElementDrawable(nonUnityElement, _listRO.elementHeight, drawElementsAsUnity);
-            }
+
+            var elementEntry = new GenericElementMemberEntry(_entry, index);
+            return new ListElementDrawable(elementEntry, _listRO.elementHeight, drawElementsAsUnity);
         }
 
         private void OnBeginDraw()
@@ -215,7 +210,7 @@ namespace Rhinox.GUIUtils.Editor
             }
             else
             {
-                _listMemberInfo.SetValue(_listContainerInstance, _listRO.list);
+                _entry.Info.SetValue(_entry.Instance, _listRO.list);
             }
         }
     }
