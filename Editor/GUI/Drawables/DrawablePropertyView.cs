@@ -25,7 +25,7 @@ namespace Rhinox.GUIUtils.Editor
             _serializedObject = null;
             
             if (forceDrawAsUnityObject)
-                _rootDrawable = new DrawableUnityObject((UnityEngine.Object) instance);
+                _rootDrawable = new DrawableUnityObject((UnityEngine.Object) _instance);
             else
                 _rootDrawable = ParseNonUnityObject(instance);
         }
@@ -131,7 +131,7 @@ namespace Rhinox.GUIUtils.Editor
             
             
             // TODO: should we force height?
-            //rect.height = Height;
+            rect.height = Height;
             _rootDrawable.Draw(rect, _rootDrawable.Label);
             
             OnPostDraw();

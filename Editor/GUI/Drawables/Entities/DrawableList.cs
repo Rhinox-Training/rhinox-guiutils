@@ -39,7 +39,7 @@ namespace Rhinox.GUIUtils.Editor
 
         public void Draw(Rect r)
         {
-            r.y += 2.0f;
+            r.y += CustomGUIUtility.Padding;
             if (_propertyView != null)
                 _propertyView.Draw(r);
         }

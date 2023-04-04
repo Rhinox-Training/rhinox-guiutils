@@ -45,8 +45,12 @@ namespace Rhinox.GUIUtils.Editor
             _parsedAttributes.Add(groupAttribute);
             ParseAttribute(groupAttribute);
         }
-
+        
         protected abstract void ParseAttribute(T attr);
 
+        public override IEnumerable<TAttribute> GetDrawableAttributes<TAttribute>()
+        {
+            return _parsedAttributes.OfType<TAttribute>();
+        }
     }
 }
