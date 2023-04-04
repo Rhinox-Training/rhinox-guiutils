@@ -18,11 +18,14 @@ namespace Rhinox.GUIUtils.Editor
         
         //==============================================================================================================
         // Public API
-        public static List<IOrderedDrawable> CreateDrawableMembersFor(object instance, Type t)
+        public static List<IOrderedDrawable> CreateDrawableMembersFor(GenericMemberEntry entry)
+            => CreateDrawableMembersFor(entry.Instance, entry.GetReturnType(), entry);
+        
+        public static List<IOrderedDrawable> CreateDrawableMembersFor(object instance, Type t, GenericMemberEntry parent = null)
         {
             if (t == typeof(UnityEngine.Object))
                 return new List<IOrderedDrawable>() {new DrawableUnityObject((UnityEngine.Object) instance)};
-            return CreateDrawableMembersFor(instance, t, 0);
+            return CreateDrawableMembersFor(instance, t, 0, parent);
         }
         
         public static List<IOrderedDrawable> CreateDrawableMembersFor(SerializedObject obj, Type type)

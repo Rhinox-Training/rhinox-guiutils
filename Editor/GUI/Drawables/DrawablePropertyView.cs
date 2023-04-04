@@ -11,6 +11,7 @@ namespace Rhinox.GUIUtils.Editor
     public class DrawablePropertyView
     {
         private readonly object _instance;
+        private readonly GenericMemberEntry _entry;
         private readonly SerializedObject _serializedObject;
         private readonly ICollection<IOrderedDrawable> _drawables;
 
@@ -25,15 +26,30 @@ namespace Rhinox.GUIUtils.Editor
             }
         }
 
-        public DrawablePropertyView(object unityObjInstance, bool forceDrawAsUnityObject = false)
+        public DrawablePropertyView(object instance, bool forceDrawAsUnityObject = false)
         {
-            if (unityObjInstance == null) throw new ArgumentNullException(nameof(unityObjInstance));
-            _instance = unityObjInstance;
+            if (instance == null) throw new ArgumentNullException(nameof(instance));
+            _instance = instance;
+            _entry = null;
             _serializedObject = null;
+            
             if (forceDrawAsUnityObject)
-                _drawables = new[] {new DrawableUnityObject((UnityEngine.Object) unityObjInstance)};
+                _drawables = new[] {new DrawableUnityObject((UnityEngine.Object) instance)};
             else
-                _drawables = ParseNonUnityObject(unityObjInstance);
+                _drawables = ParseNonUnityObject(instance);
+        }
+        
+        public DrawablePropertyView(GenericMemberEntry entry, bool forceDrawAsUnityObject = false)
+        {
+            if (entry == null) throw new ArgumentNullException(nameof(entry));
+            _entry = entry;
+            _instance = _entry.Instance;
+            _serializedObject = null;
+            
+            if (forceDrawAsUnityObject)
+                _drawables = new[] {new DrawableUnityObject((UnityEngine.Object) entry.Instance, entry.Info)};
+            else
+                _drawables = DrawableFactory.CreateDrawableMembersFor(entry);
         }
         
         public DrawablePropertyView(SerializedObject serializedObject, bool forceDrawAsUnityObject = false)
@@ -41,6 +57,8 @@ namespace Rhinox.GUIUtils.Editor
             if (serializedObject == null) throw new ArgumentNullException(nameof(serializedObject));
             _instance = serializedObject;
             _serializedObject = serializedObject;
+            _entry = null;
+            
             if (forceDrawAsUnityObject)
                 _drawables = new[] {new DrawableUnityObject(serializedObject.targetObject)};
             else
@@ -52,6 +70,8 @@ namespace Rhinox.GUIUtils.Editor
             if (property == null) throw new ArgumentNullException(nameof(property));
             _instance = property;
             _serializedObject = property.serializedObject;
+            _entry = null;
+            
             if (forceDrawAsUnityObject)
                 _drawables = new[] {new DrawableUnityObject((UnityEngine.Object) property.GetValue())};
             else
