@@ -45,7 +45,7 @@ namespace Rhinox.GUIUtils.Editor
             _serializedObject = null;
 
             if (forceDrawAsUnityObject)
-                _rootDrawable = new DrawableUnityObject((UnityEngine.Object) entry.GetValue(), entry.Info);
+                _rootDrawable = new DrawableUnityObject(entry);
             else
                 _rootDrawable = DrawableFactory.CreateDrawableFor(entry);
         }
