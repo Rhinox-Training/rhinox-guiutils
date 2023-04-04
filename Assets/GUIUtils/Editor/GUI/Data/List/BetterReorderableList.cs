@@ -141,7 +141,7 @@ namespace Rhinox.GUIUtils.Editor
             set => m_ActiveElement = value;
         }
 
-        private float listElementTopPadding => headerHeight > 5.0 ? 4f : 1f;
+        private float listElementTopPadding => CustomGUIUtility.Padding;
 
         public bool draggable
         {
@@ -646,6 +646,8 @@ namespace Rhinox.GUIUtils.Editor
             public GUIContent iconToolbarMinus =
                 EditorGUIUtility.TrIconContent("Toolbar Minus", "Remove selection from list");
 
+            private readonly Color altColor = new Color(0.29f, 0.29f, 0.29f, 1.0f);
+
             public readonly GUIStyle draggingHandle = (GUIStyle) "RL DragHandle";
             public readonly GUIStyle headerBackground = (GUIStyle) "RL Header";
             private readonly GUIStyle emptyHeaderBackground = (GUIStyle) "RL Empty Header";
@@ -653,31 +655,16 @@ namespace Rhinox.GUIUtils.Editor
             public readonly GUIStyle boxBackground = (GUIStyle) "RL Background";
             public readonly GUIStyle preButton = (GUIStyle) "RL FooterButton";
             public readonly GUIStyle elementBackground = (GUIStyle) "RL Element";
-            private GUIStyle _altBackground;
-            private Texture _altBackgroundNormalTex;
+            private GUIStyle _altElementBackground;
             public GUIStyle altElementBackground {
                 get
                 {
-                    Color c = new Color(0.29f, 0.29f, 0.29f, 1.0f);
-                    if (_altBackground == null)
-                    {
-                        var style = (GUIStyle) "RL Element";
-                        style = new GUIStyle(style);
-                        style.name = "RL Element Alt Style";
-                        _altBackground = style;
-                    }
-
-                    if (_altBackgroundNormalTex == null)
-                    { 
-                        var backgroundColor = _altBackground.normal.background;
-                        var altTex = backgroundColor != null ?
-                            MakeTex(backgroundColor.width, backgroundColor.height, c) : 
-                            MakeTex(1, 1, c);
-                        _altBackgroundNormalTex = altTex;
-                        _altBackground.normal.background = altTex;
-                    }
-
-                    return _altBackground;
+                    
+                    if (_altElementBackground != null) return _altElementBackground;
+                    _altElementBackground = new GUIStyle("RL Element");
+                    _altElementBackground.normal.background = Utility.GetColorTexture(altColor);
+                    _altElementBackground.onActive = elementBackground.onActive;
+                    return _altElementBackground;
                 }
             }
             public const int padding = 6;

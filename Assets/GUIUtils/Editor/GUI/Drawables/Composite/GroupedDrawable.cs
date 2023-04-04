@@ -83,8 +83,13 @@ namespace Rhinox.GUIUtils.Editor
             // when this exceeds list count, we've gone through the entire list without resolving an attribute and we can give up
             int attempts = 0;
             var attributesQueue = new Queue<PropertyGroupAttribute>(groupAttributes);
-            while (attributesQueue.Any() && attributesQueue.Count > attempts)
+            while (attributesQueue.Any())
             {
+                if (attributesQueue.Count > attempts)
+                {
+                    Debug.LogError($"Could not find group '{attributesQueue.Peek().GroupName}'...");
+                    break;
+                }
                 // If we managed to get or create our group, reset attempts and remove our entry
                 if (TryGetOrCreateGroup(attributesQueue.Peek(), out GroupedDrawable group))
                 {

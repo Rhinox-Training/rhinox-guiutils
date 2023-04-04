@@ -10,6 +10,7 @@ namespace Rhinox.GUIUtils
         private static readonly GUIContent _tempContent = new GUIContent("");
         
         private static readonly GUIFrameAwareStack<Color> ColorStack = new GUIFrameAwareStack<Color>();
+        private static readonly GUIFrameAwareStack<Color> BackgroundColorStack = new GUIFrameAwareStack<Color>();
         private static readonly GUIFrameAwareStack<bool> GuiEnabled = new GUIFrameAwareStack<bool>();
 
 #if UNITY_EDITOR
@@ -126,6 +127,17 @@ namespace Rhinox.GUIUtils
         public static void PopColor()
         {
             GUI.color = GUIContentHelper.ColorStack.Pop();
+        }
+        
+        public static void PushBackgroundColor(Color color)
+        {
+            GUIContentHelper.BackgroundColorStack.Push(GUI.color);
+            GUI.backgroundColor = color;
+        }
+        
+        public static void PopBackgroundColor()
+        {
+            GUI.backgroundColor = GUIContentHelper.BackgroundColorStack.Pop();
         }
         
         public static void PushDisabled(bool disabled)

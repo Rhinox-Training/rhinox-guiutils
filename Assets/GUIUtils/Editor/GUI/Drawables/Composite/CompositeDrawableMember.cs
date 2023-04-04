@@ -31,7 +31,7 @@ namespace Rhinox.GUIUtils.Editor
             Order = order;
         }
         
-        public IEnumerable<TAttribute> GetDrawableAttributes<TAttribute>() where TAttribute : Attribute
+        public virtual IEnumerable<TAttribute> GetDrawableAttributes<TAttribute>() where TAttribute : Attribute
         {
             if (_attributes == null)
                 return Array.Empty<TAttribute>();
