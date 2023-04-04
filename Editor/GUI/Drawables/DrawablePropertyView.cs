@@ -31,7 +31,7 @@ namespace Rhinox.GUIUtils.Editor
             _instance = unityObjInstance;
             _serializedObject = null;
             if (forceDrawAsUnityObject)
-                _drawables = new[] {new DrawableUnityObject((GameObject)unityObjInstance)};
+                _drawables = new[] {new DrawableUnityObject((UnityEngine.Object) unityObjInstance)};
             else
                 _drawables = ParseNonUnityObject(unityObjInstance);
         }
@@ -68,7 +68,7 @@ namespace Rhinox.GUIUtils.Editor
             var drawables = DrawableFactory.CreateDrawableMembersFor(obj, type);
 
             if (drawables.Count == 0 && obj is UnityEngine.Object unityObj)
-                drawables.Add(new DrawableUnityObject((GameObject)unityObj, null));
+                drawables.Add(new DrawableUnityObject(unityObj, null));
 
             if (drawables.IsNullOrEmpty())
                 return drawables;
