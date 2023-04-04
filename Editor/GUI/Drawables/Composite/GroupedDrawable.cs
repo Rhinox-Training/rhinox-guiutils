@@ -85,7 +85,7 @@ namespace Rhinox.GUIUtils.Editor
             var attributesQueue = new Queue<PropertyGroupAttribute>(groupAttributes);
             while (attributesQueue.Any())
             {
-                if (attributesQueue.Count > attempts)
+                if (attributesQueue.Count < attempts)
                 {
                     Debug.LogError($"Could not find group '{attributesQueue.Peek().GroupName}'...");
                     break;
