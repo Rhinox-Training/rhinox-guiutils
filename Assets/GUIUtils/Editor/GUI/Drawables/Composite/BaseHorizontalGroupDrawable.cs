@@ -45,8 +45,7 @@ namespace Rhinox.GUIUtils.Editor
 
             var widths = _widthResolver.Resolve(width, CustomGUIUtility.Padding);
 
-            // Debug.Log($"{this.Name} - Outer [{_size.MinSize} _{_size.PreferredSize}_ {_size.MaxSize}]");
-            var rect = EditorGUILayout.BeginHorizontal(CustomGUIStyles.Clean, GetLayoutOptions(_size));
+            GUILayout.BeginHorizontal(CustomGUIStyles.Clean, GetLayoutOptions(_size));
 
             for (var i = 0; i < _drawableMemberChildren.Count; i++)
             {
@@ -54,25 +53,20 @@ namespace Rhinox.GUIUtils.Editor
                 if (childDrawable == null || !childDrawable.IsVisible)
                     continue;
 
-                Rect innerRect = default;
-                // Debug.Log($"\tInner {widths[i]}");
                 GUILayoutOption[] childOptions = widths[i] > 0 ? new [] { GUILayout.Width(widths[i]) } : Array.Empty<GUILayoutOption>();
-                innerRect = EditorGUILayout.BeginVertical(CustomGUIStyles.Clean, childOptions);
+                GUILayout.BeginVertical(CustomGUIStyles.Clean, childOptions);
 
                 childDrawable.Draw(childDrawable.Label, childOptions);
 
-                EditorGUILayout.EndVertical();
+                GUILayout.EndVertical();
                 // Debug.Log($"\tInner End {innerRect.width}");
                 
                 if (i < _drawableMemberChildren.Count -1) // don't add padding for last item
                     GUILayout.Space(CustomGUIUtility.Padding);
             }
 
-            EditorGUILayout.EndHorizontal();
+            GUILayout.EndHorizontal();
             // Debug.Log($"{this.Name} - Outer End {rect.width}");
-
-            if (rect.IsValid())
-                _cachedRect = rect;
         }
 
         public override void Draw(Rect rect, GUIContent label)
