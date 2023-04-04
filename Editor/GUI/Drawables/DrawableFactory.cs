@@ -19,8 +19,6 @@ namespace Rhinox.GUIUtils.Editor
         // Public API
         public static IOrderedDrawable CreateDrawableFor(GenericMemberEntry entry)
         {
-            if (TryCreateDirect(entry, out var drawableMember))
-                return drawableMember;
             return CreateDrawableFor(entry.GetValue(), entry.GetReturnType(), entry);
         }
 
@@ -81,6 +79,10 @@ namespace Rhinox.GUIUtils.Editor
             
             if (type.InheritsFrom<UnityEngine.Object>())
                 return new DrawableUnityObject((UnityEngine.Object) instance);
+
+            if (parent != null)
+                return CreateDrawableForMember(parent, 0);
+            
             return CreateCompositeDrawable(instance, type, 0, parent);
         }
         
