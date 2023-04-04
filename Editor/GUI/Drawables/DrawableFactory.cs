@@ -24,14 +24,9 @@ namespace Rhinox.GUIUtils.Editor
             return CreateDrawableFor(entry.GetValue(), entry.GetReturnType(), entry);
         }
 
-        public static IOrderedDrawable CreateDrawableFor(object instance, Type type, GenericMemberEntry parent = null)
+        public static IOrderedDrawable CreateDrawableFor(object instance, Type type)
         {
-            if (type == null)
-                throw new ArgumentNullException(nameof(type));
-            
-            if (type.InheritsFrom<UnityEngine.Object>())
-                return new DrawableUnityObject((UnityEngine.Object) instance);
-            return CreateCompositeDrawable(instance, type, 0, parent);
+            return CreateDrawableFor(instance, type, null);
         }
         
         public static IOrderedDrawable CreateDrawableFor(SerializedObject obj, Type type)
@@ -78,6 +73,16 @@ namespace Rhinox.GUIUtils.Editor
 
         //==============================================================================================================
         // Helper methods
+
+        private static IOrderedDrawable CreateDrawableFor(object instance, Type type, GenericMemberEntry parent)
+        {
+            if (type == null)
+                throw new ArgumentNullException(nameof(type));
+            
+            if (type.InheritsFrom<UnityEngine.Object>())
+                return new DrawableUnityObject((UnityEngine.Object) instance);
+            return CreateCompositeDrawable(instance, type, 0, parent);
+        }
         
         private static IOrderedDrawable DrawableMembersForSerializedObject(object instanceVal, Type type, IEnumerable<SerializedObjectExtensions.FieldData> visibleFields, int depth)
         {
