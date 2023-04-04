@@ -104,6 +104,18 @@ namespace Rhinox.GUIUtils
         
         // =============================================================================================================
         // General helpers
+
+        private static bool _repaintRequested;
+        public static void RequestRepaint()
+        {
+            _repaintRequested = true;
+            
+        }
+
+        public static bool ShouldRepaint()
+        {
+            return _repaintRequested;
+        }
         
         public static void PushColor(Color color)
         {
