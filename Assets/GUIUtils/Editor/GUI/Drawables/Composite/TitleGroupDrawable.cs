@@ -85,7 +85,6 @@ namespace Rhinox.GUIUtils.Editor
 
         protected override void ParseAttribute(IOrderedDrawable child, TitleGroupAttribute attr)
         {
-            // TODO
         }
 
         protected override void ParseAttribute(TitleGroupAttribute attr)
