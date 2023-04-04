@@ -1,4 +1,5 @@
-﻿using Rhinox.GUIUtils.Attributes;
+﻿using System;
+using Rhinox.GUIUtils.Attributes;
 using Rhinox.Lightspeed.Reflection;
 using UnityEditor;
 using UnityEngine;
@@ -7,9 +8,10 @@ namespace Rhinox.GUIUtils.Editor
 {
     [CustomEditor(typeof(MonoBehaviour), true)]
     [CanEditMultipleObjects]
-    public class CustomSmartEditor : UnityEditor.Editor
+    public class CustomSmartEditor : UnityEditor.Editor, IRepaintRequestHandler
     {
         private DrawablePropertyView _propertyView;
+        private IRepaintRequest _target;
 
         public override void OnInspectorGUI()
         {
@@ -34,6 +36,16 @@ namespace Rhinox.GUIUtils.Editor
                 _propertyView = new DrawablePropertyView(serializedObject);
             
             _propertyView.DrawLayout();
+
+            if (_propertyView.ShouldRepaint)
+            {
+                Debug.LogError($"Should repaint now! {DateTime.Now.ToLongTimeString()}");
+                if (_target != null)
+                    _target.RequestRepaint();
+                else
+                    Repaint();
+                _propertyView.MarkAsRepainted();
+            }
         }
         
         private static int CountDrawnProperties(SerializedObject obj)
@@ -48,6 +60,11 @@ namespace Rhinox.GUIUtils.Editor
             }
 
             return count;
+        }
+
+        public void UpdateRequestTarget(IRepaintRequest target)
+        {
+            _target = target;
         }
     }
 }

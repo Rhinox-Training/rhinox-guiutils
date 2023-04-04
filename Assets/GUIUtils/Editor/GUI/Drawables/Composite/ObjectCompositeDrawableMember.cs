@@ -27,8 +27,10 @@ namespace Rhinox.GUIUtils.Editor
                 return height;
             }
         }
-        
-        
+
+        public override bool ShouldRepaint => base.ShouldRepaint || (_innerDrawable != null ? _innerDrawable.ShouldRepaint : false);
+
+
         public ObjectCompositeDrawableMember(GenericMemberEntry entry, IOrderedDrawable contents, float order = 0)
             : this(entry.NiceName, contents, order)
         {

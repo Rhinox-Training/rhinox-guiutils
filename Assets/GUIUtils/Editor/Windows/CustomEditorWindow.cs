@@ -12,7 +12,7 @@ using Object = UnityEngine.Object;
 
 namespace Rhinox.GUIUtils.Editor
 {
-    public class CustomEditorWindow : EditorWindow, ISerializationCallbackReceiver
+    public class CustomEditorWindow : EditorWindow, ISerializationCallbackReceiver, IRepaintRequest
     {
         /// <summary>
         /// Gets the label width to be used. Values between 0 and 1 are treated as percentages, and values above as pixels.
@@ -581,7 +581,11 @@ namespace Rhinox.GUIUtils.Editor
             {
                 UnityEditor.Editor editor = _editors[index];
                 if (editor != null && editor.target != null)
+                {
+                    if (editor is IRepaintRequestHandler handler)
+                        handler.UpdateRequestTarget(this);
                     editor.OnInspectorGUI();
+                }
 
                 if (DrawUnityEditorPreview)
                     DrawEditorPreview(index, _defaultEditorPreviewHeight);
@@ -614,7 +618,7 @@ namespace Rhinox.GUIUtils.Editor
         {
         }
         
-        protected void RequestRepaint()
+        public void RequestRepaint()
         {
             _repaintRequested = true;
         }

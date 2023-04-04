@@ -12,7 +12,8 @@ namespace Rhinox.GUIUtils.Editor
         object Host { get; }
         bool IsVisible { get; }
         GUIContent Label { get; }
-        
+        bool ShouldRepaint { get; }
+
         IEnumerable<TAttribute> GetDrawableAttributes<TAttribute>() where TAttribute : Attribute;
         void Draw(GUIContent label, params GUILayoutOption[] options);
         void Draw(Rect rect, GUIContent label);

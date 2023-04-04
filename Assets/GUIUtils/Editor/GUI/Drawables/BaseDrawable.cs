@@ -23,6 +23,8 @@ namespace Rhinox.GUIUtils.Editor
             }
         }
 
+        public virtual bool ShouldRepaint { get; protected set; }
+
         public abstract string LabelString { get; }
         
         public object Host { get; protected set; }
@@ -69,6 +71,8 @@ namespace Rhinox.GUIUtils.Editor
                 Initialize();
                 _initialized = true;
             }
+
+            ShouldRepaint = false;
         }
         
         protected virtual void OnPostDraw()

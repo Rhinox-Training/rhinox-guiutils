@@ -15,6 +15,13 @@ namespace Rhinox.GUIUtils.Editor
         private readonly SerializedObject _serializedObject;
         private readonly IOrderedDrawable _rootDrawable;
 
+        public bool ShouldRepaint { get; private set; }
+
+        internal void MarkAsRepainted()
+        {
+            ShouldRepaint = false;
+        }
+
         public float Height => _rootDrawable != null ? _rootDrawable.ElementHeight : 0.0f;
 
         public DrawablePropertyView(object instance, bool forceDrawAsUnityObject = false)
@@ -148,6 +155,9 @@ namespace Rhinox.GUIUtils.Editor
 
         private void OnPostDraw()
         {
+            if (_rootDrawable != null && _rootDrawable.ShouldRepaint)
+                ShouldRepaint = true;
+            
             if (_serializedObject != null)
                 _serializedObject.ApplyModifiedProperties();
         }
