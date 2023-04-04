@@ -212,6 +212,8 @@ namespace Rhinox.GUIUtils.Editor
 
         public void EnsureSizeFits(SizeInfo size)
         {
+            size.MinSize = Mathf.Max(_size.MinSize, size.MinSize);
+            
             if (_size.MaxSize > 0)
             {
                 float width = _size.MaxSize;
