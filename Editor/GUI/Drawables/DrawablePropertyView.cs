@@ -49,7 +49,7 @@ namespace Rhinox.GUIUtils.Editor
             if (forceDrawAsUnityObject)
                 _drawables = new[] {new DrawableUnityObject((UnityEngine.Object) entry.GetValue(), entry.Info)};
             else
-                _drawables = DrawableFactory.CreateDrawableMembersFor(entry);
+                _drawables = DrawableFactory.CreateDrawableFor(entry);
         }
         
         public DrawablePropertyView(SerializedObject serializedObject, bool forceDrawAsUnityObject = false)
@@ -85,7 +85,7 @@ namespace Rhinox.GUIUtils.Editor
 
             var type = obj.GetType();
 
-            var drawables = DrawableFactory.CreateDrawableMembersFor(obj, type);
+            var drawables = DrawableFactory.CreateDrawableFor(obj, type);
 
             if (drawables.Count == 0 && obj is UnityEngine.Object unityObj)
                 drawables.Add(new DrawableUnityObject(unityObj, null));
@@ -109,7 +109,7 @@ namespace Rhinox.GUIUtils.Editor
             if (AttributeParser.ParseDrawAsUnity(hostInfo.FieldInfo))
                 return new[] {new DrawableUnityObject((UnityEngine.Object)property.GetValue(), property.FindFieldInfo())};
 
-            var drawables = DrawableFactory.CreateDrawableMembersFor(property, type);
+            var drawables = DrawableFactory.CreateDrawableFor(property, type);
 
             if (drawables.IsNullOrEmpty()) return drawables;
             
@@ -125,7 +125,7 @@ namespace Rhinox.GUIUtils.Editor
 
             var type = obj.targetObject.GetType();
 
-            var drawables = DrawableFactory.CreateDrawableMembersFor(obj, type);
+            var drawables = DrawableFactory.CreateDrawableFor(obj, type);
 
             if (drawables.IsNullOrEmpty()) return drawables;
             
