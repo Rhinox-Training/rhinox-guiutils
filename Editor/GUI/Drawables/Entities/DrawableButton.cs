@@ -15,24 +15,23 @@ namespace Rhinox.GUIUtils.Editor
     {
         public override string LabelString => null; // TODO: Button has no label?
         
-        public string Name { get; }
+        public string Name { get; set; }
+        
+        public float Height { get; set; }
 
         private readonly MethodInfo _methodInfo;
-        private readonly ButtonAttribute _buttonAttr;
 
-        public DrawableButton(object instanceVal, MethodInfo method, ButtonAttribute buttonAttr)
+        public DrawableButton(object instanceVal, MethodInfo method)
             : base(instanceVal, method)
         {
             Host = instanceVal;
             _methodInfo = method;
-            _buttonAttr = buttonAttr;
         }
         
         protected override void DrawInner(GUIContent label)
         {
-            var buttonHeight = _buttonAttr.ButtonHeight;
-            buttonHeight = buttonHeight == 0 ? (int)EditorGUIUtility.singleLineHeight : buttonHeight;
-            if (GUILayout.Button((_buttonAttr.Name ?? _methodInfo.Name).SplitCamelCase(), GUILayout.Height(buttonHeight)))
+            var height = Height == 0 ? (int)EditorGUIUtility.singleLineHeight : Height;
+            if (GUILayout.Button((Name ?? _methodInfo.Name).SplitCamelCase(), GUILayout.Height(height)))
             {
                 if (!TryCreateDialog(_methodInfo, Host))
                     _methodInfo.Invoke(Host, null);
@@ -41,10 +40,9 @@ namespace Rhinox.GUIUtils.Editor
 
         protected override void DrawInner(Rect rect, GUIContent label)
         {
-            var buttonHeight = _buttonAttr.ButtonHeight;
-            buttonHeight = buttonHeight == 0 ? (int)EditorGUIUtility.singleLineHeight : buttonHeight;
+            var buttonHeight = Height == 0 ? (int)EditorGUIUtility.singleLineHeight : Height;
             rect.height = buttonHeight;
-            if (GUI.Button(rect, (_buttonAttr.Name ?? _methodInfo.Name).SplitCamelCase()))
+            if (GUI.Button(rect, (Name ?? _methodInfo.Name).SplitCamelCase()))
             {
                 if (!TryCreateDialog(_methodInfo, Host))
                     _methodInfo.Invoke(Host, null);

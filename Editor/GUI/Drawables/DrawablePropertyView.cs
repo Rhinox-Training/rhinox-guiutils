@@ -42,7 +42,7 @@ namespace Rhinox.GUIUtils.Editor
             _instance = serializedObject;
             _serializedObject = serializedObject;
             if (forceDrawAsUnityObject)
-                _drawables = new[] {new DrawableUnityObject((GameObject)serializedObject.targetObject)};
+                _drawables = new[] {new DrawableUnityObject(serializedObject.targetObject)};
             else
                 _drawables = ParseSerializedObject(serializedObject);
         }
@@ -53,7 +53,7 @@ namespace Rhinox.GUIUtils.Editor
             _instance = property;
             _serializedObject = property.serializedObject;
             if (forceDrawAsUnityObject)
-                _drawables = new[] {new DrawableUnityObject((GameObject)property.GetValue())};
+                _drawables = new[] {new DrawableUnityObject((UnityEngine.Object) property.GetValue())};
             else
                 _drawables = ParseSerializedProperty(property);
         }
