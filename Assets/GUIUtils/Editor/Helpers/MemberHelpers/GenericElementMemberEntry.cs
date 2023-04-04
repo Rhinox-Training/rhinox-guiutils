@@ -22,13 +22,13 @@ namespace Rhinox.GUIUtils.Editor
 
         public override object GetValue()
         {
-            var list = Parent.GetValue() as IList;
+            var list = (IList) Parent.GetValue();
             return list[Index];
         }
 
         public override bool TrySetValue<T>(T val)
         {
-            var list = Parent.GetValue() as IList;
+            var list = (IList) Parent.GetValue();
             list[Index] = val;
             return true;
         }

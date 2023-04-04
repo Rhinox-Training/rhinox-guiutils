@@ -95,7 +95,7 @@ namespace Rhinox.GUIUtils.Editor
             _listDrawerAttr = entry.GetAttribute<ListDrawerSettingsAttribute>() ?? new ListDrawerSettingsAttribute();
             _drawElementsAsUnity = entry.GetAttribute<DrawAsUnityObjectAttribute>() != null;
 
-            _listRO = new PageableReorderableList(_entry.Instance, _entry.Info,
+            _listRO = new PageableReorderableList(_entry,
                 _listDrawerAttr.DraggableItems, true,
                 !_listDrawerAttr.IsReadOnly && !_listDrawerAttr.HideAddButton,
                 !_listDrawerAttr.IsReadOnly && !_listDrawerAttr.HideRemoveButton)
