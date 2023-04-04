@@ -164,7 +164,7 @@ namespace Rhinox.GUIUtils.Editor
                     this.index = elementIndex + _drawPageIndex * MaxItemsPerPage;
                     s_Defaults.OnRemoveElement(this);
                     onChangedCallback?.Invoke(this);
-                    if (_drawPageIndex * MaxItemsPerPage >= this.count)
+                    if (_drawPageIndex * MaxItemsPerPage >= this.count && _drawPageIndex > 0)
                         --_drawPageIndex;
                 }
             }

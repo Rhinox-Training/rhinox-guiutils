@@ -754,7 +754,12 @@ namespace Rhinox.GUIUtils.Editor
                         Debug.LogError((object) ("Cannot add element. Type " + elementType.ToString() +
                                                  " has no default constructor. Implement a default constructor or implement your own add behaviour."));
                     else if (elementType != null)
-                        list.index = list.list.Add(Activator.CreateInstance(elementType));
+                    {
+                        if (elementType.InheritsFrom<UnityEngine.Object>())
+                            list.index = list.list.Add(null);
+                        else
+                            list.index = list.list.Add(Activator.CreateInstance(elementType));
+                    }
                     else
                         Debug.LogError((object) "Cannot add element of type Null.");
                 }
