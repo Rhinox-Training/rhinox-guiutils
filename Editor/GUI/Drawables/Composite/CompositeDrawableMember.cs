@@ -15,6 +15,9 @@ namespace Rhinox.GUIUtils.Editor
         public bool IsVisible => true;
         public virtual GUIContent Label => GUIContent.none;
 
+        public virtual bool ShouldRepaint =>
+            _drawableMemberChildren == null ? false : _drawableMemberChildren.Any(x => x.ShouldRepaint);
+
         protected readonly List<IOrderedDrawable> _drawableMemberChildren = new List<IOrderedDrawable>();
         protected readonly List<Attribute> _attributes = new List<Attribute>();
 

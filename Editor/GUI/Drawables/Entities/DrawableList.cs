@@ -159,6 +159,7 @@ namespace Rhinox.GUIUtils.Editor
         private void OnChangedListCallback(BetterReorderableList list)
         {
             _listElements = new ListElementDrawable[list.count];
+            ShouldRepaint = true;
         }
 
         private void DrawElement(Rect rect, int index, bool isActive, bool isFocused)

@@ -24,6 +24,19 @@ namespace Rhinox.GUIUtils.Editor
             Order = _innerDrawable.Order;
         }
 
+        private bool _localShouldRepaint;
+        public override bool ShouldRepaint
+        {
+            get
+            {
+                return _localShouldRepaint || _innerDrawable.ShouldRepaint;
+            }
+            protected set
+            {
+                _localShouldRepaint = value;
+            }
+        }
+
         public override IEnumerable<TAttribute> GetDrawableAttributes<TAttribute>()
         {
             return _innerDrawable.GetDrawableAttributes<TAttribute>();
@@ -40,6 +53,12 @@ namespace Rhinox.GUIUtils.Editor
         protected override void DrawInner(Rect rect, GUIContent label)
         {
             _innerDrawable.Draw(rect, label);
+        }
+
+        protected override void OnPreDraw()
+        {
+            base.OnPreDraw();
+            _localShouldRepaint = false;
         }
     }
 }

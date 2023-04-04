@@ -8,11 +8,14 @@ namespace Rhinox.GUIUtils.Editor
     public class SmartPropertyView
     {
 #if ODIN_INSPECTOR
+        public bool ShouldRepaint => false;
         private readonly PropertyTree _propertyTree;
         private readonly bool _allowUndo;
 #else
+        public bool ShouldRepaint => _odinlessDrawer.ShouldRepaint;
         private readonly DrawablePropertyView _odinlessDrawer;
 #endif
+
         
         public SmartPropertyView(object instance)
         {
@@ -33,7 +36,7 @@ namespace Rhinox.GUIUtils.Editor
             _odinlessDrawer = new DrawablePropertyView(serializedObject, false);
 #endif
         }
-        
+
         public void DrawLayout()
         {
 #if ODIN_INSPECTOR
