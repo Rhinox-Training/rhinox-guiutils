@@ -109,13 +109,13 @@ namespace Rhinox.GUIUtils.Editor
                 var leftButtonRect = buttonsRect.AlignLeft(buttonsRect.width * 0.5f);
                 var rightButtonRect = buttonsRect.AlignRight(buttonsRect.width * 0.5f);
                 var wasEnabled = GUI.enabled;
-                GUI.enabled = _drawPageIndex <= 0;
+                GUI.enabled = _drawPageIndex > 0;
                 if (GUI.Button(leftButtonRect, "<"))
                 {
                     if (_drawPageIndex > 0)
                         --_drawPageIndex;
                 }
-                GUI.enabled = _drawPageIndex >= maxPagesCount - 1;
+                GUI.enabled = _drawPageIndex < maxPagesCount - 1;
                 if (GUI.Button(rightButtonRect, ">"))
                 {
                     if (_drawPageIndex < maxPagesCount - 1)
