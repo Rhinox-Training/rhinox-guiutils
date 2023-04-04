@@ -192,6 +192,8 @@ namespace Rhinox.GUIUtils.Editor
                 if (groupIdParts.Count == 1)
                 {
                     nextGroup = GroupingHelper.CreateFrom(groupAttribute, this);
+                    if (nextGroup != null)
+                        nextGroup.AddAttribute(groupAttribute);
                     // We don't add them yet, add the group when it is used to preserve property order
                     // base.Add(nextGroup);
                     _subGroupsByName.Add(next, nextGroup);

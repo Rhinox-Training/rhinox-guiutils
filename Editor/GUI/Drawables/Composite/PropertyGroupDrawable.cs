@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Rhinox.Lightspeed;
 using Sirenix.OdinInspector;
 
 namespace Rhinox.GUIUtils.Editor
@@ -17,18 +18,17 @@ namespace Rhinox.GUIUtils.Editor
         
         protected T ValidateAttribute(PropertyGroupAttribute attr)
         {
-            if (attr is T typedAttr)
-                return typedAttr;
-            
-            // incorrect attribute
-            throw new ArgumentException(nameof(attr), $"{GetType().Name} cannot parse attribute of type {attr.GetType().Name}");
+            if (!(attr is T typedAttr)) // incorrect attribute
+                throw new ArgumentException(nameof(attr), $"{GetType().Name} cannot parse attribute of type {attr.GetType().Name}");
+
+            return typedAttr;
         }
 
         protected override void ParseAttribute(IOrderedDrawable child, PropertyGroupAttribute attr)
         {
             var groupAttribute = ValidateAttribute(attr);
 
-            _groupAttributes.Add(groupAttribute);
+            base.AddAttribute(attr);
             
             // No need to trigger ParseAttribute -> should have happened already, but it can't hurt
             ParseAttribute(groupAttribute);
@@ -48,6 +48,8 @@ namespace Rhinox.GUIUtils.Editor
             if (attr is PropertyGroupAttribute groupAttribute)
             {
                 var typedGroupAttribute = ValidateAttribute(groupAttribute);
+                _groupAttributes.AddUnique(typedGroupAttribute);
+
                 ParseAttribute(typedGroupAttribute);
             }
         }
