@@ -19,20 +19,26 @@ namespace Rhinox.GUIUtils.Editor
         //==============================================================================================================
         // Public API
         public static List<IOrderedDrawable> CreateDrawableMembersFor(GenericMemberEntry entry)
-            => CreateDrawableMembersFor(entry.Instance, entry.GetReturnType(), entry);
+            => CreateDrawableMembersFor(entry.GetValue(), entry.GetReturnType(), entry);
         
-        public static List<IOrderedDrawable> CreateDrawableMembersFor(object instance, Type t, GenericMemberEntry parent = null)
+        public static List<IOrderedDrawable> CreateDrawableMembersFor(object instance, Type type, GenericMemberEntry parent = null)
         {
-            if (t == typeof(UnityEngine.Object))
+            if (type == null)
+                throw new ArgumentNullException(nameof(type));
+            
+            if (type.InheritsFrom<UnityEngine.Object>())
                 return new List<IOrderedDrawable>() {new DrawableUnityObject((UnityEngine.Object) instance)};
-            return CreateDrawableMembersFor(instance, t, 0, parent);
+            return CreateDrawableMembersFor(instance, type, 0, parent);
         }
         
         public static List<IOrderedDrawable> CreateDrawableMembersFor(SerializedObject obj, Type type)
         {
             object instanceVal = obj.targetObject;
             
-            if (type == typeof(UnityEngine.Object))
+            if (type == null)
+                throw new ArgumentNullException(nameof(type));
+            
+            if (type.InheritsFrom<UnityEngine.Object>())
                 return new List<IOrderedDrawable>() {new DrawableUnityObject((UnityEngine.Object)instanceVal)};
             
             var visibleFields = obj.EnumerateEditorVisibleFields();
