@@ -15,12 +15,14 @@ namespace Rhinox.GUIUtils.Editor
         
         private IOrderedDrawable _innerDrawable;
 
+        public bool IsFoldout => Children.Any(drawable => drawable.IsVisible);
+
         public override float ElementHeight
         {
             get
             {
                 var height = _innerDrawable.ElementHeight;
-                if (IsFoldout() && _hasLabel)
+                if (IsFoldout && _hasLabel)
                     height += EditorGUIUtility.singleLineHeight + CustomGUIUtility.Padding;
                 return height;
             }
@@ -36,16 +38,21 @@ namespace Rhinox.GUIUtils.Editor
         public ObjectCompositeDrawableMember(string name, IOrderedDrawable contents, float order = 0)
             : base(name, order)
         {
-            _label = new GUIContent(name);
+            if (name.IsNullOrEmpty())
+                _label = GUIContent.none;
+            else
+                _label = new GUIContent(name);
+            
             _innerDrawable = contents;
         }
 
 
         public override void Draw(GUIContent label)
         {
-            if (IsFoldout())
+            _hasLabel = label != GUIContent.none;
+
+            if (IsFoldout)
             {
-                _hasLabel = label != GUIContent.none;
                 if (_hasLabel)
                 {
                     GUILayout.Label(label);
@@ -59,9 +66,11 @@ namespace Rhinox.GUIUtils.Editor
             }
             else
             {
-                GUILayout.BeginHorizontal(GUILayout.ExpandWidth(true));
-
-                EditorGUILayout.PrefixLabel(label);
+                if (_hasLabel)
+                {
+                    GUILayout.BeginHorizontal(CustomGUIStyles.Clean);
+                    EditorGUILayout.PrefixLabel(label);
+                }
 
                 var indent = EditorGUI.indentLevel;
                 EditorGUI.indentLevel = 0;
@@ -69,16 +78,17 @@ namespace Rhinox.GUIUtils.Editor
                 _innerDrawable.Draw(GUIContent.none);
                 
                 EditorGUI.indentLevel = indent;
-                GUILayout.EndHorizontal();
+                
+                if (_hasLabel)
+                    GUILayout.EndHorizontal();
             }
         }
 
         public override void Draw(Rect rect, GUIContent label)
         {
-            bool isFoldout = IsFoldout();
             var indentLevel = EditorGUI.indentLevel;
             
-            if (isFoldout)
+            if (IsFoldout)
             {
                 _hasLabel = label != GUIContent.none;
                 if (_hasLabel)
@@ -101,22 +111,6 @@ namespace Rhinox.GUIUtils.Editor
             _innerDrawable.Draw(rect, GUIContent.none);
 
             EditorGUI.indentLevel = indentLevel;
-        }
-        
-        private bool IsFoldout()
-        {
-            int count = 0;
-            foreach (var drawable in Children)
-            {
-                // TODO drawable.IsVisible?
-                if (drawable is HideWrapper hiddenDrawable)
-                {
-                    if (!hiddenDrawable.ShouldDraw())
-                        continue;
-                }
-                ++count;
-            }
-            return count > 1;
         }
     }
 }
