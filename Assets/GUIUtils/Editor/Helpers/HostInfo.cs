@@ -8,7 +8,7 @@ using UnityEditor;
 
 namespace Rhinox.GUIUtils.Editor
 {
-    public class HostInfo
+    public class HostInfo : GenericHostInfo
     {
         private SerializedObject _root;
         public SerializedObject Root
@@ -21,30 +21,63 @@ namespace Rhinox.GUIUtils.Editor
             }
         }
         public readonly HostInfo Parent;
-        public readonly FieldInfo FieldInfo;
-        public readonly int ArrayIndex;
         public string Path;
 
-        public HostInfo(SerializedObject obj, FieldInfo fi, int index = -1)
+        public HostInfo(SerializedObject serializedHost, FieldInfo fi, int index = -1)
+            : base(serializedHost, fi, index)
         {
-            _root = obj;
-            FieldInfo = fi;
-            ArrayIndex = index;
-            Parent = null;
+            _root = serializedHost;
+            Path = null;
         }
 
         public HostInfo(HostInfo parent, FieldInfo fi, int index = -1)
+            : base(null, fi, index)
         {
             Parent = parent;
+            Path = null;
+        }
+        
+        
+        public override object GetHost()
+        {
+            if (Parent == null)
+                return base.GetHost();
+            return Parent.GetValue();
+        }
+        
+        protected override void BeforeValueChanged()
+        {
+            base.BeforeValueChanged();
+            //_root.ApplyModifiedProperties(); // TODO: do we need ApplyModifiedProperties here?
+        }
+
+        protected override void OnValueChanged()
+        {
+            _root.Update();
+            base.OnValueChanged();
+        }
+
+    }
+    
+    public class GenericHostInfo
+    {
+        public readonly FieldInfo FieldInfo;
+        public readonly int ArrayIndex;
+        
+        private readonly object _hostRootInstance;
+        
+        private static MethodInfo _resizeMethod;
+
+        public GenericHostInfo(object genericHost, FieldInfo fi, int index = -1)
+        {
+            _hostRootInstance = genericHost;
             FieldInfo = fi;
             ArrayIndex = index;
         }
 
-        public object GetHost()
+        public virtual object GetHost()
         {
-            if (Parent == null)
-                return _root.targetObject;
-            return Parent.GetValue();
+            return _hostRootInstance;
         }
 
         public object GetValue()
@@ -60,16 +93,16 @@ namespace Rhinox.GUIUtils.Editor
         {
             if (ArrayIndex < 0)
             {
-                //_root.ApplyModifiedProperties(); // TODO: do we need ApplyModifiedProperties here?
+                BeforeValueChanged();
                 FieldInfo.SetValue(GetHost(), obj);
-                _root.Update();
+                OnValueChanged();
                 return;
             }
 
             var value = FieldInfo.GetValue(GetHost());
             if (value is IList e)
             {
-                //_root.ApplyModifiedProperties(); // TODO: do we need ApplyModifiedProperties here?
+                BeforeValueChanged();
                 if (ArrayIndex >= e.Count)
                 {
                     if (e is Array eArr)
@@ -85,16 +118,24 @@ namespace Rhinox.GUIUtils.Editor
                 }
                 else
                     e[ArrayIndex] = obj;
-                
-                _root.Update();
+
+                OnValueChanged();
                 return;
             }
 
             throw new IndexOutOfRangeException($"Could not map found index {ArrayIndex} to value {value}");
         }
 
-        private static MethodInfo _resizeMethod;
-        
+        protected virtual void BeforeValueChanged()
+        {
+            
+        }
+
+        protected virtual void OnValueChanged()
+        {
+            
+        }
+
         private static void ResizeArray(ref object array, int n)
         {
             var type = array.GetType();
