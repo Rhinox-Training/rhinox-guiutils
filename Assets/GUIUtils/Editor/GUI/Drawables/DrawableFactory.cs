@@ -20,8 +20,8 @@ namespace Rhinox.GUIUtils.Editor
         // Public API
         public static List<IOrderedDrawable> CreateDrawableMembersFor(object instance, Type t)
         {
-            if (t == typeof(GameObject))
-                return new List<IOrderedDrawable>() {new DrawableUnityObject((GameObject)instance)};
+            if (t == typeof(UnityEngine.Object))
+                return new List<IOrderedDrawable>() {new DrawableUnityObject((UnityEngine.Object) instance)};
             return CreateDrawableMembersFor(instance, t, 0);
         }
         
@@ -29,8 +29,8 @@ namespace Rhinox.GUIUtils.Editor
         {
             object instanceVal = obj.targetObject;
             
-            if (type == typeof(GameObject))
-                return new List<IOrderedDrawable>() {new DrawableUnityObject((GameObject)instanceVal)};
+            if (type == typeof(UnityEngine.Object))
+                return new List<IOrderedDrawable>() {new DrawableUnityObject((UnityEngine.Object)instanceVal)};
             
             var visibleFields = obj.EnumerateEditorVisibleFields();
             return DrawableMembersFor(instanceVal, type, visibleFields, 0);
@@ -62,8 +62,6 @@ namespace Rhinox.GUIUtils.Editor
             
             object instanceVal = property.GetValue();
             
-            if (type == typeof(GameObject))
-                return new List<IOrderedDrawable>() { new DrawableUnityObject((GameObject)instanceVal, property.FindFieldInfo()) };
             if (type.InheritsFrom<UnityEngine.Object>())
                 return new List<IOrderedDrawable>() { new DrawableUnityProperty(property, property.FindFieldInfo()) };
 
@@ -199,7 +197,11 @@ namespace Rhinox.GUIUtils.Editor
                 var attributes = mi.GetCustomAttributes();
                 var attr = attributes.OfType<ButtonAttribute>().First();
                 
-                IOrderedDrawable button = new DrawableButton(instance, mi, attr);
+                IOrderedDrawable button = new DrawableButton(instance, mi)
+                {
+                    Name = attr.Name,
+                    Height = attr.ButtonHeight
+                };
                 button = DrawableWrapperFactory.TryWrapDrawable(button, attributes);
                 buttons.AddUnique(button);
             }

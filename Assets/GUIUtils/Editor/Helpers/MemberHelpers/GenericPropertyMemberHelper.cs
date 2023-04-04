@@ -73,7 +73,6 @@ namespace Rhinox.GUIUtils.Editor
             const string ROOT_ID = "root";
             const string PROPERTY_ID = "property";
             
-            int partI = -1;
             GenericMemberEntry usedEntry = null;
             string[] parts = input.Split(new[] { "." }, StringSplitOptions.RemoveEmptyEntries);
             for (int i = 0; i < parts.Length; ++i)

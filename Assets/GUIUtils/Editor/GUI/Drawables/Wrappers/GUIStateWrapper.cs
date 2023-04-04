@@ -16,7 +16,7 @@ namespace Rhinox.GUIUtils.Editor
 
         protected override void OnPreDraw()
         {
-            _stateMember.DrawError();
+            _stateMember?.DrawError();
             
             _previousState = GUI.enabled;
 
