@@ -21,9 +21,9 @@ namespace Rhinox.GUIUtils.Editor
             Info = info;
         }
 
-        public Type GetReturnType() => Info.GetReturnType();
+        public virtual Type GetReturnType() => Info.GetReturnType();
 
-        public Attribute[] GetAttributes()
+        public virtual Attribute[] GetAttributes()
         {
             var directAttr = Info.GetCustomAttributes();
             if (Instance == null)
@@ -36,10 +36,10 @@ namespace Rhinox.GUIUtils.Editor
         public T GetAttribute<T>() where T : Attribute
             => GetAttributes().OfType<T>().FirstOrDefault();
 
-        public object GetValue() => Info.GetValue(Instance);
+        public virtual object GetValue() => Info.GetValue(Instance);
 
         public T GetSmartValue<T>() => (T) GetValue();
 
-        public bool TrySetValue<T>(T val) => Info.TrySetValue(Instance, val);
+        public virtual bool TrySetValue<T>(T val) => Info.TrySetValue(Instance, val);
     }
 }
