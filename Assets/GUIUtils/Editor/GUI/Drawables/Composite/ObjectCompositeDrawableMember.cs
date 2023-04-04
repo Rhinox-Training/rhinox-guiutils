@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 using Rhinox.Lightspeed;
 using UnityEditor;
@@ -5,30 +6,40 @@ using UnityEngine;
 
 namespace Rhinox.GUIUtils.Editor
 {
-    public class ObjectCompositeDrawableMember : VerticalGroupDrawable
+    public class ObjectCompositeDrawableMember : CompositeDrawableMember
     {
-        private GUIContent _label;
-
         public override GUIContent Label => _label;
 
+        private GUIContent _label;
         private bool _hasLabel = false;
+        
+        private IOrderedDrawable _innerDrawable;
 
         public override float ElementHeight
         {
             get
             {
-                var height = base.ElementHeight;
+                var height = _innerDrawable.ElementHeight;
                 if (IsFoldout() && _hasLabel)
                     height += EditorGUIUtility.singleLineHeight + CustomGUIUtility.Padding;
                 return height;
             }
         }
-
-        public ObjectCompositeDrawableMember(string name, float order = 0)
-            : base(null, name, order)
+        
+        
+        public ObjectCompositeDrawableMember(GenericMemberEntry entry, IOrderedDrawable contents, float order = 0)
+            : this(entry.NiceName, contents, order)
+        {
+            Host = entry;
+        }
+        
+        public ObjectCompositeDrawableMember(string name, IOrderedDrawable contents, float order = 0)
+            : base(name, order)
         {
             _label = new GUIContent(name);
+            _innerDrawable = contents;
         }
+
 
         public override void Draw(GUIContent label)
         {
@@ -42,7 +53,7 @@ namespace Rhinox.GUIUtils.Editor
                 }
                 ++EditorGUI.indentLevel;
                 
-                base.Draw(GUIContent.none);
+                _innerDrawable.Draw(GUIContent.none);
                 
                 --EditorGUI.indentLevel;
             }
@@ -55,7 +66,7 @@ namespace Rhinox.GUIUtils.Editor
                 var indent = EditorGUI.indentLevel;
                 EditorGUI.indentLevel = 0;
                 
-                base.Draw(GUIContent.none);
+                _innerDrawable.Draw(GUIContent.none);
                 
                 EditorGUI.indentLevel = indent;
                 GUILayout.EndHorizontal();
@@ -87,7 +98,7 @@ namespace Rhinox.GUIUtils.Editor
                 rect = EditorGUI.PrefixLabel(rect, label);
             }
             
-            base.Draw(rect, GUIContent.none);
+            _innerDrawable.Draw(rect, GUIContent.none);
 
             EditorGUI.indentLevel = indentLevel;
         }

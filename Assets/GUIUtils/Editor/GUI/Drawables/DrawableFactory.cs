@@ -148,8 +148,10 @@ namespace Rhinox.GUIUtils.Editor
 
         private static IOrderedDrawable CreateCompositeDrawable(object instance, Type t, int depth, GenericMemberEntry upperEntry = null)
         {
-            var drawable = upperEntry != null ? new ObjectCompositeDrawableMember(upperEntry.Info.Name) : new VerticalGroupDrawable();
+            CompositeDrawableMember drawable = new VerticalGroupDrawable();
+
             var entries = GetEditorVisibleFields(instance, t, upperEntry);
+            var drawables = new List<IOrderedDrawable>();
             foreach (var entry in entries)
             {
                 if (entry.Info is PropertyInfo propertyInfo && !propertyInfo.IsVisibleInEditor())
@@ -158,11 +160,25 @@ namespace Rhinox.GUIUtils.Editor
                 var resultingMember = CreateDrawableForMember(entry, depth);
 
                 if (resultingMember != null)
-                    drawable.Add(resultingMember);
+                    drawables.Add(resultingMember);
             }
+
+            drawable.AddRange(drawables);
+            drawable.Sort();
             
             var buttons = FindButtons(instance);
             drawable.AddRange(buttons);
+
+            if (upperEntry != null)
+            {
+                drawable = new ObjectCompositeDrawableMember(upperEntry, drawable);
+                foreach (var attr in upperEntry.GetAttributes())
+                    drawable.AddAttribute(attr);
+            }
+            else
+                drawable = new ObjectCompositeDrawableMember(string.Empty, drawable);
+            
+
 
             return drawable;
         }
@@ -286,12 +302,11 @@ namespace Rhinox.GUIUtils.Editor
         private static IReadOnlyCollection<GenericMemberEntry> GetEditorVisibleFields(object instance, Type t, GenericMemberEntry parent = null)
         {
             // All public members
-            var publicMembers = t.GetMembers(BindingFlags.Instance | BindingFlags.Public |
-                                                BindingFlags.GetField | BindingFlags.GetProperty | BindingFlags.FlattenHierarchy);
-            publicMembers = publicMembers
-                .Where(x => !(x is MethodBase))
-                .ToArray();
-            
+            var publicFields = t.GetFields(BindingFlags.Instance | BindingFlags.Public |
+                                             BindingFlags.GetField | BindingFlags.FlattenHierarchy);
+            var publicProperties = t.GetProperties(BindingFlags.Instance | BindingFlags.Public |
+                                           BindingFlags.GetProperty | BindingFlags.FlattenHierarchy);
+
             // All non-publics that serialize or are visible
             var serializedMembers = t.GetMembers(BindingFlags.Instance | BindingFlags.NonPublic |
                                                     BindingFlags.GetField | BindingFlags.GetProperty | BindingFlags.FlattenHierarchy);
@@ -301,7 +316,9 @@ namespace Rhinox.GUIUtils.Editor
                 .ToArray();
 
             var list = new List<GenericMemberEntry>();
-            foreach (var member in publicMembers)
+            foreach (var member in publicFields)
+                list.Add(new GenericMemberEntry(instance, member, parent));
+            foreach (var member in publicProperties)
                 list.Add(new GenericMemberEntry(instance, member, parent));
             foreach (var member in serializedMembers)
                 list.Add(new GenericMemberEntry(instance, member, parent));

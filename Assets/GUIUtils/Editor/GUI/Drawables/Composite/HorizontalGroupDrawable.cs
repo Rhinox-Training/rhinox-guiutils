@@ -30,13 +30,13 @@ namespace Rhinox.GUIUtils.Editor
         {
             SetOrder(attr.Order);
 
-            _size.MinSize = _parsedAttributes.Sum(x => x.Width > 0 ? x.Width : x.MinWidth);
-            if (_parsedAttributes.All(x => x.Width > 0))
-                _size.PreferredSize = _parsedAttributes.Sum(x => x.Width);
+            _size.MinSize = _groupAttributes.Sum(x => x.Width > 0 ? x.Width : x.MinWidth);
+            if (_groupAttributes.All(x => x.Width > 0))
+                _size.PreferredSize = _groupAttributes.Sum(x => x.Width);
             else
                 _size.PreferredSize = 0;
-            if (_parsedAttributes.All(x => x.Width > 0 || x.MaxWidth > 0))
-                _size.MaxSize = _parsedAttributes.Sum(x => x.Width > 0 ? x.Width : x.MaxWidth);
+            if (_groupAttributes.All(x => x.Width > 0 || x.MaxWidth > 0))
+                _size.MaxSize = _groupAttributes.Sum(x => x.Width > 0 ? x.Width : x.MaxWidth);
             else
                 _size.MaxSize = 0;
 

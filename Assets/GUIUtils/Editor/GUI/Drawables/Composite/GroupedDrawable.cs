@@ -161,8 +161,6 @@ namespace Rhinox.GUIUtils.Editor
 
         protected abstract void ParseAttribute(IOrderedDrawable child, PropertyGroupAttribute attr);
         
-        protected abstract void ParseAttribute(PropertyGroupAttribute attr);
-
         protected void SetOrder(float order)
         {
             Order = order;
@@ -179,7 +177,7 @@ namespace Rhinox.GUIUtils.Editor
             // if we've reached the final leaf, return ourselves and that we managed to find it
             if (groupIdParts.Count == 0)
             {
-                ParseAttribute(groupAttribute);
+                AddAttribute(groupAttribute);
                 finalGroup = this;
                 return true;
             }

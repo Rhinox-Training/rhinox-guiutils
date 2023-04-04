@@ -11,7 +11,6 @@ namespace Rhinox.GUIUtils.Editor
     {
         protected readonly SizeResolver _widthResolver;
         protected Rect _cachedRect;
-        protected float _totalCachedWidth;
         
         public override float ElementHeight
         {
