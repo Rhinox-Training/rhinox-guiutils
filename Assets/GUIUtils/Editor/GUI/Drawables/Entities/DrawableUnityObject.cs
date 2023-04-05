@@ -23,11 +23,13 @@ namespace Rhinox.GUIUtils.Editor
 
         protected override void DrawInner(GUIContent label)
         {
+            // TODO: should we ever set this value?
             EditorGUILayout.ObjectField(label, Entity, GetAppropriateType(), true);
         }
 
         protected override void DrawInner(Rect rect, GUIContent label)
         {
+            // TODO: should we ever set this value?
             EditorGUI.ObjectField(rect, label, Entity, GetAppropriateType(), true);
         }
 
