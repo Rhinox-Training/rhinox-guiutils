@@ -186,6 +186,12 @@ namespace Rhinox.GUIUtils.Editor
             System.Reflection.FieldInfo fi = FindFieldInfo(property);
             return fi.GetCustomAttribute(typeof(T)) as T;
         }
+
+        public static IEnumerable<Attribute> GetAttributes(this SerializedProperty property)
+        {
+            System.Reflection.FieldInfo fi = FindFieldInfo(property);
+            return fi.GetCustomAttributes();
+        }
         
         public static T GetAttributeOrCreate<T>(this SerializedProperty property) where T : Attribute, new()
         {
