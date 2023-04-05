@@ -591,6 +591,10 @@ namespace Rhinox.GUIUtils.Editor
                     DrawEditorPreview(index, _defaultEditorPreviewHeight);
 
             }
+            catch (ExitGUIException)
+            {
+                // Do nothing, this is supported behaviour
+            }
             catch (Exception e)
             {
                 EditorGUILayout.HelpBox(e.ToString(), MessageType.Error);
