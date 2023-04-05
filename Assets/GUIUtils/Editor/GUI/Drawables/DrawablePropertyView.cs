@@ -24,56 +24,44 @@ namespace Rhinox.GUIUtils.Editor
 
         public float Height => _rootDrawable != null ? _rootDrawable.ElementHeight : 0.0f;
 
-        public DrawablePropertyView(object instance, bool forceDrawAsUnityObject = false)
+        public DrawablePropertyView(object instance)
         {
             if (instance == null) throw new ArgumentNullException(nameof(instance));
             _instance = instance;
             _entry = null;
             _serializedObject = null;
             
-            if (forceDrawAsUnityObject)
-                _rootDrawable = new DrawableUnityObject((UnityEngine.Object) _instance);
-            else
-                _rootDrawable = ParseNonUnityObject(instance);
+            _rootDrawable = ParseNonUnityObject(instance);
         }
         
-        public DrawablePropertyView(GenericMemberEntry entry, bool forceDrawAsUnityObject = false)
+        public DrawablePropertyView(GenericMemberEntry entry)
         {
             if (entry == null) throw new ArgumentNullException(nameof(entry));
             _entry = entry;
             _instance = _entry.Instance;
             _serializedObject = null;
 
-            if (forceDrawAsUnityObject)
-                _rootDrawable = new UnityObjectDrawableField(entry);
-            else
-                _rootDrawable = DrawableFactory.CreateDrawableFor(entry);
+            _rootDrawable = DrawableFactory.CreateDrawableFor(entry);
         }
         
-        public DrawablePropertyView(SerializedObject serializedObject, bool forceDrawAsUnityObject = false)
+        public DrawablePropertyView(SerializedObject serializedObject)
         {
             if (serializedObject == null) throw new ArgumentNullException(nameof(serializedObject));
             _instance = serializedObject;
             _serializedObject = serializedObject;
             _entry = null;
             
-            if (forceDrawAsUnityObject)
-                _rootDrawable = new DrawableUnityObject(serializedObject.targetObject);
-            else
-                _rootDrawable = ParseSerializedObject(serializedObject);
+            _rootDrawable = ParseSerializedObject(serializedObject);
         }
         
-        public DrawablePropertyView(SerializedProperty property, bool forceDrawAsUnityObject = false)
+        public DrawablePropertyView(SerializedProperty property)
         {
             if (property == null) throw new ArgumentNullException(nameof(property));
             _instance = property;
             _serializedObject = property.serializedObject;
             _entry = null;
             
-            if (forceDrawAsUnityObject)
-                _rootDrawable = new DrawableUnityObject((UnityEngine.Object) property.GetValue());
-            else
-                _rootDrawable = ParseSerializedProperty(property);
+            _rootDrawable = ParseSerializedProperty(property);
         }
         
         protected static IOrderedDrawable ParseNonUnityObject(object obj)

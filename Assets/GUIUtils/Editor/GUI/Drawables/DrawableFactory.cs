@@ -47,9 +47,13 @@ namespace Rhinox.GUIUtils.Editor
                 return null;
             
             object instanceVal = property.GetValue();
-            
-            if (type == typeof(UnityEngine.Object))
-                return new DrawableUnityProperty(property, property.FindFieldInfo());
+
+            if (CanUnityHandleDrawingProperty(property))
+            {
+                IOrderedDrawable drawable = new DrawableUnityProperty(property, property.FindFieldInfo());
+                drawable = DrawableWrapperFactory.TryWrapDrawable(drawable, property.GetAttributes().Append(new HideLabelAttribute()));
+                return drawable;
+            }
 
             if (instanceVal == null)
                 return new NullReferenceDrawable(property);
@@ -77,7 +81,7 @@ namespace Rhinox.GUIUtils.Editor
             if (type == null)
                 throw new ArgumentNullException(nameof(type));
             
-            if (type.InheritsFrom<UnityEngine.Object>())
+            if (parent == null && type.InheritsFrom<UnityEngine.Object>())
                 return new DrawableUnityObject((UnityEngine.Object) instance);
 
             if (parent != null)
@@ -352,6 +356,25 @@ namespace Rhinox.GUIUtils.Editor
                 if (!propertyMember.IsVisibleInEditor())
                     continue;
                 yield return propertyMember;
+            }
+        }
+
+        private static bool CanUnityHandleDrawingProperty(SerializedProperty property)
+        {
+            if (property == null)
+                return false;
+            switch (property.propertyType)
+            {
+                case SerializedPropertyType.ExposedReference:
+                case SerializedPropertyType.LayerMask:
+                case SerializedPropertyType.Enum:
+                case SerializedPropertyType.ManagedReference:
+                case SerializedPropertyType.ArraySize:
+                //case SerializedPropertyType.ObjectReference:
+                case SerializedPropertyType.Generic:
+                    return false;
+                default:
+                    return true;
             }
         }
     }
