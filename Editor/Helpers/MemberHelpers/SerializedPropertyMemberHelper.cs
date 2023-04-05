@@ -11,23 +11,17 @@ namespace Rhinox.GUIUtils.Editor
     /// VERY BASIC VERSION OF PropertyMemberHelper FOR WHEN NO ACCESS TO ODIN
     /// Helper class to handle strings for labels and other similar purposes.
     /// Allows for a static string, or for referring to string member fields, properties or methods, by name
+    /// Support special cases: $root, $parent, $property
     /// </summary>
     public class SerializedPropertyMemberHelper<T> : BaseValueMemberHelper<T>, IPropertyMemberHelper<T>
     {
         private HostInfo _info;
 
-        /// <summary>Creates a StringMemberHelper to get a display string.</summary>
-        /// <param name="property">Inspector property to get string from.</param>
-        /// <param name="input">The input string. If the first character is a '$', then StringMemberHelper will look for a member string field, property or method, and will try to parse it as an expression if it starts with '@'.</param>
         public SerializedPropertyMemberHelper(SerializedProperty property, string input)
             : this(property.serializedObject == null, input, property)
         {
         }
 
-        /// <summary>Creates a StringMemberHelper to get a display string.</summary>
-        /// <param name="property">Inspector property to get string from.</param>
-        /// <param name="input">The input string. If the first character is a '$', then StringMemberHelper will look for a member string field, property or method, and will try to parse it as an expression if it starts with '@'.</param>
-        /// /// <param name="input">The input string. If the first character is a '$', then StringMemberHelper will look for a member string field, property or method.</param>
         public SerializedPropertyMemberHelper(SerializedProperty property, string input, ref string errorMessage)
             : this(property, input)
         {
@@ -36,11 +30,6 @@ namespace Rhinox.GUIUtils.Editor
             errorMessage = this.ErrorMessage;
         }
         
-        /// <summary>Creates a StringMemberHelper to get a display string.</summary>
-        /// <param name="objectType">The type of the parent, to get a member string from.</param>
-        /// <param name="isStatic">Value indicating if the context should be static.</param>
-        /// <param name="input">The input string. If the first character is a '$', then StringMemberHelper will look for a member string field, property or method, and will try to parse it as an expression if it starts with '@'.</param>
-        /// /// <param name="input">The input string. If the first character is a '$', then StringMemberHelper will look for a member string field, property or method.</param>
         private SerializedPropertyMemberHelper(bool isStatic, string input, SerializedProperty property)
         {
             _objectType = property.GetHostType();
@@ -70,6 +59,7 @@ namespace Rhinox.GUIUtils.Editor
             
             const string PARENT_ID = "parent";
             const string ROOT_ID = "root";
+            const string PROPERTY_ID = "property";
 
             int partI = -1;
             while ((partI = input.IndexOf(".", StringComparison.Ordinal)) >= 0)
@@ -84,6 +74,8 @@ namespace Rhinox.GUIUtils.Editor
                     case ROOT_ID:
                         while (_info.Parent != null)
                             _info = _info.Parent;
+                        break;
+                    case PROPERTY_ID:
                         break;
                     default:
                         actionTaken = false;

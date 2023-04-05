@@ -34,7 +34,7 @@ namespace Rhinox.GUIUtils.Editor
             if (type == null)
                 throw new ArgumentNullException(nameof(type));
             
-            if (type.InheritsFrom<UnityEngine.Object>())
+            if (type == typeof(UnityEngine.Object))
                 return new DrawableUnityObject((UnityEngine.Object)instanceVal);
             
             var visibleFields = obj.EnumerateEditorVisibleFields();
@@ -48,7 +48,7 @@ namespace Rhinox.GUIUtils.Editor
             
             object instanceVal = property.GetValue();
             
-            if (type.InheritsFrom<UnityEngine.Object>())
+            if (type == typeof(UnityEngine.Object))
                 return new DrawableUnityProperty(property, property.FindFieldInfo());
 
             if (instanceVal == null)

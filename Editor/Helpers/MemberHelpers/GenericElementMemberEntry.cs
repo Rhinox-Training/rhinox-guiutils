@@ -15,8 +15,8 @@ namespace Rhinox.GUIUtils.Editor
         public GenericElementMemberEntry(GenericMemberEntry listEntry, int index)
             : base(listEntry.Instance, listEntry.Info, listEntry)
         {
-            _hostInfo = new GenericHostInfo(listEntry.Instance, listEntry.Info as FieldInfo, index);
             Index = index;
+            _hostInfo = new GenericHostInfo(listEntry.Instance, listEntry.Info as FieldInfo, Index);
             _elementType = Info.GetReturnType().GetCollectionElementType();
         }
 

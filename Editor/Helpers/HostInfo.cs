@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Rhinox.Lightspeed;
 using Rhinox.Lightspeed.Reflection;
 using UnityEditor;
 
@@ -10,23 +11,24 @@ namespace Rhinox.GUIUtils.Editor
 {
     public class HostInfo : GenericHostInfo
     {
-        private SerializedObject _root;
+        public readonly HostInfo Parent;
+        public string Path;
+        private SerializedObject _hostSerializedObject;
+        
         public SerializedObject Root
         {
-            get => Parent == null ? _root : Parent.Root;
+            get => Parent == null ? _hostSerializedObject : Parent.Root;
             set
             {
                 if (Parent != null) Parent.Root = value;
-                else _root = value;
+                else _hostSerializedObject = value;
             }
         }
-        public readonly HostInfo Parent;
-        public string Path;
-
-        public HostInfo(SerializedObject serializedHost, FieldInfo fi, int index = -1)
-            : base(serializedHost, fi, index)
+        
+        public HostInfo(SerializedObject host, FieldInfo fi, int index = -1)
+            : base(host.targetObject, fi, index)
         {
-            _root = serializedHost;
+            _hostSerializedObject = host;
             Path = null;
         }
 
@@ -36,8 +38,7 @@ namespace Rhinox.GUIUtils.Editor
             Parent = parent;
             Path = null;
         }
-        
-        
+
         public override object GetHost()
         {
             if (Parent == null)
@@ -53,7 +54,7 @@ namespace Rhinox.GUIUtils.Editor
 
         protected override void OnValueChanged()
         {
-            _root.Update();
+            _hostSerializedObject.Update();
             base.OnValueChanged();
         }
 
@@ -68,9 +69,11 @@ namespace Rhinox.GUIUtils.Editor
         
         private static MethodInfo _resizeMethod;
 
-        public GenericHostInfo(object genericHost, FieldInfo fi, int index = -1)
+        public string NiceName => FieldInfo?.Name.SplitCamelCase();
+
+        public GenericHostInfo(object host, FieldInfo fi, int index = -1)
         {
-            _hostRootInstance = genericHost;
+            _hostRootInstance = host;
             FieldInfo = fi;
             ArrayIndex = index;
         }
@@ -80,7 +83,7 @@ namespace Rhinox.GUIUtils.Editor
             return _hostRootInstance;
         }
 
-        public object GetValue()
+        public virtual object GetValue()
         {
             var value = FieldInfo.GetValue(GetHost());
             if (ArrayIndex < 0) return value;
