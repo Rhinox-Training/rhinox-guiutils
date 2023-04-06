@@ -8,13 +8,15 @@ namespace Rhinox.GUIUtils.Editor
 {
     [CustomEditor(typeof(MonoBehaviour), true)]
     [CanEditMultipleObjects]
-    public class CustomSmartEditor : UnityEditor.Editor, IRepaintRequestHandler
+    public class CustomSmartEditor : BaseEditor<MonoBehaviour>, IRepaintRequestHandler
     {
         private DrawablePropertyView _propertyView;
         private IRepaintRequest _target;
 
         public override void OnInspectorGUI()
         {
+            DrawScriptField();
+            
             var attr = target.GetType().GetCustomAttribute<SmartFallbackDrawnAttribute>();
             if (attr == null)
             {
