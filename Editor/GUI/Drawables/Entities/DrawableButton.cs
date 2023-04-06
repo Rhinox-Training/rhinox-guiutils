@@ -28,10 +28,10 @@ namespace Rhinox.GUIUtils.Editor
             _methodInfo = method;
         }
         
-        protected override void DrawInner(GUIContent label)
+        protected override void DrawInner(GUIContent label, params GUILayoutOption[] options)
         {
             var height = Height == 0 ? (int)EditorGUIUtility.singleLineHeight : Height;
-            if (GUILayout.Button((Name ?? _methodInfo.Name).SplitCamelCase(), GUILayout.Height(height)))
+            if (GUILayout.Button((Name ?? _methodInfo.Name).SplitCamelCase(), options.Append(GUILayout.Height(height))))
             {
                 if (!TryCreateDialog(_methodInfo, Host))
                     _methodInfo.Invoke(Host, null);

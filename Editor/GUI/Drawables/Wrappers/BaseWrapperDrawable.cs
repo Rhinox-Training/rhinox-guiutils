@@ -42,9 +42,6 @@ namespace Rhinox.GUIUtils.Editor
             return _innerDrawable.GetDrawableAttributes<TAttribute>();
         }
         
-        // Sealed because you need to override the GUILayoutOption one
-        protected sealed override void DrawInner(GUIContent label) => DrawInner(label, Array.Empty<GUILayoutOption>());
-
         protected override void DrawInner(GUIContent label, params GUILayoutOption[] options)
         {
             _innerDrawable.Draw(label, options);

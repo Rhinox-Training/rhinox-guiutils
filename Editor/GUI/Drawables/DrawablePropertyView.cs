@@ -17,11 +17,6 @@ namespace Rhinox.GUIUtils.Editor
 
         public bool ShouldRepaint { get; private set; }
 
-        internal void MarkAsRepainted()
-        {
-            ShouldRepaint = false;
-        }
-
         public float Height => _rootDrawable != null ? _rootDrawable.ElementHeight : 0.0f;
 
         public DrawablePropertyView(object instance)
@@ -31,7 +26,7 @@ namespace Rhinox.GUIUtils.Editor
             _entry = null;
             _serializedObject = null;
             
-            _rootDrawable = ParseNonUnityObject(instance);
+            _rootDrawable = DrawableFactory.CreateDrawableFor(_instance, _instance.GetType());
         }
         
         public DrawablePropertyView(GenericMemberEntry entry)
@@ -51,7 +46,7 @@ namespace Rhinox.GUIUtils.Editor
             _serializedObject = serializedObject;
             _entry = null;
             
-            _rootDrawable = ParseSerializedObject(serializedObject);
+            _rootDrawable = DrawableFactory.CreateDrawableFor(_serializedObject, _serializedObject.targetObject.GetType());
         }
         
         public DrawablePropertyView(SerializedProperty property)
@@ -61,48 +56,7 @@ namespace Rhinox.GUIUtils.Editor
             _serializedObject = property.serializedObject;
             _entry = null;
             
-            _rootDrawable = ParseSerializedProperty(property);
-        }
-        
-        protected static IOrderedDrawable ParseNonUnityObject(object obj)
-        {
-            if (obj == null)
-                return null;
-
-            var type = obj.GetType();
-
-            var drawable = DrawableFactory.CreateDrawableFor(obj, type);
-
-            if (drawable == null && obj is UnityEngine.Object unityObj)
-                drawable = new DrawableUnityObject(unityObj, null);
-
-            return drawable;
-        }
-
-        protected static IOrderedDrawable ParseSerializedProperty(SerializedProperty property)
-        {
-            if (property == null)
-                return null;
-
-            var hostInfo = property.GetHostInfo();
-            var type = hostInfo.GetReturnType();
-
-            if (AttributeParser.ParseDrawAsUnity(hostInfo.FieldInfo))
-                return new DrawableUnityObject((UnityEngine.Object)property.GetValue(), property.FindFieldInfo());
-
-            var drawable = DrawableFactory.CreateDrawableFor(property, type);
-            return drawable;
-        }
-
-        protected static IOrderedDrawable ParseSerializedObject(SerializedObject obj)
-        {
-            if (obj == null || obj.targetObject == null)
-                return null;
-
-            var type = obj.targetObject.GetType();
-
-            var drawable = DrawableFactory.CreateDrawableFor(obj, type);
-            return drawable;
+            _rootDrawable = DrawableFactory.CreateDrawableFor(property);
         }
         
         public void DrawLayout()
@@ -149,5 +103,11 @@ namespace Rhinox.GUIUtils.Editor
             if (_serializedObject != null)
                 _serializedObject.ApplyModifiedProperties();
         }
+        
+        internal void MarkAsRepainted()
+        {
+            ShouldRepaint = false;
+        }
+
     }
 }
