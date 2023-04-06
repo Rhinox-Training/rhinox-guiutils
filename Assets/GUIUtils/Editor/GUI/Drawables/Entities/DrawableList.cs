@@ -125,7 +125,7 @@ namespace Rhinox.GUIUtils.Editor
             return _listRO.elementHeight;
         }
 
-        protected override void DrawInner(GUIContent label)
+        protected override void DrawInner(GUIContent label, params GUILayoutOption[] options)
         {
             if (_listRO != null && _listDrawerAttr != null)
             {

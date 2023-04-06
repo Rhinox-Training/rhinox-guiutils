@@ -14,9 +14,9 @@ namespace Rhinox.GUIUtils.Editor
             Host = prop;
         }
         
-        protected override void DrawInner(GUIContent label)
+        protected override void DrawInner(GUIContent label, params GUILayoutOption[] options) 
         {
-            EditorGUILayout.PropertyField(Entity, label);
+            EditorGUILayout.PropertyField(Entity, label, options);
         }
 
         protected override void DrawInner(Rect rect, GUIContent label)

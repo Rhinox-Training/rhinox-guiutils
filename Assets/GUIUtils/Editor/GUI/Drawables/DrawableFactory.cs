@@ -41,25 +41,29 @@ namespace Rhinox.GUIUtils.Editor
             return DrawableMembersForSerializedObject(instanceVal, type, visibleFields, 0);
         }
         
-        public static IOrderedDrawable CreateDrawableFor(SerializedProperty property, Type type)
+        public static IOrderedDrawable CreateDrawableFor(SerializedProperty property)
         {
             if (property == null)
                 return null;
             
-            object instanceVal = property.GetValue();
-
             if (CanUnityHandleDrawingProperty(property))
             {
                 IOrderedDrawable drawable = new DrawableUnityProperty(property, property.FindFieldInfo());
                 drawable = DrawableWrapperFactory.TryWrapDrawable(drawable, property.GetAttributes().Append(new HideLabelAttribute()));
                 return drawable;
             }
-
+            
+            var hostInfo = property.GetHostInfo();
+            object instanceVal = property.GetValue();
+            
             if (instanceVal == null)
                 return new NullReferenceDrawable(property);
-
+            
+            if (AttributeParser.ParseDrawAsUnity(hostInfo.FieldInfo))
+                return new DrawableUnityObject((UnityEngine.Object)instanceVal, property.FindFieldInfo());
+            
             var visibleFields = property.EnumerateEditorVisibleFields();
-            return DrawableMembersForSerializedObject(instanceVal, type, visibleFields, 0);
+            return DrawableMembersForSerializedObject(instanceVal, hostInfo.GetReturnType(), visibleFields, 0);
         }
 
         public static void SortDrawables(this List<IOrderedDrawable> drawables)

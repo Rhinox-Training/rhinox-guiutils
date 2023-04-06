@@ -54,11 +54,8 @@ namespace Rhinox.GUIUtils.Editor
             
             OnPostDraw();
         }
-        
-        protected virtual void DrawInner(GUIContent label, params GUILayoutOption[] options)
-            => DrawInner(label);
 
-        protected abstract void DrawInner(GUIContent label);
+        protected abstract void DrawInner(GUIContent label, params GUILayoutOption[] options);
         protected abstract void DrawInner(Rect rect, GUIContent label);
 
         /// <summary>

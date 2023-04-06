@@ -21,10 +21,10 @@ namespace Rhinox.GUIUtils.Editor
             _genericMemberEntry = entry;
         }
 
-        protected override void DrawInner(GUIContent label)
+        protected override void DrawInner(GUIContent label, params GUILayoutOption[] options)
         {
             // TODO: should we ever set this value?
-            EditorGUILayout.ObjectField(label, Entity, GetAppropriateType(), true);
+            EditorGUILayout.ObjectField(label, Entity, GetAppropriateType(), true, options);
         }
 
         protected override void DrawInner(Rect rect, GUIContent label)
