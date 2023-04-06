@@ -15,8 +15,6 @@ namespace Rhinox.GUIUtils.Editor
 
         public override void OnInspectorGUI()
         {
-            DrawScriptField();
-            
             var attr = target.GetType().GetCustomAttribute<SmartFallbackDrawnAttribute>();
             if (attr == null)
             {
@@ -37,6 +35,7 @@ namespace Rhinox.GUIUtils.Editor
             if (_propertyView == null)
                 _propertyView = new DrawablePropertyView(serializedObject);
             
+            DrawScriptField();
             _propertyView.DrawLayout();
 
             if (_propertyView.ShouldRepaint)
