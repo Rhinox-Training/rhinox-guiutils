@@ -212,8 +212,7 @@ namespace Rhinox.GUIUtils.Editor
 
         public void EnsureSizeFits(SizeInfo size)
         {
-            size.MinSize = Mathf.Max(_size.MinSize, size.MinSize);
-            
+            // If the parent has a max size, make sure the child fits inside of it
             if (_size.MaxSize > 0)
             {
                 float width = _size.MaxSize;
@@ -221,6 +220,7 @@ namespace Rhinox.GUIUtils.Editor
                     size.MaxSize = width;
             }
             
+            // If the parent has a preferred size, make sure the child fits inside of it
             if (_size.PreferredSize > 0)
             {
                 float width = _size.PreferredSize;
