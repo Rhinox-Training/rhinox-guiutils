@@ -26,9 +26,6 @@ namespace Rhinox.GUIUtils.Editor
             Host = entry;
         }
 
-        protected override void DrawInner(GUIContent label)
-            => DrawInner(label, Array.Empty<GUILayoutOption>());
-
         protected override void DrawInner(GUIContent label, params GUILayoutOption[] options)
         {
             var smartVal = GetSmartValue();

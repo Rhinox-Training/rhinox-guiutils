@@ -10,13 +10,16 @@ namespace Rhinox.GUIUtils.Editor
     {
         public string Name { get; protected set; }
         public float Order { get; set; }
-        public object Host { get; }
+        public object Host { get; protected set; }
         
         public bool IsVisible => true;
         public virtual GUIContent Label => GUIContent.none;
 
+        public virtual bool ShouldRepaint =>
+            _drawableMemberChildren == null ? false : _drawableMemberChildren.Any(x => x.ShouldRepaint);
+
         protected readonly List<IOrderedDrawable> _drawableMemberChildren = new List<IOrderedDrawable>();
-        private List<Attribute> _attributes;
+        protected readonly List<Attribute> _attributes = new List<Attribute>();
 
         public IReadOnlyCollection<IOrderedDrawable> Children
             => _drawableMemberChildren ?? (IReadOnlyCollection<IOrderedDrawable>) Array.Empty<IOrderedDrawable>();
@@ -31,17 +34,15 @@ namespace Rhinox.GUIUtils.Editor
             Order = order;
         }
         
-        public IEnumerable<TAttribute> GetDrawableAttributes<TAttribute>() where TAttribute : Attribute
+        public virtual IEnumerable<TAttribute> GetDrawableAttributes<TAttribute>() where TAttribute : Attribute
         {
             if (_attributes == null)
                 return Array.Empty<TAttribute>();
             return _attributes.OfType<TAttribute>();
         }
 
-        public void AddAttribute(Attribute attribute)
+        public virtual void AddAttribute(Attribute attribute)
         {
-            if (_attributes == null)
-                _attributes = new List<Attribute>();
             _attributes.AddUnique(attribute);
         }
 

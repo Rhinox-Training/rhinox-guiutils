@@ -11,141 +11,77 @@ namespace Rhinox.GUIUtils.Editor
     public class DrawablePropertyView
     {
         private readonly object _instance;
+        private readonly GenericMemberEntry _entry;
         private readonly SerializedObject _serializedObject;
-        private readonly ICollection<IOrderedDrawable> _drawables;
+        private readonly IOrderedDrawable _rootDrawable;
 
-        public float Height
-        {
-            get
-            {
-                float height = 0.0f;
-                foreach (var drawable in _drawables)
-                    height += drawable.ElementHeight;
-                return height + (Math.Max(0, _drawables.Count - 1) * 2.0f);
-            }
-        }
+        public bool ShouldRepaint { get; private set; }
 
-        public DrawablePropertyView(object unityObjInstance, bool forceDrawAsUnityObject = false)
+        public float Height => _rootDrawable != null ? _rootDrawable.ElementHeight : 0.0f;
+
+        public DrawablePropertyView(object instance)
         {
-            if (unityObjInstance == null) throw new ArgumentNullException(nameof(unityObjInstance));
-            _instance = unityObjInstance;
+            if (instance == null) throw new ArgumentNullException(nameof(instance));
+            _instance = instance;
+            _entry = null;
             _serializedObject = null;
-            if (forceDrawAsUnityObject)
-                _drawables = new[] {new DrawableUnityObject((GameObject)unityObjInstance)};
-            else
-                _drawables = ParseNonUnityObject(unityObjInstance);
+            
+            _rootDrawable = DrawableFactory.CreateDrawableFor(_instance, _instance.GetType());
         }
         
-        public DrawablePropertyView(SerializedObject serializedObject, bool forceDrawAsUnityObject = false)
+        public DrawablePropertyView(GenericMemberEntry entry)
+        {
+            if (entry == null) throw new ArgumentNullException(nameof(entry));
+            _entry = entry;
+            _instance = _entry.Instance;
+            _serializedObject = null;
+
+            _rootDrawable = DrawableFactory.CreateDrawableFor(entry);
+        }
+        
+        public DrawablePropertyView(SerializedObject serializedObject)
         {
             if (serializedObject == null) throw new ArgumentNullException(nameof(serializedObject));
             _instance = serializedObject;
             _serializedObject = serializedObject;
-            if (forceDrawAsUnityObject)
-                _drawables = new[] {new DrawableUnityObject((GameObject)serializedObject.targetObject)};
-            else
-                _drawables = ParseSerializedObject(serializedObject);
+            _entry = null;
+            
+            _rootDrawable = DrawableFactory.CreateDrawableFor(_serializedObject, _serializedObject.targetObject.GetType());
         }
         
-        public DrawablePropertyView(SerializedProperty property, bool forceDrawAsUnityObject = false)
+        public DrawablePropertyView(SerializedProperty property)
         {
             if (property == null) throw new ArgumentNullException(nameof(property));
             _instance = property;
             _serializedObject = property.serializedObject;
-            if (forceDrawAsUnityObject)
-                _drawables = new[] {new DrawableUnityObject((GameObject)property.GetValue())};
-            else
-                _drawables = ParseSerializedProperty(property);
-        }
-        
-        public static ICollection<IOrderedDrawable> ParseNonUnityObject(object obj)
-        {
-            if (obj == null)
-                return Array.Empty<BaseEntityDrawable>();
-
-            var type = obj.GetType();
-
-            var drawables = DrawableFactory.CreateDrawableMembersFor(obj, type);
-
-            if (drawables.Count == 0 && obj is UnityEngine.Object unityObj)
-                drawables.Add(new DrawableUnityObject((GameObject)unityObj, null));
-
-            if (drawables.IsNullOrEmpty())
-                return drawables;
+            _entry = null;
             
-            var group = GroupingHelper.Process(drawables);
-            group.Sort();
-            return new IOrderedDrawable[] { group };
-        }
-
-        public static ICollection<IOrderedDrawable> ParseSerializedProperty(SerializedProperty property)
-        {
-            if (property == null)
-                return Array.Empty<IOrderedDrawable>();
-
-            var hostInfo = property.GetHostInfo();
-            var type = hostInfo.GetReturnType();
-
-            if (AttributeParser.ParseDrawAsUnity(hostInfo.FieldInfo))
-                return new[] {new DrawableUnityObject((UnityEngine.Object)property.GetValue(), property.FindFieldInfo())};
-
-            var drawables = DrawableFactory.CreateDrawableMembersFor(property, type);
-
-            if (drawables.IsNullOrEmpty()) return drawables;
-            
-            var group = GroupingHelper.Process(drawables);
-            group.Sort();
-            return new IOrderedDrawable[] { group };
-        }
-
-        public static ICollection<IOrderedDrawable> ParseSerializedObject(SerializedObject obj)
-        {
-            if (obj == null || obj.targetObject == null)
-                return Array.Empty<IOrderedDrawable>();
-
-            var type = obj.targetObject.GetType();
-
-            var drawables = DrawableFactory.CreateDrawableMembersFor(obj, type);
-
-            if (drawables.IsNullOrEmpty()) return drawables;
-            
-            var group = GroupingHelper.Process(drawables);
-            group.Sort();
-            return new IOrderedDrawable[] { group };
+            _rootDrawable = DrawableFactory.CreateDrawableFor(property);
         }
         
         public void DrawLayout()
         {
-            if (_drawables == null)
+            if (_rootDrawable == null)
                 return;
 
             OnPreDraw();
             
-            foreach (var drawable in _drawables)
-            {
-                if (drawable == null)
-                    continue;
-                drawable.Draw(drawable.Label);
-            }
+            _rootDrawable.Draw(_rootDrawable.Label);
 
             OnPostDraw();
         }
 
         public void Draw(Rect rect)
         {
-            if (_drawables == null)
+            if (_rootDrawable == null)
                 return;
             
             OnPreDraw();
             
-            foreach (var drawable in _drawables)
-            {
-                if (drawable == null)
-                    continue;
-                rect.height = drawable.ElementHeight;
-                drawable.Draw(rect, drawable.Label);
-                rect.y += rect.height + 2.0f;
-            }
+            
+            // TODO: should we force height?
+            rect.height = Height;
+            _rootDrawable.Draw(rect, _rootDrawable.Label);
             
             OnPostDraw();
         }
@@ -161,8 +97,17 @@ namespace Rhinox.GUIUtils.Editor
 
         private void OnPostDraw()
         {
+            if (_rootDrawable != null && _rootDrawable.ShouldRepaint)
+                ShouldRepaint = true;
+            
             if (_serializedObject != null)
                 _serializedObject.ApplyModifiedProperties();
         }
+        
+        internal void MarkAsRepainted()
+        {
+            ShouldRepaint = false;
+        }
+
     }
 }

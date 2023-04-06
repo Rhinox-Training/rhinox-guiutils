@@ -13,7 +13,7 @@ namespace Rhinox.GUIUtils.Editor
             MsgType = type;
         }
 
-        protected override void DrawInner(GUIContent label)
+        protected override void DrawInner(GUIContent label, params GUILayoutOption[] options)
         {
             EditorGUILayout.HelpBox(Entity, MsgType);
         }

@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace Rhinox.GUIUtils.Editor
 {
-    public class TitleGroupDrawable : VerticalGroupDrawable
+    public class TitleGroupDrawable : BaseVerticalGroupDrawable<TitleGroupAttribute>
     {
         public override float ElementHeight
         {
@@ -83,42 +83,30 @@ namespace Rhinox.GUIUtils.Editor
             base.Draw(rect, label);
         }
 
-        protected override void ParseAttribute(IOrderedDrawable child, PropertyGroupAttribute attr)
+        protected override void ParseAttribute(IOrderedDrawable child, TitleGroupAttribute attr)
         {
-            if (attr is TitleGroupAttribute groupAttribute)
-            {
-                // TODO
-            }
-            else // incorrect attribute
-                throw new ArgumentException(nameof(attr));
-            
         }
 
-        protected override void ParseAttribute(PropertyGroupAttribute attr)
+        protected override void ParseAttribute(TitleGroupAttribute attr)
         {
-            if (attr is TitleGroupAttribute groupAttribute)
-            {
-                // TODO: current we just take the last entry, different entries having different data is invalid?
+            // TODO: current we just take the last entry, different entries having different data is invalid?
                 
-                if (!groupAttribute.GroupName.IsNullOrEmpty())
-                    Title = groupAttribute.GroupName;
+            if (!attr.GroupName.IsNullOrEmpty())
+                Title = attr.GroupName;
                 
-                if (groupAttribute.Order != 0)
-                    SetOrder(groupAttribute.Order);
+            if (attr.Order != 0)
+                SetOrder(attr.Order);
                 
-                if (!groupAttribute.HorizontalLine) // default is true so only set if you specify it
-                    HorizontalLine = false;
+            if (!attr.HorizontalLine) // default is true so only set if you specify it
+                HorizontalLine = false;
                 
-                if (groupAttribute.Alignment != TitleAlignments.Left)
-                    Alignment = groupAttribute.Alignment;
-                if (!groupAttribute.BoldTitle) // default is true so only set if you specify it
-                    Bold = false;
+            if (attr.Alignment != TitleAlignments.Left)
+                Alignment = attr.Alignment;
+            if (!attr.BoldTitle) // default is true so only set if you specify it
+                Bold = false;
                 
-                TitleStyle = UpdateStyle();
-                _parent?.EnsureSizeFits(_size);
-            }
-            else // incorrect attribute
-                throw new ArgumentException(nameof(attr));
+            TitleStyle = UpdateStyle();
+            _parent?.EnsureSizeFits(_size);
         }
 
         private GUIStyle UpdateStyle()

@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 using Rhinox.Lightspeed;
 using UnityEditor;
@@ -5,36 +6,55 @@ using UnityEngine;
 
 namespace Rhinox.GUIUtils.Editor
 {
-    public class ObjectCompositeDrawableMember : VerticalGroupDrawable
+    public class ObjectCompositeDrawableMember : CompositeDrawableMember
     {
-        private GUIContent _label;
-
         public override GUIContent Label => _label;
 
+        private GUIContent _label;
         private bool _hasLabel = false;
+        
+        private IOrderedDrawable _innerDrawable;
+
+        public bool IsFoldout => Children.Any(drawable => drawable.IsVisible);
 
         public override float ElementHeight
         {
             get
             {
-                var height = base.ElementHeight;
-                if (IsFoldout() && _hasLabel)
+                var height = _innerDrawable.ElementHeight;
+                if (IsFoldout && _hasLabel)
                     height += EditorGUIUtility.singleLineHeight + CustomGUIUtility.Padding;
                 return height;
             }
         }
 
-        public ObjectCompositeDrawableMember(string name, float order = 0)
-            : base(null, name, order)
+        public override bool ShouldRepaint => base.ShouldRepaint || (_innerDrawable != null ? _innerDrawable.ShouldRepaint : false);
+
+
+        public ObjectCompositeDrawableMember(GenericMemberEntry entry, IOrderedDrawable contents, float order = 0)
+            : this(entry.NiceName, contents, order)
         {
-            _label = new GUIContent(name);
+            Host = entry;
         }
+        
+        public ObjectCompositeDrawableMember(string name, IOrderedDrawable contents, float order = 0)
+            : base(name, order)
+        {
+            if (name.IsNullOrEmpty())
+                _label = GUIContent.none;
+            else
+                _label = new GUIContent(name);
+            
+            _innerDrawable = contents;
+        }
+
 
         public override void Draw(GUIContent label)
         {
-            if (IsFoldout())
+            _hasLabel = label != GUIContent.none;
+
+            if (IsFoldout)
             {
-                _hasLabel = label != GUIContent.none;
                 if (_hasLabel)
                 {
                     GUILayout.Label(label);
@@ -42,32 +62,35 @@ namespace Rhinox.GUIUtils.Editor
                 }
                 ++EditorGUI.indentLevel;
                 
-                base.Draw(GUIContent.none);
+                _innerDrawable.Draw(GUIContent.none);
                 
                 --EditorGUI.indentLevel;
             }
             else
             {
-                GUILayout.BeginHorizontal(GUILayout.ExpandWidth(true));
-
-                EditorGUILayout.PrefixLabel(label);
+                if (_hasLabel)
+                {
+                    GUILayout.BeginHorizontal(CustomGUIStyles.Clean);
+                    EditorGUILayout.PrefixLabel(label);
+                }
 
                 var indent = EditorGUI.indentLevel;
                 EditorGUI.indentLevel = 0;
                 
-                base.Draw(GUIContent.none);
+                _innerDrawable.Draw(GUIContent.none);
                 
                 EditorGUI.indentLevel = indent;
-                GUILayout.EndHorizontal();
+                
+                if (_hasLabel)
+                    GUILayout.EndHorizontal();
             }
         }
 
         public override void Draw(Rect rect, GUIContent label)
         {
-            bool isFoldout = IsFoldout();
             var indentLevel = EditorGUI.indentLevel;
             
-            if (isFoldout)
+            if (IsFoldout)
             {
                 _hasLabel = label != GUIContent.none;
                 if (_hasLabel)
@@ -87,25 +110,9 @@ namespace Rhinox.GUIUtils.Editor
                 rect = EditorGUI.PrefixLabel(rect, label);
             }
             
-            base.Draw(rect, GUIContent.none);
+            _innerDrawable.Draw(rect, GUIContent.none);
 
             EditorGUI.indentLevel = indentLevel;
-        }
-        
-        private bool IsFoldout()
-        {
-            int count = 0;
-            foreach (var drawable in Children)
-            {
-                // TODO drawable.IsVisible?
-                if (drawable is HideWrapper hiddenDrawable)
-                {
-                    if (!hiddenDrawable.ShouldDraw())
-                        continue;
-                }
-                ++count;
-            }
-            return count > 1;
         }
     }
 }

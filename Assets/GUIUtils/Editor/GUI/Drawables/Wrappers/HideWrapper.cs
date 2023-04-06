@@ -8,7 +8,7 @@ namespace Rhinox.GUIUtils.Editor
         private bool _state;
 
         private IPropertyMemberHelper<bool> _stateMember;
-        
+
         public override bool IsVisible => _innerDrawable.IsVisible && ShouldDraw();
 
         public HideWrapper(IOrderedDrawable drawable) : base(drawable)
@@ -35,7 +35,6 @@ namespace Rhinox.GUIUtils.Editor
             if (_stateMember == null)
                 return _state;
             
-            _stateMember.DrawError();
             return _stateMember.GetValue() == _state;
         }
 

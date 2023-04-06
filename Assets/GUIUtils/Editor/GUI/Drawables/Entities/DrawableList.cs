@@ -18,27 +18,28 @@ namespace Rhinox.GUIUtils.Editor
 
         private readonly float _defaultElementHeight;
         private readonly SerializedProperty _property;
+        private readonly GenericElementMemberEntry _entry;
         private readonly DrawablePropertyView _propertyView;
 
-        public ListElementDrawable(SerializedProperty property, float defaultElementHeight = 18.0f, bool drawElementsAsUnity = false)
+        public ListElementDrawable(SerializedProperty property, float defaultElementHeight = 18.0f)
         {
             if (property == null) throw new ArgumentNullException(nameof(property));
             _defaultElementHeight = defaultElementHeight;
             _property = property;
-            _propertyView = new DrawablePropertyView(property, drawElementsAsUnity);
+            _propertyView = new DrawablePropertyView(property);
         }
 
-        public ListElementDrawable(object element, float defaultElementHeight = 18.0f, bool drawElementsAsUnity = false)
+        public ListElementDrawable(GenericElementMemberEntry entry, float defaultElementHeight = 18.0f)
         {
-            if (element == null) throw new ArgumentNullException(nameof(element));
+            _entry = entry;
             _defaultElementHeight = defaultElementHeight;
             _property = null;
-            _propertyView = new DrawablePropertyView(element, drawElementsAsUnity);
+            _propertyView = new DrawablePropertyView(_entry);
         }
 
         public void Draw(Rect r)
         {
-            r.y += 2.0f;
+            r.y += CustomGUIUtility.Padding;
             if (_propertyView != null)
                 _propertyView.Draw(r);
         }
@@ -51,9 +52,7 @@ namespace Rhinox.GUIUtils.Editor
         private ListElementDrawable[] _listElements;
 
         private readonly SerializedProperty _listProperty;
-        private readonly MemberInfo _listMemberInfo;
-        private readonly object _listContainerInstance;
-        private readonly bool _drawElementsAsUnity;
+        private readonly GenericMemberEntry _entry;
 
         public override float ElementHeight
         {
@@ -72,11 +71,9 @@ namespace Rhinox.GUIUtils.Editor
                 throw new ArgumentNullException(nameof(listProperty));
             
             _listProperty = listProperty;
-            _listContainerInstance = null;
-            _listMemberInfo = null;
+            _entry = null;
 
             _listDrawerAttr = listProperty.GetAttributeOrCreate<ListDrawerSettingsAttribute>();
-            _drawElementsAsUnity = listProperty.GetAttribute<DrawAsUnityObjectAttribute>() != null;
 
             _listRO = new PageableReorderableList(listProperty.serializedObject, listProperty,
                 _listDrawerAttr.DraggableItems, true,
@@ -92,12 +89,10 @@ namespace Rhinox.GUIUtils.Editor
         public DrawableList(GenericMemberEntry entry) : base(entry)
         {
             _listProperty = null;
-            _listContainerInstance = entry.Instance;
-            _listMemberInfo = entry.Info;
+            _entry = entry;
             _listDrawerAttr = entry.GetAttribute<ListDrawerSettingsAttribute>() ?? new ListDrawerSettingsAttribute();
-            _drawElementsAsUnity = entry.GetAttribute<DrawAsUnityObjectAttribute>() != null;
 
-            _listRO = new PageableReorderableList(_listContainerInstance, _listMemberInfo,
+            _listRO = new PageableReorderableList(_entry,
                 _listDrawerAttr.DraggableItems, true,
                 !_listDrawerAttr.IsReadOnly && !_listDrawerAttr.HideAddButton,
                 !_listDrawerAttr.IsReadOnly && !_listDrawerAttr.HideRemoveButton)
@@ -130,7 +125,7 @@ namespace Rhinox.GUIUtils.Editor
             return _listRO.elementHeight;
         }
 
-        protected override void DrawInner(GUIContent label)
+        protected override void DrawInner(GUIContent label, params GUILayoutOption[] options)
         {
             if (_listRO != null && _listDrawerAttr != null)
             {
@@ -161,6 +156,7 @@ namespace Rhinox.GUIUtils.Editor
         private void OnChangedListCallback(BetterReorderableList list)
         {
             _listElements = new ListElementDrawable[list.count];
+            ShouldRepaint = true;
         }
 
         private void DrawElement(Rect rect, int index, bool isActive, bool isFocused)
@@ -175,23 +171,20 @@ namespace Rhinox.GUIUtils.Editor
                 return;
             
             if (_listElements[index] == null)
-                _listElements[index] = CreateElementFor(index, _drawElementsAsUnity);
+                _listElements[index] = CreateElementFor(index);
             _listElements[index].Draw(rect);
         }
 
-        private ListElementDrawable CreateElementFor(int index, bool drawElementsAsUnity = false)
+        private ListElementDrawable CreateElementFor(int index)
         {
             if (_listProperty != null)
             {
                 var element = _listProperty.GetArrayElementAtIndex(index);
-                return new ListElementDrawable(element, _listRO.elementHeight, drawElementsAsUnity);
+                return new ListElementDrawable(element, _listRO.elementHeight);
             }
-            else
-            {
-                var value = _listMemberInfo.GetValue(_listContainerInstance) as IList;
-                var nonUnityElement = value[index];
-                return new ListElementDrawable(nonUnityElement, _listRO.elementHeight, drawElementsAsUnity);
-            }
+
+            var elementEntry = new GenericElementMemberEntry(_entry, index);
+            return new ListElementDrawable(elementEntry, _listRO.elementHeight);
         }
 
         private void OnBeginDraw()
@@ -215,7 +208,7 @@ namespace Rhinox.GUIUtils.Editor
             }
             else
             {
-                _listMemberInfo.SetValue(_listContainerInstance, _listRO.list);
+                _entry.Info.SetValue(_entry.Instance, _listRO.list);
             }
         }
     }

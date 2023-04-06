@@ -54,12 +54,12 @@ namespace Rhinox.GUIUtils.Editor
             MaxItemsPerPage = DEFAULT_ITEMS_PER_PAGE;
         }
 
-        public PageableReorderableList(object containerInstance, MemberInfo memberInfo, 
+        public PageableReorderableList(GenericMemberEntry entry, 
             bool draggable = true, bool displayHeader = true, bool displayAddButton = true, bool displayRemoveButton = true)
-            : base(memberInfo.GetValue(containerInstance) as IList, draggable, displayHeader, displayAddButton, displayRemoveButton)
+            : base(entry.GetSmartValue<IList>(), draggable, displayHeader, displayAddButton, displayRemoveButton)
         {
             MaxItemsPerPage = DEFAULT_ITEMS_PER_PAGE;
-            CustomTitle = memberInfo.Name;
+            CustomTitle = entry.NiceName;
         }
 
         protected override void InitList(SerializedObject serializedObject, SerializedProperty elements, IList elementList, bool draggable,
@@ -108,20 +108,20 @@ namespace Rhinox.GUIUtils.Editor
                 var buttonsRect = multiPageRect.AlignRight(multiPageRect.width * 0.6f);
                 var leftButtonRect = buttonsRect.AlignLeft(buttonsRect.width * 0.5f);
                 var rightButtonRect = buttonsRect.AlignRight(buttonsRect.width * 0.5f);
-                EditorGUI.BeginDisabledGroup(_drawPageIndex <= 0);
+                var wasEnabled = GUI.enabled;
+                GUI.enabled = _drawPageIndex > 0;
                 if (GUI.Button(leftButtonRect, "<"))
                 {
                     if (_drawPageIndex > 0)
                         --_drawPageIndex;
                 }
-                EditorGUI.EndDisabledGroup();
-                EditorGUI.BeginDisabledGroup(_drawPageIndex >= maxPagesCount - 1);
+                GUI.enabled = _drawPageIndex < maxPagesCount - 1;
                 if (GUI.Button(rightButtonRect, ">"))
                 {
                     if (_drawPageIndex < maxPagesCount - 1)
                         ++_drawPageIndex;
                 }
-                EditorGUI.EndDisabledGroup();
+                GUI.enabled = wasEnabled;
             }
         }
 
@@ -164,7 +164,7 @@ namespace Rhinox.GUIUtils.Editor
                     this.index = elementIndex + _drawPageIndex * MaxItemsPerPage;
                     s_Defaults.OnRemoveElement(this);
                     onChangedCallback?.Invoke(this);
-                    if (_drawPageIndex * MaxItemsPerPage >= this.count)
+                    if (_drawPageIndex * MaxItemsPerPage >= this.count && _drawPageIndex > 0)
                         --_drawPageIndex;
                 }
             }
