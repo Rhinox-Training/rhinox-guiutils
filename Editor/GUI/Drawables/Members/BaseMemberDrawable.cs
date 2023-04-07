@@ -9,11 +9,11 @@ using UnityEngine;
 
 namespace Rhinox.GUIUtils.Editor
 {
-    public abstract class BaseMemberDrawable<T> : BaseDrawable
+    public abstract class BaseMemberDrawable<T> : BaseDrawable, IMemberDrawable
     {
         public override string LabelString => Entry.NiceName;
         
-        protected readonly GenericMemberEntry Entry;
+        public GenericMemberEntry Entry { get; }
 
         protected BaseMemberDrawable(object instance, MemberInfo info)
             : this(new GenericMemberEntry(instance, info))

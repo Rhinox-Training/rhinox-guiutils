@@ -31,7 +31,7 @@ namespace Rhinox.GUIUtils.Editor
             return base.GetValue();
         }
 
-        public override bool TrySetValue<T>(T val)
+        public override bool TrySetValue(object val)
         {
             if (_hostInfo != null)
             {
