@@ -8,8 +8,8 @@ namespace Rhinox.GUIUtils.Editor
     {
         public override string LabelString => Entity != null ? Entity.displayName : base.LabelString;
 
-        public DrawableUnityProperty(SerializedProperty prop, MemberInfo memberInfo = null)
-            : base(prop, memberInfo)
+        public DrawableUnityProperty(SerializedProperty prop)
+            : base(prop, prop.FindFieldInfo())
         {
             Host = prop;
         }

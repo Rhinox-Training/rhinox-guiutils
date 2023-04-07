@@ -40,6 +40,6 @@ namespace Rhinox.GUIUtils.Editor
 
         public T GetSmartValue<T>() => (T) GetValue();
 
-        public virtual bool TrySetValue<T>(T val) => Info.TrySetValue(Instance, val);
+        public virtual bool TrySetValue(object val) => Info.TrySetValue(Instance, val);
     }
 }

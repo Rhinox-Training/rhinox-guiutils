@@ -119,6 +119,16 @@ namespace Rhinox.GUIUtils.Editor
         private MethodInfo _info;
         private void SetValue(object value)
         {
+            if (_innerDrawable is IMemberDrawable memberDrawable)
+            {
+                memberDrawable.Entry.TrySetValue(value);
+                return;
+            }
+            else if (_innerDrawable is IObjectDrawable && _innerDrawable.Host is GenericMemberEntry entry)
+            {
+                entry.TrySetValue(value);
+                return;
+            }
             if (_info == null)
             {
                 var types = _innerDrawable.GetType().GetArgumentsOfInheritedOpenGenericClass(typeof(BaseMemberDrawable<>));

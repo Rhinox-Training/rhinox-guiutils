@@ -166,6 +166,7 @@ namespace Rhinox.GUIUtils.Editor
                     onChangedCallback?.Invoke(this);
                     if (_drawPageIndex * MaxItemsPerPage >= this.count && _drawPageIndex > 0)
                         --_drawPageIndex;
+                    EditorGUIUtility.ExitGUI();
                 }
             }
         }
@@ -181,7 +182,7 @@ namespace Rhinox.GUIUtils.Editor
         protected override int GetListDrawCount()
         {
             if (MaxItemsPerPage > 0)
-                return Mathf.Min(Mathf.Min(list.Count - _drawPageIndex * MaxItemsPerPage, MaxItemsPerPage), base.GetListDrawCount());
+                return Mathf.Min(Mathf.Min(base.GetListDrawCount() - _drawPageIndex * MaxItemsPerPage, MaxItemsPerPage), base.GetListDrawCount());
             return base.GetListDrawCount();
         }
 
