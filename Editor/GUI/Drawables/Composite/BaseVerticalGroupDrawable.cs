@@ -36,7 +36,7 @@ namespace Rhinox.GUIUtils.Editor
             if (_drawableMemberChildren == null)
                 return;
 
-            var rect = EditorGUILayout.BeginVertical(CustomGUIStyles.Clean, GetLayoutOptions(_size));
+            GUILayout.BeginVertical(CustomGUIStyles.Clean, GetLayoutOptions(_size));
             
             foreach (var childDrawable in _drawableMemberChildren)
             {
@@ -48,7 +48,7 @@ namespace Rhinox.GUIUtils.Editor
                 GUILayout.Space(CustomGUIUtility.Padding); // padding
             }
             
-            EditorGUILayout.EndVertical();
+            GUILayout.EndVertical();
         }
 
         public override void Draw(Rect rect, GUIContent label)

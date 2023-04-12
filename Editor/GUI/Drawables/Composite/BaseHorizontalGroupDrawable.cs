@@ -34,8 +34,8 @@ namespace Rhinox.GUIUtils.Editor
         {
             if (_drawableMemberChildren == null)
                 return;
-            
-            var width = _cachedRect.width;
+
+            float width = _cachedRect.width;
             // if (_size.MinSize > 0)
             //     width = _size.MinSize;
             if (_size.PreferredSize > float.Epsilon)
@@ -54,12 +54,13 @@ namespace Rhinox.GUIUtils.Editor
                     continue;
 
                 GUILayoutOption[] childOptions = widths[i] > 0 ? new [] { GUILayout.Width(widths[i]) } : Array.Empty<GUILayoutOption>();
+                // Debug.Log($"\tInner START {widths[i]}");
                 GUILayout.BeginVertical(CustomGUIStyles.Clean, childOptions);
 
                 childDrawable.Draw(childDrawable.Label, childOptions);
 
                 GUILayout.EndVertical();
-                // Debug.Log($"\tInner End {innerRect.width}");
+                // Debug.Log($"\tInner END {innerRect.width}");
                 
                 if (i < _drawableMemberChildren.Count -1) // don't add padding for last item
                     GUILayout.Space(CustomGUIUtility.Padding);
@@ -110,6 +111,12 @@ namespace Rhinox.GUIUtils.Editor
         {
             if (_sizeInfoByDrawable.ContainsKey(drawable))
             {
+                // if (drawable is GroupedDrawable groupDrawer && groupDrawer.Children.Count == 1)
+                // {
+                //     info = _sizeInfoByDrawable.GetOrDefault(groupDrawer.Children.First());
+                //     if (info != null)
+                //         return true;
+                // }
                 info = _sizeInfoByDrawable[drawable];
                 return true;
             }
