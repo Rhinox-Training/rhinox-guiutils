@@ -8,7 +8,7 @@ using UnityEngine;
 
 namespace Rhinox.GUIUtils.Editor
 {
-    public class DrawablePropertyView
+    public class DrawablePropertyView : IEditor
     {
         private readonly object _instance;
         private readonly GenericMemberEntry _entry;
@@ -109,5 +109,20 @@ namespace Rhinox.GUIUtils.Editor
             ShouldRepaint = false;
         }
 
+        public bool HasPreviewGUI() => false;
+
+        public void DrawPreview(Rect rect) { }
+
+        public bool CanDraw() => true;
+
+        public void Draw()
+        {
+            DrawLayout();
+        }
+
+        public void Destroy()
+        {
+            // Nothing to do
+        }
     }
 }

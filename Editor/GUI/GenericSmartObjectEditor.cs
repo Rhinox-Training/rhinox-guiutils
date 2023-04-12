@@ -6,6 +6,7 @@ using Rhinox.GUIUtils.Attributes;
 using Rhinox.Lightspeed.Reflection;
 using Sirenix.OdinInspector;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace Rhinox.GUIUtils.Editor
 {
@@ -17,7 +18,7 @@ namespace Rhinox.GUIUtils.Editor
     }
     
     [UnityEditor.CustomEditor(typeof(SmartInternalObject))]
-    public class GenericSmartObjectEditor : UnityEditor.Editor
+    public class GenericSmartObjectEditor : UnityEditor.Editor, IEditor
     {
         private DrawablePropertyView _propertyView;
         private MethodInfo _drawerMethod;
@@ -35,6 +36,9 @@ namespace Rhinox.GUIUtils.Editor
             if (_target != null)
                 _propertyView = new DrawablePropertyView(_target);
         }
+        
+        public bool CanDraw() => _target != null;
+        public void Draw() => OnInspectorGUI();
 
         public override void OnInspectorGUI()
         {
@@ -76,6 +80,11 @@ namespace Rhinox.GUIUtils.Editor
             }
 
             return customEditor;
+        }
+
+        public void Destroy()
+        {
+            Object.DestroyImmediate(this);
         }
     }
 }
