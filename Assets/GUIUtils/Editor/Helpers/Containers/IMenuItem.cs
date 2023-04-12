@@ -17,12 +17,14 @@ namespace Rhinox.GUIUtils.Editor
         
         Rect Rect { get; }
         
+        bool UseBorders { get; set; }
+        
         event MenuItemEventHandler RightMouseClicked;
 
-        void DrawMenuItem(Event evt, int i, Func<string, string> nameTransformer = null);
+        void Draw(Event evt, int i, Func<string, string> nameTransformer = null);
         void Update();
         
-        void Select(bool addToSelection = false);
+        void Select(bool multiSelect = false);
         void Deselect();
     }
 }
