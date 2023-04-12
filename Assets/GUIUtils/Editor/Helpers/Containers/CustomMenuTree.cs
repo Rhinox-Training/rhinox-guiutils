@@ -80,6 +80,9 @@ namespace Rhinox.GUIUtils.Editor
         }
 
         public OdinMenuTreeDrawingConfig Config => _menuTree.Config;
+        
+
+        public static CustomMenuTree ActiveMenuTree { get; private set; }
 #endif
         
         // =============================================================================================================
@@ -462,8 +465,9 @@ namespace Rhinox.GUIUtils.Editor
 #if ODIN_INSPECTOR
         private void OnOdinSelectionChanged(Sirenix.OdinInspector.Editor.SelectionChangedType obj)
         {
-            Selection = _items.OfType<OdinWrappedMenuItem>()
-                .Where(x => _menuTree.Selection.Contains(x.InnerItem)).Cast<IMenuItem>().ToList();
+            Selection.Clear();
+            Selection.AddRange(_items.OfType<OdinWrappedMenuItem>()
+                .Where(x => _menuTree.Selection.Contains(x.InnerItem)).Cast<IMenuItem>());
             int num = (int) obj;
             SelectionChanged?.Invoke((SelectionChangedType)num);
         }
@@ -509,17 +513,18 @@ namespace Rhinox.GUIUtils.Editor
             public bool IsFunc { get; private set; }
             public CustomMenuTree MenuTree { get; private set;  }
             public Rect Rect => _innerItem.Rect;
-            
+            public bool UseBorders { get; set; }
+
             public event MenuItemEventHandler RightMouseClicked;
+
+            public void Draw(Event evt, int i, Func<string, string> nameTransformer = null)
+            {
+                _innerItem.DrawMenuItem(i);
+            }
 
             public void Update()
             {
                 //_innerItem.
-            }
-
-            public void DrawMenuItem(Event evt, int i, Func<string, string> nameTransformer = null)
-            {
-                _innerItem.DrawMenuItem(i);
             }
 
             public void Deselect()
