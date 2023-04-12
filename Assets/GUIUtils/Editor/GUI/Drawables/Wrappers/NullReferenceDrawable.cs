@@ -84,7 +84,7 @@ namespace Rhinox.GUIUtils.Editor
 
         private void UpdateInnerDrawable()
         {
-            _innerDrawable = DrawableFactory.CreateDrawableFor(_serializedProperty);
+            _innerDrawable = DrawableFactory.CreateDrawableFor(_serializedProperty, true);
         }
 
         GUIContent GetTypeName(SerializedProperty property)
