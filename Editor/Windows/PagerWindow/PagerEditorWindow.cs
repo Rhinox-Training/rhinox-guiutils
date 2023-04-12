@@ -52,7 +52,11 @@ namespace Rhinox.GUIUtils.Editor
 
         protected override void Initialize()
         {
+#if ODIN_INSPECTOR
+            this.WindowPadding = Vector4.zero;
+#else
             this.WindowPadding = new RectOffset();
+#endif
 
             if (this._pager != null) return;
 
