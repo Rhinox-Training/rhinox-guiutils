@@ -46,19 +46,29 @@ namespace Rhinox.GUIUtils.Editor
             _attributes.AddUnique(attribute);
         }
 
-        public virtual void Add(IOrderedDrawable child)
+        public void Add(IOrderedDrawable child)
         {
-            if (child == null)
-                return;
-
-            if (_drawableMemberChildren.Contains(child))
-                return;
-            
-            _drawableMemberChildren.Add(child);
-
-            OnChildrenChanged();
+            if (AddInner(child))
+                OnChildrenChanged();
         }
 
+        protected virtual bool AddInner(IOrderedDrawable child)
+        {
+            return AddToDrawableChildren(child);
+        }
+
+        protected bool AddToDrawableChildren(IOrderedDrawable child)
+        {
+            if (child == null)
+                return false;
+
+            if (_drawableMemberChildren.Contains(child))
+                return false;
+            
+            _drawableMemberChildren.Add(child);
+            return true;
+        }
+        
         public virtual void AddRange(ICollection<IOrderedDrawable> children)
         {
             if (children == null) return;

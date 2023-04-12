@@ -43,22 +43,22 @@ namespace Rhinox.GUIUtils.Editor
             base.AddRange(children);
         }
 
-        public override void Add(IOrderedDrawable child)
+        protected override bool AddInner(IOrderedDrawable child)
         {
             var groupAttributes = child.GetDrawableAttributes<PropertyGroupAttribute>().ToArray();
             if (groupAttributes.IsNullOrEmpty())
             {
-                base.Add(child);
-                return;
+                return base.AddInner(child);
             }
 
             var groupInfos = EnsureAllGroupsExist(groupAttributes);
-            
+
+            bool changed = false;
             foreach (var info in groupInfos)
             {
                 if (info.IsLeafGroup)
                 {
-                    info.Group.AddToGroup(child, info.Attribute);
+                    changed |= info.Group.AddToGroup(child, info.Attribute);
                     EnsureGroupIsDrawn(info.Group);
                 }
                 else // We need to be able to associate the drawable within the non-final leaves as well, as it might have restrictions
@@ -66,6 +66,7 @@ namespace Rhinox.GUIUtils.Editor
                     info.Group.ParseAttribute(child, info.Attribute);
                 }
             }
+            return changed;
         }
 
         private void EnsureGroupIsDrawn(GroupedDrawable subGroup)
@@ -74,7 +75,7 @@ namespace Rhinox.GUIUtils.Editor
             {
                 if (!group.IsHostFor(subGroup)) continue;
                 
-                base.Add(group);
+                AddToDrawableChildren(group);
                 if (!_sizeInfoByDrawable.ContainsKey(group))
                     _sizeInfoByDrawable.Add(group, group._size);
 
@@ -149,21 +150,22 @@ namespace Rhinox.GUIUtils.Editor
             return false;
         }
 
-        private void AddToGroup(IOrderedDrawable child, PropertyGroupAttribute groupAttribute)
+        private bool AddToGroup(IOrderedDrawable child, PropertyGroupAttribute groupAttribute)
         {
-            if (groupAttribute != null)
-            {
-                RegisterDrawable(child, groupAttribute);
-            }
-            else
+            if (groupAttribute == null)
                 throw new ArgumentNullException(nameof(groupAttribute));
+            
+            bool changed = RegisterDrawable(child, groupAttribute);
+            if (changed)
+                OnChildrenChanged();
+            return changed;
         }
 
-        protected virtual void RegisterDrawable(IOrderedDrawable child, PropertyGroupAttribute groupAttribute)
+        protected virtual bool RegisterDrawable(IOrderedDrawable child, PropertyGroupAttribute groupAttribute)
         {
-            base.Add(child);
+            bool changed = AddToDrawableChildren(child);
             ParseAttribute(child, groupAttribute);
-            // TODO attr stuff
+            return changed;
         }
 
         protected abstract void ParseAttribute(IOrderedDrawable child, PropertyGroupAttribute attr);
