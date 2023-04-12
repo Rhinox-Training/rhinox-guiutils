@@ -56,7 +56,7 @@ namespace Rhinox.GUIUtils.Editor
             _serializedObject = property.serializedObject;
             _entry = null;
             
-            _rootDrawable = DrawableFactory.CreateDrawableFor(property);
+            _rootDrawable = DrawableFactory.CreateDrawableFor(property, true);
         }
         
         public void DrawLayout()

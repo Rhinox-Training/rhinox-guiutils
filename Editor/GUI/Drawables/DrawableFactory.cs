@@ -42,7 +42,7 @@ namespace Rhinox.GUIUtils.Editor
             return new ObjectCompositeDrawableMember(instanceVal, type, drawable, string.Empty);
         }
         
-        public static IOrderedDrawable CreateDrawableFor(SerializedProperty property)
+        public static IOrderedDrawable CreateDrawableFor(SerializedProperty property, bool hideLabel = false)
         {
             if (property == null)
                 return null;
@@ -51,7 +51,8 @@ namespace Rhinox.GUIUtils.Editor
             if (drawable == null)
                 return null;
             
-            drawable = new HideLabelWrapper(drawable);
+            if (hideLabel)
+                drawable = new HideLabelWrapper(drawable);
             return drawable;
         }
 
