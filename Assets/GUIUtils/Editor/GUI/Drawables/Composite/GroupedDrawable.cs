@@ -10,10 +10,11 @@ namespace Rhinox.GUIUtils.Editor
 {
     public abstract class GroupedDrawable : CompositeDrawableMember
     {
-        private struct GroupInfo
+        private class GroupInfo
         {
             public GroupedDrawable Group;
             public PropertyGroupAttribute Attribute;
+            public bool IsLeafGroup;
         }
 
         protected readonly Dictionary<string, GroupedDrawable> _subGroupsByName = new Dictionary<string, GroupedDrawable>();
@@ -51,13 +52,19 @@ namespace Rhinox.GUIUtils.Editor
                 return;
             }
 
-            var finalPairs = EnsureAllGroupsExist(groupAttributes);
-
-            // Add it to our final leaves
-            foreach (var pair in finalPairs)
+            var groupInfos = EnsureAllGroupsExist(groupAttributes);
+            
+            foreach (var info in groupInfos)
             {
-                pair.Group.AddToGroup(child, pair.Attribute);
-                EnsureGroupIsDrawn(pair.Group);
+                if (info.IsLeafGroup)
+                {
+                    info.Group.AddToGroup(child, info.Attribute);
+                    EnsureGroupIsDrawn(info.Group);
+                }
+                else // We need to be able to associate the drawable within the non-final leaves as well, as it might have restrictions
+                {
+                    info.Group.ParseAttribute(child, info.Attribute);
+                }
             }
         }
 
@@ -71,7 +78,6 @@ namespace Rhinox.GUIUtils.Editor
                 if (!_sizeInfoByDrawable.ContainsKey(group))
                     _sizeInfoByDrawable.Add(group, group._size);
 
-                
                 group.EnsureGroupIsDrawn(subGroup);
             }
         }
@@ -106,7 +112,7 @@ namespace Rhinox.GUIUtils.Editor
                         }
 
                         if (finalGroups[i].Group.IsHostFor(group))
-                            finalGroups.RemoveAt(i);
+                            finalGroups[i].IsLeafGroup = false;
                     }
 
                     if (isFinalGroup)
@@ -114,7 +120,8 @@ namespace Rhinox.GUIUtils.Editor
                         finalGroups.Add(new GroupInfo
                         {
                             Group = group,
-                            Attribute = attribute
+                            Attribute = attribute,
+                            IsLeafGroup = true
                         });
                     }
                 }
@@ -193,16 +200,30 @@ namespace Rhinox.GUIUtils.Editor
                 {
                     nextGroup = GroupingHelper.CreateFrom(groupAttribute, this);
                     if (nextGroup != null)
+                    {
                         nextGroup.AddAttribute(groupAttribute);
-                    // We don't add them yet, add the group when it is used to preserve property order
-                    // base.Add(nextGroup);
-                    _subGroupsByName.Add(next, nextGroup);
+                        _subGroupsByName.Add(next, nextGroup);
+                        
+                        // We don't add them yet, add the group when it is used to preserve property order
+                        // base.Add(nextGroup);
+                    }
+                    else // The attribute is not supported...
+                    {
+                        finalGroup = null;
+                        return false;
+                    }
                 }
                 else // We cannot create subgroups...
                 {
                     finalGroup = null;
                     return false;
                 }
+            }
+
+            if (nextGroup == null)
+            {
+                finalGroup = null;
+                return false;
             }
             
             // Else pass it to the next group
@@ -236,13 +257,18 @@ namespace Rhinox.GUIUtils.Editor
         
         protected GUILayoutOption[] GetLayoutOptions(SizeInfo info)
         {
+            if (info.PreferredSize > 0.0f)
+                return new [] { GUILayout.Width(info.PreferredSize) };
+
             var list = new List<GUILayoutOption>();
+
             if (info.MinSize > 0.0f)
                 list.Add(GUILayout.MinWidth(info.MinSize));
-            if (info.PreferredSize > 0.0f)
-                list.Add(GUILayout.Width(info.PreferredSize));
+            
             if (info.MaxSize > 0.0f)
                 list.Add(GUILayout.MaxWidth(info.MaxSize));
+            
+            // list.Add(GUILayout.ExpandWidth(true));
             
             return list.ToArray();
         }
