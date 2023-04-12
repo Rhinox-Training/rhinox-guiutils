@@ -38,6 +38,20 @@ namespace Rhinox.GUIUtils.Editor
             _icon = value ? _openIcon : _closedIcon;
         }
 
+        public IEnumerable<IMenuItem> GetAllChildren(bool includeHierarchyItems = false)
+        {
+            foreach (var item in Children)
+                yield return item;
+            foreach (var group in SubGroups)
+            {
+                if (includeHierarchyItems)
+                    yield return group;
+                
+                foreach (var item in group.GetAllChildren(includeHierarchyItems))
+                    yield return item;
+            }
+        }
+
         public bool Contains(IMenuItem menuItem)
         {
             if (Children != null && Children.Contains(menuItem))
@@ -47,7 +61,7 @@ namespace Rhinox.GUIUtils.Editor
                 return false;
             foreach (var group in SubGroups)
             {
-                if (group.Contains(menuItem))
+                if (group == menuItem || group.Contains(menuItem))
                     return true;
             }
 

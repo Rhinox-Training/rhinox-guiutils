@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Rhinox.Lightspeed;
+using UnityEditor;
 #if ODIN_INSPECTOR
 using Sirenix.Utilities;
 using Sirenix.OdinInspector.Editor;
@@ -24,14 +25,16 @@ namespace Rhinox.GUIUtils.Editor
     [Serializable]
     public class CustomMenuTree
     {
-        public static CustomMenuTree ActiveMenuTree;
+        public EditorWindow Host;
 
-        public List<IMenuItem> Selection;
+        public readonly List<IMenuItem> Selection = new List<IMenuItem>();
 
-        public bool HasSelection => !CollectionExtensions.IsNullOrEmpty(Selection);
-        public int SelectionCount => Selection?.Count ?? 0;
+        public bool HasSelection => Selection.Count > 0;
+        public int SelectionCount => Selection.Count;
 
         public int ToolbarHeight = 22;
+
+        public int ItemHeight = 30;
 
         public bool ShowGrouped = true;
 
@@ -42,6 +45,11 @@ namespace Rhinox.GUIUtils.Editor
         public delegate void SelectionHandler(SelectionChangedType type);
         public event SelectionHandler SelectionChanged; // TODO: how to
         public event Action SelectionConfirmed;
+        
+        public delegate void BeginMenuItemHandler(IMenuItem item, Rect fullRect, ref Rect rect);
+        public delegate void MenuItemHandler(IMenuItem item, Rect fullRect);
+        public event BeginMenuItemHandler BeginItemDraw;
+        public event MenuItemHandler EndItemDraw;
 
         private List<IMenuItem> _items;
 #if !ODIN_INSPECTOR
@@ -55,7 +63,7 @@ namespace Rhinox.GUIUtils.Editor
         {
             return (IReadOnlyCollection<IMenuItem>)_items ?? Array.Empty<IMenuItem>();
         }
-        public object SelectedValue => CollectionExtensions.IsNullOrEmpty(Selection) ? null : Selection[0].RawValue;
+        public object SelectedValue => Selection.Count == 0 ? null : Selection[0].RawValue;
 
 #if ODIN_INSPECTOR
         private OdinMenuTree _menuTree;
@@ -82,14 +90,12 @@ namespace Rhinox.GUIUtils.Editor
             : this(new OdinMenuTree())
 #endif
         {
-            Selection = new List<IMenuItem>();
         }
 
 #if ODIN_INSPECTOR
         public CustomMenuTree(OdinMenuTree tree)
         {
             _menuTree = tree;
-            Selection = new List<IMenuItem>();
             
             _menuTree.Selection.SelectionChanged += OnOdinSelectionChanged;
             _menuTree.Selection.SelectionConfirmed += OnOdinSelectionConfirmed;
@@ -98,7 +104,7 @@ namespace Rhinox.GUIUtils.Editor
 
         // =============================================================================================================
         // GUI-methods
-        
+        private bool _firstItem;
         public virtual void Draw()
         {
 #if ODIN_INSPECTOR
@@ -108,6 +114,8 @@ namespace Rhinox.GUIUtils.Editor
             VisibleRect = CustomEditorGUI.GetVisibleRect().Padding(-300f);
             if (_items == null) 
                 return;
+            
+            _firstItem = true;
 
             if (ShowGrouped)
             {
@@ -117,12 +125,17 @@ namespace Rhinox.GUIUtils.Editor
 
                     _groupingIsDirty = false;
                 }
-                
+
+
                 foreach (var item in _groupingItems)
-                    DrawGroupHeader(item, evt, -1);
-                
+                {
+                    DrawGroupHeader(item, evt);
+                }
+
                 foreach (var item in _rootItems.Children)
-                    item.DrawMenuItem(evt, 0);
+                {
+                    DrawItem(item, evt);
+                }
             }
             else
             {
@@ -130,16 +143,37 @@ namespace Rhinox.GUIUtils.Editor
                 {
                     if (uiItem == null)
                         continue;
-                    uiItem.DrawMenuItem(evt, 0);
+                    DrawItem(uiItem, evt);
                 }
             }
 #endif
         }
 
-#if !ODIN_INSPECTOR
-        public void DrawGroupHeader(HierarchyMenuItem item, Event evt, int indent)
+        private void DrawItem(IMenuItem item, Event evt, int indent = 0)
         {
-            item.DrawMenuItem(evt, indent);
+            item.UseBorders = !_firstItem;
+            _firstItem = false;
+            
+            item.Draw(evt, indent);
+        }
+
+        public void OnBeginItemDraw(IMenuItem uiItem, Rect fullRect, ref Rect rect)
+        {
+            BeginItemDraw?.Invoke(uiItem, fullRect, ref rect);
+        }
+        
+        public void OnEndItemDraw(IMenuItem uiItem, Rect fullRect)
+        {
+            EndItemDraw?.Invoke(uiItem, fullRect);
+        }
+
+#if !ODIN_INSPECTOR
+        public void DrawGroupHeader(HierarchyMenuItem item, Event evt, int indent = 0)
+        {
+            item.UseBorders = !_firstItem;
+            _firstItem = false;
+            
+            item.Draw(evt, indent);
             if (item.Expanded)
             {
                 foreach (var subGroup in item.SubGroups)
@@ -149,7 +183,7 @@ namespace Rhinox.GUIUtils.Editor
                 
                 foreach (var child in item.Children)
                 {
-                    child.DrawMenuItem(evt, indent + 1, (x) => x.Substring(x.LastIndexOf(GroupingString) + GroupingString.Length));
+                    child.Draw(evt, indent + 1, (x) => x.Substring(x.LastIndexOf(GroupingString) + GroupingString.Length));
                 }
             }
         }
@@ -291,9 +325,6 @@ namespace Rhinox.GUIUtils.Editor
         // Selection
         public void AddSelection(IMenuItem uiMenuItem, bool clearList)
         {
-            if (Selection == null)
-                Selection = new List<IMenuItem>();
-
             if (clearList)
             {
 #if !ODIN_INSPECTOR
@@ -308,7 +339,15 @@ namespace Rhinox.GUIUtils.Editor
 #if !ODIN_INSPECTOR
             OnSelectionChanged(SelectionChangedType.ItemAdded);
 #endif
-        }        
+        }
+
+        public void RemoveSelection(IMenuItem uiMenuItem)
+        {
+            Selection.Remove(uiMenuItem);
+#if !ODIN_INSPECTOR
+            OnSelectionChanged(SelectionChangedType.ItemRemoved);
+#endif       
+        }
         
         public void ClearSelection()
         {
