@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Rhinox.Lightspeed;
@@ -6,12 +7,15 @@ using UnityEngine;
 
 namespace Rhinox.GUIUtils.Editor
 {
-    public class ObjectCompositeDrawableMember : CompositeDrawableMember
+    public class ObjectCompositeDrawableMember : CompositeDrawableMember, IObjectDrawable
     {
         public override GUIContent Label => _label;
 
         private GUIContent _label;
         private bool _hasLabel = false;
+        
+        public object Instance { get; }
+        public Type ObjectType { get; }
         
         private IOrderedDrawable _innerDrawable;
 
@@ -29,24 +33,42 @@ namespace Rhinox.GUIUtils.Editor
         }
 
         public override bool ShouldRepaint => base.ShouldRepaint || (_innerDrawable != null ? _innerDrawable.ShouldRepaint : false);
-
-
-        public ObjectCompositeDrawableMember(GenericMemberEntry entry, IOrderedDrawable contents, float order = 0)
-            : this(entry.NiceName, contents, order)
+        
+        public static ObjectCompositeDrawableMember CreateFrom(GenericMemberEntry entry, IOrderedDrawable contents, float order = 0)
         {
-            Host = entry;
+            var objectCompositeDrawable = new ObjectCompositeDrawableMember(entry, contents, order);
+            if (entry != null)
+            {
+                foreach (var attr in entry.GetAttributes())
+                    objectCompositeDrawable.AddAttribute(attr);
+            }
+
+            return objectCompositeDrawable;
+        }
+
+        private ObjectCompositeDrawableMember(GenericMemberEntry hostEntry, IOrderedDrawable contents, float order = 0)
+            : this(hostEntry.GetValue(), hostEntry.GetReturnType(), contents, hostEntry?.NiceName ?? "", order)
+        {
+            Host = hostEntry;
+            
         }
         
-        public ObjectCompositeDrawableMember(string name, IOrderedDrawable contents, float order = 0)
+        public ObjectCompositeDrawableMember(object instance, Type objectType, IOrderedDrawable contents,
+            string name = "", float order = 0)
             : base(name, order)
         {
+            Instance = instance;
+            ObjectType = objectType;
+            _innerDrawable = contents;
+            
             if (name.IsNullOrEmpty())
                 _label = GUIContent.none;
             else
                 _label = new GUIContent(name);
             
-            _innerDrawable = contents;
         }
+
+
 
 
         public override void Draw(GUIContent label)

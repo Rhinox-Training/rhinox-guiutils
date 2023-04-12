@@ -45,6 +45,7 @@ namespace Rhinox.GUIUtils.Editor
         public void ForceMenuTreeRebuild()
         {
             menuTree = BuildMenuTree();
+            menuTree.Host = this;
             if (selectedItems.Count == 0 && !menuTree.HasSelection)
             {
                 var menuItem = menuTree.Enumerate()
@@ -103,12 +104,9 @@ namespace Rhinox.GUIUtils.Editor
         {
             if (Event.current.type == EventType.Layout)
             {
-                bool flag = menuTree == null;
                 if (menuTree == null || isDirty)
                 {
                     ForceMenuTreeRebuild();
-                    if (flag)
-                        CustomMenuTree.ActiveMenuTree = menuTree;
 
                     EditorApplication.projectChanged -= ProjectWindowChanged;
                     EditorApplication.projectChanged += ProjectWindowChanged;
@@ -157,8 +155,6 @@ namespace Rhinox.GUIUtils.Editor
                 GUILayout.EndVertical();
             }
             GUILayout.EndHorizontal();
-            
-            EditorGUI.DrawRect(rect.AlignCenter(1f), CustomGUIStyles.BorderColor);
             
             if (menuTree != null)
                 menuTree.Update();

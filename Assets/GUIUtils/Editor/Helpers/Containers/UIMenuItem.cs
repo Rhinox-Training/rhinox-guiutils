@@ -8,24 +8,18 @@ namespace Rhinox.GUIUtils.Editor
     public class UIMenuItem : IMenuItem
     {
         public string Name { get; }
-
         public string FullPath => Name; // TODO: how to
-
         public object RawValue { get; }
-
         public bool IsFunc { get; }
-
+        
         public CustomMenuTree MenuTree { get; private set; }
         
         public Rect Rect { get; private set; }
         public event MenuItemEventHandler RightMouseClicked;
         
-        private Rect labelRect;
-
         public bool Selectable { get; set; }
 
         public bool IsHoveringItem { get; private set; }
-        public bool MenuItemIsBeingRendered { get; private set; }
 
         public UIMenuItem(CustomMenuTree customMenuTree, string name, object value)
         {
@@ -47,24 +41,40 @@ namespace Rhinox.GUIUtils.Editor
             return RawValue;
         }
 
-        public void Select(bool addToSelection = false)
+        public void Select(bool multiSelect = false)
         {
-            if (MenuTree != null)
-                MenuTree.AddSelection(this, !addToSelection);
-            IsSelected = true;
+            IsSelected = !IsSelected;
+
+            if (MenuTree == null)
+                return;
+            if (multiSelect && !IsSelected)
+                MenuTree.RemoveSelection(this);
+            else
+            {
+                MenuTree.AddSelection(this, !multiSelect);
+                IsSelected = true;
+            }
         }
 
-        public virtual void DrawMenuItem(Event currentEvent, int indentLevel, Func<string, string> nameTransformer = null)
+        public virtual void Draw(Event currentEvent, int indentLevel, Func<string, string> nameTransformer = null)
         {
-            Rect defaultRect = GUILayoutUtility.GetRect(0.0f, 30.0f);
+            // Claim the needed rect
+            Rect defaultRect = GUILayoutUtility.GetRect(0.0f, MenuTree.ItemHeight);
 
             EventType currentEventType = currentEvent.type;
-            if (currentEventType == EventType.Layout)
+            
+            // The rest is only needed when doing Repaint
+            if (currentEventType != EventType.Repaint)
+            {
+                // must call these events to catch clicks etc
+                MenuTree.OnBeginItemDraw(this, Rect, ref defaultRect);
+                MenuTree.OnEndItemDraw(this, Rect);
                 return;
+            }
+            
+            Rect = defaultRect;
 
-            if (currentEventType == EventType.Repaint || Rect.width == 0.0) 
-                Rect = defaultRect;
-
+            // Since we don't really know when we're not drawing... Do a rough early cutoff
             float cutoffY = Rect.y;
             if (cutoffY > 1000f)
             {
@@ -72,59 +82,56 @@ namespace Rhinox.GUIUtils.Editor
                 if (cutoffY + (double) Rect.height < visibleY ||
                     cutoffY > visibleY + (double) MenuTree.VisibleRect.height)
                 {
-                    this.MenuItemIsBeingRendered = false;
                     IsHoveringItem = false;
                     return;
                 }
             }
-
-            this.MenuItemIsBeingRendered = true;
-
-            if (currentEventType != EventType.Repaint) return;
             
-            labelRect = Rect;
-            labelRect.xMin += 16f + indentLevel * 15f;
-            bool isSelected = IsSelected;
-            IsHoveringItem = Rect.Contains(currentEvent.mousePosition);
+            var labelRect = Rect;
 
-            if (isSelected)
+            labelRect.xMin += 16f + indentLevel * 15f;
+            IsHoveringItem = Rect.Contains(currentEvent.mousePosition);
+            bool windowInFocus = MenuTree.Host == null || MenuTree.Host == EditorWindow.focusedWindow;
+            
+            if (IsSelected)
             {
-                bool windowInFocus = CustomMenuTree.ActiveMenuTree == MenuTree;
                 Color backgroundColor = windowInFocus
-                    ? new Color(0.243f, 0.373f, 0.588f, 1f)
-                    : new Color(0.838f, 0.838f, 0.838f, 0.134f);
+                    ? CustomGUIStyles.SelectedColor
+                    : CustomGUIStyles.UnfocusedSelectedColor;
 
                 EditorGUI.DrawRect(Rect, backgroundColor);
             }
-            else if (Selectable && IsHoveringItem)
-            {
-                EditorGUI.DrawRect(Rect, new Color(0.243f, 0.372f, 0.588f, 1f));
-            }
             else if (IsHoveringItem)
             {
-                EditorGUI.DrawRect(Rect, new Color(0.838f, 0.838f, 0.838f, 0.034f));
+                EditorGUI.DrawRect(Rect, CustomGUIStyles.HoverColor);
             }
+            
+            MenuTree.OnBeginItemDraw(this, Rect, ref labelRect);
 
             if (_icon != null)
             {
                 Rect position = labelRect.AlignLeft(16f).AlignCenter(16f);
                 //position.x += this.Style.IconOffset;
-                if (!isSelected)
-                    GUIContentHelper.PushColor(new Color(1f, 1f, 1f, 0.85f));
+                if (!IsSelected)
+                    GUIContentHelper.PushColor(Color.white);
                 GUI.DrawTexture(position, _icon, ScaleMode.ScaleToFit);
                 labelRect.xMin += 16f + 3f; // size + padding
-                if (!isSelected)
+                if (!IsSelected)
                     GUIContentHelper.PopColor();
             }
+            
 
-            GUIStyle style = isSelected ? CustomGUIStyles.BoldLabel : CustomGUIStyles.Label;
+            GUIStyle style = IsSelected ? CustomGUIStyles.BoldLabel : CustomGUIStyles.Label; 
             var actualLabelRect = labelRect.AlignCenterVertical(16f);
             string name = nameTransformer != null ? nameTransformer.Invoke(Name) : Name;
             GUI.Label(actualLabelRect, name, style);
+            
+            MenuTree.OnEndItemDraw(this, Rect);
+
             if (UseBorders)
             {
                 Rect borderRect = Rect;
-                if (!isSelected)
+                if (!IsSelected)
                 {
                     borderRect.x += 1.0f;
                     borderRect.width -= 2.0f;
@@ -152,7 +159,7 @@ namespace Rhinox.GUIUtils.Editor
             }
         }
 
-        public const bool UseBorders = true;
+        public bool UseBorders { get; set; } = true;
 
         public bool IsSelected { get; set; }
 
@@ -182,8 +189,8 @@ namespace Rhinox.GUIUtils.Editor
             
             if (Event.current.button == 0)
             {
-                bool addToSelection = Event.current.modifiers == EventModifiers.Control;
-                this.Select(addToSelection);
+                bool multiSelect = Event.current.modifiers == EventModifiers.Control;
+                this.Select(multiSelect);
             }
             else if (Event.current.button == 1)
             {

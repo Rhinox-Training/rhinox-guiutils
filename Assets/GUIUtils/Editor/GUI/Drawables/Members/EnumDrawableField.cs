@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Reflection;
 using Rhinox.Lightspeed.Reflection;
+using Sirenix.OdinInspector;
 using UnityEditor;
 using UnityEngine;
 
@@ -9,10 +10,12 @@ namespace Rhinox.GUIUtils.Editor
     public class EnumDrawableField: BaseMemberDrawable<Enum>
     {
         public bool HasFlags { get; }
+        public bool HasToggleButtons { get; }
         
         public EnumDrawableField(GenericMemberEntry entry) : base(entry)
         {
             HasFlags = entry.GetReturnType().GetCustomAttribute<FlagsAttribute>() != null;
+            HasToggleButtons = entry.GetReturnType().GetCustomAttribute<EnumToggleButtonsAttribute>() != null;
         }
 
         protected override Enum DrawValue(GUIContent label, Enum memberVal, params GUILayoutOption[] options)

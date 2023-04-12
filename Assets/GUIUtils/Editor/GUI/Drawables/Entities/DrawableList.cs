@@ -28,7 +28,7 @@ namespace Rhinox.GUIUtils.Editor
             _property = property;
             _propertyView = new DrawablePropertyView(property);
         }
-
+        
         public ListElementDrawable(GenericElementMemberEntry entry, float defaultElementHeight = 18.0f)
         {
             _entry = entry;
@@ -65,7 +65,7 @@ namespace Rhinox.GUIUtils.Editor
         }
 
         public DrawableList(SerializedProperty listProperty)
-            : base(listProperty.serializedObject)
+            : base(listProperty.serializedObject, listProperty.FindFieldInfo())
         {
             if (listProperty == null)
                 throw new ArgumentNullException(nameof(listProperty));
@@ -86,7 +86,7 @@ namespace Rhinox.GUIUtils.Editor
             Initialize(_listRO);
         }
 
-        public DrawableList(GenericMemberEntry entry) : base(entry)
+        public DrawableList(GenericMemberEntry entry) : base(entry, entry.Info)
         {
             _listProperty = null;
             _entry = entry;

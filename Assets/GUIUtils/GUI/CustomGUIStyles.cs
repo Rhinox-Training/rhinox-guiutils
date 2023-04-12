@@ -19,10 +19,32 @@ namespace Rhinox.GUIUtils
         
         // Colors
         public static readonly Color BorderColor = IsDarkMode() ? new Color(0.11f, 0.11f, 0.11f, 0.8f) : new Color(0.38f, 0.38f, 0.38f, 0.6f);
-        public static readonly Color LightBorderColor = new Color(.353f, .353f,  .353f, 1f);
-        public static readonly Color BoxBackgroundColor = IsDarkMode() ? new Color(1f, 1f, 1f, 0.05f) : new Color(1f, 1f, 1f, 0.5f);
-        public static readonly Color DarkEditorBackground = IsDarkMode() ? new Color(0.192f, 0.192f, 0.192f, 1f) : new Color(0.0f, 0.0f, 0.0f, 0.0f);
-            
+        public static readonly Color LightBorderColor = new Color(.353f, .353f,  .353f);
+        public static readonly Color BoxBackgroundColor = IsDarkMode() ? new Color(.22f, .22f, .22f) : new Color(.76f, .76f, .76f);
+        public static readonly Color DarkEditorBackground = IsDarkMode() ? new Color(0.192f, 0.192f, 0.192f) : new Color(0.0f, 0.0f, 0.0f, 0.0f);
+        public static readonly Color HoverColor = IsDarkMode() ? new Color(.27f, .27f, .27f) : new Color(.7f, .7f, .7f);
+        public static readonly Color SelectedColor = IsDarkMode() ? new Color(.17f, .36f, .53f) : new Color(.23f, .45f, .69f);
+        public static readonly Color UnfocusedSelectedColor = IsDarkMode() ? new Color(.3f, .3f, .3f) : new Color(.68f, .68f, .68f);
+
+        
+        private static GUIStyle _boxStyle;
+
+        public static GUIStyle Box
+        {
+            get
+            {
+                if (_boxStyle == null)
+                    _boxStyle = new GUIStyle("box")
+                    {
+                        margin = new RectOffset(),
+                        normal = new GUIStyleState()
+                        {
+                            background = Utility.GetColorTexture(BoxBackgroundColor)
+                        }
+                    };
+                return _boxStyle;
+            }
+        }
         
         
         private static GUIStyle _titleStyle;

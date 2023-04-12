@@ -10,6 +10,7 @@ namespace Rhinox.GUIUtils
         private static readonly GUIContent _tempContent = new GUIContent("");
         
         private static readonly GUIFrameAwareStack<Color> ColorStack = new GUIFrameAwareStack<Color>();
+        private static readonly GUIFrameAwareStack<Color> ContentColorStack = new GUIFrameAwareStack<Color>();
         private static readonly GUIFrameAwareStack<Color> BackgroundColorStack = new GUIFrameAwareStack<Color>();
         private static readonly GUIFrameAwareStack<bool> GuiEnabled = new GUIFrameAwareStack<bool>();
 
@@ -126,6 +127,17 @@ namespace Rhinox.GUIUtils
         public static void PopBackgroundColor()
         {
             GUI.backgroundColor = GUIContentHelper.BackgroundColorStack.Pop();
+        }
+        
+        public static void PushContentColor(Color color)
+        {
+            GUIContentHelper.ContentColorStack.Push(GUI.color);
+            GUI.contentColor = color;
+        }
+
+        public static void PopContentColor()
+        {
+            GUI.contentColor = GUIContentHelper.ContentColorStack.Pop();
         }
         
         public static void PushDisabled(bool disabled)

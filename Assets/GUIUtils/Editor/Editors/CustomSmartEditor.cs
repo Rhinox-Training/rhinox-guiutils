@@ -8,7 +8,7 @@ namespace Rhinox.GUIUtils.Editor
 {
     [CustomEditor(typeof(MonoBehaviour), true)]
     [CanEditMultipleObjects]
-    public class CustomSmartEditor : UnityEditor.Editor, IRepaintRequestHandler
+    public class CustomSmartEditor : BaseEditor<MonoBehaviour>, IRepaintRequestHandler
     {
         private DrawablePropertyView _propertyView;
         private IRepaintRequest _target;
@@ -35,6 +35,7 @@ namespace Rhinox.GUIUtils.Editor
             if (_propertyView == null)
                 _propertyView = new DrawablePropertyView(serializedObject);
             
+            DrawScriptField();
             _propertyView.DrawLayout();
 
             if (_propertyView.ShouldRepaint)

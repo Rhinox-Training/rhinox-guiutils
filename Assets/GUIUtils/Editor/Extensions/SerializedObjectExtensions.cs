@@ -127,12 +127,9 @@ namespace Rhinox.GUIUtils.Editor
                     return prop.boundsIntValue;
                 // Represents a property that references an object that does not derive from UnityEngine.Object.
                 case SerializedPropertyType.ManagedReference:
+                case SerializedPropertyType.Generic:// Represents an array, list, struct or class.
                     var info = prop.GetHostInfo();
                     return info.GetValue();
-                // Represents an array, list, struct or class.
-                case SerializedPropertyType.Generic:
-                    System.Reflection.FieldInfo genericFieldInfo = FindFieldInfo(prop);
-                    return genericFieldInfo.GetValue(prop.serializedObject.targetObject);
                 default:
                     System.Type parentType = prop.serializedObject.targetObject.GetType();
                     System.Reflection.FieldInfo fi = parentType.GetField(prop.propertyPath);
@@ -146,14 +143,14 @@ namespace Rhinox.GUIUtils.Editor
             if (property == null)
                 return null;
             
-            if (property.propertyPath.Contains(".Array.data["))
+            if (property.propertyPath.Contains(".Array.data[") || property.propertyPath.Contains("."))
             {
                 var hostInfo = property.GetHostInfo();
                 return hostInfo.FieldInfo;
             }
             
             System.Type parentType = property.serializedObject.targetObject.GetType();
-            System.Reflection.FieldInfo fi = parentType.GetField(property.propertyPath);
+            System.Reflection.FieldInfo fi = parentType.GetField(property.propertyPath, BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
             return fi;
         }
 

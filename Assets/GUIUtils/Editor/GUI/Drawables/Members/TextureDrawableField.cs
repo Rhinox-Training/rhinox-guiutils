@@ -109,9 +109,7 @@ namespace Rhinox.GUIUtils.Editor
             if (info is PropertyInfo propertyInfo)
                 isReadOnly = propertyInfo.GetSetMethod(false) == null;
 
-            if (!isReadOnly)
-                isReadOnly = info.GetCustomAttribute<ReadOnlyAttribute>() != null;
-            return isReadOnly;
+            return isReadOnly || !GUI.enabled;
         }
     }
 }

@@ -22,7 +22,7 @@ namespace Rhinox.GUIUtils.Editor
     /// <summary>
     /// Wrapper for an object to draw a certain object keeping editing capabilities
     /// </summary>
-    public struct EditorWrapper
+    public struct EditorWrapper : IEditor
     {
         [ShowIf(nameof(_expanded)), ShowInInspector]
         [InlineEditor(Expanded = true, ObjectFieldMode = InlineEditorObjectFieldModes.CompletelyHidden)]
@@ -125,10 +125,20 @@ namespace Rhinox.GUIUtils.Editor
 #endif
         }
 
+        public bool CanDraw() => Target != null;
+        
         public void Draw()
         {
             DrawHeader();
             DrawEditor();
+        }
+
+        public bool HasPreviewGUI() => false;
+        public void DrawPreview(Rect rect) {}
+
+        public void Destroy()
+        {
+            // Nothing to do
         }
 
 #if ODIN_VALIDATOR

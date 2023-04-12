@@ -14,7 +14,12 @@ namespace Rhinox.GUIUtils.Editor
     {
         public class Box : EditorGUILayout.VerticalScope
         {
-            public Box() : base("Box")
+            public Box(params GUILayoutOption[] options) : base("helpbox", options)
+            {
+                
+            }
+            
+            public Box(GUIStyle style, params GUILayoutOption[] options) : base(style, options)
             {
                 
             }

@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Reflection;
+using Rhinox.Lightspeed;
 using UnityEditor;
 using UnityEngine;
 
@@ -45,7 +46,7 @@ namespace Rhinox.GUIUtils.Editor
                 Close();
             }
 
-            if (GUI.Button(cancelRect, _data.CancelButton))
+            if (!_data.CancelButton.IsNullOrEmpty() && GUI.Button(cancelRect, _data.CancelButton))
             {
                 _data.Resolve(false);
                 Close();

@@ -13,7 +13,7 @@ namespace Rhinox.GUIUtils.Editor
 {
     public abstract class BaseEditor
 #if ODIN_INSPECTOR
-    : OdinEditor
+        : OdinEditor
 #else
         : UnityEditor.Editor
 #endif
@@ -29,8 +29,8 @@ namespace Rhinox.GUIUtils.Editor
 #endif
     }
 
-    public abstract class BaseEditor<T> : BaseEditor
-        where T : UnityEngine.Object
+    public abstract class BaseEditor<T> : BaseEditor, IEditor
+        where T : class // UnityEngine.Object
     {
         public Type TargetType = typeof(T);
         protected SerializedProperty _monoscriptField;
@@ -47,17 +47,25 @@ namespace Rhinox.GUIUtils.Editor
             GUIContentHelper.PopDisabled();
         }
 
-        protected void Each(Action<T> update, bool dirty = false)
+        public bool CanDraw()
+        {
+            return Target != null;
+        }
+
+        public void Draw()
+        {
+            OnInspectorGUI();
+        }
+
+        public void Destroy()
+        {
+            Object.DestroyImmediate(this);
+        }
+
+        protected void Each(Action<T> update)
         {
             foreach (var t in Targets)
-            {
                 update(t);
-
-                if (dirty)
-                {
-                    EditorUtility.SetDirty(t);
-                }
-            }
         }
 
         protected bool Any(Func<T, bool> check)
@@ -65,9 +73,7 @@ namespace Rhinox.GUIUtils.Editor
             foreach (var t in Targets)
             {
                 if (check(t))
-                {
                     return true;
-                }
             }
 
             return false;
@@ -78,9 +84,7 @@ namespace Rhinox.GUIUtils.Editor
             foreach (var t in Targets)
             {
                 if (check(t) == false)
-                {
                     return false;
-                }
             }
 
             return true;
@@ -89,4 +93,5 @@ namespace Rhinox.GUIUtils.Editor
         // Method to prevent lambda alloc
         protected virtual T ConvertObject(Object o) => o as T;
     }
+    
 }
