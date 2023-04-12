@@ -47,7 +47,7 @@ namespace Rhinox.GUIUtils.Editor
 
         protected override void Initialize()
         {
-            this.WindowPadding = Vector4.zero;
+            this.WindowPadding = new RectOffset();
 
             if (this._pager != null) return;
 

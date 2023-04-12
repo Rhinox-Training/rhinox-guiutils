@@ -27,10 +27,10 @@ namespace Rhinox.GUIUtils.Editor
         /// <summary>
         /// Gets or sets the window padding. x = left, y = right, z = top, w = bottom.
         /// </summary>
-        [SerializeField, HideInInspector] private Vector4 _windowPadding = new Vector4(4f, 4f, 4f, 4f);
-        public virtual Vector4 WindowPadding
+        [SerializeField, HideInInspector] private RectOffset _windowPadding;
+        public virtual RectOffset WindowPadding
         {
-            get => _windowPadding;
+            get => _windowPadding ?? (_windowPadding = new RectOffset(4, 4, 4, 4));
             set => _windowPadding = value;
         }
 
@@ -68,9 +68,9 @@ namespace Rhinox.GUIUtils.Editor
         [NonSerialized] private int _drawCountWarmup;
         [NonSerialized] private bool _initialized;
         private GUIStyle _marginStyle;
-        private object[] _currentPaintedTargets = new object[0];
+        private object[] _currentPaintedTargets = Array.Empty<object>();
         private ReadOnlyCollection<object> _currentTargetsImm;
-        private UnityEditor.Editor[] _editors = new UnityEditor.Editor[0];
+        private IEditor[] _editors = Array.Empty<IEditor>();
         private Vector2 _currentScrollPosition;
         private int _mouseDownId;
         private EditorWindow _mouseDownWindow;
@@ -339,10 +339,7 @@ namespace Rhinox.GUIUtils.Editor
             
             if (Event.current.type == EventType.Layout)
             {
-                _marginStyle.padding.left = (int)WindowPadding.x;
-                _marginStyle.padding.right = (int)WindowPadding.y;
-                _marginStyle.padding.top = (int)WindowPadding.z;
-                _marginStyle.padding.bottom = (int)WindowPadding.w;
+                _marginStyle.padding = WindowPadding;
                 UpdateEditors();
             }
 
@@ -429,7 +426,7 @@ namespace Rhinox.GUIUtils.Editor
         private void UpdateEditors()
         {
             _currentPaintedTargets = _currentPaintedTargets ?? Array.Empty<object>();
-            _editors = _editors ?? Array.Empty<UnityEditor.Editor>();
+            _editors = _editors ?? Array.Empty<IEditor>();
             IList<object> targetList = GetTargets().ToArray();
             if (_currentPaintedTargets.Length != targetList.Count)
             {
@@ -438,9 +435,8 @@ namespace Rhinox.GUIUtils.Editor
                     int num = _editors.Length - targetList.Count;
                     for (int i = 0; i < num; ++i)
                     {
-                        UnityEditor.Editor editor = _editors[_editors.Length - i - 1];
-                        if (editor)
-                            DestroyImmediate(editor);
+                        IEditor editor = _editors[_editors.Length - i - 1];
+                        editor?.Destroy();
                     }
                 }
 
@@ -459,59 +455,58 @@ namespace Rhinox.GUIUtils.Editor
                     _currentPaintedTargets[index] = obj;
                     
                     // Refresh editor
-                    if (_editors[index])
-                        DestroyImmediate(_editors[index]);
+                    if (_editors[index] != null)
+                        _editors[index].Destroy();
                     
                     // Create new editor
-                    UnityEditor.Editor curEditor = null;
-                    if (obj is EditorWindow editorWindow)
-                    {
-                        curEditor = TryCreateGenericEditor(editorWindow);
-                    }
-                    else if (obj is UnityEngine.Object targetObject)
-                    {
-                        curEditor = CreateStandardEditor(targetObject);
-                        if (curEditor == null)
-                        {
-                            curEditor = TryCreateGenericEditor(targetObject);
-                        }
-                    }
-                    else if (obj is System.Object systemObj)
-                    {
-                        curEditor = TryCreateGenericNonUnityEditor(systemObj);
-                    }
-                    _editors[index] = curEditor;
+                    _editors[index] = CreateEditorForTarget(obj);
                 }
             }
 
             _currentTargetsImm = new ReadOnlyCollection<object>(_currentPaintedTargets);
         }
 
-        private UnityEditor.Editor TryCreateGenericNonUnityEditor(object systemObj)
+        protected virtual IEditor CreateEditorForTarget(object obj)
         {
-            UnityEditor.Editor customEditor = null;
+            if (obj is EditorWindow editorWindow)
+                return TryCreateGenericEditor(editorWindow);
+
+            if (obj is Object targetObject)
+            {
+                var curEditor = CreateStandardEditor(targetObject);
+                if (curEditor == null)
+                    curEditor = TryCreateGenericEditor(targetObject);
+
+                return curEditor;
+            }
+
+            return TryCreateGenericNonUnityEditor(obj);
+        }
+
+        protected IEditor TryCreateGenericNonUnityEditor(object systemObj)
+        {
             try
             {
-                customEditor = GenericSmartObjectEditor.Create(systemObj);
+                return GenericSmartObjectEditor.Create(systemObj);
             }
             catch (Exception e)
             {
                 Debug.LogError(e);
-                customEditor = null;
+                return null;
             }
-
-            return customEditor;
         }
 
-        private static UnityEditor.Editor CreateStandardEditor(UnityEngine.Object targetObject)
+        protected static IEditor CreateStandardEditor(UnityEngine.Object targetObject)
         {
             var editor = UnityEditor.Editor.CreateEditor(targetObject);
             if (editor is MaterialEditor matEditor && s_materialForceVisibleProperty != null)
                 s_materialForceVisibleProperty.SetValue(matEditor, true, null);
-            return editor;
+            if (editor != null)
+                return new UnityEditorWrapper(editor);
+            return null;
         }
 
-        private UnityEditor.Editor TryCreateGenericEditor(Object targetObject)
+        protected IEditor TryCreateGenericEditor(Object targetObject)
         {
             UnityEditor.Editor customEditor = null;
             try
@@ -521,10 +516,10 @@ namespace Rhinox.GUIUtils.Editor
             catch (Exception e)
             {
                 Debug.LogError(e);
-                customEditor = null;
+                return null;
             }
-
-            return customEditor;
+            
+            return new UnityEditorWrapper(customEditor);
         }
 
         protected virtual void OnEnable()
@@ -538,9 +533,9 @@ namespace Rhinox.GUIUtils.Editor
             {
                 for (int i = 0; i < _editors.Length; ++i)
                 {
-                    if (_editors[i])
+                    if (_editors[i] != null)
                     {
-                        DestroyImmediate(_editors[i]);
+                        _editors[i].Destroy();
                         _editors[i] = null;
                     }
                 }
@@ -579,12 +574,12 @@ namespace Rhinox.GUIUtils.Editor
         {
             try
             {
-                UnityEditor.Editor editor = _editors[index];
-                if (editor != null && editor.target != null)
+                IEditor editor = _editors[index];
+                if (editor != null && editor.CanDraw())
                 {
                     if (editor is IRepaintRequestHandler handler)
                         handler.UpdateRequestTarget(this);
-                    editor.OnInspectorGUI();
+                    editor.Draw();
                 }
 
                 if (DrawUnityEditorPreview)
@@ -607,7 +602,7 @@ namespace Rhinox.GUIUtils.Editor
         /// </summary>
         protected virtual void DrawEditorPreview(int index, float height)
         {
-            UnityEditor.Editor editor = _editors[index];
+            IEditor editor = _editors[index];
             if (editor == null || !editor.HasPreviewGUI())
                 return;
             Rect controlRect = EditorGUILayout.GetControlRect(false, height);
