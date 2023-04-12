@@ -66,8 +66,6 @@ namespace Rhinox.GUIUtils.Editor
                     info.Group.ParseAttribute(child, info.Attribute);
                 }
             }
-            
-            OnChildrenChanged();
         }
 
         private void EnsureGroupIsDrawn(GroupedDrawable subGroup)
@@ -159,6 +157,8 @@ namespace Rhinox.GUIUtils.Editor
             }
             else
                 throw new ArgumentNullException(nameof(groupAttribute));
+            
+            OnChildrenChanged();
         }
 
         protected virtual void RegisterDrawable(IOrderedDrawable child, PropertyGroupAttribute groupAttribute)
