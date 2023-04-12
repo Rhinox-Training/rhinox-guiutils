@@ -66,6 +66,8 @@ namespace Rhinox.GUIUtils.Editor
                     info.Group.ParseAttribute(child, info.Attribute);
                 }
             }
+            
+            OnChildrenChanged();
         }
 
         private void EnsureGroupIsDrawn(GroupedDrawable subGroup)

@@ -58,7 +58,7 @@ namespace Rhinox.GUIUtils.Editor
 
             OnChildrenChanged();
         }
-
+        
         public virtual void AddRange(ICollection<IOrderedDrawable> children)
         {
             if (children == null) return;
