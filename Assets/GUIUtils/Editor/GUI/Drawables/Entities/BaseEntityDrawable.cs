@@ -2,24 +2,41 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Rhinox.Lightspeed.Reflection;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
+using Object = System.Object;
 
 namespace Rhinox.GUIUtils.Editor
 {
     public abstract class BaseEntityDrawable<T> : BaseEntityDrawable
     {
-        protected T Entity => (T) EntityInstance;
-        
-        protected BaseEntityDrawable(T instanceVal, MemberInfo memberInfo = null) : base(instanceVal, memberInfo)
+        public T Entity => (T) Instance;
+
+        public override Type ObjectType => typeof(T);
+
+        protected BaseEntityDrawable(T instanceVal, MemberInfo memberInfo = null) 
+            : base(instanceVal, memberInfo)
         {
         }
     }
     
-    public abstract class BaseEntityDrawable : BaseDrawable
+    public abstract class BaseEntityDrawable : BaseDrawable, IObjectDrawable
     {
-        protected object EntityInstance { get; }
+        public object Instance { get; }
+
+        public virtual Type ObjectType
+        {
+            get
+            {
+                if (Instance != null)
+                    return Instance.GetType();
+                if (_memberInfo != null)
+                    _memberInfo.GetReturnType();
+                return typeof(System.Object);
+            }
+        }
         protected readonly MemberInfo _memberInfo;
 
         public override string LabelString => Host?.GetType().Name;
@@ -34,7 +51,7 @@ namespace Rhinox.GUIUtils.Editor
         protected BaseEntityDrawable(object instanceVal, MemberInfo memberInfo = null)
         {
             Host = null;
-            EntityInstance = instanceVal;
+            Instance = instanceVal;
             _memberInfo = memberInfo;
         }
     }

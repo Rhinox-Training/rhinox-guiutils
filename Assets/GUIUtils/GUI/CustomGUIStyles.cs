@@ -246,6 +246,23 @@ namespace Rhinox.GUIUtils
             }
         }
         
+        private static GUIStyle _labelStyleRight;
+        public static GUIStyle LabelRight
+        {
+            get
+            {
+                if (_labelStyleRight == null)
+                {
+                    _labelStyleRight = new GUIStyle(CustomGUIStyles.Label)
+                    {
+                        alignment = TextAnchor.MiddleRight
+                    };
+                }
+
+                return _labelStyleRight;
+            }
+        }
+        
         private static GUIStyle _labelStyleCenteredWithHover;
         public static GUIStyle CenteredLabelWithHover
         {
