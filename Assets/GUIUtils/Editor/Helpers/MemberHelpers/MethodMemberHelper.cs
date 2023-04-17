@@ -1,65 +1,146 @@
 using System;
 using System.Linq;
 using System.Reflection;
+using Rhinox.Lightspeed;
 using Rhinox.Lightspeed.Reflection;
 
 namespace Rhinox.GUIUtils.Editor
 {
     public class MethodMemberHelper : BaseMemberHelper
     {
-        protected Action _staticInvoker;
-        protected Action<object> _instanceInvoker;
+        private GenericMemberEntry _entry;
+        
+        protected MethodInfo _info;
         
         protected override MemberTypes AllowedMembers => MemberTypes.Method;
 
-        public MethodMemberHelper(object target, string input)
-            : this(target == null, target?.GetType(), input)
+        public MethodMemberHelper(object host, string input)
+            : this(host?.GetType(), input, host)
         {
-            _host = target;
         }
         
         public MethodMemberHelper(Type type, string input)
-            : this(true, type, input)
+            : this(type, input, null)
         {
         }
 
-        private MethodMemberHelper(bool isStatic, Type type, string input)
+        private MethodMemberHelper(Type type, string input, object host)
         {
-            _objectType = type;
-
+            if (host is GenericMemberEntry entry)
+            {
+                _entry = entry;
+                _host = _entry.Instance;
+                _objectType = _host?.GetType();
+            }
+            else
+            {
+                _objectType = type;
+                _host = host;
+            }
+            
             if (!TryParseInput(ref input, out _))
                 return;
 
-            var members = FindMembers(isStatic, (info, _) => info.Name == input);
+            var members = FindMembers(_host == null, (info, _) => info.Name == input);
 
-            var mi = (MethodInfo) members.FirstOrDefault();
-            
-            if (mi == null)
+            _info = (MethodInfo) members.FirstOrDefault();
+            if (_info == null)
                 _errorMessage = $"Could not find method {input} on type {_objectType.Name}";
-            else if (mi.IsStatic())
-                _staticInvoker = () => mi.Invoke(null, new object[] {});
-            else
-                _instanceInvoker = (i) => mi.Invoke(i, new object[] {});
         }
 
-        public void Invoke()
+        public object Invoke(params object[] parameters)
         {
             if (this._errorMessage != null)
-                return;
+                return null;
+            
+            return this._info.Invoke(_host, parameters);
+        }
+        
+#region EnforceSyntax
+        public bool EnforceSyntax<T>() where T : Delegate
+        {
+            MethodInfo wantedMethod = typeof(T).GetMethod("Invoke");
+            var parameters = wantedMethod.GetParameters().Select(x => x.ParameterType).ToArray();
+            return EnforceSyntax(wantedMethod.ReturnType, parameters);
+        }
 
-            if (this._staticInvoker != null)
-            {
-                this._staticInvoker.Invoke();
-                return;
-            }
+        public bool EnforceSyntax(int parameterIndex, Type parameterType)
+        {
+            if (_errorMessage != null)
+                return false;
+            var infos = _info.GetParameters();
+            return EnforceSyntax(parameterIndex, parameterType, infos);
+        }
 
-            if (_instanceInvoker != null)
+        public bool EnforceSyntax(int numberOfParameters)
+        {
+            if (_errorMessage != null)
+                return false;
+            var infos = _info.GetParameters();
+            return EnforceSyntax(numberOfParameters, infos);
+        }
+
+        public bool EnforceSyntax(bool hasReturnType)
+        {
+            bool isVoid = _info.ReturnType == typeof(void);
+            if (hasReturnType == isVoid)
             {
-                _instanceInvoker.Invoke(_host);
-                return;
+                _errorMessage = $"Expected {(hasReturnType ? "a" : "no")} return value";
+                return false;
             }
             
-            return;
+            return true;
         }
+        
+        public bool EnforceSyntax(Type returnType, params Type[] wantedParameters)
+        {
+            if (_errorMessage != null)
+                return false;
+            
+            if (_info.ReturnType != returnType)
+            {
+                _errorMessage = $"Expected return type {returnType}; Received {_info.ReturnType}";
+                return false;
+            }
+
+            var parameters = _info.GetParameters();
+
+            if (wantedParameters.Length != parameters.Length)
+            {
+                _errorMessage = $"Expected the following parameters: " +
+                                $"{string.Join(", ", wantedParameters.Select(x => x.Name))};" +
+                                $"Received {string.Join(", ", parameters.Select(x => x.ParameterType.Name))}";
+                return false;
+            }
+
+            for (var i = 0; i < parameters.Length; i++)
+            {
+                var wantedType = wantedParameters[i];
+                if (!EnforceSyntax(i, wantedType, parameters))
+                    return false;
+            }
+
+            return true;
+        }
+
+        private bool EnforceSyntax(int numberOfParameters, ParameterInfo[] infos)
+        {
+            if (numberOfParameters == infos.Length)
+                return true;
+            
+            _errorMessage = $"Expected {numberOfParameters} parameters; Received {infos.Length}";
+            return false;
+        }
+        
+        private bool EnforceSyntax(int parameterIndex, Type parameterType, ParameterInfo[] infos)
+        {
+            var info = infos.GetOrDefault(parameterIndex, null);
+            if (info != null && info.ParameterType == parameterType)
+                return true;
+            
+            _errorMessage = $"Expected a(n) {parameterType} for parameter nr. {parameterIndex}; Received {info?.ParameterType.Name ?? "None"}";
+            return false;
+        }
+#endregion
     }
 }
