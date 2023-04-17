@@ -15,6 +15,22 @@ namespace Rhinox.GUIUtils.Editor
         {
             menu.AddItem(new GUIContent(path), on, func);
         }
+        
+        public static void AddItem(this GenericMenu menu, string path, Action<string> func, bool on = false)
+        {
+            menu.AddItem(new GUIContent(path), on, () => func(path));
+        }
+        
+        public static void AddItem<T>(this GenericMenu menu, T item, Action<T> func, bool on = false)
+        {
+            menu.AddItem(new GUIContent(item.ToString()), on, () => func(item));
+        }
+        
+        public static void AddItem<T>(this GenericMenu menu, T item, string name, Action<T> func, bool on = false)
+        {
+            menu.AddItem(new GUIContent(name), on, () => func(item));
+        }
+
 
         public static GUILayoutOption[] Append(this GUILayoutOption[] options, params GUILayoutOption[] otherOptions)
         {
