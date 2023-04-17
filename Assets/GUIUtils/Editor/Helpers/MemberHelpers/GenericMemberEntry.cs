@@ -8,17 +8,18 @@ namespace Rhinox.GUIUtils.Editor
 {
     public class GenericMemberEntry
     {
-        public string NiceName => Info?.Name.SplitCamelCase();
-        
         public GenericMemberEntry Parent { get; }
         public object Instance;
         public MemberInfo Info;
+        
+        public readonly string NiceName;
 
         public GenericMemberEntry(object instance, MemberInfo info, GenericMemberEntry parent = null)
         {
             Parent = parent;
             Instance = instance;
             Info = info;
+            NiceName = Info.GetNiceName();
         }
 
         public virtual Type GetReturnType() => Info.GetReturnType();

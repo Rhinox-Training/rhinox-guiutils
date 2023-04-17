@@ -37,17 +37,19 @@ namespace Rhinox.GUIUtils.Editor
                 return;
 
             GUILayout.BeginVertical(CustomGUIStyles.Clean, GetLayoutOptions(_size));
-            
-            foreach (var childDrawable in _drawableMemberChildren)
+
+            for (var i = 0; i < _drawableMemberChildren.Count; i++)
             {
+                var childDrawable = _drawableMemberChildren[i];
                 if (childDrawable == null || !childDrawable.IsVisible)
                     continue;
-                
+
                 childDrawable.Draw(childDrawable.Label);
 
-                GUILayout.Space(CustomGUIUtility.Padding); // padding
+                if (_drawableMemberChildren.Count - 1 != i)
+                    GUILayout.Space(CustomGUIUtility.Padding); // padding
             }
-            
+
             GUILayout.EndVertical();
         }
 

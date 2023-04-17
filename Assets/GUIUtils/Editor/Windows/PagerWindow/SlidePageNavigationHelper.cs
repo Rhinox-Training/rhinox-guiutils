@@ -21,12 +21,14 @@ namespace Rhinox.GUIUtils.Editor.Helpers
     
     public class SlidePageNavigationHelper<T>
     {
-        private List<Page> pages;
-        private Page prev;
+        protected List<Page> pages;
+        protected Page prev;
         public GUITabGroup TabGroup;
         
-        private HoverTexture _icon;
-        private List<HoverRect> _pageTitles;
+        protected HoverTexture _icon;
+        protected List<HoverRect> _pageTitles;
+        
+        public Rect LastDrawnRect { get; protected set; }
 
         public SlidePageNavigationHelper()
         {
@@ -104,6 +106,9 @@ namespace Rhinox.GUIUtils.Editor.Helpers
 
         public void DrawPageNavigation(Rect rect)
         {
+            if (rect.IsValid())
+                LastDrawnRect = rect;
+            
             Rect titleSpacingRect = rect.AlignLeft(rect.height * 1.3f).AlignCenter(19f, 19f);
             bool oldGUIEnabled = GUI.enabled;
             GUI.enabled = !IsOnFirstPage;

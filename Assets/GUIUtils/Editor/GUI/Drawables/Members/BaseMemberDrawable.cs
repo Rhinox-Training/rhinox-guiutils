@@ -49,10 +49,10 @@ namespace Rhinox.GUIUtils.Editor
         }
 
         protected T GetSmartValue() => Entry.GetSmartValue<T>();
-        protected void SetSmartValue(T val) => Entry.TrySetValue(val);
+        protected bool SetSmartValue(T value) => Entry.TrySetValue(value);
 
-        protected abstract T DrawValue(GUIContent label, T memberVal, params GUILayoutOption[] options);
-        protected abstract T DrawValue(Rect rect, GUIContent label, T memberVal);
+        protected abstract T DrawValue(GUIContent label, T value, params GUILayoutOption[] options);
+        protected abstract T DrawValue(Rect rect, GUIContent label, T value);
 
         private Attribute[] _cachedAttributes;
         

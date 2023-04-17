@@ -28,7 +28,6 @@ namespace Rhinox.GUIUtils
 
         
         private static GUIStyle _boxStyle;
-
         public static GUIStyle Box
         {
             get
@@ -46,7 +45,23 @@ namespace Rhinox.GUIUtils
             }
         }
         
+        private static GUIStyle _cardStyle;
+        public static GUIStyle Card
+        {
+            get
+            {
+                if (_cardStyle == null)
+                    _cardStyle = new GUIStyle("sv_iconselector_labelselection")
+                    {
+                        padding = new RectOffset(15, 15, 15, 15),
+                        margin = new RectOffset(0, 0, 0, 0),
+                        stretchHeight = false
+                    };;
+                return _cardStyle;
+            }
+        }
         
+#region Title Styles
         private static GUIStyle _titleStyle;
         public static GUIStyle Title
         {
@@ -214,7 +229,10 @@ namespace Rhinox.GUIUtils
                 return _subtitleStyleRight;
             }
         }
-        
+#endregion // Title Styles
+
+#region Label Styles
+
         private static GUIStyle _labelStyle;
         public static GUIStyle Label
         {
@@ -389,7 +407,9 @@ namespace Rhinox.GUIUtils
                 return _miniLabelStyleRight;
             }
         }
-        
+#endregion //Label Styles
+
+#region Clean Styles
         // =============================================================================================================
         // Clean styles
         private static GUIStyle _cleanStyle;
@@ -445,8 +465,10 @@ namespace Rhinox.GUIUtils
                 return _cleanLabelField;
             }
         }
-        
-        
+#endregion
+ 
+#region Toolbar Styles
+
         // =============================================================================================================
         // Toolbar styles
         
@@ -521,6 +543,30 @@ namespace Rhinox.GUIUtils
             }
         }
         
+        private static GUIStyle _toolbarSearchTextField;
+        public static GUIStyle ToolbarSearchTextField
+        {
+            get
+            {
+                if (_toolbarSearchTextField == null)
+                    _toolbarSearchTextField = new GUIStyle("ToolbarSeachTextField");
+                return _toolbarSearchTextField;
+            }
+        }
+        
+        private static GUIStyle _toolbarSearchCancelButton;
+        public static GUIStyle ToolbarSearchCancelButton
+        {
+            get
+            {
+                if (_toolbarSearchCancelButton == null)
+                    _toolbarSearchCancelButton = new GUIStyle("ToolbarSeachCancelButton");
+                return _toolbarSearchCancelButton;
+            }
+        }
+#endregion
+
+#region Button Styles
         // =============================================================================================================
         // Button Styles
 
@@ -530,10 +576,13 @@ namespace Rhinox.GUIUtils
             get
             {
                 if (_iconButtonStyle == null)
+                {
                     _iconButtonStyle = new GUIStyle(GUIStyle.none)
                     {
                         padding = new RectOffset(1, 1, 1, 1)
                     };
+                }
+                    
                 return _iconButtonStyle;
             }
         }
@@ -822,5 +871,6 @@ namespace Rhinox.GUIUtils
             if (buttonI >= maxI - 1) return selected ? CustomGUIStyles.MiniButtonRightSelected : CustomGUIStyles.MiniButtonRight;
             return selected ? CustomGUIStyles.MiniButtonMidSelected : CustomGUIStyles.MiniButtonMid;
         }
+#endregion
     }
 }

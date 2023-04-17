@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Reflection;
+using Rhinox.Lightspeed.Reflection;
 using UnityEngine;
 
 namespace Rhinox.GUIUtils.Editor
@@ -57,5 +59,28 @@ namespace Rhinox.GUIUtils.Editor
             base.OnPreDraw();
             _localShouldRepaint = false;
         }
+        
+        
+        protected object GetValue()
+        {
+            if (_innerDrawable is IMemberDrawable memberDrawable)
+                return memberDrawable.Entry.GetValue();
+            
+            if (_innerDrawable is IObjectDrawable && _innerDrawable.Host is GenericMemberEntry entry)
+                return entry.GetValue();
+
+            return null;
+        }
+        protected bool SetValue(object value)
+        {
+            if (_innerDrawable is IMemberDrawable memberDrawable)
+                return memberDrawable.Entry.TrySetValue(value);
+            
+            if (_innerDrawable is IObjectDrawable && _innerDrawable.Host is GenericMemberEntry entry)
+                return entry.TrySetValue(value);
+
+            return false;
+        }
+        
     }
 }

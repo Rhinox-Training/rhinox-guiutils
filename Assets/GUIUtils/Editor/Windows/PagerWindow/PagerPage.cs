@@ -58,7 +58,7 @@ namespace Rhinox.GUIUtils.Editor
         protected int _topHeight = 18;
 
         private Vector2 _scrollPos;
-        private float _width;
+        private Rect _rect;
 
         protected bool _changed;
 
@@ -87,9 +87,7 @@ namespace Rhinox.GUIUtils.Editor
         [Sirenix.OdinInspector.OnInspectorGUI]
         public void Draw()
         {
-            _topWidth = CalculateTopWidth();
-            if (_topWidth > 0)
-                DrawTopOverlay();
+            GUILayout.BeginVertical();
 
             OnDrawTop();
 
@@ -100,6 +98,7 @@ namespace Rhinox.GUIUtils.Editor
             GUILayout.EndScrollView();
 
             OnDrawBottom();
+            GUILayout.EndVertical();
         }
 
         protected virtual void OnDrawTop()
@@ -114,12 +113,16 @@ namespace Rhinox.GUIUtils.Editor
         {
         }
 
-        protected virtual void DrawTopOverlay()
+        public virtual void DrawTopOverlay()
         {
-            var currRect = CustomEditorGUI.GetTopLevelLayoutRect();
-            if (currRect.width > 0)
-                _width = currRect.width;
-            var rect = new Rect(0, 0, _width, _topHeight).AlignRight(_topWidth);
+            _topWidth = CalculateTopWidth();
+            if (_topWidth <= 0)
+                return;
+            
+            var rect = CustomEditorGUI.GetTopLevelLayoutRect();
+            if (rect.IsValid())
+                _rect = rect;
+            rect = _rect.AlignTop(_topHeight).AlignRight(_topWidth);
             rect.x -= 10;
             rect.y += 5;
 

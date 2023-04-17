@@ -72,7 +72,8 @@ namespace Rhinox.GUIUtils.Editor
             const string PARENT_ID = "parent";
             const string ROOT_ID = "root";
             const string PROPERTY_ID = "property";
-            
+            const string VALUE_ID = "value";
+
             GenericMemberEntry usedEntry = null;
             string[] parts = input.Split(new[] { "." }, StringSplitOptions.RemoveEmptyEntries);
             for (int i = 0; i < parts.Length; ++i)
@@ -99,6 +100,12 @@ namespace Rhinox.GUIUtils.Editor
 
                             while (usedEntry.Parent != null)
                                 usedEntry = usedEntry.Parent;
+                        }
+                        break;
+                    case VALUE_ID:
+                        if (_entry != null)
+                        {
+                            _host = _entry.GetValue();
                         }
                         break;
                     default:

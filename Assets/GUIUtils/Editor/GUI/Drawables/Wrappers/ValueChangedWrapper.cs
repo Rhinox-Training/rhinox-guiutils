@@ -24,7 +24,19 @@ namespace Rhinox.GUIUtils.Editor
             if (EditorGUI.EndChangeCheck())
                 _methodMember.Invoke();
         }
+
+        protected override void DrawInner(GUIContent label, params GUILayoutOption[] options)
+        {
+            _methodMember?.DrawError();
+            base.DrawInner(label, options);
+        }
         
+        protected override void DrawInner(Rect rect, GUIContent label)
+        {
+            base.DrawInner(rect, label);
+            _methodMember?.DrawError(rect);
+        }
+
         [WrapDrawer(typeof(OnValueChangedAttribute), -500)]
         public static BaseWrapperDrawable Create(OnValueChangedAttribute attr, IOrderedDrawable drawable)
         {

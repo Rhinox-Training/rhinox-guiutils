@@ -12,22 +12,21 @@ namespace Rhinox.GUIUtils.Editor
 {
     public static partial class eUtility
     {
-#if ODIN_INSPECTOR
         /// ================================================================================================================
         /// ELEMENTS
         public static void Card(Action draw, Action onClick = null, Action<Rect> postDraw = null, float alpha = 0f)
         {
             // GUIHelper.RequestRepaint();
-            GUILayout.BeginVertical();
+            var rect = EditorGUILayout.BeginVertical();
 
             if (Math.Abs(alpha) < float.Epsilon)
             {
-                var isMouseIver = onClick != null && GUIHelper.CurrentWindowHasFocus && GUIHelper.GetCurrentLayoutRect().Contains(Event.current.mousePosition);
-                alpha = (EditorGUIUtility.isProSkin ? 0.25f : 0.45f) * (isMouseIver ? 2 : 1);
+                bool isMouseOver = IsMouseOver(rect);
+                alpha = (EditorGUIUtility.isProSkin ? 0.25f : 0.45f) * (isMouseOver ? 2 : 1);
             }
         
             GUIContentHelper.PushColor(new Color(1, 1, 1, alpha));
-            GUILayout.BeginHorizontal(SirenixGUIStyles.CardStyle);
+            GUILayout.BeginHorizontal(CustomGUIStyles.Card);
             GUIContentHelper.PopColor();
             {
                 GUILayout.BeginVertical();
@@ -35,8 +34,6 @@ namespace Rhinox.GUIUtils.Editor
                 draw();
             
                 GUILayout.EndVertical();
-                            
-                var rect = GUIHelper.GetCurrentLayoutRect();
                 
                 postDraw?.Invoke(rect);
             
@@ -44,9 +41,8 @@ namespace Rhinox.GUIUtils.Editor
                     onClick.Invoke();
             }
             GUILayout.EndHorizontal();
-            GUILayout.EndVertical();
+            EditorGUILayout.EndVertical();
         }
-#endif
 
         public static bool FoldoutHeader(bool foldout, string title, GUIStyle headerStyle = null)
         {

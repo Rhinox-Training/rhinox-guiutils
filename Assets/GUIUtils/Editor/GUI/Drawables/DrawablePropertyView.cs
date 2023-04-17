@@ -65,8 +65,14 @@ namespace Rhinox.GUIUtils.Editor
                 return;
 
             OnPreDraw();
-            
-            _rootDrawable.Draw(_rootDrawable.Label);
+            try
+            {
+                _rootDrawable.Draw(_rootDrawable.Label);
+            }
+            catch (ExitGUIException)
+            {
+                // Do nothing, this is supported behaviour
+            }
 
             OnPostDraw();
         }
