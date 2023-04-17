@@ -21,7 +21,7 @@ namespace Rhinox.GUIUtils.Editor
     public class GenericSmartObjectEditor : UnityEditor.Editor, IEditor
     {
         private DrawablePropertyView _propertyView;
-        private MethodInfo _drawerMethod;
+        private MethodInfo[] _drawerMethods;
         private object _target;
 
         private void OnEnable()
@@ -31,8 +31,7 @@ namespace Rhinox.GUIUtils.Editor
                 return;
 
             _target = smartInternalObj.Target;
-            if (TryGetInspectorGUIMethod(_target, out MethodInfo methodInfo))
-                _drawerMethod = methodInfo;
+            _drawerMethods = GetInspectorGUIMethods(_target);
             if (_target != null)
                 _propertyView = new DrawablePropertyView(_target);
         }
@@ -44,23 +43,22 @@ namespace Rhinox.GUIUtils.Editor
         {
             if (_propertyView != null)
                 _propertyView.DrawLayout();
-            if (_drawerMethod != null)
-                _drawerMethod.Invoke(_target, null);
+            
+            foreach (var info in _drawerMethods)
+                info.Invoke(_target, null);
         }
         
-        private bool TryGetInspectorGUIMethod(object o, out MethodInfo methodInfo)
+        private MethodInfo[] GetInspectorGUIMethods(object o)
         {
             if (o == null)
             {
-                methodInfo = null;
-                return false;
+                return Array.Empty<MethodInfo>();
             }
 
             var methods = o.GetType().GetMethods(BindingFlags.FlattenHierarchy | BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
                 .Where(x => x.GetCustomAttribute<OnInspectorGUIAttribute>() != null)
                 .ToArray();
-            methodInfo = methods.FirstOrDefault();
-            return methodInfo != null;
+            return methods;
         }
 
         public static GenericSmartObjectEditor Create(object systemObj)
