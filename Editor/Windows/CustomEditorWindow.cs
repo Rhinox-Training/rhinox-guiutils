@@ -420,7 +420,10 @@ namespace Rhinox.GUIUtils.Editor
         protected virtual void DrawEditors()
         {
             for (int i = 0; i < _currentPaintedTargets.Length; ++i)
+            {
                 DrawEditor(i);
+                DrawEditorOverlay(i);
+            }
         }
 
         private void UpdateEditors()
@@ -564,6 +567,10 @@ namespace Rhinox.GUIUtils.Editor
         /// which often happens when you recompile or enter and exit play mode.
         /// </summary>
         protected virtual void Initialize()
+        {
+        }
+
+        protected virtual void DrawEditorOverlay(int index)
         {
         }
 
