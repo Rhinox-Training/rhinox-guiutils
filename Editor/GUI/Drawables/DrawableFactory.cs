@@ -291,6 +291,12 @@ namespace Rhinox.GUIUtils.Editor
                 return true;
             }
 
+            if (type == typeof(LayerMask))
+            {
+                drawableMember = new LayerMaskDrawableField(entry);
+                return true;
+            }
+
             if (type.InheritsFrom<IList>())
             {
                 drawableMember = new DrawableList(entry);
