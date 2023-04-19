@@ -1,3 +1,4 @@
+using Rhinox.Lightspeed;
 using Sirenix.OdinInspector;
 using UnityEditor;
 using UnityEngine;
@@ -7,9 +8,14 @@ namespace Rhinox.GUIUtils.Editor
     public class CustomValueDrawerWrapper : BaseWrapperDrawable
     {
         private MethodMemberHelper _methodMember;
-        
+
+        private Rect _cachedRect;
+
+        public override float ElementHeight => _cachedRect.IsValid() ? _cachedRect.height : base.ElementHeight;
+
         public CustomValueDrawerWrapper(IOrderedDrawable drawable) : base(drawable)
         {
+            
         }
 
         protected override void DrawInner(GUIContent label, params GUILayoutOption[] options)
@@ -21,7 +27,10 @@ namespace Rhinox.GUIUtils.Editor
         
         protected override void DrawInner(Rect rect, GUIContent label)
         {
-            GUILayout.BeginArea(rect);
+            if (rect.IsValid())
+                _cachedRect = rect;
+            
+            GUILayout.BeginArea(_cachedRect, CustomGUIStyles.Clean);
             Draw(label);
             GUILayout.EndArea();
         }
