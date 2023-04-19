@@ -9,7 +9,7 @@ using UnityEngine;
 
 namespace Rhinox.GUIUtils.Editor
 {
-    public abstract class BaseMemberDrawable<T> : BaseDrawable, IMemberDrawable
+    public abstract class BaseMemberDrawable<T> : BaseDrawable, IDrawableReadWrite
     {
         public override string LabelString => Entry.NiceName;
         
@@ -47,6 +47,9 @@ namespace Rhinox.GUIUtils.Editor
         protected virtual void PostProcessValue(ref T value)
         {
         }
+
+        public object GetValue() => Entry.GetValue();
+        public bool TrySetValue(object value) => Entry.TrySetValue(value);
 
         protected T GetSmartValue() => Entry.GetSmartValue<T>();
         protected bool SetSmartValue(T value) => Entry.TrySetValue(value);

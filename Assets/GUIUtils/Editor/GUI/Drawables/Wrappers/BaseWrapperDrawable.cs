@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using Rhinox.Lightspeed.Reflection;
+using UnityEditor;
 using UnityEngine;
 
 namespace Rhinox.GUIUtils.Editor
@@ -63,24 +64,19 @@ namespace Rhinox.GUIUtils.Editor
         
         protected object GetValue()
         {
-            if (_innerDrawable is IMemberDrawable memberDrawable)
-                return memberDrawable.Entry.GetValue();
-            
-            if (_innerDrawable is IObjectDrawable && _innerDrawable.Host is GenericMemberEntry entry)
-                return entry.GetValue();
+            if (_innerDrawable is IDrawableRead memberDrawable)
+                return memberDrawable.GetValue();
 
             return null;
         }
+        
         protected bool SetValue(object value)
         {
-            if (_innerDrawable is IMemberDrawable memberDrawable)
-                return memberDrawable.Entry.TrySetValue(value);
+            if (_innerDrawable is IDrawableReadWrite memberDrawable)
+                return memberDrawable.TrySetValue(value);
             
-            if (_innerDrawable is IObjectDrawable && _innerDrawable.Host is GenericMemberEntry entry)
-                return entry.TrySetValue(value);
-
+            Debug.LogError("Could not set value....");
             return false;
         }
-        
     }
 }
