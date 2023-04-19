@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace Rhinox.GUIUtils.Editor
 {
-    public class ObjectCompositeDrawableMember : CompositeDrawableMember, IObjectDrawable
+    public class ObjectCompositeDrawableMember : CompositeDrawableMember, IDrawableReadWrite
     {
         public override GUIContent Label => _label;
 
@@ -129,6 +129,24 @@ namespace Rhinox.GUIUtils.Editor
             _innerDrawable.Draw(rect, GUIContent.none);
 
             EditorGUI.indentLevel = indentLevel;
+        }
+
+        public object GetValue()
+        {
+            return Instance;
+        }
+        
+        public bool TrySetValue(object value)
+        {
+            if (Host is GenericMemberEntry entry)
+                return entry.TrySetValue(value);
+            if (Host is SerializedProperty prop)
+            {
+                prop.SetValue(value);
+                return true;
+            }
+
+            return false;
         }
     }
 }

@@ -54,7 +54,7 @@ namespace Rhinox.GUIUtils.Editor
 
         protected override void OnValueChanged()
         {
-            _hostSerializedObject.Update();
+            Root.Update();
             base.OnValueChanged();
         }
 

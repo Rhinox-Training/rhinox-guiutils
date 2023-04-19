@@ -22,7 +22,7 @@ namespace Rhinox.GUIUtils.Editor
         }
     }
     
-    public abstract class BaseEntityDrawable : BaseDrawable, IObjectDrawable
+    public abstract class BaseEntityDrawable : BaseDrawable, IDrawableReadWrite
     {
         public object Instance { get; }
 
@@ -33,7 +33,7 @@ namespace Rhinox.GUIUtils.Editor
                 if (Instance != null)
                     return Instance.GetType();
                 if (_memberInfo != null)
-                    _memberInfo.GetReturnType();
+                    return _memberInfo.GetReturnType();
                 return typeof(System.Object);
             }
         }
@@ -48,11 +48,22 @@ namespace Rhinox.GUIUtils.Editor
             return _memberInfo.GetCustomAttributes<TAttribute>();
         }
 
+        public virtual object GetValue()
+        {
+            return _memberInfo.GetValue(Instance);
+        }
+
+        public virtual bool TrySetValue(object value)
+        {
+            return _memberInfo.TrySetValue(Instance, value);
+        }
+
         protected BaseEntityDrawable(object instanceVal, MemberInfo memberInfo = null)
         {
             Host = null;
             Instance = instanceVal;
             _memberInfo = memberInfo;
         }
+
     }
 }
