@@ -48,9 +48,6 @@ namespace Rhinox.GUIUtils.Editor
             
             _member.DrawError();
 
-            if (_innerDrawable is BaseDrawable inner)
-                label = inner.Label;
-
             EditorGUILayout.BeginHorizontal(options);
             EditorGUILayout.PrefixLabel(label);
 
@@ -71,9 +68,6 @@ namespace Rhinox.GUIUtils.Editor
         protected override void DrawInner(Rect rect, GUIContent label)
         {
             OnPreDraw();
-            
-            if (_innerDrawable is BaseDrawable inner)
-                label = inner.Label;
 
             rect = EditorGUI.PrefixLabel(rect, label);
             
