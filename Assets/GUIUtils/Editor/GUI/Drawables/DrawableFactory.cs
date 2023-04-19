@@ -116,7 +116,7 @@ namespace Rhinox.GUIUtils.Editor
                 drawable.Add(propertyDrawable);
             }
 
-            var buttons = FindButtons(instanceVal);
+            var buttons = FindCustomDrawables(instanceVal);
             drawable.AddRange(buttons);
 
             return drawable;
@@ -166,7 +166,7 @@ namespace Rhinox.GUIUtils.Editor
             drawable.AddRange(drawables);
             drawable.Sort();
             
-            var buttons = FindButtons(instance);
+            var buttons = FindCustomDrawables(instance);
             drawable.AddRange(buttons);
 
             // Wrap in object composite
@@ -321,16 +321,17 @@ namespace Rhinox.GUIUtils.Editor
 
         // =============================================================================================================
         // Searcher methods (fields, properties, buttons, methods, ...)
-        
-        private static ICollection<IOrderedDrawable> FindButtons(object instance)
+        private static ICollection<IOrderedDrawable> FindCustomDrawables(object instance)
         {
             if (instance == null) return Array.Empty<IOrderedDrawable>();
             
             var type = instance.GetType();
 
-            var buttons = new List<IOrderedDrawable>();
-            var types = TypeCache.GetMethodsWithAttribute<ButtonAttribute>();
-            foreach (var mi in types)
+            var drawables = new List<IOrderedDrawable>();
+            var buttonMethods = TypeCache.GetMethodsWithAttribute<ButtonAttribute>();
+            var drawMethods = TypeCache.GetMethodsWithAttribute<OnInspectorGUIAttribute>();
+
+            foreach (var mi in buttonMethods)
             {
                 if (mi.DeclaringType != type) continue;
                 var attributes = mi.GetCustomAttributes();
@@ -342,10 +343,20 @@ namespace Rhinox.GUIUtils.Editor
                     Height = attr.ButtonHeight
                 };
                 button = DrawableWrapperFactory.TryWrapDrawable(button, attributes);
-                buttons.AddUnique(button);
+                drawables.AddUnique(button);
+            }
+            
+            foreach (var mi in drawMethods)
+            {
+                if (mi.DeclaringType != type) continue;
+                var attributes = mi.GetCustomAttributes();
+                
+                IOrderedDrawable drawable = new DrawableMethod(instance, mi);
+                drawable = DrawableWrapperFactory.TryWrapDrawable(drawable, attributes);
+                drawables.AddUnique(drawable);
             }
 
-            return buttons;
+            return drawables;
         }
 
         private static IReadOnlyCollection<GenericMemberEntry> GetEditorVisibleFields(object instance, Type t, GenericMemberEntry parent = null)

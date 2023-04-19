@@ -56,7 +56,6 @@ namespace Rhinox.GUIUtils.Editor
             if (parameters.Length == 0)
                 return false;
 
-
             var dialog = EditorInputDialog.Create(method.Name, "Provide additional parameters:");
             var valueReferences = new List<DialogBuilder.IValueReference>();
             foreach (var paramInfo in parameters)

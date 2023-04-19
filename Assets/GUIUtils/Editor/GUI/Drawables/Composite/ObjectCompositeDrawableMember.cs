@@ -50,27 +50,21 @@ namespace Rhinox.GUIUtils.Editor
             : this(hostEntry.GetValue(), hostEntry.GetReturnType(), contents, hostEntry?.NiceName ?? "", order)
         {
             Host = hostEntry;
-            
         }
         
-        public ObjectCompositeDrawableMember(object instance, Type objectType, IOrderedDrawable contents,
-            string name = "", float order = 0)
+        public ObjectCompositeDrawableMember(object instance, Type type, IOrderedDrawable contents, string name = "", float order = 0)
             : base(name, order)
         {
             Instance = instance;
-            ObjectType = objectType;
+            ObjectType = type;
             _innerDrawable = contents;
             
             if (name.IsNullOrEmpty())
                 _label = GUIContent.none;
             else
                 _label = new GUIContent(name);
-            
         }
-
-
-
-
+        
         public override void Draw(GUIContent label)
         {
             _hasLabel = label != GUIContent.none;

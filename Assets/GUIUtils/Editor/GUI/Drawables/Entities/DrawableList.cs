@@ -39,7 +39,8 @@ namespace Rhinox.GUIUtils.Editor
 
         public void Draw(Rect r)
         {
-            r.y += CustomGUIUtility.Padding;
+            if (r.IsValid())
+                r.y += CustomGUIUtility.Padding;
             if (_propertyView != null)
                 _propertyView.Draw(r);
         }
@@ -71,6 +72,7 @@ namespace Rhinox.GUIUtils.Editor
                 throw new ArgumentNullException(nameof(listProperty));
             
             _listProperty = listProperty;
+            Host = listProperty.serializedObject;
             _entry = null;
 
             _listDrawerAttr = listProperty.GetAttributeOrCreate<ListDrawerSettingsAttribute>();
@@ -90,6 +92,7 @@ namespace Rhinox.GUIUtils.Editor
         {
             _listProperty = null;
             _entry = entry;
+            Host = entry.Parent;
             _listDrawerAttr = entry.GetAttribute<ListDrawerSettingsAttribute>() ?? new ListDrawerSettingsAttribute();
 
             _listRO = new PageableReorderableList(_entry,

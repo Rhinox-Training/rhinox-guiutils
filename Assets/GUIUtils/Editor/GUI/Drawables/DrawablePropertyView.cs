@@ -86,7 +86,8 @@ namespace Rhinox.GUIUtils.Editor
             
             
             // TODO: should we force height?
-            rect.height = Height;
+            if (rect.IsValid())
+                rect.height = Height;
             _rootDrawable.Draw(rect, _rootDrawable.Label);
             
             OnPostDraw();
