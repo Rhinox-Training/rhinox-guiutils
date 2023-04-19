@@ -138,6 +138,13 @@ namespace Rhinox.GUIUtils.Editor
             _pager.EndGroup();
         }
 
+#if ODIN_INSPECTOR
+        protected virtual void DrawEditorOverlay(int index)
+        {
+            if (CurrentPage.Value is PagerPage page)
+                page.DrawTopOverlay();
+        }
+#else
         protected override void DrawEditorOverlay(int index)
         {
             base.DrawEditorOverlay(index);
@@ -145,6 +152,7 @@ namespace Rhinox.GUIUtils.Editor
             if (CurrentPage.Value is PagerPage page)
                 page.DrawTopOverlay();
         }
+#endif
 
         public void AddItemsToMenu(GenericMenu menu)
         {

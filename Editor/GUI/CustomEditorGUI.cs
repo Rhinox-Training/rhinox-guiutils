@@ -225,7 +225,7 @@ namespace Rhinox.GUIUtils.Editor
             return IconButton(icon, null, width, height, tooltip);
         }
 
-        public static bool IconButton(Texture icon, GUIStyle style = null, int width = DEFAULT_ICON_WIDTH, int height = DEFAULT_ICON_HEIGHT, string tooltip = "")
+        public static bool IconButton(Texture icon, GUIStyle style, int width = DEFAULT_ICON_WIDTH, int height = DEFAULT_ICON_HEIGHT, string tooltip = "")
         {
             return IconButton(GUIContentHelper.TempContent(icon, tooltip), style, width, height);
         }
