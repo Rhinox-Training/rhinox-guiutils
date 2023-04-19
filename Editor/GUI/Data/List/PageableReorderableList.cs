@@ -149,7 +149,7 @@ namespace Rhinox.GUIUtils.Editor
             // contentRect.height = elementHeight + margin;
 
             Rect removeButton = default;
-            if (this.displayRemove)
+            if (this.displayRemove && contentRect.IsValid())
             {
                 removeButton = contentRect.AlignRight(18).AlignCenterVertical(18);
                 contentRect = contentRect.PadRight(9);
@@ -176,7 +176,7 @@ namespace Rhinox.GUIUtils.Editor
             if (MaxItemsPerPage > 0 && index > MaxItemsPerPage)
                 return;
 
-            s_Defaults.DrawElementBackgroundAlternating(rect, index, selected, focused, draggable);
+            base.OnDrawElementBackground(rect, index, selected, focused, draggable);
         }
         
         protected override int GetListDrawCount()

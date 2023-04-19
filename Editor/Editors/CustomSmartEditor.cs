@@ -40,7 +40,6 @@ namespace Rhinox.GUIUtils.Editor
 
             if (_propertyView.ShouldRepaint)
             {
-                Debug.LogError($"Should repaint now! {DateTime.Now.ToLongTimeString()}");
                 if (_target != null)
                     _target.RequestRepaint();
                 else

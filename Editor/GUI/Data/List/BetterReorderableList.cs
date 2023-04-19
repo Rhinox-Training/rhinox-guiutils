@@ -151,6 +151,9 @@ namespace Rhinox.GUIUtils.Editor
 
         private Rect GetContentRect(Rect rect)
         {
+            if (!rect.IsValid())
+                return rect;
+            
             Rect contentRect = rect;
             if (draggable)
                 contentRect.xMin += 20f;
@@ -210,9 +213,6 @@ namespace Rhinox.GUIUtils.Editor
             Rect rect2 = GUILayoutUtility.GetRect(10f, this.GetListElementHeight(), GUILayout.ExpandWidth(true));
             Rect rect3 = GUILayoutUtility.GetRect(4f, this.footerHeight, GUILayout.ExpandWidth(true));
 
-            // if (!rect2.IsValid())
-            //     return;
-            
             this.DoListHeader(rect1);
             this.DoListElements(rect2);
             this.DoListFooter(rect3);
@@ -247,16 +247,20 @@ namespace Rhinox.GUIUtils.Editor
             if (this.showDefaultBackground && Event.current.type == UnityEngine.EventType.Repaint)
                 BetterReorderableList.s_Defaults.boxBackground.Draw(listRect, false, false, false, false);
 
-            listRect.yMin += this.listElementTopPadding;
-            listRect.yMax -= 4f;
-            if (this.showDefaultBackground)
+            if (listRect.IsValid())
             {
-                ++listRect.xMin;
-                --listRect.xMax;
+                listRect.yMin += this.listElementTopPadding;
+                listRect.yMax -= 4f;
+                if (this.showDefaultBackground)
+                {
+                    ++listRect.xMin;
+                    --listRect.xMax;
+                }
             }
 
-            Rect rect1 = listRect;
-            rect1.height = this.elementHeight;
+            Rect elementRect = listRect;
+            if (elementRect.IsValid())
+                elementRect.height = this.elementHeight;
 
             if ((this.m_Elements != null && this.m_Elements.isArray || this.m_ElementList != null) && count > 0)
             {
@@ -276,41 +280,49 @@ namespace Rhinox.GUIUtils.Editor
                     {
                         if (this.m_NonDragTargetIndices[index] != -1)
                         {
-                            rect1.height = this.GetElementHeight(index);
-                            rect1.y = listRect.y + this.GetElementYOffset(this.m_NonDragTargetIndices[index],
-                                this.m_ActiveElement);
-                            if (flag)
-                                rect1.y += GetElementHeight(this.m_ActiveElement);
-                            rect1 = this.m_SlideGroup.GetRect(this.m_NonDragTargetIndices[index], rect1);
-                            OnDrawElementBackground(rect1, index, false, false, m_Draggable);
+                            if (elementRect.IsValid())
+                            {
+                                elementRect.height = this.GetElementHeight(index);
+                                elementRect.y = listRect.y + this.GetElementYOffset(this.m_NonDragTargetIndices[index],
+                                    this.m_ActiveElement);
+                                if (flag)
+                                    elementRect.y += GetElementHeight(this.m_ActiveElement);
+                                elementRect = this.m_SlideGroup.GetRect(this.m_NonDragTargetIndices[index], elementRect);
+                            }
+                            OnDrawElementBackground(elementRect, index, false, false, m_Draggable);
                             
-                            s_Defaults.DrawElementDraggingHandle(rect1, index, false, false, this.m_Draggable);
-                            Rect contentRect = this.GetContentRect(rect1);
+                            s_Defaults.DrawElementDraggingHandle(elementRect, index, false, false, this.m_Draggable);
+                            Rect contentRect = this.GetContentRect(elementRect);
                             DrawElement(contentRect, this.m_NonDragTargetIndices[index]);
                         }
                         else
                             flag = true;
                     }
 
-                    rect1.y = this.m_DraggedY - this.m_DragOffset + listRect.y;
-                    OnDrawElementBackground(rect1, this.m_ActiveElement, true, true, m_Draggable);
-                    s_Defaults.DrawElementDraggingHandle(rect1, this.m_ActiveElement, true, true, this.m_Draggable);
-                    Rect contentRect1 = this.GetContentRect(rect1);
+                    if (elementRect.IsValid())
+                        elementRect.y = this.m_DraggedY - this.m_DragOffset + listRect.y;
+                    OnDrawElementBackground(elementRect, this.m_ActiveElement, true, true, m_Draggable);
+                    s_Defaults.DrawElementDraggingHandle(elementRect, this.m_ActiveElement, true, true, this.m_Draggable);
+                    Rect contentRect1 = this.GetContentRect(elementRect);
                     DrawElement(contentRect1, m_ActiveElement, true, true);
                 }
                 else
                 {
                     for (int index = 0; index < count; ++index)
                     {
-                        bool flag1 = index == this.m_ActiveElement;
-                        bool flag2 = index == this.m_ActiveElement && this.HasKeyboardControl();
-                        rect1.height = this.GetElementHeight(index);
-                        rect1.y = listRect.y + this.GetElementYOffset(index);
-                        OnDrawElementBackground(rect1, index, flag1, flag2, this.m_Draggable);
-                        s_Defaults.DrawElementDraggingHandle(rect1, index, flag1, flag2, this.m_Draggable);
-                        Rect contentRect = this.GetContentRect(rect1);
+                        bool isSelected = index == this.m_ActiveElement;
+                        bool isFocused = index == this.m_ActiveElement && this.HasKeyboardControl();
+                        if (elementRect.IsValid())
+                        {
+                            elementRect.height = this.GetElementHeight(index);
+                            elementRect.y = listRect.y + this.GetElementYOffset(index);
+                        }
 
-                        DrawElement(contentRect, index, flag1, flag2);
+                        OnDrawElementBackground(elementRect, index, isSelected, isFocused, this.m_Draggable);
+                        s_Defaults.DrawElementDraggingHandle(elementRect, index, isSelected, isFocused, this.m_Draggable);
+                        Rect contentRect = this.GetContentRect(elementRect);
+
+                        DrawElement(contentRect, index, isSelected, isFocused);
                     }
                 }
 
@@ -318,10 +330,10 @@ namespace Rhinox.GUIUtils.Editor
             }
             else
             {
-                rect1.y = listRect.y;
-                OnDrawElementBackground(rect1, -1, false, false, false);
-                BetterReorderableList.s_Defaults.DrawElementDraggingHandle(rect1, -1, false, false, false);
-                Rect rect2 = rect1;
+                elementRect.y = listRect.y;
+                OnDrawElementBackground(elementRect, -1, false, false, false);
+                BetterReorderableList.s_Defaults.DrawElementDraggingHandle(elementRect, -1, false, false, false);
+                Rect rect2 = elementRect;
                 rect2.xMin += 6f;
                 rect2.xMax -= 6f;
                 if (this.drawNoneElementCallback == null)
@@ -358,9 +370,9 @@ namespace Rhinox.GUIUtils.Editor
                 this.drawElementCallback(contentRect, elementIndex, selected, focused);
         }
 
-        protected virtual void OnDrawElementBackground(Rect rect1, int index, bool selected, bool focused, bool draggable)
+        protected virtual void OnDrawElementBackground(Rect rect, int index, bool selected, bool focused, bool draggable)
         {
-            s_Defaults.DrawElementBackground(rect1, index, selected, focused, draggable);
+            s_Defaults.DrawElementBackground(rect, index, selected, focused, draggable);
         }
 
         private void DoListHeader(Rect headerRect)
@@ -655,18 +667,6 @@ namespace Rhinox.GUIUtils.Editor
             public readonly GUIStyle boxBackground = (GUIStyle) "RL Background";
             public readonly GUIStyle preButton = (GUIStyle) "RL FooterButton";
             public readonly GUIStyle elementBackground = (GUIStyle) "RL Element";
-            private GUIStyle _altElementBackground;
-            public GUIStyle altElementBackground {
-                get
-                {
-                    
-                    if (_altElementBackground != null) return _altElementBackground;
-                    _altElementBackground = new GUIStyle("RL Element");
-                    _altElementBackground.normal.background = Utility.GetColorTexture(altColor);
-                    _altElementBackground.onActive = elementBackground.onActive;
-                    return _altElementBackground;
-                }
-            }
             public const int padding = 6;
             public const int dragHandleWidth = 20;
             private static GUIContent s_ListIsEmpty = EditorGUIUtility.TrTextContent("List is Empty");
@@ -811,22 +811,13 @@ namespace Rhinox.GUIUtils.Editor
             {
                 if (Event.current.type != UnityEngine.EventType.Repaint)
                     return;
+                
                 this.elementBackground.Draw(rect, false, selected, selected, focused);
-            }
 
-            public void DrawElementBackgroundAlternating(
-                Rect rect,
-                int index,
-                bool selected,
-                bool focused,
-                bool draggable)
-            {
-                if (Event.current.type != UnityEngine.EventType.Repaint)
-                    return;
-                if (index % 2 == 0)
-                    s_Defaults.elementBackground.Draw(rect, false, selected, selected, focused);
-                else
-                    s_Defaults.altElementBackground.Draw(rect, false, selected, selected, focused);
+                if (selected) return;
+                
+                if (index % 2 == 1)
+                    EditorGUI.DrawRect(rect, altColor);
             }
 
             public void DrawElementDraggingHandle(
