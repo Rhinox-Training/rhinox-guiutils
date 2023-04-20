@@ -213,5 +213,10 @@ namespace Rhinox.GUIUtils.Editor
             var directAttr = MemberInfo.GetCustomAttributes();
             return directAttr.Concat(typeAttr).ToArray();
         }
+
+        public override string ToString()
+        {
+            return $"{_hostRootInstance}.{NiceName} {(Parent != null ? ($"(Child of {Parent.NiceName})") : "")}";
+        }
     }
 }
