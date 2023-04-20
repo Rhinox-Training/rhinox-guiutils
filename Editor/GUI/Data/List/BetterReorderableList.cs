@@ -205,7 +205,7 @@ namespace Rhinox.GUIUtils.Editor
             }
         }
 
-        public void DoLayoutList()
+        public void DoLayoutList(GUIContent label)
         {
             if (BetterReorderableList.s_Defaults == null)
                 BetterReorderableList.s_Defaults = new BetterReorderableList.Defaults();
@@ -213,19 +213,19 @@ namespace Rhinox.GUIUtils.Editor
             Rect rect2 = GUILayoutUtility.GetRect(10f, this.GetListElementHeight(), GUILayout.ExpandWidth(true));
             Rect rect3 = GUILayoutUtility.GetRect(4f, this.footerHeight, GUILayout.ExpandWidth(true));
 
-            this.DoListHeader(rect1);
+            this.DoListHeader(rect1, label);
             this.DoListElements(rect2);
             this.DoListFooter(rect3);
         }
 
-        public void DoList(Rect rect)
+        public void DoList(Rect rect, GUIContent label)
         {
             if (BetterReorderableList.s_Defaults == null)
                 BetterReorderableList.s_Defaults = new BetterReorderableList.Defaults();
             Rect headerRect = new Rect(rect.x, rect.y, rect.width, this.headerHeight);
             Rect listRect = new Rect(rect.x, headerRect.y + headerRect.height, rect.width, this.GetListElementHeight());
             Rect footerRect = new Rect(rect.x, listRect.y + listRect.height, rect.width, this.footerHeight);
-            this.DoListHeader(headerRect);
+            this.DoListHeader(headerRect, label);
             this.DoListElements(listRect);
             this.DoListFooter(footerRect);
         }
@@ -375,7 +375,7 @@ namespace Rhinox.GUIUtils.Editor
             s_Defaults.DrawElementBackground(rect, index, selected, focused, draggable);
         }
 
-        private void DoListHeader(Rect headerRect)
+        private void DoListHeader(Rect headerRect, GUIContent label)
         {
             if (this.showDefaultBackground && Event.current.type == UnityEngine.EventType.Repaint)
                 BetterReorderableList.s_Defaults.DrawHeaderBackground(headerRect);
@@ -384,10 +384,10 @@ namespace Rhinox.GUIUtils.Editor
             headerRect.height -= 2f;
             ++headerRect.y;
             
-            OnDrawHeader(headerRect);
+            OnDrawHeader(headerRect, label);
         }
 
-        protected virtual void OnDrawHeader(Rect headerRect)
+        protected virtual void OnDrawHeader(Rect headerRect, GUIContent label)
         {
             if (!this.m_DisplayHeader)
                 return;

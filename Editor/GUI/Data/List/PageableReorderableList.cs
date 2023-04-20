@@ -88,16 +88,24 @@ namespace Rhinox.GUIUtils.Editor
             }
         }
 
-        protected override void OnDrawHeader(Rect rect)
+        protected override void OnDrawHeader(Rect rect, GUIContent label)
         {
             var nameRect = rect.AlignLeft(rect.width  * 0.6f);
             var secondaryRect = rect.AlignRight(rect.width * 0.4f);
             var sizeRect = secondaryRect.AlignLeft(secondaryRect.width * 0.5f);
             var multiPageRect = secondaryRect.AlignRight(secondaryRect.width * 0.5f);
-            if (serializedProperty != null)
-                EditorGUI.LabelField(nameRect, this.serializedProperty.displayName);
+            if (label == null || label == GUIContent.none)
+            {
+                if (serializedProperty != null)
+                    EditorGUI.LabelField(nameRect, this.serializedProperty.displayName);
+                else
+                    EditorGUI.LabelField(nameRect, CustomTitle);
+            }
             else
-                EditorGUI.LabelField(nameRect, CustomTitle);
+            {
+                EditorGUI.LabelField(nameRect, label);
+            }
+
             EditorGUI.LabelField(sizeRect, $"{count} Items");
 
             if (list != null && list.Count > GetListDrawCount())
