@@ -17,7 +17,7 @@ namespace Rhinox.GUIUtils.Editor
         private readonly HostInfo _hostInfo;
         private object _managedReferenceValue;
 
-        public NullReferenceDrawable(SerializedProperty property) : base(new UndrawableField<object>(null, property.FindFieldInfo()))
+        public NullReferenceDrawable(SerializedProperty property) : base(new EmptyDrawable())
         {
             if (property == null)
                 throw new ArgumentNullException(nameof(property));
