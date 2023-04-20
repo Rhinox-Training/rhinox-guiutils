@@ -9,7 +9,7 @@ namespace Rhinox.GUIUtils.Editor
 {
     public class BoolDrawableField : BaseMemberDrawable<bool>
     {
-        public BoolDrawableField(GenericMemberEntry entry) : base(entry)
+        public BoolDrawableField(GenericHostInfo hostInfo) : base(hostInfo)
         {
         }
 

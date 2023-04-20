@@ -26,7 +26,7 @@ namespace Rhinox.GUIUtils.NoOdin.Editor
 
         protected override void OnInitialize(SerializedProperty property)
         {
-            _settings = GetHostInfo(property).FieldInfo.GetCustomAttribute<ListDrawerSettingsAttribute>();
+            _settings = GetHostInfo(property).GetAttribute<ListDrawerSettingsAttribute>();
 
             if (_settings != null)
                 property.isExpanded = _settings.Expanded;

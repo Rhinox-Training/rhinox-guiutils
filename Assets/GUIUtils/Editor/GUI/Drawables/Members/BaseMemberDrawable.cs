@@ -11,19 +11,19 @@ namespace Rhinox.GUIUtils.Editor
 {
     public abstract class BaseMemberDrawable<T> : BaseDrawable, IDrawableReadWrite
     {
-        public override string LabelString => Entry.NiceName;
+        public override string LabelString => HostInfo.NiceName;
         
-        public GenericMemberEntry Entry { get; }
+        public GenericHostInfo HostInfo { get; }
 
         protected BaseMemberDrawable(object instance, MemberInfo info)
-            : this(new GenericMemberEntry(instance, info))
+            : this(new GenericHostInfo(instance, info))
         {
         }
         
-        protected BaseMemberDrawable(GenericMemberEntry entry)
+        protected BaseMemberDrawable(GenericHostInfo hostInfo)
         {
-            Entry = entry;
-            Host = entry;
+            HostInfo = hostInfo;
+            Host = hostInfo.Parent ?? hostInfo.GetHost();
         }
 
         protected override void DrawInner(GUIContent label, params GUILayoutOption[] options)
@@ -48,11 +48,11 @@ namespace Rhinox.GUIUtils.Editor
         {
         }
 
-        public object GetValue() => Entry.GetValue();
-        public bool TrySetValue(object value) => Entry.TrySetValue(value);
+        public object GetValue() => HostInfo.GetValue();
+        public bool TrySetValue(object value) => HostInfo.TrySetValue(value);
 
-        protected T GetSmartValue() => Entry.GetSmartValue<T>();
-        protected bool SetSmartValue(T value) => Entry.TrySetValue(value);
+        protected T GetSmartValue() => HostInfo.GetSmartValue<T>();
+        protected bool SetSmartValue(T value) => HostInfo.TrySetValue(value);
 
         protected abstract T DrawValue(GUIContent label, T value, params GUILayoutOption[] options);
         protected abstract T DrawValue(Rect rect, GUIContent label, T value);
@@ -62,7 +62,7 @@ namespace Rhinox.GUIUtils.Editor
         public override IEnumerable<TAttribute> GetDrawableAttributes<TAttribute>()
         {
             if (_cachedAttributes == null)
-                _cachedAttributes = Entry.GetAttributes();
+                _cachedAttributes = HostInfo.GetAttributes();
             
             return _cachedAttributes.OfType<TAttribute>();
         }

@@ -12,7 +12,7 @@ namespace Rhinox.GUIUtils.Editor
         private int? _min;
         private int? _max;
 
-        public IntDrawableField(GenericMemberEntry entry) : base(entry) { }
+        public IntDrawableField(GenericHostInfo hostInfo) : base(hostInfo) { }
 
         protected override void Initialize()
         {

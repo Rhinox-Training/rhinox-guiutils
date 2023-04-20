@@ -15,7 +15,7 @@ namespace Rhinox.GUIUtils.Editor
     /// </summary>
     public class SerializedPropertyMemberHelper<T> : BaseValueMemberHelper<T>, IPropertyMemberHelper<T>
     {
-        private HostInfo _info;
+        private GenericHostInfo _hostInfo;
 
         public SerializedPropertyMemberHelper(SerializedProperty property, string input)
             : this(property.serializedObject == null, input, property)
@@ -34,7 +34,7 @@ namespace Rhinox.GUIUtils.Editor
         {
             _objectType = property.GetHostType();
             
-            _info = property.GetHostInfo();
+            _hostInfo = property.GetHostInfo();
             
             if (!TryParseInput(ref input, out bool parameter))
                 return;
@@ -46,7 +46,7 @@ namespace Rhinox.GUIUtils.Editor
             }
             
             // property might have changed
-            _objectType = _info.GetHostType();
+            _objectType = _hostInfo.GetHostType();
             
             if (!TryFindMemberInHost(input, isStatic, out _staticValueGetter, out _instanceValueGetter))
                 _errorMessage = $"Could not find field {input} on type {_objectType.Name}";
@@ -69,11 +69,11 @@ namespace Rhinox.GUIUtils.Editor
                 switch (part)
                 {
                     case PARENT_ID:
-                        _info = _info.Parent;
+                        _hostInfo = _hostInfo.Parent;
                         break;
                     case ROOT_ID:
-                        while (_info.Parent != null)
-                            _info = _info.Parent;
+                        while (_hostInfo.Parent != null)
+                            _hostInfo = _hostInfo.Parent;
                         break;
                     case PROPERTY_ID:
                         break;
@@ -91,6 +91,6 @@ namespace Rhinox.GUIUtils.Editor
             return true;
         }
 
-        protected override object GetInstance() => _info?.GetHost();
+        protected override object GetInstance() => _hostInfo?.GetHost();
     }
 }

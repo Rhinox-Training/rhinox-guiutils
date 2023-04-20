@@ -12,7 +12,7 @@ namespace Rhinox.GUIUtils.Editor
         private float? _min;
         private float? _max;
 
-        public FloatDrawableField(GenericMemberEntry entry) : base(entry) { }
+        public FloatDrawableField(GenericHostInfo hostInfo) : base(hostInfo) { }
 
         protected override void Initialize()
         {

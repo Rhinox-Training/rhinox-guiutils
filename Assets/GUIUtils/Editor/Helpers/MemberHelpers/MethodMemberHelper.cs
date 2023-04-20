@@ -8,7 +8,7 @@ namespace Rhinox.GUIUtils.Editor
 {
     public class MethodMemberHelper : BaseMemberHelper
     {
-        private GenericMemberEntry _entry;
+        private GenericHostInfo _hostInfo;
         
         protected MethodInfo _info;
         public Type MethodReturnType => _info != null ? _info.GetReturnType() : null;
@@ -27,10 +27,10 @@ namespace Rhinox.GUIUtils.Editor
 
         private MethodMemberHelper(Type type, string input, object host)
         {
-            if (host is GenericMemberEntry entry)
+            if (host is GenericHostInfo hostInfo)
             {
-                _entry = entry;
-                _host = _entry.Instance;
+                _hostInfo = hostInfo;
+                _host = _hostInfo.GetHost();
                 _objectType = _host?.GetType();
             }
             else
