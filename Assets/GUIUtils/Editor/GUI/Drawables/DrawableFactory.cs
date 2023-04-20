@@ -34,9 +34,6 @@ namespace Rhinox.GUIUtils.Editor
             if (type == null)
                 throw new ArgumentNullException(nameof(type));
             
-            if (type == typeof(UnityEngine.Object))
-                return new DrawableUnityObject((UnityEngine.Object)instanceVal);
-            
             var visibleFields = obj.EnumerateEditorVisibleFields();
             var drawable = DrawableMembersForSerializedObject(instanceVal, type, visibleFields, 0);
             return new ObjectCompositeDrawableMember(instanceVal, type, drawable, string.Empty);
@@ -74,9 +71,6 @@ namespace Rhinox.GUIUtils.Editor
         {
             if (type == null)
                 throw new ArgumentNullException(nameof(type));
-            
-            if (parent == null && type.InheritsFrom<UnityEngine.Object>())
-                return new DrawableUnityObject((UnityEngine.Object) instance);
 
             if (parent != null)
                 return CreateDrawableForMember(parent, 0);
@@ -198,7 +192,7 @@ namespace Rhinox.GUIUtils.Editor
                 else
                 {
                     if (AttributeParser.ParseDrawAsUnity(hostInfo.FieldInfo))
-                        drawable = new DrawableUnityObject((UnityEngine.Object) instanceVal, property.FindFieldInfo());
+                        drawable = new UnityObjectDrawableField(hostInfo);
                     else
                     {
                         if (CheckOverrideDrawer(property, hostInfo, out IOrderedDrawable overrideDrawer))
