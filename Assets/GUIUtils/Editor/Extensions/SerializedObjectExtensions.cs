@@ -46,7 +46,8 @@ namespace Rhinox.GUIUtils.Editor
                 
                 if (hostInfo == null)
                     hostInfo = GetValueInfo(prop.serializedObject, element, subArrayIndex);
-                else hostInfo = GetValueInfo(hostInfo, element, subArrayIndex);
+                else 
+                    hostInfo = GetValueInfo(hostInfo, element, subArrayIndex);
                 hostInfo.Path = string.Join(".", parts.Take(i));
             }
 
