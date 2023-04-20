@@ -31,12 +31,12 @@ namespace Rhinox.GUIUtils.Editor
             base.AddAttribute(attr);
             
             // No need to trigger ParseAttribute -> should have happened already, but it can't hurt
-            ParseAttribute(groupAttribute);
-            ParseAttribute(child, groupAttribute);
+            ParseAttributeSmart(groupAttribute);
+            ParseAttributeSmart(child, groupAttribute);
         }
 
-        protected abstract void ParseAttribute(IOrderedDrawable child, T attr);
-        protected abstract void ParseAttribute(T attr);
+        protected abstract void ParseAttributeSmart(IOrderedDrawable child, T attr);
+        protected abstract void ParseAttributeSmart(T attr);
 
         public override void AddAttribute(Attribute attr)
         {
@@ -50,7 +50,7 @@ namespace Rhinox.GUIUtils.Editor
                 var typedGroupAttribute = ValidateAttribute(groupAttribute);
                 _groupAttributes.AddUnique(typedGroupAttribute);
 
-                ParseAttribute(typedGroupAttribute);
+                ParseAttributeSmart(typedGroupAttribute);
             }
         }
     }

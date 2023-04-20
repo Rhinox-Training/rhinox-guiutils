@@ -9,11 +9,11 @@ namespace Rhinox.GUIUtils.Editor
         {
         }
 
-        protected override void ParseAttribute(IOrderedDrawable child, ButtonGroupAttribute attr)
+        protected override void ParseAttributeSmart(IOrderedDrawable child, ButtonGroupAttribute attr)
         {
         }
 
-        protected override void ParseAttribute(ButtonGroupAttribute attr)
+        protected override void ParseAttributeSmart(ButtonGroupAttribute attr)
         {
         }
     }
