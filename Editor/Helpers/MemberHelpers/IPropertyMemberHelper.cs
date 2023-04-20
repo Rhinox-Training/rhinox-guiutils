@@ -3,12 +3,17 @@ using UnityEngine;
 
 namespace Rhinox.GUIUtils.Editor
 {
-    public interface IPropertyMemberHelper<out T>
+    public interface IPropertyMemberHelper
     {
         void DrawError();
         void DrawError(Rect rect);
 
-        T GetValue();
+        object GetValue();
+    }
+    
+    public interface IPropertyMemberHelper<out T> : IPropertyMemberHelper
+    {
+        T GetSmartValue();
         T ForceGetValue();
     }
 }
