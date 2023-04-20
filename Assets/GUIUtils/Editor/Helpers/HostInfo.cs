@@ -11,39 +11,34 @@ namespace Rhinox.GUIUtils.Editor
 {
     public class HostInfo : GenericHostInfo
     {
-        public readonly HostInfo Parent;
         public string Path;
         private SerializedObject _hostSerializedObject;
+
+        public new HostInfo Parent => (HostInfo) base.Parent;
         
         public SerializedObject Root
         {
             get => Parent == null ? _hostSerializedObject : Parent.Root;
             set
             {
-                if (Parent != null) Parent.Root = value;
-                else _hostSerializedObject = value;
+                if (Parent != null) 
+                    Parent.Root = value;
+                else 
+                    _hostSerializedObject = value;
             }
         }
         
-        public HostInfo(SerializedObject host, FieldInfo fi, int index = -1)
-            : base(host.targetObject, fi, index)
+        public HostInfo(SerializedObject host, FieldInfo mi, int index = -1)
+            : base(host.targetObject, mi, index)
         {
             _hostSerializedObject = host;
             Path = null;
         }
 
-        public HostInfo(HostInfo parent, FieldInfo fi, int index = -1)
-            : base(null, fi, index)
+        public HostInfo(HostInfo parent, FieldInfo mi, int index = -1)
+            : base(parent, mi, index)
         {
-            Parent = parent;
             Path = null;
-        }
-
-        public override object GetHost()
-        {
-            if (Parent == null)
-                return base.GetHost();
-            return Parent.GetValue();
         }
         
         protected override void BeforeValueChanged()
@@ -51,58 +46,90 @@ namespace Rhinox.GUIUtils.Editor
             base.BeforeValueChanged();
             //_root.ApplyModifiedProperties(); // TODO: do we need ApplyModifiedProperties here?
         }
-
+        
         protected override void OnValueChanged()
         {
             Root.Update();
             base.OnValueChanged();
         }
-
     }
     
     public class GenericHostInfo
     {
-        public readonly FieldInfo FieldInfo;
+        public readonly GenericHostInfo Parent;
+        public readonly MemberInfo MemberInfo;
         public readonly int ArrayIndex;
         
         private readonly object _hostRootInstance;
         
         private static MethodInfo _resizeMethod;
 
-        public string NiceName => FieldInfo?.Name.SplitCamelCase();
+        public string NiceName => MemberInfo?.Name.SplitCamelCase();
 
-        public GenericHostInfo(object host, FieldInfo fi, int index = -1)
+        public GenericHostInfo(object host, MemberInfo mi, int index = -1)
+            : this(host, mi, index, null)
         {
+        }
+        
+        public GenericHostInfo(GenericHostInfo parent, object host, MemberInfo mi, int index = -1)
+            : this(host, mi, index, parent)
+        {
+        }
+
+        public GenericHostInfo(GenericHostInfo parent, MemberInfo mi, int index = -1)
+            : this(null, mi, index, parent)
+        {
+        }
+
+        private GenericHostInfo(object host, MemberInfo memberInfo, int arrayIndex, GenericHostInfo parent)
+        {
+            if (memberInfo is MethodBase) throw new ArgumentException(nameof(memberInfo));
+            if (parent == null && host == null) throw new ArgumentException($"{nameof(parent)} and {nameof(host)} cannot be null at the same time");
             _hostRootInstance = host;
-            FieldInfo = fi;
-            ArrayIndex = index;
+            MemberInfo = memberInfo;
+            ArrayIndex = arrayIndex;
+            Parent = parent;
         }
 
         public virtual object GetHost()
         {
-            return _hostRootInstance;
+            if (Parent == null)
+                return _hostRootInstance;
+            return Parent.GetValue();
         }
 
         public virtual object GetValue()
         {
-            var value = FieldInfo.GetValue(GetHost());
-            if (ArrayIndex < 0) return value;
-            if (value is IList e)
+            if (ArrayIndex < 0)
+            {
+                var value = MemberInfo.GetValue(GetHost());
+                return value;
+            }
+
+            var hostList = GetHost();
+            if (hostList is IList e)
                 return e[ArrayIndex];
-            throw new IndexOutOfRangeException($"Could not map found index {ArrayIndex} to value {value}");
+            throw new IndexOutOfRangeException($"Could not map found index {ArrayIndex} to value {hostList} (Type: {hostList.GetType().GetNiceName()})");
         }
 
+        public T GetSmartValue<T>() => (T) GetValue();
+
         public void SetValue(object obj)
+        {
+            TrySetValue(obj);
+        }
+
+        public virtual bool TrySetValue(object val)
         {
             if (ArrayIndex < 0)
             {
                 BeforeValueChanged();
-                FieldInfo.SetValue(GetHost(), obj);
+                MemberInfo.SetValue(GetHost(), val);
                 OnValueChanged();
-                return;
+                return true;
             }
 
-            var value = FieldInfo.GetValue(GetHost());
+            var value = MemberInfo.GetValue(GetHost());
             if (value is IList e)
             {
                 BeforeValueChanged();
@@ -113,20 +140,20 @@ namespace Rhinox.GUIUtils.Editor
                         object arr = eArr;
                         ResizeArray(ref arr, ArrayIndex + 1);
                         e = (IList)arr;
-                        e[ArrayIndex] = obj;
-                        FieldInfo.SetValue(GetHost(), e);
+                        e[ArrayIndex] = val;
+                        MemberInfo.SetValue(GetHost(), e);
                     }
                     else
-                        e.Insert(ArrayIndex, obj);
+                        e.Insert(ArrayIndex, val);
                 }
                 else
-                    e[ArrayIndex] = obj;
+                    e[ArrayIndex] = val;
 
                 OnValueChanged();
-                return;
+                return true;
             }
 
-            throw new IndexOutOfRangeException($"Could not map found index {ArrayIndex} to value {value}");
+            return false;
         }
 
         protected virtual void BeforeValueChanged()
@@ -139,6 +166,7 @@ namespace Rhinox.GUIUtils.Editor
             
         }
 
+        // TODO: Do we migrate this to Rhinox.Lightspeed?
         private static void ResizeArray(ref object array, int n)
         {
             var type = array.GetType();
@@ -162,13 +190,28 @@ namespace Rhinox.GUIUtils.Editor
                     return value.GetType();
             }
             
-            var type = FieldInfo.GetReturnType();
+            var type = MemberInfo.GetReturnType();
             if (ArrayIndex < 0) return type;
             if (type.IsArray)
                 return type.GetElementType();
             return type.GetArgumentsOfInheritedOpenGenericClass(typeof(IList<>)).First();
         }
         
-        public Type GetHostType() => FieldInfo.DeclaringType;
+        public Type GetHostType() => MemberInfo.DeclaringType;
+
+        public T GetAttribute<T>() where T : Attribute
+        {
+            return GetAttributes().OfType<T>().FirstOrDefault();
+        }
+        
+        public virtual Attribute[] GetAttributes()
+        {
+            var typeAttr = GetReturnType().GetCustomAttributes();
+            if (ArrayIndex != -1)
+                return typeAttr;
+            
+            var directAttr = MemberInfo.GetCustomAttributes();
+            return directAttr.Concat(typeAttr).ToArray();
+        }
     }
 }
