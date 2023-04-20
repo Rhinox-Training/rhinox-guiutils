@@ -12,7 +12,7 @@ namespace Rhinox.GUIUtils.Editor
         {
         }
         
-        protected override void ParseAttribute(IOrderedDrawable child, HorizontalGroupAttribute attr)
+        protected override void ParseAttributeSmart(IOrderedDrawable child, HorizontalGroupAttribute attr)
         {
             var info = new SizeInfo
             {
@@ -26,7 +26,7 @@ namespace Rhinox.GUIUtils.Editor
             _sizeInfoByDrawable.Add(child, info);
         }
         
-        protected override void ParseAttribute(HorizontalGroupAttribute attr)
+        protected override void ParseAttributeSmart(HorizontalGroupAttribute attr)
         {
             SetOrder(attr.Order);
 
