@@ -16,13 +16,13 @@ namespace Rhinox.GUIUtils.Editor
         {
             _stringHelper.DrawError();
 
-            var text = _stringHelper.GetValue();
+            var text = _stringHelper.GetSmartValue();
             base.DrawInner(new GUIContent(text), options);
         }
         
         protected override void DrawInner(Rect rect, GUIContent label)
         {
-            var text = _stringHelper.GetValue();
+            var text = _stringHelper.GetSmartValue();
             base.DrawInner(rect, new GUIContent(text));
             _stringHelper.DrawError(rect);
         }
