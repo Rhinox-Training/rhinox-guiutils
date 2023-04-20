@@ -35,7 +35,7 @@ namespace Rhinox.GUIUtils.Editor
             if (_stateMember == null)
                 return _state;
             
-            return _stateMember.GetValue() == _state;
+            return _stateMember.GetSmartValue() == _state;
         }
 
         [WrapDrawer(typeof(ShowIfAttribute), -11000)]

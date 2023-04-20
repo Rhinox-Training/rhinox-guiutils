@@ -30,14 +30,14 @@ namespace Rhinox.GUIUtils.Editor
         protected override void DrawInner(GUIContent label, params GUILayoutOption[] options)
         {
             _member?.DrawError();
-            if (_member == null || _member.GetValue())
+            if (_member == null || _member.GetSmartValue())
                 EditorGUILayout.HelpBox(_message, _type);
             base.DrawInner(label, options);
         }
 
         protected override void DrawInner(Rect rect, GUIContent label)
         {
-            if (_member == null || _member.GetValue())
+            if (_member == null || _member.GetSmartValue())
             {
                 _newHeight = CalcMessageHeight(rect.width);
                 var helpBoxRect = rect.AlignTop(_newHeight);
