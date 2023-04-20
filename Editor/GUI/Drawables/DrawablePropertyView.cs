@@ -67,7 +67,7 @@ namespace Rhinox.GUIUtils.Editor
             OnPreDraw();
             try
             {
-                _rootDrawable.Draw(_rootDrawable.Label);
+                _rootDrawable.Draw(GUIContent.none);
             }
             catch (ExitGUIException)
             {
@@ -88,7 +88,7 @@ namespace Rhinox.GUIUtils.Editor
             // TODO: should we force height?
             if (rect.IsValid())
                 rect.height = Height;
-            _rootDrawable.Draw(rect, _rootDrawable.Label);
+            _rootDrawable.Draw(rect, GUIContent.none);
             
             OnPostDraw();
         }
