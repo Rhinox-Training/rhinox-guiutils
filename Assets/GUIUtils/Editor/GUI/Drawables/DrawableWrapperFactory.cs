@@ -86,9 +86,14 @@ namespace Rhinox.GUIUtils.Editor
                 .Flatten(x => x.Value.Select(y => (Attribute : x.Key, Builder: y)))
                 .OrderByDescending(x => x.Builder.Priority)
                 .ToArray();
-            
+
             foreach (var pair in builderPairs)
-                drawable = pair.Builder.Creator.Invoke(pair.Attribute, drawable);
+            {
+                var creator = pair.Builder.Creator;
+                var targetDrawable = creator.Invoke(pair.Attribute, drawable);
+                if (targetDrawable != null)
+                    drawable = targetDrawable;
+            }
 
             return drawable;
         }
