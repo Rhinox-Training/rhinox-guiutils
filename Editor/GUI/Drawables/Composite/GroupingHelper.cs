@@ -23,11 +23,9 @@ namespace Rhinox.GUIUtils.Editor
                 case VerticalGroupAttribute verticalGroupAttribute:
                     return new VerticalGroupDrawable(parent, groupingAttr.GroupID, groupingAttr.Order);
                 default:
-                    Debug.LogError($"Unimplemented Group type: {groupingAttr.GetType().Name}");
-                    break;
+                    Debug.LogWarning($"Unimplemented Group type: {groupingAttr.GetType().Name}, falling back to FallbackGroup (layout: Vertical)...");
+                    return new FallbackGroupDrawable(parent, groupingAttr.GroupID, groupingAttr.Order);
             }
-
-            return null;
         }
 
         public static string[] SplitIntoParts(string groupId)
