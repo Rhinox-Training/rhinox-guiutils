@@ -11,6 +11,7 @@ namespace Rhinox.GUIUtils.Editor
         private GenericMemberEntry _entry;
         
         protected MethodInfo _info;
+        public Type MethodReturnType => _info != null ? _info.GetReturnType() : null;
         
         protected override MemberTypes AllowedMembers => MemberTypes.Method;
 
