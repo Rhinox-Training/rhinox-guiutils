@@ -17,9 +17,9 @@ namespace Rhinox.GUIUtils.Editor
         
         //==============================================================================================================
         // Public API
-        public static IOrderedDrawable CreateDrawableFor(GenericMemberEntry entry)
+        public static IOrderedDrawable CreateDrawableFor(GenericHostInfo hostInfo)
         {
-            return CreateDrawableFor(entry.GetValue(), entry.GetReturnType(), entry);
+            return CreateDrawableFor(hostInfo.GetValue(), hostInfo.GetReturnType(), hostInfo);
         }
 
         public static IOrderedDrawable CreateDrawableFor(object instance, Type type)
@@ -65,7 +65,7 @@ namespace Rhinox.GUIUtils.Editor
         //==============================================================================================================
         // Helper methods
 
-        private static IOrderedDrawable CreateDrawableFor(object instance, Type type, GenericMemberEntry parent)
+        private static IOrderedDrawable CreateDrawableFor(object instance, Type type, GenericHostInfo parent)
         {
             if (type == null)
                 throw new ArgumentNullException(nameof(type));
@@ -86,11 +86,11 @@ namespace Rhinox.GUIUtils.Editor
                     fieldDrawable = fieldData.OverrideDrawable;
                 else if (!fieldData.IsSerialized)
                 {
-                    var stack = new GenericMemberEntry(instanceVal, fieldData.FieldInfo);
-                    fieldDrawable = CreateDrawableForMember(stack, depth);
+                    var hostInfo = new GenericHostInfo(instanceVal, fieldData.FieldInfo);
+                    fieldDrawable = CreateDrawableForMember(hostInfo, depth);
                 }
                 else
-                    fieldDrawable = CreateDrawableForSerializedProperty(fieldData.SerializedProperty, new GenericMemberEntry(instanceVal, fieldData.FieldInfo));
+                    fieldDrawable = CreateDrawableForSerializedProperty(fieldData.SerializedProperty, new GenericHostInfo(instanceVal, fieldData.FieldInfo));
 
                 if (fieldDrawable == null)
                     continue;
@@ -100,8 +100,8 @@ namespace Rhinox.GUIUtils.Editor
 
             foreach (var propertyMember in type.GetEditorVisibleProperties())
             {
-                var entry = new GenericMemberEntry(instanceVal, propertyMember);
-                var propertyDrawable = CreateDrawableForMember(entry, depth);
+                var hostInfo = new GenericHostInfo(instanceVal, propertyMember);
+                var propertyDrawable = CreateDrawableForMember(hostInfo, depth);
                 if (propertyDrawable == null)
                     continue;
 
@@ -114,39 +114,39 @@ namespace Rhinox.GUIUtils.Editor
             return drawable;
         }
 
-        private static IOrderedDrawable CreateDrawableForMember(GenericMemberEntry entry, int depth)
+        private static IOrderedDrawable CreateDrawableForMember(GenericHostInfo hostInfo, int depth)
         {
             IOrderedDrawable resultingMember;
-            if (TryCreateDirect(entry, out var drawableMember) || depth >= MAX_DEPTH)
+            if (TryCreateDirect(hostInfo, out var drawableMember) || depth >= MAX_DEPTH)
                 resultingMember = drawableMember;
             else
             {
-                var subInstance = entry.GetValue();
-                var subtype = entry.GetReturnType();
+                var subInstance = hostInfo.GetValue();
+                var subtype = hostInfo.GetReturnType();
                 
                 if (subInstance != null)
                     subtype = subInstance.GetType();
 
-                resultingMember = CreateCompositeDrawable(subInstance, subtype, depth + 1, entry);
+                resultingMember = CreateCompositeDrawable(subInstance, subtype, depth + 1, hostInfo);
             }
 
             if (resultingMember == null)
                 return null;
 
             // Check for decorators
-            resultingMember = DrawableWrapperFactory.TryWrapDrawable(resultingMember, entry.GetAttributes());
+            resultingMember = DrawableWrapperFactory.TryWrapDrawable(resultingMember, hostInfo.GetAttributes());
             return resultingMember;
         }
 
-        private static IOrderedDrawable CreateCompositeDrawable(object instance, Type t, int depth, GenericMemberEntry entry = null)
+        private static IOrderedDrawable CreateCompositeDrawable(object instance, Type t, int depth, GenericHostInfo hostInfo = null)
         {
             CompositeDrawableMember drawable = new VerticalGroupDrawable();
 
-            var memberEntries = GetEditorVisibleFields(instance, t, entry);
+            var memberEntries = GetEditorVisibleFields(instance, t, hostInfo);
             var drawables = new List<IOrderedDrawable>();
             foreach (var memberEntry in memberEntries)
             {
-                if (memberEntry.Info is PropertyInfo propertyInfo && !propertyInfo.IsVisibleInEditor())
+                if (memberEntry.MemberInfo is PropertyInfo propertyInfo && !propertyInfo.IsVisibleInEditor())
                     continue;
 
                 var resultingMember = CreateDrawableForMember(memberEntry, depth);
@@ -162,34 +162,37 @@ namespace Rhinox.GUIUtils.Editor
             drawable.AddRange(buttons);
 
             // Wrap in object composite
-            if (entry != null)
-                drawable = ObjectCompositeDrawableMember.CreateFrom(entry, drawable);
+            if (hostInfo != null)
+                drawable = ObjectCompositeDrawableMember.CreateFrom(hostInfo, drawable);
             else
                 drawable = new ObjectCompositeDrawableMember(instance, t, drawable);
             
             return drawable;
         }
 
-        private static IOrderedDrawable CreateDrawableForSerializedProperty(SerializedProperty property, GenericMemberEntry upperEntry = null)
+        private static IOrderedDrawable CreateDrawableForSerializedProperty(SerializedProperty property, GenericHostInfo upperHostInfo = null) // TODO: upperHostInfo naming and abstraction is confusing
         {
             if (property == null)
                 return null;
 
             IOrderedDrawable drawable = null;
+            IEnumerable<Attribute> attributes = null;
             if (CanUnityHandleDrawingProperty(property))
             {
                 drawable = new DrawableUnityProperty(property);
+                attributes = property.GetAttributes();
             }
             else
             {
                 var hostInfo = property.GetHostInfo();
                 object instanceVal = hostInfo.GetValue();
 
+                attributes = hostInfo.GetAttributes();
                 if (instanceVal == null)
                     drawable = new NullReferenceDrawable(property);
                 else
                 {
-                    if (AttributeParser.ParseDrawAsUnity(hostInfo.FieldInfo))
+                    if (AttributeParser.ParseDrawAsUnity(hostInfo.MemberInfo))
                         drawable = new UnityObjectDrawableField(hostInfo);
                     else
                     {
@@ -202,8 +205,8 @@ namespace Rhinox.GUIUtils.Editor
                             var returnType = hostInfo.GetReturnType();
                             var visibleFields = property.EnumerateEditorVisibleFields();
                             drawable = DrawableMembersForSerializedObject(instanceVal, returnType, visibleFields, 0);
-                            if (upperEntry != null)
-                                drawable = ObjectCompositeDrawableMember.CreateFrom(upperEntry, drawable);
+                            if (upperHostInfo != null)
+                                drawable = ObjectCompositeDrawableMember.CreateFrom(upperHostInfo, drawable);
                             else
                                 drawable = new ObjectCompositeDrawableMember(instanceVal, returnType, drawable);
                         }
@@ -212,7 +215,7 @@ namespace Rhinox.GUIUtils.Editor
             }
 
             // Check for decorators
-            drawable = DrawableWrapperFactory.TryWrapDrawable(drawable, property.GetAttributes());
+            drawable = DrawableWrapperFactory.TryWrapDrawable(drawable, attributes);
             
             return drawable;
         }
@@ -237,9 +240,9 @@ namespace Rhinox.GUIUtils.Editor
             return false;
         }
 
-        private static bool TryCreateDirect(GenericMemberEntry entry, out IOrderedDrawable drawableMember)
+        private static bool TryCreateDirect(GenericHostInfo hostInfo, out IOrderedDrawable drawableMember)
         {
-            var type = entry.GetReturnType();
+            var type = hostInfo.GetReturnType();
 
             if (type == null)
             {
@@ -249,61 +252,61 @@ namespace Rhinox.GUIUtils.Editor
 
             if (type == typeof(string))
             {
-                drawableMember = new StringDrawableField(entry);
+                drawableMember = new StringDrawableField(hostInfo);
                 return true;
             }
 
             if (type.IsEnum)
             {
-                drawableMember = new EnumDrawableField(entry);
+                drawableMember = new EnumDrawableField(hostInfo);
                 return true;
             }
 
             if (type == typeof(int))
             {
-                drawableMember = new IntDrawableField(entry);
+                drawableMember = new IntDrawableField(hostInfo);
                 return true;
             }
 
             if (type == typeof(float))
             {
-                drawableMember = new FloatDrawableField(entry);
+                drawableMember = new FloatDrawableField(hostInfo);
                 return true;
             }
 
             if (type == typeof(bool))
             {
-                drawableMember = new BoolDrawableField(entry);
+                drawableMember = new BoolDrawableField(hostInfo);
                 return true;
             }
             
             if (type == typeof(Type))
             {
-                drawableMember = new UndrawableField<Type>(entry);
+                drawableMember = new UndrawableField<Type>(hostInfo);
                 return true;
             }
 
             if (type == typeof(LayerMask))
             {
-                drawableMember = new LayerMaskDrawableField(entry);
+                drawableMember = new LayerMaskDrawableField(hostInfo);
                 return true;
             }
 
             if (type.InheritsFrom<IList>())
             {
-                drawableMember = new DrawableList(entry);
+                drawableMember = new DrawableList(hostInfo);
                 return true;
             }
 
             if (type.InheritsFrom<Texture>())
             {
-                drawableMember = new TextureDrawableField(entry);
+                drawableMember = new TextureDrawableField(hostInfo);
                 return true;
             }
 
             if (type.InheritsFrom<UnityEngine.Object>())
             {
-                drawableMember = new UnityObjectDrawableField(entry);
+                drawableMember = new UnityObjectDrawableField(hostInfo);
                 return true;
             }
 
@@ -351,7 +354,7 @@ namespace Rhinox.GUIUtils.Editor
             return drawables;
         }
 
-        private static IReadOnlyCollection<GenericMemberEntry> GetEditorVisibleFields(object instance, Type t, GenericMemberEntry parent = null)
+        private static IReadOnlyCollection<GenericHostInfo> GetEditorVisibleFields(object instance, Type t, GenericHostInfo parent = null)
         {
             // All public members
             var publicFields = t.GetFields(BindingFlags.Instance | BindingFlags.Public |
@@ -367,13 +370,13 @@ namespace Rhinox.GUIUtils.Editor
                 .Where(x => x.IsSerialized() || x.GetCustomAttribute<ShowInInspectorAttribute>() != null)
                 .ToArray();
 
-            var list = new List<GenericMemberEntry>();
+            var list = new List<GenericHostInfo>();
             foreach (var member in publicFields)
-                list.Add(new GenericMemberEntry(instance, member, parent));
+                list.Add(new GenericHostInfo(parent, instance, member));
             foreach (var member in publicProperties)
-                list.Add(new GenericMemberEntry(instance, member, parent));
+                list.Add(new GenericHostInfo(parent, instance, member));
             foreach (var member in serializedMembers)
-                list.Add(new GenericMemberEntry(instance, member, parent));
+                list.Add(new GenericHostInfo(parent, instance, member));
             
             return list;
         }

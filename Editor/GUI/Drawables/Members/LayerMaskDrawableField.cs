@@ -7,7 +7,7 @@ namespace Rhinox.GUIUtils.Editor
 {
     public class LayerMaskDrawableField: BaseMemberDrawable<LayerMask>
     {
-        public LayerMaskDrawableField(GenericMemberEntry entry) : base(entry) { }
+        public LayerMaskDrawableField(GenericHostInfo hostInfo) : base(hostInfo) { }
 
         protected override LayerMask DrawValue(GUIContent label, LayerMask value, params GUILayoutOption[] options)
         {

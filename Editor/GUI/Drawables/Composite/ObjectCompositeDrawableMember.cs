@@ -34,22 +34,22 @@ namespace Rhinox.GUIUtils.Editor
 
         public override bool ShouldRepaint => base.ShouldRepaint || (_innerDrawable != null ? _innerDrawable.ShouldRepaint : false);
         
-        public static ObjectCompositeDrawableMember CreateFrom(GenericMemberEntry entry, IOrderedDrawable contents, float order = 0)
+        public static ObjectCompositeDrawableMember CreateFrom(GenericHostInfo hostInfo, IOrderedDrawable contents, float order = 0)
         {
-            var objectCompositeDrawable = new ObjectCompositeDrawableMember(entry, contents, order);
-            if (entry != null)
+            var objectCompositeDrawable = new ObjectCompositeDrawableMember(hostInfo, contents, order);
+            if (hostInfo != null)
             {
-                foreach (var attr in entry.GetAttributes())
+                foreach (var attr in hostInfo.GetAttributes())
                     objectCompositeDrawable.AddAttribute(attr);
             }
 
             return objectCompositeDrawable;
         }
 
-        private ObjectCompositeDrawableMember(GenericMemberEntry hostEntry, IOrderedDrawable contents, float order = 0)
-            : this(hostEntry.GetValue(), hostEntry.GetReturnType(), contents, hostEntry?.NiceName ?? "", order)
+        private ObjectCompositeDrawableMember(GenericHostInfo hostInfo, IOrderedDrawable contents, float order = 0)
+            : this(hostInfo.GetValue(), hostInfo.GetReturnType(), contents, hostInfo?.NiceName ?? "", order)
         {
-            Host = hostEntry;
+            Host = hostInfo;
         }
         
         public ObjectCompositeDrawableMember(object instance, Type type, IOrderedDrawable contents, string name = "", float order = 0)
@@ -138,8 +138,8 @@ namespace Rhinox.GUIUtils.Editor
         
         public bool TrySetValue(object value)
         {
-            if (Host is GenericMemberEntry entry)
-                return entry.TrySetValue(value);
+            if (Host is GenericHostInfo hostInfo)
+                return hostInfo.TrySetValue(value);
             if (Host is SerializedProperty prop)
             {
                 prop.SetValue(value);

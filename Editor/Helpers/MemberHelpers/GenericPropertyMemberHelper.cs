@@ -10,7 +10,7 @@ namespace Rhinox.GUIUtils.Editor
 {
     public class GenericPropertyMemberHelper<T> : BaseValueMemberHelper<T>, IPropertyMemberHelper<T>
     {
-        private GenericMemberEntry _entry;
+        private GenericHostInfo _hostInfo;
         
         public GenericPropertyMemberHelper(object property, string input, ref string errorMessage)
             : this(property, input)
@@ -32,10 +32,10 @@ namespace Rhinox.GUIUtils.Editor
 
         private GenericPropertyMemberHelper(Type type, string input, object host)
         {
-            if (host is GenericMemberEntry entry)
+            if (host is GenericHostInfo hostInfo)
             {
-                _entry = entry;
-                _host = _entry.Instance;
+                _hostInfo = hostInfo;
+                _host = _hostInfo.GetHost();
                 _objectType = _host?.GetType();
             }
             else
@@ -74,7 +74,7 @@ namespace Rhinox.GUIUtils.Editor
             const string PROPERTY_ID = "property";
             const string VALUE_ID = "value";
 
-            GenericMemberEntry usedEntry = null;
+            GenericHostInfo relevantHostInfo = null;
             string[] parts = input.Split(new[] { "." }, StringSplitOptions.RemoveEmptyEntries);
             for (int i = 0; i < parts.Length; ++i)
             {
@@ -83,29 +83,29 @@ namespace Rhinox.GUIUtils.Editor
                 switch (parts[i])
                 {
                     case PROPERTY_ID:
-                        if (_entry != null)
+                        if (_hostInfo != null)
                         {
-                            _host = _entry;
+                            _host = _hostInfo;
                             _objectType = _host?.GetType();
                         }
                         break;
                     case PARENT_ID:
-                        if (_entry != null)
-                            usedEntry = _entry.Parent;
+                        if (_hostInfo != null)
+                            relevantHostInfo = _hostInfo.Parent;
                         break;
                     case ROOT_ID:
-                        if (usedEntry != null)
+                        if (relevantHostInfo != null)
                         {
-                            usedEntry = _entry;
+                            relevantHostInfo = _hostInfo;
 
-                            while (usedEntry.Parent != null)
-                                usedEntry = usedEntry.Parent;
+                            while (relevantHostInfo.Parent != null)
+                                relevantHostInfo = relevantHostInfo.Parent;
                         }
                         break;
                     case VALUE_ID:
-                        if (_entry != null)
+                        if (_hostInfo != null)
                         {
-                            _host = _entry.GetValue();
+                            _host = _hostInfo.GetValue();
                         }
                         break;
                     default:
@@ -125,8 +125,8 @@ namespace Rhinox.GUIUtils.Editor
                         break;
                 }
 
-                if (usedEntry != null)
-                    _host = usedEntry.Instance;
+                if (relevantHostInfo != null)
+                    _host = relevantHostInfo.GetHost();
                         
                 if (!actionTaken)
                     break;

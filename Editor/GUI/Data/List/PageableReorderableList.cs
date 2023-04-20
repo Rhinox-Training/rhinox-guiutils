@@ -20,6 +20,7 @@ namespace Rhinox.GUIUtils.Editor
         private int _drawPageIndex;
 
         private static Dictionary<Type, TypeCache.TypeCollection> _typeOptionsByType = new Dictionary<Type, TypeCache.TypeCollection>();
+        private readonly GenericHostInfo _hostInfo;
 
         private bool HasMultipleTypeOptions
         {
@@ -54,12 +55,13 @@ namespace Rhinox.GUIUtils.Editor
             MaxItemsPerPage = DEFAULT_ITEMS_PER_PAGE;
         }
 
-        public PageableReorderableList(GenericMemberEntry entry, 
+        public PageableReorderableList(GenericHostInfo hostInfo, 
             bool draggable = true, bool displayHeader = true, bool displayAddButton = true, bool displayRemoveButton = true)
-            : base(entry.GetSmartValue<IList>(), draggable, displayHeader, displayAddButton, displayRemoveButton)
+            : base(hostInfo.GetSmartValue<IList>(), draggable, displayHeader, displayAddButton, displayRemoveButton)
         {
             MaxItemsPerPage = DEFAULT_ITEMS_PER_PAGE;
-            CustomTitle = entry.NiceName;
+            CustomTitle = hostInfo.NiceName;
+            _hostInfo = hostInfo;
         }
 
         protected override void InitList(SerializedObject serializedObject, SerializedProperty elements, IList elementList, bool draggable,

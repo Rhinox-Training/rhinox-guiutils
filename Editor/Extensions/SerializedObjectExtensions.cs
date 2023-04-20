@@ -147,7 +147,7 @@ namespace Rhinox.GUIUtils.Editor
             if (property.propertyPath.Contains(".Array.data[") || property.propertyPath.Contains("."))
             {
                 var hostInfo = property.GetHostInfo();
-                return hostInfo.FieldInfo;
+                return (FieldInfo)hostInfo.MemberInfo;
             }
             
             System.Type parentType = property.serializedObject.targetObject.GetType();

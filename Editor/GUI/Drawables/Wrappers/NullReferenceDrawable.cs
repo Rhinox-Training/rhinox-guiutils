@@ -14,16 +14,27 @@ namespace Rhinox.GUIUtils.Editor
         private Dictionary<string, GUIContent> _typeContentByName;
         private List<Type> _typeOptions;
         private readonly SerializedProperty _serializedProperty;
-        private readonly HostInfo _hostInfo;
+        private readonly GenericHostInfo _hostInfo;
         private object _managedReferenceValue;
 
         public NullReferenceDrawable(SerializedProperty property) : base(new EmptyDrawable())
         {
             if (property == null)
                 throw new ArgumentNullException(nameof(property));
-            _typeContentByName = new Dictionary<string, GUIContent>();
             _serializedProperty = property;
             _hostInfo = property.GetHostInfo();
+            _typeContentByName = new Dictionary<string, GUIContent>();
+            var type = _hostInfo.GetReturnType(true);
+            _typeOptions = ReflectionUtility.GetTypesInheritingFrom(type);
+        }
+
+        public NullReferenceDrawable(GenericHostInfo hostInfo) : base(new EmptyDrawable())
+        {
+            if (hostInfo == null)
+                throw new ArgumentNullException(nameof(hostInfo));
+            _serializedProperty = null;
+            _hostInfo = hostInfo;
+            _typeContentByName = new Dictionary<string, GUIContent>();
             var type = _hostInfo.GetReturnType(true);
             _typeOptions = ReflectionUtility.GetTypesInheritingFrom(type);
         }
