@@ -15,7 +15,7 @@ namespace Rhinox.GUIUtils.Editor
 
         protected override bool DrawValue(GUIContent label, bool val, params GUILayoutOption[] options)
         {
-            return EditorGUILayout.Toggle(label, val, CustomGUIStyles.CleanLabelField, options);
+            return EditorGUILayout.Toggle(label, val, options);
         }
 
         protected override bool DrawValue(Rect rect, GUIContent label, bool val)
