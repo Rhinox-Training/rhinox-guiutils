@@ -17,7 +17,12 @@ namespace Rhinox.GUIUtils.Editor
 
         protected abstract object GetInstance();
 
-        public T GetValue()
+        public object GetValue()
+        {
+            return GetSmartValue();
+        }
+        
+        public T GetSmartValue()
         {
             if (_newFrameHandler.IsNewFrame())
             {
@@ -29,7 +34,7 @@ namespace Rhinox.GUIUtils.Editor
         public T GetValue(ref bool changed)
         {
             var oldValue = _cachedValue;
-            var newValue = GetValue();
+            var newValue = GetSmartValue();
             if (!Equals(oldValue, newValue))
                 changed = true;
             
