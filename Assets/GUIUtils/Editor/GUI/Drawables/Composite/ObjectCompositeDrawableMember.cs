@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace Rhinox.GUIUtils.Editor
 {
-    public class ObjectCompositeDrawableMember : CompositeDrawableMember, IDrawableReadWrite
+    public class ObjectCompositeDrawableMember : CompositeDrawableMember, IDrawableReadWrite, IHostedDrawable
     {
         public override GUIContent Label => _label;
 
@@ -18,6 +18,8 @@ namespace Rhinox.GUIUtils.Editor
         public Type ObjectType { get; }
         
         private IOrderedDrawable _innerDrawable;
+        
+        public GenericHostInfo HostInfo { get; }
 
         public bool IsFoldout => Children.Any(drawable => drawable.IsVisible);
 
@@ -50,6 +52,7 @@ namespace Rhinox.GUIUtils.Editor
             : this(hostInfo.GetValue(), hostInfo.GetReturnType(), contents, hostInfo?.NiceName ?? "", order)
         {
             Host = hostInfo;
+            HostInfo = hostInfo;
         }
         
         public ObjectCompositeDrawableMember(object instance, Type type, IOrderedDrawable contents, string name = "", float order = 0)

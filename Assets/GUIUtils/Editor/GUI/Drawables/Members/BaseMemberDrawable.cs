@@ -9,7 +9,7 @@ using UnityEngine;
 
 namespace Rhinox.GUIUtils.Editor
 {
-    public abstract class BaseMemberDrawable : BaseDrawable
+    public abstract class BaseMemberDrawable : BaseDrawable, IHostedDrawable
     {
         public override string LabelString => HostInfo.NiceName;
         

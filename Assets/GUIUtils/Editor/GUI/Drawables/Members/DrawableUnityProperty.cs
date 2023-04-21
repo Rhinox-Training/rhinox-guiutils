@@ -9,8 +9,7 @@ namespace Rhinox.GUIUtils.Editor
         public override string LabelString => Property != null ? Property.displayName : base.LabelString;
 
         public SerializedProperty Property { get; }
-
-
+        
         public DrawableUnityProperty(SerializedProperty prop)
             : base(prop.GetHostInfo())
         {

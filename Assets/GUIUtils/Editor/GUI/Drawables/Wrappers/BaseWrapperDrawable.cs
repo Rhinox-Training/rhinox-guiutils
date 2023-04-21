@@ -7,9 +7,19 @@ using UnityEngine;
 
 namespace Rhinox.GUIUtils.Editor
 {
-    public abstract class BaseWrapperDrawable : BaseDrawable
+    public abstract class BaseWrapperDrawable : BaseDrawable, IHostedDrawable
     {
         protected IOrderedDrawable _innerDrawable;
+
+        public GenericHostInfo HostInfo
+        {
+            get
+            {
+                if (_innerDrawable is IHostedDrawable hostedDrawable)
+                    return hostedDrawable.HostInfo;
+                return null;
+            }
+        }
 
         public override float ElementHeight => _innerDrawable.ElementHeight;
 
