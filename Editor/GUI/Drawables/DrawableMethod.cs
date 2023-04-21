@@ -7,14 +7,13 @@ using UnityEngine;
 
 namespace Rhinox.GUIUtils.Editor
 {
-    public class DrawableMethod : BaseEntityDrawable
+    public class DrawableMethod : BaseDrawable
     {
         public override string LabelString => null; // TODO: Button has no label?
         
         private readonly MethodInfo _methodInfo;
 
         public DrawableMethod(object instanceVal, MethodInfo method)
-            : base(instanceVal, method)
         {
             Host = instanceVal;
             _methodInfo = method;
