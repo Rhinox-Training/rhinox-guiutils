@@ -11,7 +11,7 @@ using Object = UnityEngine.Object;
 
 namespace Rhinox.GUIUtils.Editor
 {
-    public class DrawableButton : BaseEntityDrawable
+    public class DrawableButton : BaseDrawable
     {
         public override string LabelString => null; // TODO: Button has no label?
         
@@ -22,7 +22,6 @@ namespace Rhinox.GUIUtils.Editor
         private readonly MethodInfo _methodInfo;
 
         public DrawableButton(object instanceVal, MethodInfo method)
-            : base(instanceVal, method)
         {
             Host = instanceVal;
             _methodInfo = method;
