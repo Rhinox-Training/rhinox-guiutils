@@ -748,21 +748,52 @@ namespace Rhinox.GUIUtils.Editor
                 else
                 {
                     System.Type elementType = list.list.GetType().GetCollectionElementType();
-                    if (elementType == typeof(string))
-                        list.index = list.list.Add((object) "");
-                    else if (elementType != null && elementType.GetConstructor(System.Type.EmptyTypes) == null)
-                        Debug.LogError((object) ("Cannot add element. Type " + elementType.ToString() +
-                                                 " has no default constructor. Implement a default constructor or implement your own add behaviour."));
-                    else if (elementType != null)
-                    {
-                        if (elementType.InheritsFrom<UnityEngine.Object>())
-                            list.index = list.list.Add(null);
-                        else
-                            list.index = list.list.Add(Activator.CreateInstance(elementType));
-                    }
+                    if (TryCreateElement(elementType, out object item, out string errorString))
+                        list.index = list.list.Add(item);
                     else
-                        Debug.LogError((object) "Cannot add element of type Null.");
+                        Debug.LogError(errorString);
                 }
+            }
+
+            public static bool TryCreateElement(Type elementType, out object element)
+            {
+                return TryCreateElement(elementType, out element, out _);
+            }
+
+            public static bool TryCreateElement(Type elementType, out object element, out string errorString)
+            {
+                if (elementType == null)
+                {
+                    element = null;
+                    errorString = "Cannot create element of type Null.";
+                    return false;
+                }
+                
+                if (elementType == typeof(string))
+                {
+                    element = "";
+                    errorString = null;
+                    return true;
+                }
+
+                if (elementType.InheritsFrom<UnityEngine.Object>())
+                {
+                    element = (UnityEngine.Object)null;
+                    errorString = null;
+                    return true;
+                }
+
+                if (elementType.GetConstructor(System.Type.EmptyTypes) == null)
+                {
+                    element = null;
+                    errorString =
+                        $"Cannot add element. Type '{elementType.GetNiceName()}' has no default constructor. Implement a default constructor or implement your own add behaviour.";
+                    return false;
+                }
+                
+                element = Activator.CreateInstance(elementType);
+                errorString = null;
+                return true;
             }
 
             public void DoRemoveButton(BetterReorderableList list)
