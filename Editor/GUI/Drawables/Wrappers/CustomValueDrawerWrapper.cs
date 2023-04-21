@@ -1,4 +1,6 @@
+using System.Collections;
 using Rhinox.Lightspeed;
+using Rhinox.Lightspeed.Reflection;
 using Sirenix.OdinInspector;
 using UnityEditor;
 using UnityEngine;
@@ -52,6 +54,17 @@ namespace Rhinox.GUIUtils.Editor
             member.EnforceSyntax(parameterIndex: 1, typeof(GUIContent));
             member.EnforceSyntax(numberOfParameters: 2);
             member.EnforceSyntax(hasReturnType: true);
+            
+            if (drawable is IHostedDrawable hostedDrawable)
+            {
+                var hostedReturnType = hostedDrawable.HostInfo.GetReturnType();
+                if (hostedReturnType.InheritsFrom<IEnumerable>())
+                {
+                    var elementType = hostedReturnType.GetCollectionElementType();
+                    if (member.MethodReturnType == elementType)
+                        return null;
+                }
+            }
 
             return new CustomValueDrawerWrapper(drawable)
             {
