@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace Rhinox.GUIUtils.Editor
 {
-    public class BoolDrawableField : BaseMemberDrawable<bool>
+    public class BoolDrawableField : BaseMemberValueDrawable<bool>
     {
         public BoolDrawableField(GenericHostInfo hostInfo) : base(hostInfo)
         {

@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace Rhinox.GUIUtils.Editor
 {
-    public class LayerMaskDrawableField: BaseMemberDrawable<LayerMask>
+    public class LayerMaskDrawableField: BaseMemberValueDrawable<LayerMask>
     {
         public LayerMaskDrawableField(GenericHostInfo hostInfo) : base(hostInfo) { }
 

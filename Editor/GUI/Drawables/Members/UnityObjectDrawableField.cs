@@ -6,7 +6,7 @@ using Object = System.Object;
 
 namespace Rhinox.GUIUtils.Editor
 {
-    public class UnityObjectDrawableField : BaseMemberDrawable<UnityEngine.Object>
+    public class UnityObjectDrawableField : BaseMemberValueDrawable<UnityEngine.Object>
     {
         public bool AllowSceneObjects = true;
 

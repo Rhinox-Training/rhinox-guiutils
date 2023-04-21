@@ -4,28 +4,21 @@ using UnityEngine;
 
 namespace Rhinox.GUIUtils.Editor
 {
-    public class UndrawableField<T> : BaseMemberDrawable<T>
+    public class UndrawableField : BaseMemberDrawable
     {
         public UndrawableField(GenericHostInfo hostInfo) : base(hostInfo)
         {
             
         }
         
-        public UndrawableField(object instance, MemberInfo info) : base(instance, info)
-        {
-            
-        }
-        
-        protected override T DrawValue(GUIContent label, T memberVal, params GUILayoutOption[] options)
+        protected override void DrawInner(GUIContent label, params GUILayoutOption[] options)
         {
             EditorGUILayout.LabelField(label, options);
-            return memberVal;
         }
 
-        protected override T DrawValue(Rect rect, GUIContent label, T memberVal)
+        protected override void DrawInner(Rect rect, GUIContent label)
         {
             EditorGUI.PrefixLabel(rect, label);
-            return memberVal;
         }
     }
 }

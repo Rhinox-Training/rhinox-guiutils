@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace Rhinox.GUIUtils.Editor
 {
-    public class EnumDrawableField: BaseMemberDrawable<Enum>
+    public class EnumDrawableField: BaseMemberValueDrawable<Enum>
     {
         public bool HasFlags { get; }
         public bool HasToggleButtons { get; }

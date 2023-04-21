@@ -46,7 +46,7 @@ namespace Rhinox.GUIUtils.Editor
         }
     }
 
-    public class DrawableList : BaseMemberDrawable<IList>
+    public class DrawableList : BaseMemberValueDrawable<IList>
     {
         private PageableReorderableList _listRO;
         private readonly ListDrawerSettingsAttribute _listDrawerAttr;
