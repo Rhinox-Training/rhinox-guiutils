@@ -5,7 +5,7 @@ using Object = System.Object;
 
 namespace Rhinox.GUIUtils.Editor
 {
-    public class StringDrawableField : BaseMemberDrawable<string>
+    public class StringDrawableField : BaseMemberValueDrawable<string>
     {
         public StringDrawableField(GenericHostInfo hostInfo) : base(hostInfo) { }
 

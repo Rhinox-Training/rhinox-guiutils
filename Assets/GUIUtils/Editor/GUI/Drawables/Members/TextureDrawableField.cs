@@ -8,7 +8,7 @@ using UnityEngine.PlayerLoop;
 
 namespace Rhinox.GUIUtils.Editor
 {
-    public class TextureDrawableField : BaseMemberDrawable<UnityEngine.Texture>
+    public class TextureDrawableField : BaseMemberValueDrawable<UnityEngine.Texture>
     {
         private readonly PreviewFieldAttribute _previewAttr;
         private const int DEFAULT_SIZE = 64;

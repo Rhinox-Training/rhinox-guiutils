@@ -7,7 +7,7 @@ using Object = System.Object;
 
 namespace Rhinox.GUIUtils.Editor
 {
-    public class FloatDrawableField : BaseMemberDrawable<float>
+    public class FloatDrawableField : BaseMemberValueDrawable<float>
     {
         private float? _min;
         private float? _max;
