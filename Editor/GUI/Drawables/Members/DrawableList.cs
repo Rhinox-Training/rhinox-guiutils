@@ -46,7 +46,7 @@ namespace Rhinox.GUIUtils.Editor
         }
     }
 
-    public class DrawableList : BaseMemberValueDrawable<IList>
+    public class DrawableList : BaseMemberDrawable
     {
         private PageableReorderableList _listRO;
         private readonly ListDrawerSettingsAttribute _listDrawerAttr;
@@ -153,16 +153,6 @@ namespace Rhinox.GUIUtils.Editor
                 EditorGUI.EndDisabledGroup();
                 OnEndDraw();
             }
-        }
-
-        protected override IList DrawValue(GUIContent label, IList value, params GUILayoutOption[] options)
-        {
-            throw new NotImplementedException();
-        }
-
-        protected override IList DrawValue(Rect rect, GUIContent label, IList value)
-        {
-            throw new NotImplementedException();
         }
 
         private void OnChangedListCallback(BetterReorderableList list)
