@@ -216,20 +216,18 @@ namespace Rhinox.GUIUtils.Editor
             {
                 genericMenu.AddItem(new GUIContent(option.Name), false, () =>
                 {
+                    if (!Defaults.TryCreateElement(option, out object element, out string errorString))
+                    {
+                        Debug.LogError(errorString);
+                        return;
+                    }
+                    
                     if (serializedProperty != null)
                     {
                         ++serializedProperty.arraySize;
                         var serializedPropElement = serializedProperty.GetArrayElementAtIndex(serializedProperty.arraySize - 1);
                         var hostInfo = serializedPropElement.GetHostInfo();
-                        if (option.InheritsFrom(typeof(UnityEngine.Object)))
-                        {
-                            hostInfo.SetValue((UnityEngine.Object)null);
-                        }
-                        else
-                        {
-                            var instance = Activator.CreateInstance(option);
-                            hostInfo.SetValue(instance);
-                        }
+                        hostInfo.SetValue(element);
                     }
                     else
                     {
