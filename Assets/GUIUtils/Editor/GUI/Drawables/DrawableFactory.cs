@@ -19,12 +19,12 @@ namespace Rhinox.GUIUtils.Editor
         // Public API
         public static IOrderedDrawable CreateDrawableFor(GenericHostInfo hostInfo)
         {
-            return CreateDrawableFor(hostInfo.GetValue(), hostInfo.GetReturnType(), hostInfo);
+            return CreateDrawableForMember(hostInfo, 0);
         }
 
         public static IOrderedDrawable CreateDrawableFor(object instance, Type type)
         {
-            return CreateDrawableFor(instance, type, null);
+            return CreateCompositeDrawable(instance, type, 0);
         }
         
         public static IOrderedDrawable CreateDrawableFor(SerializedObject obj, Type type)
@@ -65,17 +65,6 @@ namespace Rhinox.GUIUtils.Editor
         //==============================================================================================================
         // Helper methods
 
-        private static IOrderedDrawable CreateDrawableFor(object instance, Type type, GenericHostInfo parent)
-        {
-            if (type == null)
-                throw new ArgumentNullException(nameof(type));
-
-            if (parent != null)
-                return CreateDrawableForMember(parent, 0);
-            
-            return CreateCompositeDrawable(instance, type, 0);
-        }
-        
         private static IOrderedDrawable DrawableMembersForSerializedObject(object instanceVal, Type type, IEnumerable<SerializedObjectExtensions.FieldData> visibleFields, int depth)
         {
             var drawable = new VerticalGroupDrawable();
@@ -90,7 +79,7 @@ namespace Rhinox.GUIUtils.Editor
                     fieldDrawable = CreateDrawableForMember(hostInfo, depth);
                 }
                 else
-                    fieldDrawable = CreateDrawableForSerializedProperty(fieldData.SerializedProperty, new GenericHostInfo(instanceVal, fieldData.FieldInfo));
+                    fieldDrawable = CreateDrawableForSerializedProperty(fieldData.SerializedProperty);
 
                 if (fieldDrawable == null)
                     continue;
@@ -123,6 +112,9 @@ namespace Rhinox.GUIUtils.Editor
             {
                 var subInstance = hostInfo.GetValue();
                 var subtype = hostInfo.GetReturnType();
+
+                if (subInstance == null)
+                    return new NullReferenceDrawable(hostInfo);
                 
                 if (subInstance != null)
                     subtype = subInstance.GetType();
@@ -149,7 +141,7 @@ namespace Rhinox.GUIUtils.Editor
                 if (memberEntry.MemberInfo is PropertyInfo propertyInfo && !propertyInfo.IsVisibleInEditor())
                     continue;
 
-                var resultingMember = CreateDrawableForMember(memberEntry, depth);
+                IOrderedDrawable resultingMember = CreateDrawableForMember(memberEntry, depth);
 
                 if (resultingMember != null)
                     drawables.Add(resultingMember);
@@ -170,7 +162,7 @@ namespace Rhinox.GUIUtils.Editor
             return drawable;
         }
 
-        private static IOrderedDrawable CreateDrawableForSerializedProperty(SerializedProperty property, GenericHostInfo upperHostInfo = null) // TODO: upperHostInfo naming and abstraction is confusing
+        private static IOrderedDrawable CreateDrawableForSerializedProperty(SerializedProperty property)
         {
             if (property == null)
                 return null;
@@ -205,10 +197,10 @@ namespace Rhinox.GUIUtils.Editor
                             var returnType = hostInfo.GetReturnType();
                             var visibleFields = property.EnumerateEditorVisibleFields();
                             drawable = DrawableMembersForSerializedObject(instanceVal, returnType, visibleFields, 0);
-                            if (upperHostInfo != null)
-                                drawable = ObjectCompositeDrawableMember.CreateFrom(upperHostInfo, drawable);
-                            else
-                                drawable = new ObjectCompositeDrawableMember(instanceVal, returnType, drawable);
+                            // if (upperHostInfo != null)
+                            //     drawable = ObjectCompositeDrawableMember.CreateFrom(upperHostInfo, drawable);
+                            // else
+                            drawable = new ObjectCompositeDrawableMember(instanceVal, returnType, drawable);
                         }
                     }
                 }

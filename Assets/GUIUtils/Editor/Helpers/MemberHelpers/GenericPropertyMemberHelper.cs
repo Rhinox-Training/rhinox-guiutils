@@ -35,7 +35,7 @@ namespace Rhinox.GUIUtils.Editor
             if (host is GenericHostInfo hostInfo)
             {
                 _hostInfo = hostInfo;
-                _host = _hostInfo.GetHost();
+                _host = _hostInfo.GetValue();
                 _objectType = _host?.GetType();
             }
             else
