@@ -8,11 +8,11 @@ namespace Rhinox.GUIUtils.Editor
     public class EmptyDrawable : IOrderedDrawable
     {
         public float Order { get; set; }
-        public float ElementHeight { get; }
+        public float ElementHeight => EditorGUIUtility.singleLineHeight;
         public object Host { get; }
-        public bool IsVisible { get; }
+        public bool IsVisible => true;
         public GUIContent Label { get; }
-        public bool ShouldRepaint { get; }
+        public bool ShouldRepaint => false;
         
         public IEnumerable<TAttribute> GetDrawableAttributes<TAttribute>() where TAttribute : Attribute
         {

@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace Rhinox.GUIUtils.Editor
 {
-    public class DrawableUnityProperty : BaseMemberDrawable
+    public class DrawableUnityProperty : BaseMemberDrawable, IDrawableReadWrite
     {
         public override string LabelString => Property != null ? Property.displayName : base.LabelString;
 
@@ -23,6 +23,16 @@ namespace Rhinox.GUIUtils.Editor
         protected override void DrawInner(Rect rect, GUIContent label)
         {
             EditorGUI.PropertyField(rect, Property, label);
+        }
+
+        public object GetValue()
+        {
+            return HostInfo.GetValue();
+        }
+
+        public bool TrySetValue(object value)
+        {
+            return HostInfo.TrySetValue(value);
         }
     }
 }

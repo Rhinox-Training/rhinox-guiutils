@@ -185,8 +185,7 @@ namespace Rhinox.GUIUtils.Editor
                 return new ListElementDrawable(element, _listRO.elementHeight);
             }
 
-            var hostInfo = new GenericHostInfo(_hostInfo, _hostInfo.MemberInfo, index);
-            return new ListElementDrawable(hostInfo, _listRO.elementHeight);
+            return new ListElementDrawable(_hostInfo.CreateArrayElement(index), _listRO.elementHeight);
         }
 
         private void OnBeginDraw()
@@ -210,7 +209,7 @@ namespace Rhinox.GUIUtils.Editor
             }
             else
             {
-                _hostInfo.TrySetValue(_listRO.list);
+                _hostInfo.TrySetValue(_listRO.List);
             }
         }
     }

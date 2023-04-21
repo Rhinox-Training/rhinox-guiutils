@@ -51,7 +51,7 @@ namespace Rhinox.GUIUtils.Editor
         private ObjectCompositeDrawableMember(GenericHostInfo hostInfo, IOrderedDrawable contents, float order = 0)
             : this(hostInfo.GetValue(), hostInfo.GetReturnType(), contents, hostInfo?.NiceName ?? "", order)
         {
-            Host = hostInfo;
+            Host = hostInfo.Parent ?? hostInfo.GetHost();
             HostInfo = hostInfo;
         }
         

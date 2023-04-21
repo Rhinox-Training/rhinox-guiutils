@@ -100,16 +100,16 @@ namespace Rhinox.GUIUtils.Editor
 
         public virtual object GetValue()
         {
+            var host = GetHost();
             if (ArrayIndex < 0)
             {
-                var value = MemberInfo.GetValue(GetHost());
+                var value = MemberInfo.GetValue(host);
                 return value;
             }
-
-            var hostList = GetHost();
-            if (hostList is IList e)
+            
+            if (host is IList e)
                 return e[ArrayIndex];
-            throw new IndexOutOfRangeException($"Could not map found index {ArrayIndex} to value {hostList} (Type: {hostList.GetType().GetNiceName()})");
+            throw new IndexOutOfRangeException($"Could not map found index {ArrayIndex} to value {host} (Type: {host.GetType().GetNiceName()})");
         }
 
         public T GetSmartValue<T>() => (T) GetValue();
@@ -129,7 +129,7 @@ namespace Rhinox.GUIUtils.Editor
                 return true;
             }
 
-            var value = MemberInfo.GetValue(GetHost());
+            var value = GetHost();
             if (value is IList e)
             {
                 BeforeValueChanged();
@@ -217,6 +217,19 @@ namespace Rhinox.GUIUtils.Editor
         public override string ToString()
         {
             return $"{_hostRootInstance}.{NiceName} {(Parent != null ? ($"(Child of {Parent.NiceName})") : "")}";
+        }
+
+        public virtual GenericHostInfo CreateArrayElement(int index)
+        {
+            if (index < 0) throw new ArgumentException(nameof(index));
+            if (ArrayIndex != -1) throw new InvalidOperationException("GenericHostInfo already has in index, cannot create sub entry.");
+
+            GenericHostInfo childHostInfo;
+            if (Parent != null)
+                childHostInfo = new GenericHostInfo(Parent, MemberInfo, index);
+            else
+                childHostInfo = new GenericHostInfo(this, MemberInfo, index);
+            return childHostInfo;
         }
     }
 }

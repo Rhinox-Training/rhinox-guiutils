@@ -17,7 +17,7 @@ namespace Rhinox.GUIUtils.Editor
         private readonly GenericHostInfo _hostInfo;
         private object _managedReferenceValue;
 
-        public NullReferenceDrawable(SerializedProperty property) : base(new EmptyDrawable())
+        public NullReferenceDrawable(SerializedProperty property) : base(new UndrawableField(property.GetHostInfo()))
         {
             if (property == null)
                 throw new ArgumentNullException(nameof(property));
@@ -28,7 +28,7 @@ namespace Rhinox.GUIUtils.Editor
             _typeOptions = ReflectionUtility.GetTypesInheritingFrom(type);
         }
 
-        public NullReferenceDrawable(GenericHostInfo hostInfo) : base(new EmptyDrawable())
+        public NullReferenceDrawable(GenericHostInfo hostInfo) : base(new UndrawableField(hostInfo))
         {
             if (hostInfo == null)
                 throw new ArgumentNullException(nameof(hostInfo));
@@ -44,7 +44,7 @@ namespace Rhinox.GUIUtils.Editor
             if (_managedReferenceValue == null)
             {
                 Rect dropdownPosition = EditorGUILayout.GetControlRect(true, options).AlignTop(EditorGUIUtility.singleLineHeight);
-                DrawTypePicker(dropdownPosition, _serializedProperty, GUIContent.none);
+                DrawTypePicker(dropdownPosition, GUIContent.none);
             }
             else
             {
@@ -56,7 +56,7 @@ namespace Rhinox.GUIUtils.Editor
         {
             if (_managedReferenceValue == null)
             {
-                DrawTypePicker(position, _serializedProperty, GUIContent.none);
+                DrawTypePicker(position, GUIContent.none);
             }
             else
             {
@@ -64,12 +64,12 @@ namespace Rhinox.GUIUtils.Editor
             }
         }
 
-        private void DrawTypePicker(Rect position, SerializedProperty property, GUIContent label)
+        private void DrawTypePicker(Rect position, GUIContent label)
         {
             if (label != null)
                 position = EditorGUI.PrefixLabel(position, label);
 
-            if (!EditorGUI.DropdownButton(position, GetTypeName(property), FocusType.Passive))
+            if (!EditorGUI.DropdownButton(position, GetTypeName(), FocusType.Passive))
                 return;
             
             var menu = new GenericMenu();
@@ -86,23 +86,40 @@ namespace Rhinox.GUIUtils.Editor
             var value = (data as Type).CreateInstance();
             
             _managedReferenceValue = value;
-            _serializedProperty.managedReferenceValue = value;
-            _serializedProperty.isExpanded = value != null;
-            _serializedProperty.serializedObject.ApplyModifiedProperties();
+            if (_serializedProperty != null)
+            {
+                _serializedProperty.managedReferenceValue = value;
+                _serializedProperty.isExpanded = value != null;
+                _serializedProperty.serializedObject.ApplyModifiedProperties();
+            }
+            else if (_hostInfo != null)
+            {
+                _hostInfo.SetValue(value);
+            }
 
             UpdateInnerDrawable();
         }
 
         private void UpdateInnerDrawable()
         {
-            _innerDrawable = DrawableFactory.CreateDrawableFor(_serializedProperty);
+            if (_serializedProperty != null)
+                _innerDrawable = DrawableFactory.CreateDrawableFor(_serializedProperty);
+            else if (_hostInfo != null)
+                _innerDrawable = DrawableFactory.CreateDrawableFor(_hostInfo);
         }
 
-        GUIContent GetTypeName(SerializedProperty property)
+        private GUIContent GetTypeName()
+        {
+            if (_serializedProperty != null)
+                return GetTypeName(_serializedProperty.managedReferenceFullTypename);
+            if (_hostInfo != null)
+                return GetTypeName(_hostInfo.GetReturnType().FullName);
+            return GUIContent.none;
+        }
+
+        private GUIContent GetTypeName(string fullTypeName)
         {
             // Cache this string.
-            string fullTypeName = property.managedReferenceFullTypename;
-
             if (string.IsNullOrEmpty(fullTypeName))
                 return NoneContent;
 
