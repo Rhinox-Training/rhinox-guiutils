@@ -129,7 +129,11 @@ namespace Rhinox.GUIUtils.Editor
             var currentVal = GetValue();
             if (currentVal == null)
                 return null;
-            var options = _member.ForceGetValue().Cast<object>().ToArray();
+            var value = _member.ForceGetValue();
+            if (value == null)
+                return null;
+            
+            var options = value.Cast<object>().ToArray();
             foreach (var item in options)
             {
                 var itemVal = item;
@@ -140,7 +144,7 @@ namespace Rhinox.GUIUtils.Editor
                     continue;
                 
                 string stringText = null;
-                if (itemVal is IValueDropdownItem dropdownItem2)
+                if (item is IValueDropdownItem dropdownItem2)
                     stringText = dropdownItem2.GetText();
                 else
                     stringText = itemVal.ToString();
