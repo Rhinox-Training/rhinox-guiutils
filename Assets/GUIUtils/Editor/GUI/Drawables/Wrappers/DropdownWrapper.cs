@@ -18,15 +18,28 @@ namespace Rhinox.GUIUtils.Editor
         public override float ElementHeight => EditorGUIUtility.singleLineHeight;
         
         private GUIContent _activeItem;
-        private GUIContent _defaultItem = new GUIContent("<None>");
+
+        public GUIContent ActiveItem
+        {
+            get => _activeItem;
+            set
+            {
+                _activeItem = value;
+                _valueChanged = true;
+                _frameHandler = new NewFrameHandler();
+            }
+        }
+        
+        private readonly GUIContent _defaultItem = new GUIContent("<None>");
 
         private Rect _dropdownRect;
         private bool _valueChanged;
+        private NewFrameHandler _frameHandler;
 
         public DropdownBaseWrapper(IOrderedDrawable drawable, IPropertyMemberHelper<IEnumerable> member) : base(drawable)
         {
             _member = member;
-            _activeItem = FindActiveItem(_defaultItem);
+            _activeItem = FindActiveItem() ?? _defaultItem;
         }
 
         protected override void DrawInner(GUIContent label, params GUILayoutOption[] options)
@@ -35,13 +48,10 @@ namespace Rhinox.GUIUtils.Editor
             
             _member.DrawError();
 
-            if (_innerDrawable is BaseDrawable inner)
-                label = inner.Label;
-
             EditorGUILayout.BeginHorizontal(options);
             EditorGUILayout.PrefixLabel(label);
 
-            var clicked = EditorGUILayout.DropdownButton(_activeItem, FocusType.Keyboard, options);
+            var clicked = EditorGUILayout.DropdownButton(ActiveItem, FocusType.Keyboard, options);
             
             var rect = GUILayoutUtility.GetLastRect();
             if (rect.IsValid())
@@ -58,13 +68,10 @@ namespace Rhinox.GUIUtils.Editor
         protected override void DrawInner(Rect rect, GUIContent label)
         {
             OnPreDraw();
-            
-            if (_innerDrawable is BaseDrawable inner)
-                label = inner.Label;
 
             rect = EditorGUI.PrefixLabel(rect, label);
             
-            if (EditorGUI.DropdownButton(rect, _activeItem, FocusType.Keyboard))
+            if (EditorGUI.DropdownButton(rect, ActiveItem, FocusType.Keyboard))
                 MakeMenuItems(rect);
             
             _member.DrawError(rect);
@@ -79,7 +86,7 @@ namespace Rhinox.GUIUtils.Editor
             if (_valueChanged)
             {
                 GUI.changed = true;
-                _valueChanged = false;
+                _valueChanged = !_frameHandler.IsNewFrame();
             }
         }
 
@@ -96,7 +103,7 @@ namespace Rhinox.GUIUtils.Editor
                     menu.AddItem(text, () =>
                     {
                         SetValue(dropdownItem.GetValue());
-                        _activeItem = new GUIContent(text);
+                        ActiveItem = new GUIContent(text);
                     });
                 }
                 else
@@ -106,7 +113,7 @@ namespace Rhinox.GUIUtils.Editor
                     menu.AddItem(text, () =>
                     {
                         SetValue(item);
-                        _activeItem = new GUIContent(text);
+                        ActiveItem = new GUIContent(text);
                     });
                 }
             }
@@ -117,12 +124,16 @@ namespace Rhinox.GUIUtils.Editor
             menu.DropDown(rect);
         }
         
-        private GUIContent FindActiveItem(GUIContent fallback = null)
+        private GUIContent FindActiveItem()
         {
             var currentVal = GetValue();
             if (currentVal == null)
-                return fallback ?? GUIContent.none;
-            var options = _member.ForceGetValue().Cast<object>().ToArray();
+                return null;
+            var value = _member.ForceGetValue();
+            if (value == null)
+                return null;
+            
+            var options = value.Cast<object>().ToArray();
             foreach (var item in options)
             {
                 var itemVal = item;
@@ -133,7 +144,7 @@ namespace Rhinox.GUIUtils.Editor
                     continue;
                 
                 string stringText = null;
-                if (itemVal is IValueDropdownItem dropdownItem2)
+                if (item is IValueDropdownItem dropdownItem2)
                     stringText = dropdownItem2.GetText();
                 else
                     stringText = itemVal.ToString();
@@ -141,56 +152,13 @@ namespace Rhinox.GUIUtils.Editor
                 return new GUIContent(stringText);
             }
 
-            return fallback ?? GUIContent.none;
-        }
-
-        private MethodInfo _info;
-        private void SetValue(object value)
-        {
-            if (_innerDrawable is IMemberDrawable memberDrawable)
-            {
-                memberDrawable.Entry.TrySetValue(value);
-                _valueChanged = true;
-                return;
-            }
-            else if (_innerDrawable is IObjectDrawable && _innerDrawable.Host is GenericMemberEntry entry)
-            {
-                entry.TrySetValue(value);
-                _valueChanged = true;
-                return;
-            }
-            
-            if (_info == null)
-            {
-                var types = _innerDrawable.GetType().GetArgumentsOfInheritedOpenGenericClass(typeof(BaseMemberDrawable<>));
-                var baseClass = typeof(BaseMemberDrawable<>).MakeGenericType(types);
-                _info = baseClass.GetMethod("SetSmartValue", BindingFlags.Instance | BindingFlags.NonPublic);
-            }
-            _info.Invoke(_innerDrawable, new[] { value });
-            _valueChanged = true;
-        }
-        
-        private object GetValue()
-        {
-            object value = null;
-            if (_innerDrawable is IMemberDrawable memberDrawable)
-            {
-                value = memberDrawable.Entry.GetValue();
-                return value;
-            }
-            else if (_innerDrawable is IObjectDrawable && _innerDrawable.Host is GenericMemberEntry entry)
-            {
-                value = entry.GetValue();
-                return value;
-            }
-
-            return value;
+            return null;
         }
 
         [WrapDrawer(typeof(ValueDropdownAttribute), -1)]
         public static BaseWrapperDrawable Create(ValueDropdownAttribute attr, IOrderedDrawable drawable)
         {
-            var member = MemberHelper.Create<IEnumerable>(drawable.Host, attr.MemberName);
+            var member = MemberHelper.Create<IEnumerable>(drawable.HostInfo, attr.MemberName);
             return new DropdownBaseWrapper(drawable, member);
         }
     }

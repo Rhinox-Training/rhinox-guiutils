@@ -6,23 +6,23 @@ using Object = System.Object;
 
 namespace Rhinox.GUIUtils.Editor
 {
-    public class UnityObjectDrawableField : BaseMemberDrawable<UnityEngine.Object>
+    public class UnityObjectDrawableField : BaseMemberValueDrawable<UnityEngine.Object>
     {
         public bool AllowSceneObjects = true;
 
-        public UnityObjectDrawableField(GenericMemberEntry entry) : base(entry)
+        public UnityObjectDrawableField(GenericHostInfo hostInfo) : base(hostInfo)
         {
             
         }
         
         protected override UnityEngine.Object DrawValue(GUIContent label, UnityEngine.Object memberVal, params GUILayoutOption[] options)
         {
-            return EditorGUILayout.ObjectField(label, memberVal, Entry.GetReturnType(), AllowSceneObjects, options);
+            return EditorGUILayout.ObjectField(label, memberVal, HostInfo.GetReturnType(), AllowSceneObjects, options);
         }
 
         protected override UnityEngine.Object DrawValue(Rect rect, GUIContent label, UnityEngine.Object memberVal)
         {
-            return EditorGUI.ObjectField(rect, label, memberVal, Entry.GetReturnType(), AllowSceneObjects);
+            return EditorGUI.ObjectField(rect, label, memberVal, HostInfo.GetReturnType(), AllowSceneObjects);
         }
     }
 }

@@ -1,3 +1,4 @@
+using Rhinox.Lightspeed;
 using Sirenix.OdinInspector;
 using UnityEditor;
 using UnityEngine;
@@ -37,17 +38,19 @@ namespace Rhinox.GUIUtils.Editor
                 return;
 
             GUILayout.BeginVertical(CustomGUIStyles.Clean, GetLayoutOptions(_size));
-            
-            foreach (var childDrawable in _drawableMemberChildren)
+
+            for (var i = 0; i < _drawableMemberChildren.Count; i++)
             {
+                var childDrawable = _drawableMemberChildren[i];
                 if (childDrawable == null || !childDrawable.IsVisible)
                     continue;
-                
+
                 childDrawable.Draw(childDrawable.Label);
 
-                GUILayout.Space(CustomGUIUtility.Padding); // padding
+                if (_drawableMemberChildren.Count - 1 != i)
+                    GUILayout.Space(CustomGUIUtility.Padding); // padding
             }
-            
+
             GUILayout.EndVertical();
         }
 
@@ -62,12 +65,16 @@ namespace Rhinox.GUIUtils.Editor
                 var childDrawable = _drawableMemberChildren[i];
                 if (childDrawable == null || !childDrawable.IsVisible)
                     continue;
-                
-                childRect.width = rect.width;
-                childRect.height = childDrawable.ElementHeight;
+
+                if (childRect.IsValid())
+                {
+                    childRect.width = rect.width;
+                    childRect.height = childDrawable.ElementHeight;
+                }
                 childDrawable.Draw(childRect, childDrawable.Label);
                 
-                childRect.y += childRect.height + CustomGUIUtility.Padding;
+                if (childRect.IsValid())
+                    childRect.y += childRect.height + CustomGUIUtility.Padding;
             }
         }
     }

@@ -16,13 +16,13 @@ namespace Rhinox.GUIUtils.Editor
         {
             _stringHelper.DrawError();
 
-            var text = _stringHelper.GetValue();
+            var text = _stringHelper.GetSmartValue();
             base.DrawInner(new GUIContent(text), options);
         }
         
         protected override void DrawInner(Rect rect, GUIContent label)
         {
-            var text = _stringHelper.GetValue();
+            var text = _stringHelper.GetSmartValue();
             base.DrawInner(rect, new GUIContent(text));
             _stringHelper.DrawError(rect);
         }
@@ -30,7 +30,7 @@ namespace Rhinox.GUIUtils.Editor
         [WrapDrawer(typeof(LabelTextAttribute), -1000)]
         public static BaseWrapperDrawable Create(LabelTextAttribute attr, IOrderedDrawable drawable)
         {
-            var member = MemberHelper.Create<string>(drawable.Host, attr.Text);
+            var member = MemberHelper.Create<string>(drawable.HostInfo, attr.Text);
             return new LabelTextWrapper(drawable)
             {
                 _stringHelper = member
@@ -40,7 +40,7 @@ namespace Rhinox.GUIUtils.Editor
         [WrapDrawer(typeof(FittedLabelAttribute), -1000)]
         public static BaseWrapperDrawable Create(FittedLabelAttribute attr, IOrderedDrawable drawable)
         {
-            var member = MemberHelper.Create<string>(drawable.Host, attr.Text);
+            var member = MemberHelper.Create<string>(drawable.HostInfo, attr.Text);
             return new LabelTextWrapper(drawable)
             {
                 _stringHelper = member

@@ -10,7 +10,7 @@ namespace Rhinox.GUIUtils.Editor
     {
         public string Name { get; protected set; }
         public float Order { get; set; }
-        public object Host { get; protected set; }
+        public GenericHostInfo HostInfo { get; protected set; }
         
         public bool IsVisible => true;
         public virtual GUIContent Label => GUIContent.none;

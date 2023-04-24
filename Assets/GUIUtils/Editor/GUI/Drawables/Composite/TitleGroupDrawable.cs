@@ -83,11 +83,11 @@ namespace Rhinox.GUIUtils.Editor
             base.Draw(rect, label);
         }
 
-        protected override void ParseAttribute(IOrderedDrawable child, TitleGroupAttribute attr)
+        protected override void ParseAttributeSmart(IOrderedDrawable child, TitleGroupAttribute attr)
         {
         }
 
-        protected override void ParseAttribute(TitleGroupAttribute attr)
+        protected override void ParseAttributeSmart(TitleGroupAttribute attr)
         {
             // TODO: current we just take the last entry, different entries having different data is invalid?
                 

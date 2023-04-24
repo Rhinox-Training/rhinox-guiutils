@@ -7,15 +7,15 @@ using UnityEngine;
 
 namespace Rhinox.GUIUtils.Editor
 {
-    public class BoolDrawableField : BaseMemberDrawable<bool>
+    public class BoolDrawableField : BaseMemberValueDrawable<bool>
     {
-        public BoolDrawableField(GenericMemberEntry entry) : base(entry)
+        public BoolDrawableField(GenericHostInfo hostInfo) : base(hostInfo)
         {
         }
 
         protected override bool DrawValue(GUIContent label, bool val, params GUILayoutOption[] options)
         {
-            return EditorGUILayout.Toggle(label, val, CustomGUIStyles.CleanLabelField, options);
+            return EditorGUILayout.Toggle(label, val, options);
         }
 
         protected override bool DrawValue(Rect rect, GUIContent label, bool val)

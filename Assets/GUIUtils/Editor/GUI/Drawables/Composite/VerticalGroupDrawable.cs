@@ -16,12 +16,12 @@ namespace Rhinox.GUIUtils.Editor
         {
         }
 
-        protected override void ParseAttribute(IOrderedDrawable child, VerticalGroupAttribute attr)
+        protected override void ParseAttributeSmart(IOrderedDrawable child, VerticalGroupAttribute attr)
         {
             // TODO
         }
 
-        protected override void ParseAttribute(VerticalGroupAttribute attr)
+        protected override void ParseAttributeSmart(VerticalGroupAttribute attr)
         {
             SetOrder(attr.Order);
             

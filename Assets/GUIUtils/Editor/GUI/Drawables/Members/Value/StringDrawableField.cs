@@ -5,9 +5,9 @@ using Object = System.Object;
 
 namespace Rhinox.GUIUtils.Editor
 {
-    public class StringDrawableField : BaseMemberDrawable<string>
+    public class StringDrawableField : BaseMemberValueDrawable<string>
     {
-        public StringDrawableField(GenericMemberEntry entry) : base(entry) { }
+        public StringDrawableField(GenericHostInfo hostInfo) : base(hostInfo) { }
 
         protected override string DrawValue(GUIContent label, string memberVal, params GUILayoutOption[] options)
         {

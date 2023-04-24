@@ -13,7 +13,7 @@ namespace Rhinox.GUIUtils.Editor
         {
             get
             {
-                if (_memberDrawable != null || _objectDrawable != null)
+                if (_drawable != null)
                     return EditorGUIUtility.singleLineHeight;
                 return base.ElementHeight;
             }
@@ -22,16 +22,13 @@ namespace Rhinox.GUIUtils.Editor
         public TextAlignment Alignment { get; private set; }
         public bool Overflow { get; private set; }
 
-        private readonly IMemberDrawable _memberDrawable;
-        private readonly IObjectDrawable _objectDrawable;
+        private readonly IDrawableRead _drawable;
         private GUIStyle _currentLabelStyle;
 
         public DisplayAsStringWrapper(IOrderedDrawable drawable) : base(drawable)
         {
-            if (drawable is IMemberDrawable memberDrawable)
-                _memberDrawable = memberDrawable;
-            if (drawable is IObjectDrawable objectDrawable)
-                _objectDrawable = objectDrawable;
+            if (drawable is IDrawableRead drawableRead)
+                _drawable = drawableRead;
         } 
         
         protected override void DrawInner(GUIContent label, params GUILayoutOption[] options)
@@ -89,17 +86,13 @@ namespace Rhinox.GUIUtils.Editor
 
         private bool GetDisplayText(out GUIContent contentLabel)
         {
-            if (_memberDrawable == null && _objectDrawable == null)
+            if (_drawable == null)
             {
                 contentLabel = null;
                 return false;
             }
             
-            object value = null;
-            if (_memberDrawable != null)
-                value = _memberDrawable.Entry.GetValue();
-            else if (_objectDrawable != null)
-                value = _objectDrawable.Instance;
+            object value = _drawable.GetValue();
             
             if (value is SerializedProperty serializedProperty)
                 value = serializedProperty.GetValue();

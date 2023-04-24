@@ -7,12 +7,12 @@ using Object = System.Object;
 
 namespace Rhinox.GUIUtils.Editor
 {
-    public class IntDrawableField : BaseMemberDrawable<int>
+    public class IntDrawableField : BaseMemberValueDrawable<int>
     {
         private int? _min;
         private int? _max;
 
-        public IntDrawableField(GenericMemberEntry entry) : base(entry) { }
+        public IntDrawableField(GenericHostInfo hostInfo) : base(hostInfo) { }
 
         protected override void Initialize()
         {

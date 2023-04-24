@@ -1,5 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.Reflection;
+using Rhinox.Lightspeed.Reflection;
+using UnityEditor;
 using UnityEngine;
 
 namespace Rhinox.GUIUtils.Editor
@@ -8,19 +11,21 @@ namespace Rhinox.GUIUtils.Editor
     {
         protected IOrderedDrawable _innerDrawable;
 
+        public override GenericHostInfo HostInfo => _innerDrawable.HostInfo;
+
         public override float ElementHeight => _innerDrawable.ElementHeight;
 
         public override bool IsVisible => _innerDrawable.IsVisible;
 
         public override GUIContent Label => _innerDrawable.Label;
 
-        public override string LabelString => string.Empty; // Not used in wrapper
+        protected override string LabelString => string.Empty; // Not used in wrapper
 
         protected BaseWrapperDrawable(IOrderedDrawable drawable)
         {
             if (drawable == null) throw new ArgumentNullException(nameof(drawable));
             _innerDrawable = drawable;
-            Host = _innerDrawable.Host;
+            base.HostInfo = _innerDrawable.HostInfo;
             Order = _innerDrawable.Order;
         }
 
@@ -56,6 +61,24 @@ namespace Rhinox.GUIUtils.Editor
         {
             base.OnPreDraw();
             _localShouldRepaint = false;
+        }
+        
+        
+        protected object GetValue()
+        {
+            if (_innerDrawable is IDrawableRead memberDrawable)
+                return memberDrawable.GetValue();
+
+            return null;
+        }
+        
+        protected bool SetValue(object value)
+        {
+            if (_innerDrawable is IDrawableReadWrite memberDrawable)
+                return memberDrawable.TrySetValue(value);
+            
+            Debug.LogError("Could not set value....");
+            return false;
         }
     }
 }

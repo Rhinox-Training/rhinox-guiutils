@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace Rhinox.GUIUtils.Editor
 {
-    public class ObjectCompositeDrawableMember : CompositeDrawableMember, IObjectDrawable
+    public class ObjectCompositeDrawableMember : CompositeDrawableMember, IDrawableReadWrite
     {
         public override GUIContent Label => _label;
 
@@ -18,7 +18,7 @@ namespace Rhinox.GUIUtils.Editor
         public Type ObjectType { get; }
         
         private IOrderedDrawable _innerDrawable;
-
+        
         public bool IsFoldout => Children.Any(drawable => drawable.IsVisible);
 
         public override float ElementHeight
@@ -34,43 +34,37 @@ namespace Rhinox.GUIUtils.Editor
 
         public override bool ShouldRepaint => base.ShouldRepaint || (_innerDrawable != null ? _innerDrawable.ShouldRepaint : false);
         
-        public static ObjectCompositeDrawableMember CreateFrom(GenericMemberEntry entry, IOrderedDrawable contents, float order = 0)
+        public static ObjectCompositeDrawableMember CreateFrom(GenericHostInfo hostInfo, IOrderedDrawable contents, float order = 0)
         {
-            var objectCompositeDrawable = new ObjectCompositeDrawableMember(entry, contents, order);
-            if (entry != null)
+            var objectCompositeDrawable = new ObjectCompositeDrawableMember(hostInfo, contents, order);
+            if (hostInfo != null)
             {
-                foreach (var attr in entry.GetAttributes())
+                foreach (var attr in hostInfo.GetAttributes())
                     objectCompositeDrawable.AddAttribute(attr);
             }
 
             return objectCompositeDrawable;
         }
 
-        private ObjectCompositeDrawableMember(GenericMemberEntry hostEntry, IOrderedDrawable contents, float order = 0)
-            : this(hostEntry.GetValue(), hostEntry.GetReturnType(), contents, hostEntry?.NiceName ?? "", order)
+        private ObjectCompositeDrawableMember(GenericHostInfo hostInfo, IOrderedDrawable contents, float order = 0)
+            : this(hostInfo.GetValue(), hostInfo.GetReturnType(), contents, hostInfo.NiceName ?? "", order)
         {
-            Host = hostEntry;
-            
+            HostInfo = hostInfo;
         }
         
-        public ObjectCompositeDrawableMember(object instance, Type objectType, IOrderedDrawable contents,
-            string name = "", float order = 0)
+        public ObjectCompositeDrawableMember(object instance, Type type, IOrderedDrawable contents, string name = "", float order = 0)
             : base(name, order)
         {
             Instance = instance;
-            ObjectType = objectType;
+            ObjectType = type;
             _innerDrawable = contents;
             
             if (name.IsNullOrEmpty())
                 _label = GUIContent.none;
             else
                 _label = new GUIContent(name);
-            
         }
-
-
-
-
+        
         public override void Draw(GUIContent label)
         {
             _hasLabel = label != GUIContent.none;
@@ -135,6 +129,16 @@ namespace Rhinox.GUIUtils.Editor
             _innerDrawable.Draw(rect, GUIContent.none);
 
             EditorGUI.indentLevel = indentLevel;
+        }
+
+        public object GetValue()
+        {
+            return Instance;
+        }
+        
+        public bool TrySetValue(object value)
+        {
+            return HostInfo.TrySetValue(value);
         }
     }
 }

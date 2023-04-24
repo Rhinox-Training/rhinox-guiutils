@@ -87,11 +87,16 @@ namespace Rhinox.GUIUtils.Editor
                 if (childDrawable == null || !childDrawable.IsVisible)
                     continue;
 
-                childRect.width = widths[i];
-                childRect.height = childDrawable.ElementHeight;
+                if (childRect.IsValid())
+                {
+                    childRect.width = widths[i];
+                    childRect.height = childDrawable.ElementHeight;
+                }
+                
                 childDrawable.Draw(childRect, childDrawable.Label);
-
-                childRect.x += childRect.width + CustomGUIUtility.Padding;
+                
+                if (childRect.IsValid())
+                    childRect.x += childRect.width + CustomGUIUtility.Padding;
             }
         }
 

@@ -79,54 +79,31 @@ namespace Rhinox.GUIUtils.Editor
                 
             EditorGUI.HelpBox(rect, _errorMessage, MessageType.Error);
         }
-
-        private MemberFilter CreateMemberFilter(string input, Type type)
-        {
-            return new MemberFilter((info, _) =>
-            {
-                if (info.Name != input)
-                    return false;
-                if (type != null && !info.GetReturnType().InheritsFrom(type))
-                    return false;
-                return true;
-            });
-        }
         
         protected bool TryFindMemberInHost<T>(string input, bool isStatic, out Func<T> staticGetter, out Func<object, T> instanceGetter)
         {
             staticGetter = null;
             instanceGetter = null;
             
-            if (!TryFindMemberInHost(input, typeof(T), isStatic, out MemberInfo info))
+            if (!TryFindMember(input, out MemberInfo info, isStatic))
                 return false;
 
-            if (info.IsStatic())
-                staticGetter = () => (T)info.GetValue(null);
+            if (!info.GetReturnType().InheritsFrom<T>())
+                return false;
+
+            if (isStatic)
+                staticGetter = () => (T) info.GetValue(null);
             else
-                instanceGetter = (i) => (T)info.GetValue(i);
+                instanceGetter = (i) => (T) info.GetValue(i);
             
             return true;
         }
         
-        protected bool TryFindMemberInHost(string input, Type type, bool isStatic, out MemberInfo info)
-        {
-            var members = FindMembers(isStatic, CreateMemberFilter(input, type));
-
-            info = members.FirstOrDefault();
-            return info != null;
-        }
-        
-        protected MemberInfo[] FindMembers(bool isStatic, MemberFilter filter, object filterCriteria = null)
+        protected bool TryFindMember(string filter, out MemberInfo info, bool isStatic = false)
         {
             var flags = isStatic ? BindingFlags.Static : (BindingFlags.Static | BindingFlags.Instance);
             flags |= BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.FlattenHierarchy;
-            var members = _objectType.FindMembers(
-                AllowedMembers,
-                flags,
-                filter,
-                filterCriteria
-            );
-            return members;
+            return ReflectionUtility.TryGetMember(_objectType, AllowedMembers, filter, out info, flags);
         }
     }
 }

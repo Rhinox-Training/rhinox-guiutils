@@ -20,6 +20,10 @@ namespace Rhinox.GUIUtils.Editor
         private int _drawPageIndex;
 
         private static Dictionary<Type, TypeCache.TypeCollection> _typeOptionsByType = new Dictionary<Type, TypeCache.TypeCollection>();
+        private readonly GenericHostInfo _hostInfo;
+
+        // Each tracks their own rect so you do need multiple
+        private readonly List<HoverTexture> _closeIcons = new List<HoverTexture>();
 
         private bool HasMultipleTypeOptions
         {
@@ -36,17 +40,7 @@ namespace Rhinox.GUIUtils.Editor
                 return false;
             }
         }
-
-        public string CustomTitle { get; private set; }
-
-        public PageableReorderableList(IList elements, 
-            bool draggable = true, bool displayHeader = true, bool displayAddButton = true, bool displayRemoveButton = true) 
-            : base(elements, draggable, displayHeader, displayAddButton, displayRemoveButton)
-        {
-            CustomTitle = elements.GetType().Name;
-            MaxItemsPerPage = DEFAULT_ITEMS_PER_PAGE;
-        }
-
+        
         public PageableReorderableList(SerializedObject serializedObject, SerializedProperty elements, 
             bool draggable = true, bool displayHeader = true, bool displayAddButton = true, bool displayRemoveButton = true) 
             : base(serializedObject, elements, draggable, displayHeader, displayAddButton, displayRemoveButton)
@@ -54,16 +48,16 @@ namespace Rhinox.GUIUtils.Editor
             MaxItemsPerPage = DEFAULT_ITEMS_PER_PAGE;
         }
 
-        public PageableReorderableList(GenericMemberEntry entry, 
+        public PageableReorderableList(GenericHostInfo hostInfo, 
             bool draggable = true, bool displayHeader = true, bool displayAddButton = true, bool displayRemoveButton = true)
-            : base(entry.GetSmartValue<IList>(), draggable, displayHeader, displayAddButton, displayRemoveButton)
+            : base(hostInfo.GetSmartValue<IList>(), draggable, displayHeader, displayAddButton, displayRemoveButton)
         {
             MaxItemsPerPage = DEFAULT_ITEMS_PER_PAGE;
-            CustomTitle = entry.NiceName;
+            _hostInfo = hostInfo;
         }
 
-        protected override void InitList(SerializedObject serializedObject, SerializedProperty elements, IList elementList, bool draggable,
-            bool displayHeader, bool displayAddButton, bool displayRemoveButton)
+        protected override void InitList(SerializedObject serializedObject, SerializedProperty elements, IList elementList, 
+            bool draggable, bool displayHeader, bool displayAddButton, bool displayRemoveButton)
         {
             base.InitList(serializedObject, elements, elementList, draggable, displayHeader, displayAddButton, displayRemoveButton);
             
@@ -88,21 +82,21 @@ namespace Rhinox.GUIUtils.Editor
             }
         }
 
-        protected override void OnDrawHeader(Rect rect)
+        protected override void OnDrawHeader(Rect rect, GUIContent label)
         {
             var nameRect = rect.AlignLeft(rect.width  * 0.6f);
             var secondaryRect = rect.AlignRight(rect.width * 0.4f);
             var sizeRect = secondaryRect.AlignLeft(secondaryRect.width * 0.5f);
             var multiPageRect = secondaryRect.AlignRight(secondaryRect.width * 0.5f);
-            if (serializedProperty != null)
-                EditorGUI.LabelField(nameRect, this.serializedProperty.displayName);
-            else
-                EditorGUI.LabelField(nameRect, CustomTitle);
+
+            var drawnLabel = ValidateLabel(label);
+            EditorGUI.LabelField(nameRect, drawnLabel);
+
             EditorGUI.LabelField(sizeRect, $"{count} Items");
 
-            if (list != null && list.Count > GetListDrawCount())
+            if (List != null && List.Count > GetListDrawCount())
             {
-                var maxPagesCount = Mathf.CeilToInt((float)list.Count / MaxItemsPerPage);
+                var maxPagesCount = Mathf.CeilToInt((float)List.Count / MaxItemsPerPage);
                 var infoRect = multiPageRect.AlignLeft(multiPageRect.width * 0.4f);
                 EditorGUI.LabelField(infoRect, $"{_drawPageIndex + 1}/{maxPagesCount}");
                 var buttonsRect = multiPageRect.AlignRight(multiPageRect.width * 0.6f);
@@ -125,6 +119,19 @@ namespace Rhinox.GUIUtils.Editor
             }
         }
 
+        private GUIContent ValidateLabel(GUIContent label)
+        {
+            if (label == null || label == GUIContent.none)
+            {
+                if (SerializedProperty != null)
+                    return GUIContentHelper.TempContent(m_ElementsProperty.displayName);
+                else if (_hostInfo != null)
+                    return GUIContentHelper.TempContent(_hostInfo.NiceName);
+            }
+            
+            return label;
+        }
+
         protected override void DoListFooter(Rect rect)
         {
             if (!displayAdd && !displayRemove)
@@ -132,7 +139,7 @@ namespace Rhinox.GUIUtils.Editor
 
             if (MaxItemsPerPage > 0)
             {
-                var list = serializedProperty != null ?  serializedProperty.GetValue() as IList : this.list as IList;
+                var list = SerializedProperty != null ?  SerializedProperty.GetValue() as IList : this.List as IList;
                 if (list != null && list.Count > MaxItemsPerPage)
                     rect.y -= (list.Count - MaxItemsPerPage - 1) * elementHeight;
             }
@@ -144,25 +151,27 @@ namespace Rhinox.GUIUtils.Editor
         {
             if (MaxItemsPerPage > 0 && elementIndex > MaxItemsPerPage)
                 return;
-            // const float margin = 16.0f;
-            // contentRect.y += margin; // TODO: is this margin?
-            // contentRect.height = elementHeight + margin;
 
-            Rect removeButton = default;
-            if (this.displayRemove)
+            Rect removeBtnRect = default;
+            bool drawRemoveButton = this.displayRemove && GUI.enabled;
+            if (drawRemoveButton && contentRect.IsValid())
             {
-                removeButton = contentRect.AlignRight(18).AlignCenterVertical(18);
-                contentRect = contentRect.PadRight(9);
+                removeBtnRect = contentRect.AlignRight(18).AlignCenterVertical(18);
+                removeBtnRect.xMin += 6;
+                contentRect = contentRect.PadRight(18);
             }
 
             base.DrawElement(contentRect, elementIndex + _drawPageIndex * MaxItemsPerPage, selected, focused);
-
-            if (this.displayRemove)
+            
+            if (drawRemoveButton)
             {
-                if (GUI.Button(removeButton, GUIContentHelper.TempContent(UnityIcon.AssetIcon("Fa_Times").Pad(2), tooltip: "Remove entry.")))
+                while (_closeIcons.Count <= elementIndex) // Each rect needs its own icon (cause the rect is cached)
+                    _closeIcons.Add(new HoverTexture(UnityIcon.AssetIcon("Fa_Times")));
+
+                if (CustomEditorGUI.IconButton(removeBtnRect, _closeIcons[elementIndex], tooltip: "Remove entry."))
                 {
                     this.index = elementIndex + _drawPageIndex * MaxItemsPerPage;
-                    s_Defaults.OnRemoveElement(this);
+                    HandleRemoveElement(this.index);
                     onChangedCallback?.Invoke(this);
                     if (_drawPageIndex * MaxItemsPerPage >= this.count && _drawPageIndex > 0)
                         --_drawPageIndex;
@@ -170,13 +179,42 @@ namespace Rhinox.GUIUtils.Editor
                 }
             }
         }
-        
+
+
+        protected override void HandleRemoveElement(int indexToRemove)
+        {
+            if (SerializedProperty != null)
+            {
+                SerializedProperty.DeleteArrayElementAtIndex(indexToRemove);
+                if (index >= SerializedProperty.arraySize - 1)
+                    index = SerializedProperty.arraySize - 1;
+            }
+            else
+            {
+                var collection = m_ElementList;
+                if (collection is Array arr)
+                {
+                    m_ElementList = RemoveAtGeneric(arr, indexToRemove);
+                    if (_hostInfo != null)
+                        _hostInfo.TrySetValue(m_ElementList);
+                }
+                else
+                {
+                    m_ElementList.RemoveAt(indexToRemove);
+                    if (_hostInfo != null)
+                        _hostInfo.TrySetValue(m_ElementList);
+                }
+                if (index >= List.Count - 1)
+                    index = List.Count - 1;
+            }
+        }
+
         protected override void OnDrawElementBackground(Rect rect, int index, bool selected, bool focused, bool draggable)
         {
             if (MaxItemsPerPage > 0 && index > MaxItemsPerPage)
                 return;
 
-            s_Defaults.DrawElementBackgroundAlternating(rect, index, selected, focused, draggable);
+            base.OnDrawElementBackground(rect, index, selected, focused, draggable);
         }
         
         protected override int GetListDrawCount()
@@ -199,26 +237,46 @@ namespace Rhinox.GUIUtils.Editor
             {
                 genericMenu.AddItem(new GUIContent(option.Name), false, () =>
                 {
-                    if (serializedProperty != null)
+                    if (!Defaults.TryCreateElement(option, out object element, out string errorString))
                     {
-                        ++serializedProperty.arraySize;
-                        var serializedPropElement = serializedProperty.GetArrayElementAtIndex(serializedProperty.arraySize - 1);
+                        Debug.LogError(errorString);
+                        return;
+                    }
+                    
+                    if (SerializedProperty != null)
+                    {
+                        ++SerializedProperty.arraySize;
+                        var serializedPropElement = SerializedProperty.GetArrayElementAtIndex(SerializedProperty.arraySize - 1);
                         var hostInfo = serializedPropElement.GetHostInfo();
-                        if (option.InheritsFrom(typeof(UnityEngine.Object)))
-                        {
-                            hostInfo.SetValue((UnityEngine.Object)null);
-                        }
-                        else
-                        {
-                            var instance = Activator.CreateInstance(option);
-                            hostInfo.SetValue(instance);
-                        }
+                        hostInfo.SetValue(element);
                     }
                     else
                     {
-                        if (list == null)
-                            list = (IList)Activator.CreateInstance(this.m_ListType);
-                        index = list.Add(Activator.CreateInstance(option));
+                        if (m_ElementList == null)
+                            m_ElementList = (IList)Activator.CreateInstance(this.m_ListType);
+
+                        if (m_ElementList is Array)
+                        {
+                            m_ElementList = (IList) ResizeArray(m_ElementList, List.Count + 1);
+                            if (_hostInfo != null)
+                                _hostInfo.TrySetValue(m_ElementList);
+                            index = m_ElementList.Count - 1;
+
+                            if (_hostInfo != null)
+                            {
+                                var hostInfo = _hostInfo.CreateArrayElement(index);
+                                hostInfo.SetValue(element);
+                            }
+                            else 
+                                m_ElementList[index] = element;
+                        }
+                        else
+                        {
+                            index = m_ElementList.Add(element);
+                        
+                            if (_hostInfo != null)
+                                _hostInfo.TrySetValue(m_ElementList);
+                        }
                     }
 
                     if (onChangedCallback != null)
@@ -226,6 +284,18 @@ namespace Rhinox.GUIUtils.Editor
                 });
             }
             genericMenu.DropDown(rect1);
+        }
+        
+        static object ResizeArray(object array, int n)
+        {
+            var type = array.GetType();
+            var elemType = type.GetElementType();
+            var resizeMethod = typeof(Array).GetMethod("Resize", BindingFlags.Static | BindingFlags.Public);
+            var properResizeMethod = resizeMethod.MakeGenericMethod(elemType);
+            var parameters = new object[] { array, n };
+            properResizeMethod.Invoke(null, parameters);
+            array = parameters[0];
+            return array;
         }
 
         protected override GUIContent GetAddIcon()

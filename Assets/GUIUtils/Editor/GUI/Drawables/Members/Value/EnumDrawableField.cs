@@ -7,15 +7,15 @@ using UnityEngine;
 
 namespace Rhinox.GUIUtils.Editor
 {
-    public class EnumDrawableField: BaseMemberDrawable<Enum>
+    public class EnumDrawableField: BaseMemberValueDrawable<Enum>
     {
         public bool HasFlags { get; }
         public bool HasToggleButtons { get; }
         
-        public EnumDrawableField(GenericMemberEntry entry) : base(entry)
+        public EnumDrawableField(GenericHostInfo hostInfo) : base(hostInfo)
         {
-            HasFlags = entry.GetReturnType().GetCustomAttribute<FlagsAttribute>() != null;
-            HasToggleButtons = entry.GetReturnType().GetCustomAttribute<EnumToggleButtonsAttribute>() != null;
+            HasFlags = hostInfo.GetReturnType().GetCustomAttribute<FlagsAttribute>() != null;
+            HasToggleButtons = hostInfo.GetAttribute<EnumToggleButtonsAttribute>() != null;
         }
 
         protected override Enum DrawValue(GUIContent label, Enum memberVal, params GUILayoutOption[] options)

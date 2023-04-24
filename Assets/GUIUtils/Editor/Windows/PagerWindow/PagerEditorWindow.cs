@@ -99,7 +99,7 @@ namespace Rhinox.GUIUtils.Editor
             int headerHeight = DrawHeaderEditor();
 
             // Draw the pager
-            var headerRect = CustomEditorGUI.GetTopLevelLayoutRect().AlignTop(34).AddY(headerHeight);
+            var headerRect = contentRect.AlignTop(34).AddY(headerHeight);
             CustomEditorGUI.DrawSolidRect(headerRect, CustomGUIStyles.BoxBackgroundColor);
             CustomEditorGUI.DrawBorders(headerRect, 0, 0, 0, 1);
             
@@ -117,6 +117,7 @@ namespace Rhinox.GUIUtils.Editor
             {
                 if (page.BeginPage())
                 {
+
                     EditorGUI.BeginChangeCheck();
                     GUILayout.BeginVertical(GUILayout.ExpandHeight(true));
                     GUILayout.Space(30);
@@ -124,6 +125,7 @@ namespace Rhinox.GUIUtils.Editor
                     DrawEditor(i);
                     GUILayout.EndScrollView();
                     GUILayout.EndVertical();
+                    DrawEditorOverlay(i);
                     if (EditorGUI.EndChangeCheck() && page.Value is PagerPage odinPage)
                         odinPage.MarkAsChanged();
                 }
@@ -132,8 +134,25 @@ namespace Rhinox.GUIUtils.Editor
                 i++;
             }
 
+
             _pager.EndGroup();
         }
+
+#if ODIN_INSPECTOR
+        protected virtual void DrawEditorOverlay(int index)
+        {
+            if (CurrentPage.Value is PagerPage page)
+                page.DrawTopOverlay();
+        }
+#else
+        protected override void DrawEditorOverlay(int index)
+        {
+            base.DrawEditorOverlay(index);
+            
+            if (CurrentPage.Value is PagerPage page)
+                page.DrawTopOverlay();
+        }
+#endif
 
         public void AddItemsToMenu(GenericMenu menu)
         {

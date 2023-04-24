@@ -11,7 +11,7 @@ namespace Rhinox.GUIUtils.Editor
     public class DrawablePropertyView : IEditor
     {
         private readonly object _instance;
-        private readonly GenericMemberEntry _entry;
+        private readonly GenericHostInfo _hostInfo;
         private readonly SerializedObject _serializedObject;
         private readonly IOrderedDrawable _rootDrawable;
 
@@ -23,28 +23,28 @@ namespace Rhinox.GUIUtils.Editor
         {
             if (instance == null) throw new ArgumentNullException(nameof(instance));
             _instance = instance;
-            _entry = null;
+            _hostInfo = null;
             _serializedObject = null;
             
             _rootDrawable = DrawableFactory.CreateDrawableFor(_instance, _instance.GetType());
         }
         
-        public DrawablePropertyView(GenericMemberEntry entry)
+        public DrawablePropertyView(GenericHostInfo hostInfo)
         {
-            if (entry == null) throw new ArgumentNullException(nameof(entry));
-            _entry = entry;
-            _instance = _entry.Instance;
+            if (hostInfo == null) throw new ArgumentNullException(nameof(hostInfo));
+            _instance = hostInfo.GetHost();
+            _hostInfo = hostInfo;
             _serializedObject = null;
 
-            _rootDrawable = DrawableFactory.CreateDrawableFor(entry);
+            _rootDrawable = DrawableFactory.CreateDrawableFor(hostInfo);
         }
         
         public DrawablePropertyView(SerializedObject serializedObject)
         {
             if (serializedObject == null) throw new ArgumentNullException(nameof(serializedObject));
             _instance = serializedObject;
+            _hostInfo = null;
             _serializedObject = serializedObject;
-            _entry = null;
             
             _rootDrawable = DrawableFactory.CreateDrawableFor(_serializedObject, _serializedObject.targetObject.GetType());
         }
@@ -53,10 +53,10 @@ namespace Rhinox.GUIUtils.Editor
         {
             if (property == null) throw new ArgumentNullException(nameof(property));
             _instance = property;
+            _hostInfo = property.GetHostInfo();
             _serializedObject = property.serializedObject;
-            _entry = null;
             
-            _rootDrawable = DrawableFactory.CreateDrawableFor(property, true);
+            _rootDrawable = DrawableFactory.CreateDrawableFor(property);
         }
         
         public void DrawLayout()
@@ -65,8 +65,14 @@ namespace Rhinox.GUIUtils.Editor
                 return;
 
             OnPreDraw();
-            
-            _rootDrawable.Draw(_rootDrawable.Label);
+            try
+            {
+                _rootDrawable.Draw(GUIContent.none);
+            }
+            catch (ExitGUIException)
+            {
+                // Do nothing, this is supported behaviour
+            }
 
             OnPostDraw();
         }
@@ -80,8 +86,9 @@ namespace Rhinox.GUIUtils.Editor
             
             
             // TODO: should we force height?
-            rect.height = Height;
-            _rootDrawable.Draw(rect, _rootDrawable.Label);
+            if (rect.IsValid())
+                rect.height = Height;
+            _rootDrawable.Draw(rect, GUIContent.none);
             
             OnPostDraw();
         }

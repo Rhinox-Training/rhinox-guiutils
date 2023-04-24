@@ -14,16 +14,27 @@ namespace Rhinox.GUIUtils.Editor
         private Dictionary<string, GUIContent> _typeContentByName;
         private List<Type> _typeOptions;
         private readonly SerializedProperty _serializedProperty;
-        private readonly HostInfo _hostInfo;
+        private readonly GenericHostInfo _hostInfo;
         private object _managedReferenceValue;
 
-        public NullReferenceDrawable(SerializedProperty property) : base(new UndrawableField<object>(null, property.FindFieldInfo()))
+        public NullReferenceDrawable(SerializedProperty property) : base(new UndrawableField(property.GetHostInfo()))
         {
             if (property == null)
                 throw new ArgumentNullException(nameof(property));
-            _typeContentByName = new Dictionary<string, GUIContent>();
             _serializedProperty = property;
             _hostInfo = property.GetHostInfo();
+            _typeContentByName = new Dictionary<string, GUIContent>();
+            var type = _hostInfo.GetReturnType(true);
+            _typeOptions = ReflectionUtility.GetTypesInheritingFrom(type);
+        }
+
+        public NullReferenceDrawable(GenericHostInfo hostInfo) : base(new UndrawableField(hostInfo))
+        {
+            if (hostInfo == null)
+                throw new ArgumentNullException(nameof(hostInfo));
+            _serializedProperty = null;
+            _hostInfo = hostInfo;
+            _typeContentByName = new Dictionary<string, GUIContent>();
             var type = _hostInfo.GetReturnType(true);
             _typeOptions = ReflectionUtility.GetTypesInheritingFrom(type);
         }
@@ -33,7 +44,7 @@ namespace Rhinox.GUIUtils.Editor
             if (_managedReferenceValue == null)
             {
                 Rect dropdownPosition = EditorGUILayout.GetControlRect(true, options).AlignTop(EditorGUIUtility.singleLineHeight);
-                DrawTypePicker(dropdownPosition, _serializedProperty, GUIContent.none);
+                DrawTypePicker(dropdownPosition, GUIContent.none);
             }
             else
             {
@@ -45,7 +56,7 @@ namespace Rhinox.GUIUtils.Editor
         {
             if (_managedReferenceValue == null)
             {
-                DrawTypePicker(position, _serializedProperty, GUIContent.none);
+                DrawTypePicker(position, GUIContent.none);
             }
             else
             {
@@ -53,12 +64,12 @@ namespace Rhinox.GUIUtils.Editor
             }
         }
 
-        private void DrawTypePicker(Rect position, SerializedProperty property, GUIContent label)
+        private void DrawTypePicker(Rect position, GUIContent label)
         {
             if (label != null)
                 position = EditorGUI.PrefixLabel(position, label);
 
-            if (!EditorGUI.DropdownButton(position, GetTypeName(property), FocusType.Passive))
+            if (!EditorGUI.DropdownButton(position, GetTypeName(), FocusType.Passive))
                 return;
             
             var menu = new GenericMenu();
@@ -75,23 +86,44 @@ namespace Rhinox.GUIUtils.Editor
             var value = (data as Type).CreateInstance();
             
             _managedReferenceValue = value;
-            _serializedProperty.managedReferenceValue = value;
-            _serializedProperty.isExpanded = value != null;
-            _serializedProperty.serializedObject.ApplyModifiedProperties();
+            if (_serializedProperty != null)
+            {
+                _serializedProperty.managedReferenceValue = value;
+                _serializedProperty.isExpanded = value != null;
+                _serializedProperty.serializedObject.ApplyModifiedProperties();
+            }
+            else if (_hostInfo != null)
+            {
+                _hostInfo.SetValue(value);
+            }
 
             UpdateInnerDrawable();
         }
 
         private void UpdateInnerDrawable()
         {
-            _innerDrawable = DrawableFactory.CreateDrawableFor(_serializedProperty, true);
+            if (_serializedProperty != null)
+                _innerDrawable = DrawableFactory.CreateDrawableFor(_serializedProperty);
+            else if (_hostInfo != null)
+                _innerDrawable = DrawableFactory.CreateDrawableFor(_hostInfo);
         }
 
-        GUIContent GetTypeName(SerializedProperty property)
+        private GUIContent GetTypeName()
+        {
+            if (_hostInfo != null)
+                return GetTypeName(_hostInfo.GetReturnType().FullName);
+            if (_serializedProperty != null)
+            {
+                if (_serializedProperty.propertyType == SerializedPropertyType.ManagedReference)
+                    return GetTypeName(_serializedProperty.managedReferenceFullTypename);
+                return GetTypeName(_serializedProperty.type);
+            }
+            return GUIContent.none;
+        }
+
+        private GUIContent GetTypeName(string fullTypeName)
         {
             // Cache this string.
-            string fullTypeName = property.managedReferenceFullTypename;
-
             if (string.IsNullOrEmpty(fullTypeName))
                 return NoneContent;
 

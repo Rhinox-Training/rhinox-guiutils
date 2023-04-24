@@ -16,6 +16,8 @@ namespace Rhinox.GUIUtils.Editor
         private const string _arrayElementExpr = @"([a-zA-Z_]*)\[(\d+)\]";
         private static Regex _arrayElementRegex;
 
+        private const BindingFlags InstanceFlags = BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase;
+
         public static bool Update(this SerializedProperty prop, ref HostInfo info)
         {
             if (info == null || info.Path != prop.propertyPath)
@@ -25,6 +27,7 @@ namespace Rhinox.GUIUtils.Editor
             }
             return false;
         }
+        
         public static HostInfo GetHostInfo(this SerializedProperty prop)
         {
             if (prop.depth == 0)
@@ -46,7 +49,9 @@ namespace Rhinox.GUIUtils.Editor
                 
                 if (hostInfo == null)
                     hostInfo = GetValueInfo(prop.serializedObject, element, subArrayIndex);
-                else hostInfo = GetValueInfo(hostInfo, element, subArrayIndex);
+                else 
+                    hostInfo = GetValueInfo(hostInfo, element, subArrayIndex);
+
                 hostInfo.Path = string.Join(".", parts.Take(i));
             }
 
@@ -146,25 +151,33 @@ namespace Rhinox.GUIUtils.Editor
             if (property.propertyPath.Contains(".Array.data[") || property.propertyPath.Contains("."))
             {
                 var hostInfo = property.GetHostInfo();
-                return hostInfo.FieldInfo;
+                return (FieldInfo)hostInfo.MemberInfo;
             }
             
             System.Type parentType = property.serializedObject.targetObject.GetType();
-            System.Reflection.FieldInfo fi = parentType.GetField(property.propertyPath, BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
+            ReflectionUtility.TryGetField(parentType, property.propertyPath, out FieldInfo fi);
             return fi;
         }
 
         private static HostInfo GetValueInfo(SerializedObject root, string element, int arrayIndex = -1)
         {
-            var fieldInfo = root.targetObject.GetType().GetField(element, BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase);
-            var hostInfo = new HostInfo(root, fieldInfo, arrayIndex);
-            hostInfo.Path = element;
-            return hostInfo;
+            var type = root.targetObject.GetType();
+            // Should never be false, throw?
+            ReflectionUtility.TryGetField(type, element, out FieldInfo fieldInfo, InstanceFlags);
+            var hostInfo = new HostInfo(root, fieldInfo) {
+                Path = element
+            };
+            if (arrayIndex < 0)
+                return hostInfo;
+            return new HostInfo(hostInfo, fieldInfo, arrayIndex);
         }
         
         private static HostInfo GetValueInfo(HostInfo host, string element, int arrayIndex = -1)
         {
-            var fieldInfo = host.GetReturnType().GetField(element, BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase);
+            // Should never be false, throw?
+            ReflectionUtility.TryGetField(host.GetReturnType(), element, out FieldInfo fieldInfo, InstanceFlags);
+            if (arrayIndex >= 0) // Host becomes the list fi we are dealing with an array element
+                host = new HostInfo(host, fieldInfo);
             return new HostInfo(host, fieldInfo, arrayIndex);
         }
         
@@ -216,7 +229,8 @@ namespace Rhinox.GUIUtils.Editor
 
             var hostInfo = property.GetHostInfo();
             var type = hostInfo.GetReturnType();
-            var fields = type.GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+
+            var fields = ReflectionUtility.GetAllFields(type, typeof(UnityEngine.Object));
             foreach (var field in fields)
             {
                 if (field.GetCustomAttribute<HideInInspector>() != null)
@@ -248,7 +262,7 @@ namespace Rhinox.GUIUtils.Editor
                                 Host = property,
                                 FieldInfo = field,
                                 SerializedProperty = null,
-                                OverrideDrawable = new DrawableHelpBox(warning, MessageType.Warning, field)
+                                OverrideDrawable = new DrawableHelpBox(warning, MessageType.Warning, new HostInfo(hostInfo, field))
                             };
                             
                     }
@@ -271,7 +285,7 @@ namespace Rhinox.GUIUtils.Editor
                 yield break;
             
             var type = serializedObject.targetObject.GetType();
-            var fields = type.GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+            var fields = ReflectionUtility.GetAllFields(type, typeof(UnityEngine.Object));
             foreach (var field in fields)
             {
                 if (field.GetCustomAttribute<HideInInspector>() != null)
@@ -303,7 +317,7 @@ namespace Rhinox.GUIUtils.Editor
                                 Host = serializedObject,
                                 FieldInfo = field,
                                 SerializedProperty = null,
-                                OverrideDrawable = new DrawableHelpBox(warning, MessageType.Warning)
+                                OverrideDrawable = new DrawableHelpBox(warning, MessageType.Warning, new GenericHostInfo(serializedObject.targetObject, field))
                             };
                             
                     }

@@ -3,17 +3,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Rhinox.Lightspeed;
-using Sirenix.OdinInspector;
+using Rhinox.Lightspeed.Reflection;
 using UnityEditor;
 using UnityEngine;
-using UnityEngine.UI;
-using Object = UnityEngine.Object;
 
 namespace Rhinox.GUIUtils.Editor
 {
-    public class DrawableButton : BaseEntityDrawable
+    public class DrawableButton : BaseDrawable
     {
-        public override string LabelString => null; // TODO: Button has no label?
+        protected override string LabelString => null; // TODO: Button has no label?
         
         public string Name { get; set; }
         
@@ -22,19 +20,26 @@ namespace Rhinox.GUIUtils.Editor
         private readonly MethodInfo _methodInfo;
 
         public DrawableButton(object instanceVal, MethodInfo method)
-            : base(instanceVal, method)
         {
-            Host = instanceVal;
+            HostInfo = new GenericHostInfo(instanceVal, method);
             _methodInfo = method;
         }
-        
+
+        protected override void Initialize()
+        {
+            base.Initialize();
+            if (Name.IsNullOrEmpty())
+                Name = _methodInfo?.GetNiceName();
+        }
+
         protected override void DrawInner(GUIContent label, params GUILayoutOption[] options)
         {
             var height = Height == 0 ? (int)EditorGUIUtility.singleLineHeight : Height;
-            if (GUILayout.Button((Name ?? _methodInfo.Name).SplitCamelCase(), options.Append(GUILayout.Height(height))))
+            if (GUILayout.Button(Name, options.Append(GUILayout.Height(height))))
             {
-                if (!TryCreateDialog(_methodInfo, Host))
-                    _methodInfo.Invoke(Host, null);
+                var host = HostInfo.GetHost();
+                if (!TryCreateDialog(_methodInfo, host))
+                    _methodInfo.Invoke(host, null);
             }
         }
 
@@ -42,10 +47,10 @@ namespace Rhinox.GUIUtils.Editor
         {
             var buttonHeight = Height == 0 ? (int)EditorGUIUtility.singleLineHeight : Height;
             rect.height = buttonHeight;
-            if (GUI.Button(rect, (Name ?? _methodInfo.Name).SplitCamelCase()))
+            if (GUI.Button(rect, Name))
             {
-                if (!TryCreateDialog(_methodInfo, Host))
-                    _methodInfo.Invoke(Host, null);
+                if (!TryCreateDialog(_methodInfo, HostInfo))
+                    _methodInfo.Invoke(HostInfo, null);
             }
         }
 
@@ -56,29 +61,28 @@ namespace Rhinox.GUIUtils.Editor
             if (parameters.Length == 0)
                 return false;
 
-
             var dialog = EditorInputDialog.Create(method.Name, "Provide additional parameters:");
             var valueReferences = new List<DialogBuilder.IValueReference>();
             foreach (var paramInfo in parameters)
             {
                 if (paramInfo.ParameterType == typeof(int))
                 {
-                    dialog = dialog.IntField(paramInfo.Name, out var intField);
+                    dialog = dialog.IntField(paramInfo.GetNiceName(), out var intField);
                     valueReferences.AddUnique(intField);
                 }
                 else if (paramInfo.ParameterType == typeof(bool))
                 {
-                    dialog = dialog.BooleanField(paramInfo.Name, out var boolField);
+                    dialog = dialog.BooleanField(paramInfo.GetNiceName(), out var boolField);
                     valueReferences.AddUnique(boolField);
                 }
                 else if (paramInfo.ParameterType == typeof(float))
                 {
-                    dialog = dialog.FloatField(paramInfo.Name, out var floatField);
+                    dialog = dialog.FloatField(paramInfo.GetNiceName(), out var floatField);
                     valueReferences.AddUnique(floatField);
                 }
                 else if (paramInfo.ParameterType == typeof(string))
                 {
-                    dialog = dialog.TextField(paramInfo.Name, out var stringField);
+                    dialog = dialog.TextField(paramInfo.GetNiceName(), out var stringField);
                     valueReferences.AddUnique(stringField);
                 }
                 else

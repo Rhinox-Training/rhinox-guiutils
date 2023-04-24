@@ -8,7 +8,8 @@ namespace Rhinox.GUIUtils.Editor
         private bool _state;
         private bool _previousState;
 
-        private IPropertyMemberHelper<bool> _stateMember;
+        private IPropertyMemberHelper _stateMember;
+        public object _stateMemberValue;
 
         public GUIStateWrapper(IOrderedDrawable drawable) : base(drawable)
         {
@@ -37,29 +38,35 @@ namespace Rhinox.GUIUtils.Editor
         {
             if (_stateMember == null)
                 return !_state;
-            
-            return _stateMember.GetValue() != _state;
+
+            var value = _stateMember.GetValue();
+            if (_stateMemberValue == null)
+                return  (bool) (value ?? false) != _state;
+            return (value == _stateMemberValue) != _state;
         }
 
         [WrapDrawer(typeof(EnableIfAttribute), -10500)]
         public static BaseWrapperDrawable Create(EnableIfAttribute attr, IOrderedDrawable drawable)
-        {
-            var member = MemberHelper.Create<bool>(drawable.Host, attr.MemberName);
+        { 
+            var member = MemberHelper.Create<object>(drawable.HostInfo, attr.MemberName);
             return new GUIStateWrapper(drawable)
             {
                 _state = true,
-                _stateMember = member
+                _stateMember = member,
+                _stateMemberValue = attr.Value
             };
         }
         
         [WrapDrawer(typeof(DisableIfAttribute), -10500)]
         public static BaseWrapperDrawable Create(DisableIfAttribute attr, IOrderedDrawable drawable)
         {
-            var member = MemberHelper.Create<bool>(drawable.Host, attr.MemberName);
+            var member = MemberHelper.Create<object>(drawable.HostInfo, attr.MemberName);
+            
             return new GUIStateWrapper(drawable)
             {
                 _state = false,
-                _stateMember = member
+                _stateMember = member,
+                _stateMemberValue = attr.Value
             };
         }
         
