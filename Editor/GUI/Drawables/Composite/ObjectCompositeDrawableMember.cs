@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace Rhinox.GUIUtils.Editor
 {
-    public class ObjectCompositeDrawableMember : CompositeDrawableMember, IDrawableReadWrite, IHostedDrawable
+    public class ObjectCompositeDrawableMember : CompositeDrawableMember, IDrawableReadWrite
     {
         public override GUIContent Label => _label;
 
@@ -19,8 +19,6 @@ namespace Rhinox.GUIUtils.Editor
         
         private IOrderedDrawable _innerDrawable;
         
-        public GenericHostInfo HostInfo { get; }
-
         public bool IsFoldout => Children.Any(drawable => drawable.IsVisible);
 
         public override float ElementHeight
@@ -49,9 +47,8 @@ namespace Rhinox.GUIUtils.Editor
         }
 
         private ObjectCompositeDrawableMember(GenericHostInfo hostInfo, IOrderedDrawable contents, float order = 0)
-            : this(hostInfo.GetValue(), hostInfo.GetReturnType(), contents, hostInfo?.NiceName ?? "", order)
+            : this(hostInfo.GetValue(), hostInfo.GetReturnType(), contents, hostInfo.NiceName ?? "", order)
         {
-            Host = hostInfo.Parent ?? hostInfo.GetHost();
             HostInfo = hostInfo;
         }
         
@@ -141,15 +138,7 @@ namespace Rhinox.GUIUtils.Editor
         
         public bool TrySetValue(object value)
         {
-            if (Host is GenericHostInfo hostInfo)
-                return hostInfo.TrySetValue(value);
-            if (Host is SerializedProperty prop)
-            {
-                prop.SetValue(value);
-                return true;
-            }
-
-            return false;
+            return HostInfo.TrySetValue(value);
         }
     }
 }

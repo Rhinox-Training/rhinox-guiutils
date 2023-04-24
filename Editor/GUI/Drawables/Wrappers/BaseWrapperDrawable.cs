@@ -7,19 +7,11 @@ using UnityEngine;
 
 namespace Rhinox.GUIUtils.Editor
 {
-    public abstract class BaseWrapperDrawable : BaseDrawable, IHostedDrawable
+    public abstract class BaseWrapperDrawable : BaseDrawable
     {
         protected IOrderedDrawable _innerDrawable;
 
-        public GenericHostInfo HostInfo
-        {
-            get
-            {
-                if (_innerDrawable is IHostedDrawable hostedDrawable)
-                    return hostedDrawable.HostInfo;
-                return null;
-            }
-        }
+        public override GenericHostInfo HostInfo => _innerDrawable.HostInfo;
 
         public override float ElementHeight => _innerDrawable.ElementHeight;
 
@@ -27,13 +19,13 @@ namespace Rhinox.GUIUtils.Editor
 
         public override GUIContent Label => _innerDrawable.Label;
 
-        public override string LabelString => string.Empty; // Not used in wrapper
+        protected override string LabelString => string.Empty; // Not used in wrapper
 
         protected BaseWrapperDrawable(IOrderedDrawable drawable)
         {
             if (drawable == null) throw new ArgumentNullException(nameof(drawable));
             _innerDrawable = drawable;
-            Host = _innerDrawable.Host;
+            base.HostInfo = _innerDrawable.HostInfo;
             Order = _innerDrawable.Order;
         }
 

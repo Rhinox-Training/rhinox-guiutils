@@ -30,7 +30,7 @@ namespace Rhinox.GUIUtils.Editor
         [WrapDrawer(typeof(LabelTextAttribute), -1000)]
         public static BaseWrapperDrawable Create(LabelTextAttribute attr, IOrderedDrawable drawable)
         {
-            var member = MemberHelper.Create<string>(drawable.Host, attr.Text);
+            var member = MemberHelper.Create<string>(drawable.HostInfo, attr.Text);
             return new LabelTextWrapper(drawable)
             {
                 _stringHelper = member
@@ -40,7 +40,7 @@ namespace Rhinox.GUIUtils.Editor
         [WrapDrawer(typeof(FittedLabelAttribute), -1000)]
         public static BaseWrapperDrawable Create(FittedLabelAttribute attr, IOrderedDrawable drawable)
         {
-            var member = MemberHelper.Create<string>(drawable.Host, attr.Text);
+            var member = MemberHelper.Create<string>(drawable.HostInfo, attr.Text);
             return new LabelTextWrapper(drawable)
             {
                 _stringHelper = member

@@ -9,19 +9,19 @@ namespace Rhinox.GUIUtils.Editor
 {
     public class DrawableMethod : BaseDrawable
     {
-        public override string LabelString => null; // TODO: Button has no label?
+        protected override string LabelString => null; // TODO: Button has no label?
         
         private readonly MethodInfo _methodInfo;
 
         public DrawableMethod(object instanceVal, MethodInfo method)
         {
-            Host = instanceVal;
+            HostInfo = new GenericHostInfo(instanceVal, method);
             _methodInfo = method;
         }
         
         protected override void DrawInner(GUIContent label, params GUILayoutOption[] options)
         {
-            _methodInfo?.Invoke(Host, Array.Empty<object>());
+            _methodInfo?.Invoke(HostInfo.GetHost(), Array.Empty<object>());
         }
 
         protected override void DrawInner(Rect rect, GUIContent label)

@@ -41,18 +41,14 @@ namespace Rhinox.GUIUtils.Editor
 
             var value = _stateMember.GetValue();
             if (_stateMemberValue == null)
-                return (bool)value != _state;
+                return  (bool) (value ?? false) != _state;
             return (value == _stateMemberValue) != _state;
         }
 
         [WrapDrawer(typeof(EnableIfAttribute), -10500)]
         public static BaseWrapperDrawable Create(EnableIfAttribute attr, IOrderedDrawable drawable)
-        {
-            IPropertyMemberHelper member = null;
-            if (attr.Value == null)
-                member = MemberHelper.Create<bool>(drawable.Host, attr.MemberName);
-            else
-                member = MemberHelper.Create<object>(drawable.Host, attr.MemberName);
+        { 
+            var member = MemberHelper.Create<object>(drawable.HostInfo, attr.MemberName);
             return new GUIStateWrapper(drawable)
             {
                 _state = true,
@@ -64,11 +60,7 @@ namespace Rhinox.GUIUtils.Editor
         [WrapDrawer(typeof(DisableIfAttribute), -10500)]
         public static BaseWrapperDrawable Create(DisableIfAttribute attr, IOrderedDrawable drawable)
         {
-            IPropertyMemberHelper member = null;
-            if (attr.Value == null)
-                member = MemberHelper.Create<bool>(drawable.Host, attr.MemberName);
-            else
-                member = MemberHelper.Create<object>(drawable.Host, attr.MemberName);
+            var member = MemberHelper.Create<object>(drawable.HostInfo, attr.MemberName);
             
             return new GUIStateWrapper(drawable)
             {

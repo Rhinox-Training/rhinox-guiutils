@@ -9,9 +9,9 @@ using UnityEngine;
 
 namespace Rhinox.GUIUtils.Editor
 {
-    public abstract class BaseMemberDrawable : BaseDrawable, IHostedDrawable
+    public abstract class BaseMemberDrawable : BaseDrawable
     {
-        public override string LabelString => HostInfo.NiceName;
+        protected override string LabelString => HostInfo.NiceName;
         
         public GenericHostInfo HostInfo { get; }
         
@@ -20,7 +20,7 @@ namespace Rhinox.GUIUtils.Editor
         protected BaseMemberDrawable(GenericHostInfo hostInfo)
         {
             HostInfo = hostInfo;
-            Host = hostInfo.Parent ?? hostInfo.GetHost();
+            base.HostInfo = hostInfo;
         }
         
         public override IEnumerable<TAttribute> GetDrawableAttributes<TAttribute>()
