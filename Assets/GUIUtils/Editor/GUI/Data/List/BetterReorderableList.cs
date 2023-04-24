@@ -155,7 +155,7 @@ namespace Rhinox.GUIUtils.Editor
                 return rect;
             
             Rect contentRect = rect;
-            if (AreElementsDraggable)
+            if (AreElementsDraggable && GUI.enabled)
                 contentRect.xMin += 20f;
             else
                 contentRect.xMin += 6f;
@@ -210,12 +210,17 @@ namespace Rhinox.GUIUtils.Editor
             if (BetterReorderableList.s_Defaults == null)
                 BetterReorderableList.s_Defaults = new BetterReorderableList.Defaults();
             Rect rect1 = GUILayoutUtility.GetRect(0.0f, this.headerHeight, GUILayout.ExpandWidth(true));
-            Rect rect2 = GUILayoutUtility.GetRect(10f, this.GetListElementHeight(), GUILayout.ExpandWidth(true));
-            Rect rect3 = GUILayoutUtility.GetRect(4f, this.footerHeight, GUILayout.ExpandWidth(true));
-
             this.DoListHeader(rect1, label);
+            
+            Rect rect2 = GUILayoutUtility.GetRect(10f, this.GetListElementHeight(), GUILayout.ExpandWidth(true));
             this.DoListElements(rect2);
-            this.DoListFooter(rect3);
+
+            if (this.displayAdd && GUI.enabled)
+            {                
+                Rect rect3 = GUILayoutUtility.GetRect(4f, this.footerHeight, GUILayout.ExpandWidth(true));
+                this.DoListFooter(rect3);
+            }
+
         }
 
         public void DoList(Rect rect, GUIContent label)
@@ -401,8 +406,6 @@ namespace Rhinox.GUIUtils.Editor
 
         protected virtual void DoListFooter(Rect footerRect)
         {
-            if (!this.displayAdd && !this.displayRemove)
-                return;
             s_Defaults.DrawFooter(footerRect, this, this.displayAdd, this.displayRemove, HandleRemoveElement);
         }
 
@@ -853,7 +856,7 @@ namespace Rhinox.GUIUtils.Editor
                 IList elementList)
             {
                 EditorGUI.LabelField(headerRect,
-                    GUIContentHelper.TempContent(element != null ? "Serialized Property" : "IList"));
+                    GUIContentHelper.TempContent(element != null ? element.displayName : "IList"));
             }
 
             public void DrawElementBackground(

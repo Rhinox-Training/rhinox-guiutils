@@ -22,6 +22,9 @@ namespace Rhinox.GUIUtils.Editor
         private static Dictionary<Type, TypeCache.TypeCollection> _typeOptionsByType = new Dictionary<Type, TypeCache.TypeCollection>();
         private readonly GenericHostInfo _hostInfo;
 
+        // Each tracks their own rect so you do need multiple
+        private readonly List<HoverTexture> _closeIcons = new List<HoverTexture>();
+
         private bool HasMultipleTypeOptions
         {
             get 
@@ -148,22 +151,24 @@ namespace Rhinox.GUIUtils.Editor
         {
             if (MaxItemsPerPage > 0 && elementIndex > MaxItemsPerPage)
                 return;
-            // const float margin = 16.0f;
-            // contentRect.y += margin; // TODO: is this margin?
-            // contentRect.height = elementHeight + margin;
 
-            Rect removeButton = default;
-            if (this.displayRemove && contentRect.IsValid())
+            Rect removeBtnRect = default;
+            bool drawRemoveButton = this.displayRemove && GUI.enabled;
+            if (drawRemoveButton && contentRect.IsValid())
             {
-                removeButton = contentRect.AlignRight(18).AlignCenterVertical(18);
-                contentRect = contentRect.PadRight(9);
+                removeBtnRect = contentRect.AlignRight(18).AlignCenterVertical(18);
+                removeBtnRect.xMin += 6;
+                contentRect = contentRect.PadRight(18);
             }
 
             base.DrawElement(contentRect, elementIndex + _drawPageIndex * MaxItemsPerPage, selected, focused);
-
-            if (this.displayRemove)
+            
+            if (drawRemoveButton)
             {
-                if (GUI.Button(removeButton, GUIContentHelper.TempContent(UnityIcon.AssetIcon("Fa_Times").Pad(2), tooltip: "Remove entry.")))
+                while (_closeIcons.Count <= elementIndex) // Each rect needs its own icon (cause the rect is cached)
+                    _closeIcons.Add(new HoverTexture(UnityIcon.AssetIcon("Fa_Times")));
+
+                if (CustomEditorGUI.IconButton(removeBtnRect, _closeIcons[elementIndex], tooltip: "Remove entry."))
                 {
                     this.index = elementIndex + _drawPageIndex * MaxItemsPerPage;
                     HandleRemoveElement(this.index);

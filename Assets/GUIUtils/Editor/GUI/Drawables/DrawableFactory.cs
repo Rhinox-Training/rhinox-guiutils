@@ -308,6 +308,7 @@ namespace Rhinox.GUIUtils.Editor
 
         // =============================================================================================================
         // Searcher methods (fields, properties, buttons, methods, ...)
+        
         private static ICollection<IOrderedDrawable> FindCustomDrawables(object instance)
         {
             if (instance == null) return Array.Empty<IOrderedDrawable>();
@@ -318,12 +319,16 @@ namespace Rhinox.GUIUtils.Editor
             var buttonMethods = TypeCache.GetMethodsWithAttribute<ButtonAttribute>();
             var drawMethods = TypeCache.GetMethodsWithAttribute<OnInspectorGUIAttribute>();
 
-            foreach (var mi in buttonMethods)
+            for (var i = 0; i < buttonMethods.Count; i++)
             {
-                if (mi.DeclaringType != type) continue;
+                var mi = buttonMethods[i];
+                if (!ReflectionUtility.IsMethodOfType(type, ref mi))
+                    continue;
+
+                // TypeCache only marks certain methods as using this attribute, now actually fetch it
                 var attributes = mi.GetCustomAttributes();
                 var attr = attributes.OfType<ButtonAttribute>().First();
-                
+
                 IOrderedDrawable button = new DrawableButton(instance, mi)
                 {
                     Name = attr.Name,
@@ -332,12 +337,14 @@ namespace Rhinox.GUIUtils.Editor
                 button = DrawableWrapperFactory.TryWrapDrawable(button, attributes);
                 drawables.AddUnique(button);
             }
-            
-            foreach (var mi in drawMethods)
+
+            for (var i = 0; i < drawMethods.Count; i++)
             {
-                if (mi.DeclaringType != type) continue;
+                var mi = drawMethods[i];
+                if (!ReflectionUtility.IsMethodOfType(type, ref mi))
+                    continue;
                 var attributes = mi.GetCustomAttributes();
-                
+
                 IOrderedDrawable drawable = new DrawableMethod(instance, mi);
                 drawable = DrawableWrapperFactory.TryWrapDrawable(drawable, attributes);
                 drawables.AddUnique(drawable);

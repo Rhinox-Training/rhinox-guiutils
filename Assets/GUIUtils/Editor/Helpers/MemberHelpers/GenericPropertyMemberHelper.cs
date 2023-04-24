@@ -112,7 +112,7 @@ namespace Rhinox.GUIUtils.Editor
                         if (i != parts.Length - 1) // if we're not at the last part
                         {
                             // try to resolve it
-                            if (TryFindMemberInHost(parts[i], null, false, out MemberInfo info))
+                            if (TryFindMember(parts[i], out MemberInfo info))
                             {
                                 _host = info.GetValue(_host);
                                 _objectType = info.GetReturnType();

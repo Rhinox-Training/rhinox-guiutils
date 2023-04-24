@@ -42,9 +42,9 @@ namespace Rhinox.GUIUtils.Editor
             if (!TryParseInput(ref input, out _))
                 return;
 
-            var members = FindMembers(_host == null, (info, _) => info.Name == input);
+            TryFindMember(input, out MemberInfo member, _host == null);
 
-            _info = (MethodInfo) members.FirstOrDefault();
+            _info = member as MethodInfo;
             if (_info == null)
                 _errorMessage = $"Could not find method {input} on type {_objectType.Name}";
         }

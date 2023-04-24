@@ -64,7 +64,7 @@ namespace Rhinox.GUIUtils.Editor
         
         private static MethodInfo _resizeMethod;
 
-        public string NiceName => MemberInfo?.Name.SplitCamelCase();
+        public string NiceName { get; }
 
         public GenericHostInfo(object host, MemberInfo mi, int index = -1)
             : this(host, mi, index, null)
@@ -89,24 +89,31 @@ namespace Rhinox.GUIUtils.Editor
             MemberInfo = memberInfo;
             ArrayIndex = arrayIndex;
             Parent = parent;
+            NiceName = MemberInfo?.GetNiceName();
         }
 
         public virtual object GetHost()
         {
             if (Parent == null)
+            {
+                // If we are a list element, we still need to actually fetch the list to get our host
+                // Since you cannot have a fieldinfo of an element, the fieldinfo must be of our list
+                if (ArrayIndex >= 0)
+                    return MemberInfo.GetValue(_hostRootInstance);
+                // If we are not, we can trust that our FieldInfo points to us and the root instance is therefore, our host
                 return _hostRootInstance;
+            }
             return Parent.GetValue();
         }
 
         public virtual object GetValue()
         {
             var host = GetHost();
+            // If we are not a list element, we need to fetch the value from our host
             if (ArrayIndex < 0)
-            {
-                var value = MemberInfo.GetValue(host);
-                return value;
-            }
+                return MemberInfo.GetValue(host);
             
+            // If we are, then we received a list and can access it by our index
             if (host is IList e)
                 return e[ArrayIndex];
             throw new IndexOutOfRangeException($"Could not map found index {ArrayIndex} to value {host} (Type: {host.GetType().GetNiceName()})");
@@ -224,12 +231,7 @@ namespace Rhinox.GUIUtils.Editor
             if (index < 0) throw new ArgumentException(nameof(index));
             if (ArrayIndex != -1) throw new InvalidOperationException("GenericHostInfo already has in index, cannot create sub entry.");
 
-            GenericHostInfo childHostInfo;
-            if (Parent != null)
-                childHostInfo = new GenericHostInfo(Parent, MemberInfo, index);
-            else
-                childHostInfo = new GenericHostInfo(this, MemberInfo, index);
-            return childHostInfo;
+            return new GenericHostInfo(this, MemberInfo, index);
         }
     }
 }
