@@ -180,9 +180,9 @@ namespace Rhinox.GUIUtils.Editor
                 object instanceVal = hostInfo.GetValue();
 
                 attributes = hostInfo.GetAttributes();
-                if (instanceVal == null)
-                    drawable = new NullReferenceDrawable(property);
-                else
+                // if (instanceVal == null)
+                //     drawable = new NullReferenceDrawable(property);
+                // else
                 {
                     if (AttributeParser.ParseDrawAsUnity(hostInfo.MemberInfo))
                         drawable = new UnityObjectDrawableField(hostInfo);

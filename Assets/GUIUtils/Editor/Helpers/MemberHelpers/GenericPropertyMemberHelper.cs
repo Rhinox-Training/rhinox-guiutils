@@ -35,7 +35,7 @@ namespace Rhinox.GUIUtils.Editor
             if (host is GenericHostInfo hostInfo)
             {
                 _hostInfo = hostInfo;
-                _host = _hostInfo.GetValue();
+                _host = _hostInfo.GetHost();
                 _objectType = _host?.GetType();
             }
             else
@@ -90,7 +90,9 @@ namespace Rhinox.GUIUtils.Editor
                         }
                         break;
                     case PARENT_ID:
-                        if (_hostInfo != null)
+                        if (relevantHostInfo != null)
+                            relevantHostInfo = relevantHostInfo.Parent;
+                        else if (_hostInfo != null)
                             relevantHostInfo = _hostInfo.Parent;
                         break;
                     case ROOT_ID:

@@ -83,7 +83,7 @@ namespace Rhinox.GUIUtils.Editor
 
         private GenericHostInfo(object host, MemberInfo memberInfo, int arrayIndex, GenericHostInfo parent)
         {
-            if (memberInfo is MethodBase) throw new ArgumentException(nameof(memberInfo));
+            // if (memberInfo is MethodBase) throw new ArgumentException(nameof(memberInfo));
             if (parent == null && host == null) throw new ArgumentException($"{nameof(parent)} and {nameof(host)} cannot be null at the same time");
             _hostRootInstance = host;
             MemberInfo = memberInfo;

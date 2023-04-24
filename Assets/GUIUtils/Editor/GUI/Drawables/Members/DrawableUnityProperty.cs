@@ -6,7 +6,7 @@ namespace Rhinox.GUIUtils.Editor
 {
     public class DrawableUnityProperty : BaseMemberDrawable, IDrawableReadWrite
     {
-        public override string LabelString => Property != null ? Property.displayName : base.LabelString;
+        protected override string LabelString => Property != null ? Property.displayName : base.LabelString;
 
         public SerializedProperty Property { get; }
         

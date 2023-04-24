@@ -9,7 +9,7 @@ namespace Rhinox.GUIUtils.Editor
     {
         public float Order { get; set; }
         public float ElementHeight => EditorGUIUtility.singleLineHeight;
-        public object Host { get; }
+        public GenericHostInfo HostInfo { get; }
         public bool IsVisible => true;
         public GUIContent Label { get; }
         public bool ShouldRepaint => false;

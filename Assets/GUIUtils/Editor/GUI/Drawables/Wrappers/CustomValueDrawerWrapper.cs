@@ -50,20 +50,17 @@ namespace Rhinox.GUIUtils.Editor
         [WrapDrawer(typeof(CustomValueDrawerAttribute), -1)]
         public static BaseWrapperDrawable Create(CustomValueDrawerAttribute attr, IOrderedDrawable drawable)
         {
-            var member = MemberHelper.CreateMethod(drawable.Host, attr.MethodName);
+            var member = MemberHelper.CreateMethod(drawable.HostInfo, attr.MethodName);
             member.EnforceSyntax(parameterIndex: 1, typeof(GUIContent));
             member.EnforceSyntax(numberOfParameters: 2);
             member.EnforceSyntax(hasReturnType: true);
             
-            if (drawable is IHostedDrawable hostedDrawable)
+            var hostedReturnType = drawable.HostInfo.GetReturnType();
+            if (hostedReturnType.InheritsFrom<IEnumerable>())
             {
-                var hostedReturnType = hostedDrawable.HostInfo.GetReturnType();
-                if (hostedReturnType.InheritsFrom<IEnumerable>())
-                {
-                    var elementType = hostedReturnType.GetCollectionElementType();
-                    if (member.MethodReturnType == elementType)
-                        return null;
-                }
+                var elementType = hostedReturnType.GetCollectionElementType();
+                if (member.MethodReturnType == elementType)
+                    return null;
             }
 
             return new CustomValueDrawerWrapper(drawable)

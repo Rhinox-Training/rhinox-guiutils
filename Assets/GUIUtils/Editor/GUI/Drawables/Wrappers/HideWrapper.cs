@@ -7,7 +7,8 @@ namespace Rhinox.GUIUtils.Editor
     {
         private bool _state;
 
-        private IPropertyMemberHelper<bool> _stateMember;
+        private IPropertyMemberHelper _stateMember;
+        public object _stateMemberValue;
 
         public override bool IsVisible => _innerDrawable.IsVisible && ShouldDraw();
 
@@ -33,30 +34,35 @@ namespace Rhinox.GUIUtils.Editor
         public bool ShouldDraw()
         {
             if (_stateMember == null)
-                return _state;
-            
-            return _stateMember.GetSmartValue() == _state;
+                return !_state;
+
+            var value = _stateMember.GetValue();
+            if (_stateMemberValue == null)
+                return (bool) (value ?? false) == _state;
+            return (value == _stateMemberValue) != _state;
         }
 
         [WrapDrawer(typeof(ShowIfAttribute), -11000)]
         public static BaseWrapperDrawable Create(ShowIfAttribute attr, IOrderedDrawable drawable)
         {
-            var member = MemberHelper.Create<bool>(drawable.Host, attr.MemberName);
+            var member = MemberHelper.Create<object>(drawable.HostInfo, attr.MemberName);
             return new HideWrapper(drawable)
             {
                 _state = true,
-                _stateMember = member
+                _stateMember = member,
+                _stateMemberValue = attr.Value
             };
         }
         
         [WrapDrawer(typeof(HideIfAttribute), -11000)]
         public static BaseWrapperDrawable Create(HideIfAttribute attr, IOrderedDrawable drawable)
         {
-            var member = MemberHelper.Create<bool>(drawable.Host, attr.MemberName);
+            var member = MemberHelper.Create<object>(drawable.HostInfo, attr.MemberName);
             return new HideWrapper(drawable)
             {
                 _state = false,
-                _stateMember = member
+                _stateMember = member,
+                _stateMemberValue = attr.Value
             };
         }
         

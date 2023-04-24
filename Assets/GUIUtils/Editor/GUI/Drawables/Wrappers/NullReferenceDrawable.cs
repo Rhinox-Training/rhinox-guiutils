@@ -110,10 +110,14 @@ namespace Rhinox.GUIUtils.Editor
 
         private GUIContent GetTypeName()
         {
-            if (_serializedProperty != null)
-                return GetTypeName(_serializedProperty.managedReferenceFullTypename);
             if (_hostInfo != null)
                 return GetTypeName(_hostInfo.GetReturnType().FullName);
+            if (_serializedProperty != null)
+            {
+                if (_serializedProperty.propertyType == SerializedPropertyType.ManagedReference)
+                    return GetTypeName(_serializedProperty.managedReferenceFullTypename);
+                return GetTypeName(_serializedProperty.type);
+            }
             return GUIContent.none;
         }
 

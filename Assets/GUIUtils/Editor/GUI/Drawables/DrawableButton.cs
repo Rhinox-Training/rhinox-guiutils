@@ -11,7 +11,7 @@ namespace Rhinox.GUIUtils.Editor
 {
     public class DrawableButton : BaseDrawable
     {
-        public override string LabelString => null; // TODO: Button has no label?
+        protected override string LabelString => null; // TODO: Button has no label?
         
         public string Name { get; set; }
         
@@ -21,7 +21,7 @@ namespace Rhinox.GUIUtils.Editor
 
         public DrawableButton(object instanceVal, MethodInfo method)
         {
-            Host = instanceVal;
+            HostInfo = new GenericHostInfo(instanceVal, method);
             _methodInfo = method;
         }
 
@@ -37,8 +37,9 @@ namespace Rhinox.GUIUtils.Editor
             var height = Height == 0 ? (int)EditorGUIUtility.singleLineHeight : Height;
             if (GUILayout.Button(Name, options.Append(GUILayout.Height(height))))
             {
-                if (!TryCreateDialog(_methodInfo, Host))
-                    _methodInfo.Invoke(Host, null);
+                var host = HostInfo.GetHost();
+                if (!TryCreateDialog(_methodInfo, host))
+                    _methodInfo.Invoke(host, null);
             }
         }
 
@@ -48,8 +49,8 @@ namespace Rhinox.GUIUtils.Editor
             rect.height = buttonHeight;
             if (GUI.Button(rect, Name))
             {
-                if (!TryCreateDialog(_methodInfo, Host))
-                    _methodInfo.Invoke(Host, null);
+                if (!TryCreateDialog(_methodInfo, HostInfo))
+                    _methodInfo.Invoke(HostInfo, null);
             }
         }
 
