@@ -27,6 +27,9 @@ namespace Rhinox.GUIUtils.Editor
         // Each tracks their own rect so you do need multiple
         private readonly List<HoverTexture> _closeIcons = new List<HoverTexture>();
 
+        private Rect _headerRect;
+        private GUIContent _addContent;
+
         private static Dictionary<Type, TypeCache.TypeCollection> _typeOptionsByType = new Dictionary<Type, TypeCache.TypeCollection>();
         private readonly GenericHostInfo _hostInfo;
         
@@ -67,6 +70,7 @@ namespace Rhinox.GUIUtils.Editor
             base.InitList(serializedObject, elements, elementList, draggable, displayHeader, displayAddButton, displayRemoveButton);
 
             _isUnityType = m_ElementType != null && m_ElementType.InheritsFrom<Object>();
+            _addContent = new GUIContent(UnityIcon.AssetIcon("Fa_Plus"), tooltip: "Add Item");
             
             if (this.displayAdd && this.m_ElementType != null)
             {
@@ -99,40 +103,68 @@ namespace Rhinox.GUIUtils.Editor
                         s_Defaults.DoAddButton(this, item);
                 }
             }
+
+            if (rect.IsValid())
+                _headerRect = rect;
             
-            var nameRect = rect.AlignLeft(rect.width  * 0.6f);
-            var secondaryRect = rect.AlignRight(rect.width * 0.4f);
-            var sizeRect = secondaryRect.AlignLeft(secondaryRect.width * 0.5f);
-            var multiPageRect = secondaryRect.AlignRight(secondaryRect.width * 0.5f);
-
+            GUILayout.BeginArea(_headerRect);
+            GUILayout.BeginHorizontal();
+            
             var drawnLabel = ValidateLabel(label);
-            EditorGUI.LabelField(nameRect, drawnLabel);
-
-            EditorGUI.LabelField(sizeRect, $"{count} Items");
+            GUILayout.Label(drawnLabel);
+            GUILayout.FlexibleSpace();
+            GUILayout.Label($"{count} Items");
 
             if (List != null && List.Count > GetListDrawCount())
             {
+                CustomEditorGUI.VerticalLine(CustomGUIStyles.LightBorderColor);
+
                 var maxPagesCount = _maxPagesCount;
-                var infoRect = multiPageRect.AlignLeft(multiPageRect.width * 0.4f);
-                EditorGUI.LabelField(infoRect, $"{_drawPageIndex + 1}/{maxPagesCount}");
-                var buttonsRect = multiPageRect.AlignRight(multiPageRect.width * 0.6f);
-                var leftButtonRect = buttonsRect.AlignLeft(buttonsRect.width * 0.5f);
-                var rightButtonRect = buttonsRect.AlignRight(buttonsRect.width * 0.5f);
+                
+                GUILayout.Label($"{_drawPageIndex + 1}/{maxPagesCount}");
+
                 var wasEnabled = GUI.enabled;
                 GUI.enabled = _drawPageIndex > 0;
-                if (GUI.Button(leftButtonRect, "<"))
+                if (CustomEditorGUI.IconButton(UnityIcon.InternalIcon("ArrowNavigationLeft")))
                 {
-                    if (_drawPageIndex > 0)
+                    bool leftClick = Event.current.button == 0;
+                    if (leftClick && _drawPageIndex > 0)
                         --_drawPageIndex;
+                    else
+                        _drawPageIndex = 0;
                 }
+
                 GUI.enabled = _drawPageIndex < maxPagesCount - 1;
-                if (GUI.Button(rightButtonRect, ">"))
+                if (CustomEditorGUI.IconButton(UnityIcon.InternalIcon("ArrowNavigationRight")))
                 {
-                    if (_drawPageIndex < maxPagesCount - 1)
+                    bool leftClick = Event.current.button == 0;
+                    if (leftClick && _drawPageIndex < maxPagesCount - 1)
                         ++_drawPageIndex;
+                    else
+                        _drawPageIndex = maxPagesCount - 1;
                 }
                 GUI.enabled = wasEnabled;
             }
+
+            if (displayAdd && GUI.enabled)
+            {
+                CustomEditorGUI.VerticalLine(CustomGUIStyles.LightBorderColor);
+                GUILayout.Space(CustomGUIUtility.Padding * 2);
+            
+                using (new EditorGUI.DisabledScope(onCanAddCallback != null && !onCanAddCallback(this)))
+                {
+                    if (CustomEditorGUI.IconButton(_addContent, null, 16, 16))
+                    {
+                        OnAddElement(new Rect());
+
+                        if (onChangedCallback != null)
+                            onChangedCallback(this);
+                    }
+                }
+            }
+            
+            GUILayout.EndHorizontal();
+            GUILayout.EndArea();
         }
 
         private GUIContent ValidateLabel(GUIContent label)
@@ -146,11 +178,6 @@ namespace Rhinox.GUIUtils.Editor
             }
             
             return label;
-        }
-
-        protected override void DoListFooter(Rect rect)
-        {
-            s_Defaults.DrawFooter(rect, this, this.displayAdd, false);
         }
 
         protected override void DrawElement(Rect contentRect, int elementIndex, bool selected = false, bool focused = false)
@@ -222,7 +249,12 @@ namespace Rhinox.GUIUtils.Editor
 
             base.OnDrawElementBackground(rect, index, selected, focused, draggable);
         }
-        
+
+        protected override void DoLayoutFooter()
+        {
+            // Don't draw footer
+        }
+
         protected override int GetListDrawCount()
         {
             if (MaxItemsPerPage > 0)
@@ -230,11 +262,11 @@ namespace Rhinox.GUIUtils.Editor
             return base.GetListDrawCount();
         }
 
-        protected override void OnAddElement(Rect rect1)
+        protected override void OnAddElement(Rect rect)
         {
             if (!HasMultipleTypeOptions || this.m_ElementType.InheritsFrom<UnityEngine.Object>())
             {
-                base.OnAddElement(rect1);
+                base.OnAddElement(rect);
                 return;
             }
             
@@ -289,7 +321,7 @@ namespace Rhinox.GUIUtils.Editor
                         onChangedCallback.Invoke(this);
                 });
             }
-            genericMenu.DropDown(rect1);
+            genericMenu.DropDown(rect);
         }
         
         static object ResizeArray(object array, int n)

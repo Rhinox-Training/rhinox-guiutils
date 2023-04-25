@@ -209,18 +209,32 @@ namespace Rhinox.GUIUtils.Editor
         {
             if (BetterReorderableList.s_Defaults == null)
                 BetterReorderableList.s_Defaults = new BetterReorderableList.Defaults();
-            Rect rect1 = GUILayoutUtility.GetRect(0.0f, this.headerHeight, GUILayout.ExpandWidth(true));
-            this.DoListHeader(rect1, label);
             
-            Rect rect2 = GUILayoutUtility.GetRect(10f, this.GetListElementHeight(), GUILayout.ExpandWidth(true));
-            this.DoListElements(rect2);
+            DoLayoutHeader(label);
+            DoLayoutElements();
+            DoLayoutFooter();
 
-            if ((this.displayAdd || displayRemove) && GUI.enabled)
-            {                
+        }
+
+        protected virtual void DoLayoutFooter()
+        {
+            if ((displayAdd || displayRemove) && GUI.enabled)
+            {
                 Rect rect3 = GUILayoutUtility.GetRect(4f, this.footerHeight, GUILayout.ExpandWidth(true));
                 this.DoListFooter(rect3);
             }
+        }
 
+        protected virtual void DoLayoutElements()
+        {
+            Rect rect2 = GUILayoutUtility.GetRect(10f, this.GetListElementHeight(), GUILayout.ExpandWidth(true));
+            this.DoListElements(rect2);
+        }
+
+        protected virtual void DoLayoutHeader(GUIContent label)
+        {
+            Rect rect1 = GUILayoutUtility.GetRect(0.0f, this.headerHeight, GUILayout.ExpandWidth(true));
+            this.DoListHeader(rect1, label);
         }
 
         public void DoList(Rect rect, GUIContent label)
@@ -399,7 +413,7 @@ namespace Rhinox.GUIUtils.Editor
             s_Defaults.DrawHeader(headerRect, this.m_SerializedObject, this.m_ElementsProperty, this.m_ElementList);
         }
         
-        protected virtual void OnAddElement(Rect rect1)
+        protected virtual void OnAddElement(Rect rect)
         {
             s_Defaults.DoAddButton(this);
         }
