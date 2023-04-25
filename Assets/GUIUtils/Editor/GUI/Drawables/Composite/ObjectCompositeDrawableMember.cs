@@ -14,9 +14,6 @@ namespace Rhinox.GUIUtils.Editor
         private GUIContent _label;
         private bool _hasLabel = false;
         
-        public object Instance { get; }
-        public Type ObjectType { get; }
-        
         private IOrderedDrawable _innerDrawable;
         
         public bool IsFoldout => Children.Any(drawable => drawable.IsVisible);
@@ -47,22 +44,15 @@ namespace Rhinox.GUIUtils.Editor
         }
 
         private ObjectCompositeDrawableMember(GenericHostInfo hostInfo, IOrderedDrawable contents, float order = 0)
-            : this(hostInfo.GetValue(), hostInfo.GetReturnType(), contents, hostInfo.NiceName ?? "", order)
+            : base(hostInfo.NiceName, order)
         {
             HostInfo = hostInfo;
-        }
-        
-        public ObjectCompositeDrawableMember(object instance, Type type, IOrderedDrawable contents, string name = "", float order = 0)
-            : base(name, order)
-        {
-            Instance = instance;
-            ObjectType = type;
             _innerDrawable = contents;
             
-            if (name.IsNullOrEmpty())
+            if (hostInfo.NiceName.IsNullOrEmpty())
                 _label = GUIContent.none;
             else
-                _label = new GUIContent(name);
+                _label = new GUIContent(hostInfo.NiceName);
         }
         
         public override void Draw(GUIContent label)
@@ -133,7 +123,7 @@ namespace Rhinox.GUIUtils.Editor
 
         public object GetValue()
         {
-            return Instance;
+            return HostInfo.GetValue();
         }
         
         public bool TrySetValue(object value)

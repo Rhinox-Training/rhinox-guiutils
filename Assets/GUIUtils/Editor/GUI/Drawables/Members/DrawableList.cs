@@ -53,7 +53,6 @@ namespace Rhinox.GUIUtils.Editor
         private ListElementDrawable[] _listElements;
 
         private readonly SerializedProperty _listProperty;
-        private readonly GenericHostInfo _hostInfo;
 
         public override float ElementHeight
         {
@@ -72,7 +71,6 @@ namespace Rhinox.GUIUtils.Editor
                 throw new ArgumentNullException(nameof(listProperty));
             
             _listProperty = listProperty;
-            _hostInfo = null;
 
             _listDrawerAttr = listProperty.GetAttributeOrCreate<ListDrawerSettingsAttribute>();
 
@@ -90,7 +88,6 @@ namespace Rhinox.GUIUtils.Editor
         public DrawableList(GenericHostInfo hostInfo) : base(hostInfo)
         {
             _listProperty = null;
-            _hostInfo = hostInfo;
             _listDrawerAttr = hostInfo.GetAttribute<ListDrawerSettingsAttribute>() ?? new ListDrawerSettingsAttribute();
 
             _listRO = new PageableReorderableList(hostInfo,
