@@ -159,6 +159,8 @@ namespace Rhinox.GUIUtils.Editor
 
                         if (onChangedCallback != null)
                             onChangedCallback(this);
+
+                        m_SerializedObject.ApplyModifiedProperties();
                     }
                 }
             }
@@ -264,7 +266,7 @@ namespace Rhinox.GUIUtils.Editor
 
         protected override void OnAddElement(Rect rect)
         {
-            if (!HasMultipleTypeOptions || this.m_ElementType.InheritsFrom<UnityEngine.Object>())
+            if (!HasMultipleTypeOptions || _isUnityType)
             {
                 base.OnAddElement(rect);
                 return;

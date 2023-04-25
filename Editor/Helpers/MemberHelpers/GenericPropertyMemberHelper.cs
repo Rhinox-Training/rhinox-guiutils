@@ -139,6 +139,11 @@ namespace Rhinox.GUIUtils.Editor
             return true;
         }
 
-        protected override object GetInstance() => _host;
+        protected override object GetInstance()
+        {
+            if (_host == null && _hostInfo != null)
+                _host = _hostInfo.GetHost();
+            return _host;
+        }
     }
 }

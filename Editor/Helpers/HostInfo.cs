@@ -155,13 +155,14 @@ namespace Rhinox.GUIUtils.Editor
         public virtual object GetValue()
         {
             var host = GetHost();
+            
             // If we are not a list element, we need to fetch the value from our host
             if (ArrayIndex < 0)
                 return MemberInfo.GetValue(host);
             
             // If we are, then we received a list and can access it by our index
-            if (host is IList e)
-                return e[ArrayIndex];
+            if (host is IList list)
+                return list[ArrayIndex];
             throw new IndexOutOfRangeException($"Could not map found index {ArrayIndex} to value {host} (Type: {host.GetType().GetNiceName()})");
         }
 

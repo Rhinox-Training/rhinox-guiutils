@@ -92,7 +92,11 @@ namespace Rhinox.GUIUtils.Editor
 
         private void MakeMenuItems(Rect rect)
         {
-            var options = _member.ForceGetValue().Cast<object>().ToArray();
+            object[] options = Array.Empty<object>();
+            var value = _member.ForceGetValue();
+            if (value != null)
+                options = value.Cast<object>().ToArray();
+            
             var menu = new GenericMenu();
 
             foreach (var item in options)
