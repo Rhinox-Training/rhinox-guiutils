@@ -8,16 +8,16 @@ using UnityEngine;
 
 namespace Rhinox.GUIUtils.Editor
 {
-    public class NullReferenceDrawable : BaseWrapperDrawable
+    public class TypePickerDrawable : BaseWrapperDrawable
     {
         private static readonly GUIContent NoneContent = new GUIContent("<Null>");
-        private Dictionary<string, GUIContent> _typeContentByName;
-        private List<Type> _typeOptions;
+        
+        private readonly Dictionary<string, GUIContent> _typeContentByName;
+        private readonly List<Type> _typeOptions;
         private readonly SerializedProperty _serializedProperty;
-        private readonly GenericHostInfo _hostInfo;
         private object _managedReferenceValue;
 
-        public NullReferenceDrawable(SerializedProperty property) : base(new UndrawableField(property.GetHostInfo()))
+        public TypePickerDrawable(SerializedProperty property) : base(new UndrawableField(property.GetHostInfo()))
         {
             if (property == null)
                 throw new ArgumentNullException(nameof(property));
@@ -28,14 +28,14 @@ namespace Rhinox.GUIUtils.Editor
             _typeOptions = ReflectionUtility.GetTypesInheritingFrom(type);
         }
 
-        public NullReferenceDrawable(GenericHostInfo hostInfo) : base(new UndrawableField(hostInfo))
+        public TypePickerDrawable(GenericHostInfo hostInfo) : base(new UndrawableField(hostInfo))
         {
             if (hostInfo == null)
                 throw new ArgumentNullException(nameof(hostInfo));
             _serializedProperty = null;
             _hostInfo = hostInfo;
             _typeContentByName = new Dictionary<string, GUIContent>();
-            var type = _hostInfo.GetReturnType(true);
+            var type = _hostInfo.GetReturnType(false);
             _typeOptions = ReflectionUtility.GetTypesInheritingFrom(type);
         }
 
