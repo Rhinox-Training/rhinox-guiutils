@@ -9,6 +9,46 @@ using UnityEditor;
 
 namespace Rhinox.GUIUtils.Editor
 {
+    public sealed class RootHostInfo : GenericHostInfo
+    {
+        public RootHostInfo(object host) : base(host, null)
+        {
+        }
+        
+        public override object GetValue() => GetHost();
+        public override Type GetReturnType(bool preferValueType = true) => HostType;
+        public override Attribute[] GetAttributes() => Array.Empty<Attribute>();
+    }
+    
+    public class MethodHostInfo : GenericHostInfo
+    {
+        private ParameterInfo[] _parameters;
+        public MethodHostInfo(GenericHostInfo parent, MethodInfo mi)
+            : base(parent, mi)
+        { }
+        
+        public MethodHostInfo(object instance, MethodInfo mi)
+            : base(instance, mi)
+        { }
+        
+
+        public void Invoke(params object[] parameters)
+        {
+            MemberInfo?.GetValue(GetHost(), parameters);
+        }
+
+        public ParameterInfo[] GetParameters()
+        {
+            if (_parameters == null)
+            {
+                var mi = (MemberInfo as MethodInfo);
+                _parameters = mi.GetParameters();
+            }
+            
+            return _parameters;
+        }
+    }
+    
     public class HostInfo : GenericHostInfo
     {
         public string Path;
@@ -57,6 +97,7 @@ namespace Rhinox.GUIUtils.Editor
     public class GenericHostInfo
     {
         public readonly GenericHostInfo Parent;
+        public readonly Type HostType;
         public readonly MemberInfo MemberInfo;
         public readonly int ArrayIndex;
         
@@ -83,8 +124,13 @@ namespace Rhinox.GUIUtils.Editor
 
         private GenericHostInfo(object host, MemberInfo memberInfo, int arrayIndex, GenericHostInfo parent)
         {
-            // if (memberInfo is MethodBase) throw new ArgumentException(nameof(memberInfo));
-            if (parent == null && host == null) throw new ArgumentException($"{nameof(parent)} and {nameof(host)} cannot be null at the same time");
+            if (parent != null)
+                HostType = parent.GetReturnType();
+            else if (host != null)
+                HostType = host.GetType();
+            else
+                throw new ArgumentException($"{nameof(parent)} and {nameof(host)} cannot be null at the same time");
+
             _hostRootInstance = host;
             MemberInfo = memberInfo;
             ArrayIndex = arrayIndex;
@@ -188,7 +234,7 @@ namespace Rhinox.GUIUtils.Editor
             array = parameters[0];
         }
 
-        public Type GetReturnType(bool preferValueType = true)
+        public virtual Type GetReturnType(bool preferValueType = true)
         {
             if (preferValueType)
             {
@@ -204,8 +250,6 @@ namespace Rhinox.GUIUtils.Editor
             return type.GetArgumentsOfInheritedOpenGenericClass(typeof(IList<>)).First();
         }
         
-        public Type GetHostType() => MemberInfo.DeclaringType;
-
         public T GetAttribute<T>() where T : Attribute
         {
             return GetAttributes().OfType<T>().FirstOrDefault();
