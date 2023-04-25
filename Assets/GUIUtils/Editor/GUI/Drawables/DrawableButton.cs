@@ -17,30 +17,30 @@ namespace Rhinox.GUIUtils.Editor
         
         public float Height { get; set; }
 
-        private readonly MethodInfo _methodInfo;
+        public new MethodHostInfo HostInfo => (MethodHostInfo) _hostInfo;
+        
+        public DrawableButton(GenericHostInfo info, MethodInfo method)
+        {
+            _hostInfo = new MethodHostInfo(info, method);
+        }
 
         public DrawableButton(object instanceVal, MethodInfo method)
         {
-            HostInfo = new GenericHostInfo(instanceVal, method);
-            _methodInfo = method;
+            _hostInfo = new MethodHostInfo(instanceVal, method);
         }
 
         protected override void Initialize()
         {
             base.Initialize();
             if (Name.IsNullOrEmpty())
-                Name = _methodInfo?.GetNiceName();
+                Name = _hostInfo.NiceName;
         }
 
         protected override void DrawInner(GUIContent label, params GUILayoutOption[] options)
         {
             var height = Height == 0 ? (int)EditorGUIUtility.singleLineHeight : Height;
             if (GUILayout.Button(Name, options.Append(GUILayout.Height(height))))
-            {
-                var host = HostInfo.GetHost();
-                if (!TryCreateDialog(_methodInfo, host))
-                    _methodInfo.Invoke(host, null);
-            }
+                Invoke();
         }
 
         protected override void DrawInner(Rect rect, GUIContent label)
@@ -48,20 +48,23 @@ namespace Rhinox.GUIUtils.Editor
             var buttonHeight = Height == 0 ? (int)EditorGUIUtility.singleLineHeight : Height;
             rect.height = buttonHeight;
             if (GUI.Button(rect, Name))
-            {
-                if (!TryCreateDialog(_methodInfo, HostInfo))
-                    _methodInfo.Invoke(HostInfo, null);
-            }
+                Invoke();
         }
 
-        public bool TryCreateDialog(MethodInfo method, object instance)
+        protected virtual void Invoke()
         {
-            var parameters = method.GetParameters();
+            if (!TryCreateDialog())
+                HostInfo.Invoke();
+        }
+
+        public bool TryCreateDialog()
+        {
+            var parameters = HostInfo.GetParameters();
 
             if (parameters.Length == 0)
                 return false;
 
-            var dialog = EditorInputDialog.Create(method.Name, "Provide additional parameters:");
+            var dialog = EditorInputDialog.Create(HostInfo.NiceName, "Provide additional parameters:");
             var valueReferences = new List<DialogBuilder.IValueReference>();
             foreach (var paramInfo in parameters)
             {
@@ -95,7 +98,7 @@ namespace Rhinox.GUIUtils.Editor
             dialog.OnAccept(() =>
                 {
                     var args = valueReferences.Select(x => x.GenericValue).ToArray();
-                    method?.Invoke(instance, args);
+                    HostInfo.Invoke(args);
                 })
                 .Show();
             return true;
@@ -103,9 +106,7 @@ namespace Rhinox.GUIUtils.Editor
 
         public override IEnumerable<TAttribute> GetDrawableAttributes<TAttribute>()
         {
-            if (_methodInfo == null)
-                return base.GetDrawableAttributes<TAttribute>();
-            return _methodInfo.GetCustomAttributes<TAttribute>();
+            return HostInfo.MemberInfo.GetCustomAttributes<TAttribute>();
         }
     }
 }

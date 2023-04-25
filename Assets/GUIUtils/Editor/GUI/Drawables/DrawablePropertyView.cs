@@ -26,7 +26,7 @@ namespace Rhinox.GUIUtils.Editor
             _hostInfo = null;
             _serializedObject = null;
             
-            _rootDrawable = DrawableFactory.CreateDrawableFor(_instance, _instance.GetType());
+            _rootDrawable = DrawableFactory.CreateDrawableFor(_instance);
         }
         
         public DrawablePropertyView(GenericHostInfo hostInfo)
@@ -46,7 +46,7 @@ namespace Rhinox.GUIUtils.Editor
             _hostInfo = null;
             _serializedObject = serializedObject;
             
-            _rootDrawable = DrawableFactory.CreateDrawableFor(_serializedObject, _serializedObject.targetObject.GetType());
+            _rootDrawable = DrawableFactory.CreateDrawableFor(_serializedObject);
         }
         
         public DrawablePropertyView(SerializedProperty property)

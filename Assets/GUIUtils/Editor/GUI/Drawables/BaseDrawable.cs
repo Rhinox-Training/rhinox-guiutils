@@ -25,7 +25,8 @@ namespace Rhinox.GUIUtils.Editor
 
         public virtual bool ShouldRepaint { get; protected set; }
 
-        public virtual GenericHostInfo HostInfo { get; protected set; }
+        protected GenericHostInfo _hostInfo;
+        public GenericHostInfo HostInfo => _hostInfo;
         
         protected abstract string LabelString { get; }
         

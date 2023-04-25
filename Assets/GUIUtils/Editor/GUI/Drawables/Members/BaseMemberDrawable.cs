@@ -17,7 +17,7 @@ namespace Rhinox.GUIUtils.Editor
         
         protected BaseMemberDrawable(GenericHostInfo hostInfo)
         {
-            HostInfo = hostInfo;
+            _hostInfo = hostInfo;
         }
         
         public override IEnumerable<TAttribute> GetDrawableAttributes<TAttribute>()

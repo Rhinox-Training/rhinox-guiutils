@@ -13,9 +13,15 @@ namespace Rhinox.GUIUtils.Editor
         
         private readonly MethodInfo _methodInfo;
 
+        public DrawableMethod(GenericHostInfo info, MethodInfo method)
+        {
+            _hostInfo = new GenericHostInfo(info, method);
+            _methodInfo = method;
+        }
+        
         public DrawableMethod(object instanceVal, MethodInfo method)
         {
-            HostInfo = new GenericHostInfo(instanceVal, method);
+            _hostInfo = new GenericHostInfo(instanceVal, method);
             _methodInfo = method;
         }
         
