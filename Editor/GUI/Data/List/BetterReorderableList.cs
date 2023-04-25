@@ -739,7 +739,7 @@ namespace Rhinox.GUIUtils.Editor
             public void DrawFooter(Rect rect, BetterReorderableList list, bool displayAdd, bool displayRemove,
                 Action<int> handleRemoveElement = null)
             {
-                if (!GUI.enabled) return;
+                if (!GUI.enabled || (!displayAdd && !displayRemove)) return;
                 
                 float num = rect.xMax - 10f;
                 float x = num - 8f;
