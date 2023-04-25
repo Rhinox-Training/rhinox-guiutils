@@ -150,9 +150,6 @@ namespace Rhinox.GUIUtils.Editor
 
         protected override void DoListFooter(Rect rect)
         {
-            if (!displayAdd && !displayRemove)
-                return;
-
             s_Defaults.DrawFooter(rect, this, this.displayAdd, false);
         }
 
