@@ -1,5 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using Rhinox.Lightspeed;
+using Rhinox.Lightspeed.Reflection;
 #if ODIN_INSPECTOR
 using Sirenix.Utilities.Editor;
 #endif
@@ -206,6 +209,70 @@ namespace Rhinox.GUIUtils.Editor
             }
 
             return false;
+        }
+
+        public static bool DropZone(Type t, out Object[] items, Rect? rect = null, Func<Object[], bool> dragValidator = null)
+        {
+            if (rect == null)
+                rect = GUILayoutUtility.GetLastRect();
+            
+            items = Array.Empty<Object>();
+
+            EventType type = Event.current.type;
+            if (!type.EqualsOneOf(EventType.DragUpdated, EventType.DragPerform))
+                return false;
+            
+            if (!rect.Value.Contains(Event.current.mousePosition))
+                return false;
+
+            var draggedObjects = DragAndDrop.objectReferences;
+
+            if (dragValidator == null)
+            {
+                foreach (var o in draggedObjects)
+                {
+                    if (o.GetType().InheritsFrom(t))
+                        continue;
+                        
+                    RejectDrag();
+                    return false;
+                }
+            }
+            else if (!dragValidator(draggedObjects))
+            {
+                RejectDrag();
+                return false;
+            }
+
+            DragAndDrop.visualMode = DragAndDropVisualMode.Copy;
+            Event.current.Use();
+
+            if (type == EventType.DragPerform)
+            {
+                DragAndDrop.AcceptDrag();
+                items = draggedObjects;
+                return true;
+            }
+
+            return false;
+        }
+
+        public static bool DropZone<T>(out T[] items, Rect? rect = null, Func<Object[], bool> dragValidator = null)
+            where T : Object
+        {
+            if (DropZone(typeof(T), out Object[] objects, rect, dragValidator))
+            {
+                items = objects.OfType<T>().ToArray();
+                return true;
+            } 
+            items = Array.Empty<T>();
+            return false;
+        }
+
+        private static void RejectDrag()
+        {
+            DragAndDrop.visualMode = DragAndDropVisualMode.Rejected;
+            Event.current.Use();
         }
 
         public static List<string> LayerMaskToLayers(int mask, ref List<string> listToFill)
