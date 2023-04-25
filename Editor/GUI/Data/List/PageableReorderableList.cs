@@ -24,6 +24,8 @@ namespace Rhinox.GUIUtils.Editor
 
         private bool _isUnityType;
 
+        // Each tracks their own rect so you do need multiple
+        private readonly List<HoverTexture> _closeIcons = new List<HoverTexture>();
 
         private static Dictionary<Type, TypeCache.TypeCollection> _typeOptionsByType = new Dictionary<Type, TypeCache.TypeCollection>();
         private readonly GenericHostInfo _hostInfo;
@@ -151,19 +153,40 @@ namespace Rhinox.GUIUtils.Editor
             if (!displayAdd && !displayRemove)
                 return;
 
-            s_Defaults.DrawFooter(rect, this, this.displayAdd, this.displayRemove, HandleRemoveElement);
+            s_Defaults.DrawFooter(rect, this, this.displayAdd, false);
         }
 
         protected override void DrawElement(Rect contentRect, int elementIndex, bool selected = false, bool focused = false)
         {
             if (MaxItemsPerPage > 0 && elementIndex > MaxItemsPerPage)
                 return;
-
-            // Leave a little space for easier selection
-            if (displayRemove && GUI.enabled)
-                contentRect.xMax -= 6;
+            
+            Rect removeBtnRect = default;
+            bool drawRemoveButton = this.displayRemove && GUI.enabled;
+            if (drawRemoveButton && contentRect.IsValid())
+            {
+                removeBtnRect = contentRect.AlignRight(18).AlignCenterVertical(18);
+                removeBtnRect.xMin += 6;
+                contentRect = contentRect.PadRight(18);
+            }
 
             base.DrawElement(contentRect, elementIndex + _drawPageIndex * MaxItemsPerPage, selected, focused);
+            
+            if (drawRemoveButton)
+            {
+                while (_closeIcons.Count <= elementIndex) // Each rect needs its own icon (cause the rect is cached)
+                    _closeIcons.Add(new HoverTexture(UnityIcon.AssetIcon("Fa_Times")));
+
+                if (CustomEditorGUI.IconButton(removeBtnRect, _closeIcons[elementIndex], tooltip: "Remove entry."))
+                {
+                    this.index = elementIndex + _drawPageIndex * MaxItemsPerPage;
+                    HandleRemoveElement(this.index);
+                    onChangedCallback?.Invoke(this);
+                    if (_drawPageIndex * MaxItemsPerPage >= this.count && _drawPageIndex > 0)
+                        --_drawPageIndex;
+                    GUIUtility.ExitGUI();
+                }
+            }
         }
 
 
