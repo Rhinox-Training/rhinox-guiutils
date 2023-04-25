@@ -215,7 +215,7 @@ namespace Rhinox.GUIUtils.Editor
             Rect rect2 = GUILayoutUtility.GetRect(10f, this.GetListElementHeight(), GUILayout.ExpandWidth(true));
             this.DoListElements(rect2);
 
-            if (this.displayAdd && GUI.enabled)
+            if ((this.displayAdd || displayRemove) && GUI.enabled)
             {                
                 Rect rect3 = GUILayoutUtility.GetRect(4f, this.footerHeight, GUILayout.ExpandWidth(true));
                 this.DoListFooter(rect3);
@@ -739,6 +739,8 @@ namespace Rhinox.GUIUtils.Editor
             public void DrawFooter(Rect rect, BetterReorderableList list, bool displayAdd, bool displayRemove,
                 Action<int> handleRemoveElement = null)
             {
+                if (!GUI.enabled) return;
+                
                 float num = rect.xMax - 10f;
                 float x = num - 8f;
                 if (displayAdd)
@@ -766,22 +768,23 @@ namespace Rhinox.GUIUtils.Editor
                     }
                 }
 
-                if (!displayRemove)
-                    return;
-                using (new EditorGUI.DisabledScope(list.index < 0 || list.index >= list.count ||
-                                                   list.onCanRemoveCallback != null && !list.onCanRemoveCallback(list)))
+                if (displayRemove)
                 {
-                    if (GUI.Button(position, this.iconToolbarMinus, this.preButton))
+                    using (new EditorGUI.DisabledScope(list.index < 0 || list.index >= list.count ||
+                                                       list.onCanRemoveCallback != null && !list.onCanRemoveCallback(list)))
                     {
-                        handleRemoveElement?.Invoke(list.index);
+                        if (GUI.Button(position, this.iconToolbarMinus, this.preButton))
+                        {
+                            handleRemoveElement?.Invoke(list.index);
                         
-                        if (list.onChangedCallback != null)
-                            list.onChangedCallback(list);
+                            if (list.onChangedCallback != null)
+                                list.onChangedCallback(list);
+                        }
                     }
                 }
             }
 
-            public void DoAddButton(BetterReorderableList list)
+            public void DoAddButton(BetterReorderableList list, object item = null)
             {
                 if (list.SerializedProperty != null)
                 {
@@ -791,7 +794,7 @@ namespace Rhinox.GUIUtils.Editor
                 else
                 {
                     System.Type elementType = list.List.GetType().GetCollectionElementType();
-                    if (TryCreateElement(elementType, out object item, out string errorString))
+                    if (item != null || TryCreateElement(elementType, out item, out string errorString))
                         list.index = list.List.Add(item);
                     else
                         Debug.LogError(errorString);
