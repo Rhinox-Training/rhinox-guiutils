@@ -193,13 +193,33 @@ namespace Rhinox.GUIUtils.Editor
 
         public static T GetAttribute<T>(this SerializedProperty property) where T : Attribute
         {
-            System.Reflection.FieldInfo fi = FindFieldInfo(property);
-            return fi.GetCustomAttribute(typeof(T)) as T;
+            if (property == null)
+                return default(T);
+            
+            if (property.propertyPath.Contains(".Array.data[") || property.propertyPath.Contains("."))
+            {
+                var hostInfo = property.GetHostInfo();
+                return hostInfo.GetAttribute<T>();
+            }
+            
+            System.Type parentType = property.serializedObject.targetObject.GetType();
+            ReflectionUtility.TryGetField(parentType, property.propertyPath, out FieldInfo fi);
+            return fi.GetCustomAttribute<T>();
         }
 
         public static IEnumerable<Attribute> GetAttributes(this SerializedProperty property)
         {
-            System.Reflection.FieldInfo fi = FindFieldInfo(property);
+            if (property == null)
+                return Array.Empty<Attribute>();
+            
+            if (property.propertyPath.Contains(".Array.data[") || property.propertyPath.Contains("."))
+            {
+                var hostInfo = property.GetHostInfo();
+                return hostInfo.GetAttributes();
+            }
+            
+            System.Type parentType = property.serializedObject.targetObject.GetType();
+            ReflectionUtility.TryGetField(parentType, property.propertyPath, out FieldInfo fi);
             return fi.GetCustomAttributes();
         }
         
