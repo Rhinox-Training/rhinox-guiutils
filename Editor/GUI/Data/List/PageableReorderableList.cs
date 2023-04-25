@@ -8,6 +8,7 @@ using Rhinox.Lightspeed;
 using Rhinox.Lightspeed.Reflection;
 using UnityEditor;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace Rhinox.GUIUtils.Editor
 {
@@ -17,14 +18,16 @@ namespace Rhinox.GUIUtils.Editor
         private const int DEFAULT_ITEMS_PER_PAGE = 100;
         
         private ICollection<Type> m_AddOptionTypes;
+        
         private int _drawPageIndex;
+        private int _maxPagesCount => Mathf.CeilToInt((float)List.Count / MaxItemsPerPage);
+
+        private bool _isUnityType;
+
 
         private static Dictionary<Type, TypeCache.TypeCollection> _typeOptionsByType = new Dictionary<Type, TypeCache.TypeCollection>();
         private readonly GenericHostInfo _hostInfo;
-
-        // Each tracks their own rect so you do need multiple
-        private readonly List<HoverTexture> _closeIcons = new List<HoverTexture>();
-
+        
         private bool HasMultipleTypeOptions
         {
             get 
@@ -60,6 +63,8 @@ namespace Rhinox.GUIUtils.Editor
             bool draggable, bool displayHeader, bool displayAddButton, bool displayRemoveButton)
         {
             base.InitList(serializedObject, elements, elementList, draggable, displayHeader, displayAddButton, displayRemoveButton);
+
+            _isUnityType = m_ElementType != null && m_ElementType.InheritsFrom<Object>();
             
             if (this.displayAdd && this.m_ElementType != null)
             {
@@ -84,6 +89,15 @@ namespace Rhinox.GUIUtils.Editor
 
         protected override void OnDrawHeader(Rect rect, GUIContent label)
         {
+            if (GUI.enabled && displayAdd && _isUnityType)
+            {
+                if (eUtility.DropZone(m_ElementType, out Object[] items, rect))
+                {
+                    foreach (var item in items)
+                        s_Defaults.DoAddButton(this, item);
+                }
+            }
+            
             var nameRect = rect.AlignLeft(rect.width  * 0.6f);
             var secondaryRect = rect.AlignRight(rect.width * 0.4f);
             var sizeRect = secondaryRect.AlignLeft(secondaryRect.width * 0.5f);
@@ -96,7 +110,7 @@ namespace Rhinox.GUIUtils.Editor
 
             if (List != null && List.Count > GetListDrawCount())
             {
-                var maxPagesCount = Mathf.CeilToInt((float)List.Count / MaxItemsPerPage);
+                var maxPagesCount = _maxPagesCount;
                 var infoRect = multiPageRect.AlignLeft(multiPageRect.width * 0.4f);
                 EditorGUI.LabelField(infoRect, $"{_drawPageIndex + 1}/{maxPagesCount}");
                 var buttonsRect = multiPageRect.AlignRight(multiPageRect.width * 0.6f);
@@ -137,14 +151,7 @@ namespace Rhinox.GUIUtils.Editor
             if (!displayAdd && !displayRemove)
                 return;
 
-            if (MaxItemsPerPage > 0)
-            {
-                var list = SerializedProperty != null ?  SerializedProperty.GetValue() as IList : this.List as IList;
-                if (list != null && list.Count > MaxItemsPerPage)
-                    rect.y -= (list.Count - MaxItemsPerPage - 1) * elementHeight;
-            }
-            
-            s_Defaults.DrawFooter(rect, this, this.displayAdd, false);
+            s_Defaults.DrawFooter(rect, this, this.displayAdd, this.displayRemove, HandleRemoveElement);
         }
 
         protected override void DrawElement(Rect contentRect, int elementIndex, bool selected = false, bool focused = false)
@@ -152,32 +159,11 @@ namespace Rhinox.GUIUtils.Editor
             if (MaxItemsPerPage > 0 && elementIndex > MaxItemsPerPage)
                 return;
 
-            Rect removeBtnRect = default;
-            bool drawRemoveButton = this.displayRemove && GUI.enabled;
-            if (drawRemoveButton && contentRect.IsValid())
-            {
-                removeBtnRect = contentRect.AlignRight(18).AlignCenterVertical(18);
-                removeBtnRect.xMin += 6;
-                contentRect = contentRect.PadRight(18);
-            }
+            // Leave a little space for easier selection
+            if (displayRemove && GUI.enabled)
+                contentRect.xMax -= 6;
 
             base.DrawElement(contentRect, elementIndex + _drawPageIndex * MaxItemsPerPage, selected, focused);
-            
-            if (drawRemoveButton)
-            {
-                while (_closeIcons.Count <= elementIndex) // Each rect needs its own icon (cause the rect is cached)
-                    _closeIcons.Add(new HoverTexture(UnityIcon.AssetIcon("Fa_Times")));
-
-                if (CustomEditorGUI.IconButton(removeBtnRect, _closeIcons[elementIndex], tooltip: "Remove entry."))
-                {
-                    this.index = elementIndex + _drawPageIndex * MaxItemsPerPage;
-                    HandleRemoveElement(this.index);
-                    onChangedCallback?.Invoke(this);
-                    if (_drawPageIndex * MaxItemsPerPage >= this.count && _drawPageIndex > 0)
-                        --_drawPageIndex;
-                    EditorGUIUtility.ExitGUI();
-                }
-            }
         }
 
 
