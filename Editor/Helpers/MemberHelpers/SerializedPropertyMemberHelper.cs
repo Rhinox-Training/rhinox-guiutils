@@ -46,7 +46,7 @@ namespace Rhinox.GUIUtils.Editor
             }
             
             // property might have changed
-            _objectType = _hostInfo.GetHostType();
+            _objectType = _hostInfo.HostType;
             
             if (!TryFindMemberInHost(input, isStatic, out _staticValueGetter, out _instanceValueGetter))
                 _errorMessage = $"Could not find field {input} on type {_objectType.Name}";

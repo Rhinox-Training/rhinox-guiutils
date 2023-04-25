@@ -10,9 +10,7 @@ namespace Rhinox.GUIUtils.Editor
     public abstract class BaseWrapperDrawable : BaseDrawable
     {
         protected IOrderedDrawable _innerDrawable;
-
-        public override GenericHostInfo HostInfo => _innerDrawable.HostInfo;
-
+        
         public override float ElementHeight => _innerDrawable.ElementHeight;
 
         public override bool IsVisible => _innerDrawable.IsVisible;
@@ -25,7 +23,7 @@ namespace Rhinox.GUIUtils.Editor
         {
             if (drawable == null) throw new ArgumentNullException(nameof(drawable));
             _innerDrawable = drawable;
-            base.HostInfo = _innerDrawable.HostInfo;
+            _hostInfo = _innerDrawable.HostInfo;
             Order = _innerDrawable.Order;
         }
 
