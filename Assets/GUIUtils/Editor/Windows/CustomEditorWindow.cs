@@ -595,7 +595,8 @@ namespace Rhinox.GUIUtils.Editor
             }
             catch (ExitGUIException)
             {
-                // Do nothing, this is supported behaviour
+                // Rethrow, this is supported behaviour
+                throw;
             }
             catch (Exception e)
             {

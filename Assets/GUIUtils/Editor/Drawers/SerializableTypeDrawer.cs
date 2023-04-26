@@ -25,7 +25,7 @@ namespace Rhinox.GUIUtils.Editor
         private IPropertyMemberHelper _rawGetter;
         private PickerHandler _typePicker;
 
-        private static List<Type> _allTypes;
+        private static List<Type> _allTypesCache;
 
         protected override void Initialize()
         {
@@ -104,9 +104,9 @@ namespace Rhinox.GUIUtils.Editor
                 list = ReflectionUtility.GetTypesInheritingFrom(_baseType);
             else
             {
-                if (_allTypes == null) // cache this between drawers so it doesn't get created multiple times
-                    _allTypes = ReflectionUtility.GetTypesInheritingFrom(typeof(object));
-                list = _allTypes;
+                if (_allTypesCache == null) // cache this between drawers so it doesn't get created multiple times
+                    _allTypesCache = ReflectionUtility.GetTypesInheritingFrom(typeof(object));
+                list = _allTypesCache;
             }
             
             _typePicker = GenericPicker.Show(position, SmartValue?.Type, list, SetValue);

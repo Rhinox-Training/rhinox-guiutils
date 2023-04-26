@@ -30,6 +30,7 @@ namespace Rhinox.GUIUtils.Editor
         protected Rect _rect;
         
         protected virtual void Initialize() {}
+        
         protected abstract void DrawPropertyLayout(GUIContent label);
 
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
@@ -42,14 +43,20 @@ namespace Rhinox.GUIUtils.Editor
                 _initialized = true;
             }
 
+            GUILayout.BeginArea(_rect);
             var rect = EditorGUILayout.BeginVertical();
 
             DrawPropertyLayout(label);
             
             EditorGUILayout.EndVertical();
+            GUILayout.EndArea();
 
-            if (rect.IsValid())
-                _rect = rect;
+            if (position.IsValid())
+            {
+                _rect = position;
+                _rect.height = rect.height;
+            }
+            
         }
 
         public override float GetPropertyHeight(SerializedProperty property, GUIContent label)

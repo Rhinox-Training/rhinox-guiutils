@@ -70,15 +70,7 @@ namespace Rhinox.GUIUtils.Editor
                 return;
 
             OnPreDraw();
-            try
-            {
-                _rootDrawable.Draw(GUIContent.none);
-            }
-            catch (ExitGUIException)
-            {
-                // Do nothing, this is supported behaviour
-            }
-
+            _rootDrawable.Draw(GUIContent.none);
             OnPostDraw();
         }
 
