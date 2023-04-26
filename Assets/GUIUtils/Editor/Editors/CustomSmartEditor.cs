@@ -12,7 +12,7 @@ namespace Rhinox.GUIUtils.Editor
     {
         private DrawablePropertyView _propertyView;
         private IRepaintRequest _target;
-
+        
         public override void OnInspectorGUI()
         {
             var attr = target.GetType().GetCustomAttribute<SmartFallbackDrawnAttribute>();
@@ -33,21 +33,23 @@ namespace Rhinox.GUIUtils.Editor
             }
 
             if (_propertyView == null)
+            {
                 _propertyView = new DrawablePropertyView(serializedObject);
+                _propertyView.RepaintRequested += OnRepaintRequested;
+            }
             
             DrawScriptField();
             _propertyView.DrawLayout();
-
-            if (_propertyView.ShouldRepaint)
-            {
-                if (_target != null)
-                    _target.RequestRepaint();
-                else
-                    Repaint();
-                _propertyView.MarkAsRepainted();
-            }
         }
-        
+
+        private void OnRepaintRequested()
+        {
+            if (_target != null)
+                _target.RequestRepaint();
+            else
+                Repaint();
+        }
+
         private static int CountDrawnProperties(SerializedObject obj)
         {
             SerializedProperty iterator = obj.GetIterator();

@@ -35,6 +35,9 @@ namespace Rhinox.GUIUtils.Editor
             GUILayout.BeginArea(_cachedRect, CustomGUIStyles.Clean);
             Draw(label);
             GUILayout.EndArea();
+            
+            if (!_cachedRect.IsValid() && Event.current.type == EventType.Layout)
+                RequestRepaint();
         }
 
         private void Draw(GUIContent label)
