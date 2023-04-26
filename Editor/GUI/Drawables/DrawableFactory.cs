@@ -396,11 +396,39 @@ namespace Rhinox.GUIUtils.Editor
                 yield return propertyMember;
             }
         }
-
+        
         private static bool CanUnityHandleDrawingProperty(SerializedProperty property)
         {
             if (property == null)
                 return false;
+            
+            var drawerTypes = TypeCache.GetTypesWithAttribute<CustomPropertyDrawer>();
+            if (!drawerTypes.IsNullOrEmpty())
+            {
+                var propertyType = property.GetHostInfo().GetReturnType();
+                foreach (var type in drawerTypes)
+                {
+                    var attrs = type.GetCustomAttributes<CustomPropertyDrawer>();
+
+                    foreach (var attr in attrs)
+                    {
+                        var t = attr.GetPropertyType();
+                        
+                        if (attr.IsUsedForChildren())
+                        {
+                            if (propertyType.InheritsFrom(t))
+                                return true;
+                        }
+                        else
+                        {
+                            if (propertyType == t)
+                                return true;
+                        }
+                    }
+
+                }
+            }
+            
             switch (property.propertyType)
             {
                 case SerializedPropertyType.ExposedReference:
