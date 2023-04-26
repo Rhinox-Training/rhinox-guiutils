@@ -23,6 +23,9 @@ namespace Rhinox.GUIUtils.Editor
         private int _maxPagesCount => Mathf.CeilToInt((float)List.Count / MaxItemsPerPage);
 
         private bool _isUnityType;
+        
+        public override object SelectedItem => List[SelectedIndex + MaxItemsPerPage * _drawPageIndex];
+
 
         // Each tracks their own rect so you do need multiple
         private readonly List<HoverTexture> _closeIcons = new List<HoverTexture>();
@@ -47,6 +50,11 @@ namespace Rhinox.GUIUtils.Editor
 
                 return false;
             }
+        }
+        
+        public PageableReorderableList(IList elements, bool draggable = true, bool displayHeader = true, bool displayAdd = true, bool displayRemove = true)
+            : base(elements, draggable, displayHeader, displayAdd, displayRemove)
+        {
         }
         
         public PageableReorderableList(SerializedObject serializedObject, SerializedProperty elements, 
@@ -115,12 +123,20 @@ namespace Rhinox.GUIUtils.Editor
             GUILayout.FlexibleSpace();
             GUILayout.Label($"{count} Items");
 
+            if (List != null)
+            {
+                var maxPagesCount = _maxPagesCount;
+
+                if (maxPagesCount > 1 && _drawPageIndex >= maxPagesCount)
+                    _drawPageIndex = maxPagesCount - 1;
+            }
+
             if (List != null && List.Count > GetListDrawCount())
             {
                 CustomEditorGUI.VerticalLine(CustomGUIStyles.LightBorderColor);
 
                 var maxPagesCount = _maxPagesCount;
-                
+
                 GUILayout.Label($"{_drawPageIndex + 1}/{maxPagesCount}");
 
                 var wasEnabled = GUI.enabled;
@@ -160,7 +176,7 @@ namespace Rhinox.GUIUtils.Editor
                         if (onChangedCallback != null)
                             onChangedCallback(this);
 
-                        m_SerializedObject.ApplyModifiedProperties();
+                        m_SerializedObject?.ApplyModifiedProperties();
                     }
                 }
             }
@@ -186,14 +202,14 @@ namespace Rhinox.GUIUtils.Editor
         {
             if (MaxItemsPerPage > 0 && elementIndex > MaxItemsPerPage)
                 return;
-            
+
             Rect removeBtnRect = default;
             bool drawRemoveButton = this.displayRemove && GUI.enabled;
             if (drawRemoveButton && contentRect.IsValid())
             {
                 removeBtnRect = contentRect.AlignRight(18).AlignCenterVertical(18);
                 removeBtnRect.xMin += 6;
-                contentRect = contentRect.PadRight(18);
+                contentRect.xMax -= 18;
             }
 
             base.DrawElement(contentRect, elementIndex + _drawPageIndex * MaxItemsPerPage, selected, focused);
@@ -205,8 +221,8 @@ namespace Rhinox.GUIUtils.Editor
 
                 if (CustomEditorGUI.IconButton(removeBtnRect, _closeIcons[elementIndex], tooltip: "Remove entry."))
                 {
-                    this.index = elementIndex + _drawPageIndex * MaxItemsPerPage;
-                    HandleRemoveElement(this.index);
+                    this.SelectedIndex = elementIndex + _drawPageIndex * MaxItemsPerPage;
+                    HandleRemoveElement(this.SelectedIndex);
                     onChangedCallback?.Invoke(this);
                     if (_drawPageIndex * MaxItemsPerPage >= this.count && _drawPageIndex > 0)
                         --_drawPageIndex;
@@ -215,14 +231,21 @@ namespace Rhinox.GUIUtils.Editor
             }
         }
 
+        protected override void CheckIfHovering(Rect contentRect, int elementIndex)
+        {
+            if (MaxItemsPerPage > 0)
+                elementIndex %= MaxItemsPerPage;
+            base.CheckIfHovering(contentRect, elementIndex);
+        }
+
 
         protected override void HandleRemoveElement(int indexToRemove)
         {
             if (SerializedProperty != null)
             {
                 SerializedProperty.DeleteArrayElementAtIndex(indexToRemove);
-                if (index >= SerializedProperty.arraySize - 1)
-                    index = SerializedProperty.arraySize - 1;
+                if (SelectedIndex >= SerializedProperty.arraySize - 1)
+                    SelectedIndex = SerializedProperty.arraySize - 1;
             }
             else
             {
@@ -239,8 +262,8 @@ namespace Rhinox.GUIUtils.Editor
                     if (_hostInfo != null)
                         _hostInfo.TrySetValue(m_ElementList);
                 }
-                if (index >= List.Count - 1)
-                    index = List.Count - 1;
+                if (SelectedIndex >= List.Count - 1)
+                    SelectedIndex = List.Count - 1;
             }
         }
 
@@ -252,9 +275,10 @@ namespace Rhinox.GUIUtils.Editor
             base.OnDrawElementBackground(rect, index, selected, focused, draggable);
         }
 
-        protected override void DoLayoutFooter()
+        protected override Rect DoLayoutFooter()
         {
             // Don't draw footer
+            return Rect.zero;
         }
 
         protected override int GetListDrawCount()
@@ -300,19 +324,19 @@ namespace Rhinox.GUIUtils.Editor
                             m_ElementList = (IList) ResizeArray(m_ElementList, List.Count + 1);
                             if (_hostInfo != null)
                                 _hostInfo.TrySetValue(m_ElementList);
-                            index = m_ElementList.Count - 1;
+                            SelectedIndex = m_ElementList.Count - 1;
 
                             if (_hostInfo != null)
                             {
-                                var hostInfo = _hostInfo.CreateArrayElement(index);
+                                var hostInfo = _hostInfo.CreateArrayElement(SelectedIndex);
                                 hostInfo.SetValue(element);
                             }
                             else 
-                                m_ElementList[index] = element;
+                                m_ElementList[SelectedIndex] = element;
                         }
                         else
                         {
-                            index = m_ElementList.Add(element);
+                            SelectedIndex = m_ElementList.Add(element);
                         
                             if (_hostInfo != null)
                                 _hostInfo.TrySetValue(m_ElementList);
