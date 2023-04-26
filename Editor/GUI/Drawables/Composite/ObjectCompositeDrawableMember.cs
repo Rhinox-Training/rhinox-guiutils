@@ -13,8 +13,7 @@ namespace Rhinox.GUIUtils.Editor
 
         private GUIContent _label;
         private bool _hasLabel = false;
-        
-        public bool IsFoldout => Children.Any(drawable => drawable.IsVisible);
+        public bool IsFoldout => false;
 
         public override float ElementHeight
         {
@@ -111,9 +110,7 @@ namespace Rhinox.GUIUtils.Editor
                 EditorGUI.indentLevel = 0;
             }
             else if (rect.IsValid())
-            {
                 rect = EditorGUI.PrefixLabel(rect, label);
-            }
             
             foreach (var child in Children)
                 child.Draw(rect, GUIContent.none);
