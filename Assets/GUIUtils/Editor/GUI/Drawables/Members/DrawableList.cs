@@ -48,21 +48,13 @@ namespace Rhinox.GUIUtils.Editor
 
     public class DrawableList : BaseMemberDrawable
     {
-        private PageableReorderableList _listRO;
+        private readonly PageableReorderableList _listRO;
         private readonly ListDrawerSettingsAttribute _listDrawerAttr;
         private ListElementDrawable[] _listElements;
 
         private readonly SerializedProperty _listProperty;
-
-        public override float ElementHeight
-        {
-            get
-            {
-                if (_listRO != null)
-                    return _listRO.GetHeight();
-                return base.ElementHeight;
-            }
-        }
+        
+        public override float ElementHeight => _listRO.GetHeight();
 
         public DrawableList(SerializedProperty listProperty)
             : base(listProperty.GetHostInfo())
@@ -97,8 +89,7 @@ namespace Rhinox.GUIUtils.Editor
             {
                 MaxItemsPerPage = _listDrawerAttr.NumberOfItemsPerPage
             };
-
-
+            
             Initialize(_listRO);
         }
 
@@ -112,6 +103,7 @@ namespace Rhinox.GUIUtils.Editor
             roList.drawElementCallback = DrawElement;
             roList.onChangedCallback += OnChangedListCallback;
             roList.elementHeightCallback = OnHeight;
+            roList.RepaintRequested += RequestRepaint;
         }
 
         private float OnHeight(int index)
@@ -126,7 +118,7 @@ namespace Rhinox.GUIUtils.Editor
         
         protected override void DrawInner(GUIContent label, params GUILayoutOption[] options)
         {
-            if (_listRO != null && _listDrawerAttr != null)
+            if (_listDrawerAttr != null)
             {
                 OnBeginDraw();
                 EditorGUI.BeginDisabledGroup(_listDrawerAttr.IsReadOnly);
@@ -140,7 +132,7 @@ namespace Rhinox.GUIUtils.Editor
         
         protected override void DrawInner(Rect rect, GUIContent label)
         {
-            if (_listRO != null && _listDrawerAttr != null)
+            if (_listDrawerAttr != null)
             {
                 OnBeginDraw();
                 EditorGUI.BeginDisabledGroup(_listDrawerAttr.IsReadOnly);
@@ -154,8 +146,11 @@ namespace Rhinox.GUIUtils.Editor
 
         private void OnChangedListCallback(BetterReorderableList list)
         {
-            _listElements = new ListElementDrawable[list.count];
-            ShouldRepaint = true;
+            // TODO should be able to improve this
+            _listElements = new ListElementDrawable[_listRO.count];
+            for (int i = 0; i < _listRO.count; ++i)
+                _listElements[i] = CreateElementFor(i);
+            RequestRepaint();
         }
 
         private void DrawElement(Rect rect, int index, bool isActive, bool isFocused)
