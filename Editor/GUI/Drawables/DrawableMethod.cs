@@ -12,6 +12,8 @@ namespace Rhinox.GUIUtils.Editor
         protected override string LabelString => null; // TODO: Button has no label?
         
         private readonly MethodInfo _methodInfo;
+        
+        private Rect _cachedRect;
 
         public DrawableMethod(GenericHostInfo info, MethodInfo method)
         {
@@ -32,9 +34,15 @@ namespace Rhinox.GUIUtils.Editor
 
         protected override void DrawInner(Rect rect, GUIContent label)
         {
-            GUILayout.BeginArea(rect);
+            if (rect.IsValid())
+                _cachedRect = rect;
+            
+            GUILayout.BeginArea(_cachedRect, CustomGUIStyles.Clean);
             DrawInner(label);
             GUILayout.EndArea();
+            
+            if (!_cachedRect.IsValid() && Event.current.type == EventType.Layout)
+                RequestRepaint();
         }
 
         public override IEnumerable<TAttribute> GetDrawableAttributes<TAttribute>()
