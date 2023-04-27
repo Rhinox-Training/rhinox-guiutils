@@ -498,7 +498,7 @@ namespace Rhinox.GUIUtils.Editor
                 var collection = m_ElementList;
                 if (collection is Array arr)
                 {
-                    m_ElementList = RemoveAtGeneric(arr, indexToRemove);
+                    m_ElementList = arr.RemoveAtGeneric(indexToRemove);
                 }
                 else
                 {
@@ -509,29 +509,6 @@ namespace Rhinox.GUIUtils.Editor
             }
         }
         
-        protected static Array RemoveAtGeneric(Array arr, int index)
-        {
-            var type = arr.GetType();
-            var elemType = type.GetElementType();
-            var resizeMethod = typeof(BetterReorderableList).GetMethod(nameof(RemoveAt), BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.FlattenHierarchy);
-            var properRemoveMethod = resizeMethod.MakeGenericMethod(elemType);
-            var parameters = new object[] { arr, index };
-            var array = (Array)properRemoveMethod.Invoke(null, parameters);
-            return array;
-        }
-        
-        private static T[] RemoveAt<T>(T[] source, int index)
-        {
-            T[] dest = new T[source.Length - 1];
-            if( index > 0 )
-                Array.Copy(source, 0, dest, 0, index);
-
-            if( index < source.Length - 1 )
-                Array.Copy(source, index + 1, dest, index, source.Length - index - 1);
-
-            return dest;
-        }
-
         private void DoDraggingAndSelection(Rect listRect)
         {
             Event current = Event.current;

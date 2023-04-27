@@ -90,6 +90,13 @@ namespace Rhinox.GUIUtils.Editor
                 
                 foreach (var t in _typeOptionsByType[m_ElementType])
                 {
+                    if (t.IsGenericType && t.ContainsGenericParameters)
+                        continue;
+                    
+                    // NOTE: This is still not supported in Unity 2021, maybe they will add support in the future
+                    if (t.IsGenericType)
+                        continue;
+                    
                     if (!t.IsAbstract)
                         options.Add(t);
                 }
@@ -176,7 +183,8 @@ namespace Rhinox.GUIUtils.Editor
                 {
                     if (CustomEditorGUI.IconButton(_addContent, null, 16, 16))
                     {
-                        OnAddElement(new Rect());
+                        var addElementRect = new Rect(0, 0, _headerRect.width, _headerRect.height);
+                        OnAddElement(addElementRect);
 
                         if (onChangedCallback != null)
                             onChangedCallback(this);
@@ -256,7 +264,7 @@ namespace Rhinox.GUIUtils.Editor
                 var collection = m_ElementList;
                 if (collection is Array arr)
                 {
-                    m_ElementList = RemoveAtGeneric(arr, indexToRemove);
+                    m_ElementList = arr.RemoveAtGeneric(indexToRemove);
                     if (_hostInfo != null)
                         _hostInfo.TrySetValue(m_ElementList);
                 }
@@ -308,7 +316,7 @@ namespace Rhinox.GUIUtils.Editor
             var genericMenu = new GenericMenu();
             foreach (var option in this.m_AddOptionTypes)
             {
-                genericMenu.AddItem(new GUIContent(option.Name), false, () =>
+                genericMenu.AddItem(new GUIContent(option.GetNiceName(false)), false, () =>
                 {
                     if (!Defaults.TryCreateElement(option, out object element, out string errorString))
                     {
@@ -330,7 +338,7 @@ namespace Rhinox.GUIUtils.Editor
 
                         if (m_ElementList is Array)
                         {
-                            m_ElementList = (IList) ResizeArray(m_ElementList, List.Count + 1);
+                            m_ElementList = (IList) Utility.ResizeArrayGeneric(m_ElementList, List.Count + 1);
                             if (_hostInfo != null)
                                 _hostInfo.TrySetValue(m_ElementList);
                             SelectedIndex = m_ElementList.Count - 1;
@@ -356,19 +364,7 @@ namespace Rhinox.GUIUtils.Editor
                         onChangedCallback.Invoke(this);
                 });
             }
-            genericMenu.DropDown(rect);
-        }
-        
-        static object ResizeArray(object array, int n)
-        {
-            var type = array.GetType();
-            var elemType = type.GetElementType();
-            var resizeMethod = typeof(Array).GetMethod("Resize", BindingFlags.Static | BindingFlags.Public);
-            var properResizeMethod = resizeMethod.MakeGenericMethod(elemType);
-            var parameters = new object[] { array, n };
-            properResizeMethod.Invoke(null, parameters);
-            array = parameters[0];
-            return array;
+            genericMenu.DropdownLeft(rect);
         }
 
         protected override GUIContent GetAddIcon()
