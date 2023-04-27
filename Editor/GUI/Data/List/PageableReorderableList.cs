@@ -80,7 +80,7 @@ namespace Rhinox.GUIUtils.Editor
             _isUnityType = m_ElementType != null && m_ElementType.InheritsFrom<Object>();
             _addContent = new GUIContent(UnityIcon.AssetIcon("Fa_Plus"), tooltip: "Add Item");
             
-            if (this.displayAdd && this.m_ElementType != null)
+            if (this.DisplayAdd && this.m_ElementType != null)
             {
                 var options = new HashSet<Type>();
                 if (!m_ElementType.IsAbstract)
@@ -103,7 +103,9 @@ namespace Rhinox.GUIUtils.Editor
 
         protected override void OnDrawHeader(Rect rect, GUIContent label)
         {
-            if (GUI.enabled && displayAdd && _isUnityType)
+            if (!DisplayHeader) return;
+            
+            if (GUI.enabled && DisplayAdd && _isUnityType)
             {
                 if (eUtility.DropZone(m_ElementType, out Object[] items, rect))
                 {
@@ -112,8 +114,11 @@ namespace Rhinox.GUIUtils.Editor
                 }
             }
 
-            if (rect.IsValid())
+            if (rect.IsValid() && _headerRect != rect)
+            {
                 _headerRect = rect;
+                RequestRepaint();
+            }
             
             GUILayout.BeginArea(_headerRect);
             GUILayout.BeginHorizontal();
@@ -162,7 +167,7 @@ namespace Rhinox.GUIUtils.Editor
                 GUI.enabled = wasEnabled;
             }
 
-            if (displayAdd && GUI.enabled)
+            if (DisplayAdd && GUI.enabled)
             {
                 CustomEditorGUI.VerticalLine(CustomGUIStyles.LightBorderColor);
                 GUILayout.Space(CustomGUIUtility.Padding * 2);
@@ -204,7 +209,7 @@ namespace Rhinox.GUIUtils.Editor
                 return;
 
             Rect removeBtnRect = default;
-            bool drawRemoveButton = this.displayRemove && GUI.enabled;
+            bool drawRemoveButton = this.DisplayRemove && GUI.enabled;
             if (drawRemoveButton && contentRect.IsValid())
             {
                 removeBtnRect = contentRect.AlignRight(18).AlignCenterVertical(18);
@@ -226,7 +231,6 @@ namespace Rhinox.GUIUtils.Editor
                     onChangedCallback?.Invoke(this);
                     if (_drawPageIndex * MaxItemsPerPage >= this.count && _drawPageIndex > 0)
                         --_drawPageIndex;
-                    GUIUtility.ExitGUI();
                 }
             }
         }
@@ -279,6 +283,11 @@ namespace Rhinox.GUIUtils.Editor
         {
             // Don't draw footer
             return Rect.zero;
+        }
+        
+        protected override void DoListFooter(Rect footerRect)
+        {
+            // Don't draw footer
         }
 
         protected override int GetListDrawCount()
