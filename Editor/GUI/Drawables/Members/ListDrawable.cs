@@ -12,7 +12,7 @@ using Object = UnityEngine.Object;
 
 namespace Rhinox.GUIUtils.Editor
 {
-    public class ListElementDrawable
+    public class ListElementDrawable : IRepaintRequest
     {
         public float ElementHeight => _propertyView?.Height ?? _defaultElementHeight;
 
@@ -21,12 +21,15 @@ namespace Rhinox.GUIUtils.Editor
         private readonly GenericHostInfo _entry;
         private readonly DrawablePropertyView _propertyView;
 
+        public event Action RepaintRequested;
+
         public ListElementDrawable(SerializedProperty property, float defaultElementHeight = 18.0f)
         {
             if (property == null) throw new ArgumentNullException(nameof(property));
             _defaultElementHeight = defaultElementHeight;
             _property = property;
             _propertyView = new DrawablePropertyView(property);
+            _propertyView.RepaintRequested += RequestRepaint;
         }
         
         public ListElementDrawable(GenericHostInfo entry, float defaultElementHeight = 18.0f)
@@ -35,6 +38,7 @@ namespace Rhinox.GUIUtils.Editor
             _defaultElementHeight = defaultElementHeight;
             _property = null;
             _propertyView = new DrawablePropertyView(_entry);
+            _propertyView.RepaintRequested += RequestRepaint;
         }
 
         public void Draw(Rect r)
@@ -44,9 +48,14 @@ namespace Rhinox.GUIUtils.Editor
             if (_propertyView != null)
                 _propertyView.Draw(r);
         }
+
+        public void RequestRepaint()
+        {
+            RepaintRequested?.Invoke();
+        }
     }
 
-    public class DrawableList : BaseMemberDrawable
+    public class ListDrawable : BaseMemberDrawable
     {
         private readonly PageableReorderableList _listRO;
         private readonly ListDrawerSettingsAttribute _listDrawerAttr;
@@ -56,7 +65,7 @@ namespace Rhinox.GUIUtils.Editor
         
         public override float ElementHeight => _listRO.GetHeight();
 
-        public DrawableList(SerializedProperty listProperty)
+        public ListDrawable(SerializedProperty listProperty)
             : base(listProperty.GetHostInfo())
         {
             if (listProperty == null)
@@ -77,7 +86,7 @@ namespace Rhinox.GUIUtils.Editor
             Initialize(_listRO);
         }
 
-        public DrawableList(GenericHostInfo hostInfo) : base(hostInfo)
+        public ListDrawable(GenericHostInfo hostInfo) : base(hostInfo)
         {
             _listProperty = null;
             _listDrawerAttr = hostInfo.GetAttribute<ListDrawerSettingsAttribute>() ?? new ListDrawerSettingsAttribute();
@@ -168,13 +177,17 @@ namespace Rhinox.GUIUtils.Editor
 
         private ListElementDrawable CreateElementFor(int index)
         {
+            ListElementDrawable drawable;
             if (_listProperty != null)
             {
                 var element = _listProperty.GetArrayElementAtIndex(index);
-                return new ListElementDrawable(element, _listRO.elementHeight);
+                drawable = new ListElementDrawable(element, _listRO.elementHeight);
             }
+            else 
+                drawable = new ListElementDrawable(_hostInfo.CreateArrayElement(index), _listRO.elementHeight);
 
-            return new ListElementDrawable(_hostInfo.CreateArrayElement(index), _listRO.elementHeight);
+            drawable.RepaintRequested += RequestRepaint;
+            return drawable;
         }
 
         private void OnBeginDraw()
