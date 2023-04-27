@@ -61,22 +61,20 @@ namespace Rhinox.GUIUtils.Editor
             }
         }
 
-        protected override void DrawPropertyLayout(GUIContent label)
+        protected override void DrawProperty(Rect position, GUIContent label)
         {
+            var fullRect = position;
             _rawGetter?.DrawError();
-            GUILayout.BeginHorizontal();
-
+            
             if (label != null)
-                EditorGUILayout.PrefixLabel(label);
+                position = EditorGUI.PrefixLabel(position, label);
 
             var title = _title;
             if (string.IsNullOrWhiteSpace(title)) title = SmartValue?.Name;
             if (string.IsNullOrWhiteSpace(title)) title = "<None>";
 
-            if (EditorGUILayout.DropdownButton(GUIContentHelper.TempContent(title), FocusType.Keyboard))
-                DoTypeDropdown(_localRect);
-            
-            GUILayout.EndHorizontal();
+            if (EditorGUI.DropdownButton(position, GUIContentHelper.TempContent(title), FocusType.Keyboard))
+                DoTypeDropdown(fullRect);
         }
 
         private void SetValue(Type type)

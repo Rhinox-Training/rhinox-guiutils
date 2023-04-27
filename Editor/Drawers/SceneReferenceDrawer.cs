@@ -2,7 +2,6 @@ using System;
 using Rhinox.Lightspeed;
 using UnityEditor;
 using UnityEngine;
-
 using BuildUtils = Rhinox.GUIUtils.Editor.BuildUtils;
 
 namespace Rhinox.GUIUtils.Editor
@@ -15,57 +14,61 @@ namespace Rhinox.GUIUtils.Editor
 
         private const float PAD_SIZE = 2f;
         private const float FOOTER_HEIGHT = 10f;
+        private BuildUtils.BuildScene _buildScene;
 
         private static readonly float lineHeight = EditorGUIUtility.singleLineHeight;
         private static readonly float paddedLine = lineHeight + PAD_SIZE;
-        
-        protected override void DrawPropertyLayout(GUIContent label)
+
+        protected override void DrawProperty(Rect position, GUIContent label)
         {
-            EditorGUILayout.BeginVertical(boxStyle);
-            using (new eUtility.IndentedLayout())
+            GUI.Box(position.HorizontalPadding(-CustomGUIUtility.Padding*2), string.Empty, boxStyle);
+
+            var fullRect = position
+                .HorizontalPadding(CustomGUIUtility.Padding * 2, CustomGUIUtility.Padding)
+                .VerticalPadding(CustomGUIUtility.Padding);
+            
+            var valueRect = fullRect.AlignTop(EditorGUIUtility.singleLineHeight);
+            fullRect.yMin += EditorGUIUtility.singleLineHeight + CustomGUIUtility.Padding;
+            if (label != null)
+                valueRect = EditorGUI.PrefixLabel(valueRect, label);
+
+            // Draw scene selector
+            var asset = SmartValue?.SceneAsset;
+
+            var newAsset = EditorGUI.ObjectField(valueRect, asset, typeof(SceneAsset), false);
+
+            if (newAsset != asset)
             {
-                GUILayout.BeginHorizontal();
-
-                if (label != null)
-                    EditorGUILayout.PrefixLabel(label);
-
-                // Draw scene selector
-                var asset = SmartValue?.SceneAsset;
-
-                var newAsset = EditorGUILayout.ObjectField(asset, typeof(SceneAsset), false);
-
-                if (newAsset != asset)
+                if (newAsset != null)
                 {
-                    if (newAsset != null)
-                    {
-                        // Call Constructor taking a SceneAsset
-                        SmartValue = Activator.CreateInstance(FieldType, new[] {newAsset}) as SceneReferenceData;
-                        Apply();
-                        asset = newAsset;
-                    }
-                    else
-                        SmartValue.ScenePath = null;
+                    // Call Constructor taking a SceneAsset
+                    SmartValue = Activator.CreateInstance(FieldType, new[] { newAsset }) as SceneReferenceData;
+                    Apply();
+                    asset = newAsset;
                 }
-
-                // End of scene selector
-                GUILayout.EndHorizontal();
-
-                // Draw scene info
-                GUILayout.BeginHorizontal();
-
-                // Draw the Build Settings Info of the selected Scene
-                var buildScene = BuildUtils.GetBuildScene(asset);
-
-                if (!buildScene.assetGUID.Empty())
-                    DrawSceneInfoGUI(buildScene);
-
-                GUILayout.EndHorizontal();
-
+                else
+                    SmartValue.ScenePath = null;
             }
-            EditorGUILayout.EndVertical();
+
+            // End of scene selector
+            var infoRect = fullRect;
+
+            // Draw the Build Settings Info of the selected Scene
+            _buildScene = BuildUtils.GetBuildScene(asset);
+
+            if (!_buildScene.assetGUID.Empty())
+                DrawSceneInfoGUI(infoRect, _buildScene);
         }
 
-        private void DrawSceneInfoGUI(BuildUtils.BuildScene buildScene)
+        protected override float GetPropertyHeight(GUIContent label)
+        {
+            if (_buildScene.assetGUID.Empty())
+                return base.GetPropertyHeight(label) + CustomGUIUtility.Padding * 2;
+
+            return EditorGUIUtility.singleLineHeight * 2 + CustomGUIUtility.Padding * 3;
+        }
+
+        private void DrawSceneInfoGUI(Rect position, BuildUtils.BuildScene buildScene)
         {
             var readOnly = BuildUtils.IsReadOnly();
             var readOnlyWarning =
@@ -103,9 +106,8 @@ namespace Rhinox.GUIUtils.Editor
             Rect buttonRect;
             using (new EditorGUI.DisabledScope(readOnly))
             {
-                var rect = EditorGUILayout.GetControlRect();
-                var labelRect = RectExtensions.AlignLeft(rect, EditorGUIUtility.labelWidth);
-                buttonRect = RectExtensions.AlignRight(rect, rect.width - EditorGUIUtility.labelWidth);
+                var labelRect = position.AlignLeft(EditorGUIUtility.labelWidth);
+                buttonRect = position.AlignRight(position.width - EditorGUIUtility.labelWidth);
 
                 var iconRect = labelRect;
                 iconRect.width = iconContent.image.width + PAD_SIZE;
@@ -173,7 +175,7 @@ namespace Rhinox.GUIUtils.Editor
         public bool EllipsisButton(Rect position, string msgShort, string msgLong, GUIStyle style,
             string tooltip = null)
         {
-            var content = new GUIContent(msgLong) {tooltip = tooltip};
+            var content = new GUIContent(msgLong) { tooltip = tooltip };
 
             var longWidth = style.CalcSize(content).x;
             if (longWidth > position.width) content.text = msgShort;
