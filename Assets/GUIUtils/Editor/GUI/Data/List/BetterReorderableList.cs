@@ -45,9 +45,9 @@ namespace Rhinox.GUIUtils.Editor
         private float m_DraggedY;
         private bool m_Dragging;
         private List<int> m_NonDragTargetIndices;
-        private bool m_DisplayHeader;
-        public bool displayAdd;
-        public bool displayRemove;
+        public bool DisplayHeader;
+        public bool DisplayAdd;
+        public bool DisplayRemove;
         private int id = -1;
         protected static BetterReorderableList.Defaults s_Defaults;
         public float elementHeight = 21f;
@@ -103,6 +103,7 @@ namespace Rhinox.GUIUtils.Editor
             this.m_SerializedObject = serializedObject;
             this.m_ElementsProperty = property;
             this.m_ElementList = elementList;
+            footerHeight = 0;
 
             if (elementList != null)
             {
@@ -119,9 +120,9 @@ namespace Rhinox.GUIUtils.Editor
             this.m_Draggable = draggable;
             this.m_Dragging = false;
             this.m_SlideGroup = new ExposedGUISlideGroup();
-            this.displayAdd = displayAddButton;
-            this.m_DisplayHeader = displayHeader;
-            this.displayRemove = displayRemoveButton;
+            this.DisplayAdd = displayAddButton;
+            this.DisplayHeader = displayHeader;
+            this.DisplayRemove = displayRemoveButton;
             if (this.m_ElementsProperty != null && !this.m_ElementsProperty.editable)
                 this.m_Draggable = false;
             if (this.m_ElementsProperty == null || this.m_ElementsProperty.isArray)
@@ -232,6 +233,9 @@ namespace Rhinox.GUIUtils.Editor
 
         protected virtual Rect DoLayoutHeader(GUIContent label)
         {
+            if (!DisplayHeader)
+                return Rect.zero;
+            
             Rect rect = GUILayoutUtility.GetRect(0.0f, this.headerHeight, GUILayout.ExpandWidth(true));
             this.DoListHeader(rect, label);
             return rect;
@@ -246,7 +250,7 @@ namespace Rhinox.GUIUtils.Editor
 
         protected virtual Rect DoLayoutFooter()
         {
-            if ((!displayAdd && !displayRemove) || !GUI.enabled)
+            if ((!DisplayAdd && !DisplayRemove) || !GUI.enabled)
                 return Rect.zero;
 
             Rect rect = GUILayoutUtility.GetRect(4f, this.footerHeight, GUILayout.ExpandWidth(true));
@@ -261,7 +265,7 @@ namespace Rhinox.GUIUtils.Editor
 
             Rect = rect;
 
-            Rect headerRect = new Rect(rect.x, rect.y, rect.width, this.headerHeight);
+            Rect headerRect = DisplayHeader ? new Rect(rect.x, rect.y, rect.width, this.headerHeight) : Rect.zero;
             Rect listRect = new Rect(rect.x, headerRect.y + headerRect.height, rect.width, this.GetListElementHeight());
             Rect footerRect = new Rect(rect.x, listRect.y + listRect.height, rect.width, this.footerHeight);
             this.DoListHeader(headerRect, label);
@@ -269,7 +273,13 @@ namespace Rhinox.GUIUtils.Editor
             this.DoListFooter(footerRect);
         }
 
-        public float GetHeight() => 0.0f + this.GetListElementHeight() + this.headerHeight + this.footerHeight;
+        public float GetHeight()
+        {
+            var height = this.GetListElementHeight() + this.footerHeight;
+            if (DisplayHeader)
+                height += headerHeight;
+            return height;
+        }
 
         private float GetListElementHeight()
         {
@@ -459,7 +469,7 @@ namespace Rhinox.GUIUtils.Editor
 
         protected virtual void OnDrawHeader(Rect headerRect, GUIContent label)
         {
-            if (!this.m_DisplayHeader)
+            if (!this.DisplayHeader)
                 return;
             s_Defaults.DrawHeader(headerRect, this.m_SerializedObject, this.m_ElementsProperty, this.m_ElementList);
         }
@@ -471,7 +481,7 @@ namespace Rhinox.GUIUtils.Editor
 
         protected virtual void DoListFooter(Rect footerRect)
         {
-            s_Defaults.DrawFooter(footerRect, this, this.displayAdd, this.displayRemove, HandleRemoveElement);
+            s_Defaults.DrawFooter(footerRect, this, this.DisplayAdd, this.DisplayRemove, HandleRemoveElement);
         }
 
         protected virtual void HandleRemoveElement(int indexToRemove)
