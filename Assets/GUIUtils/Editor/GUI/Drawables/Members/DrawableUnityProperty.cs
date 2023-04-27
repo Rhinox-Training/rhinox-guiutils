@@ -15,6 +15,7 @@ namespace Rhinox.GUIUtils.Editor
         {
             Property = prop;
         }
+        
         protected override void DrawInner(GUIContent label, params GUILayoutOption[] options) 
         {
             EditorGUILayout.PropertyField(Property, label, options);
