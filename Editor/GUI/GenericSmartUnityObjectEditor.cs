@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Rhinox.Lightspeed;
 using Rhinox.Lightspeed.Reflection;
 using UnityEditor;
 using UnityEngine;
@@ -17,7 +18,7 @@ namespace Rhinox.GUIUtils.Editor
 
         private void OnEnable()
         {
-            if (_propertyView == null)
+            if (_propertyView == null && !targets.IsNullOrEmpty() && target != null)
                 _propertyView = new DrawablePropertyView(serializedObject);
         }
 
