@@ -17,39 +17,31 @@ namespace Rhinox.GUIUtils.Editor
         protected SerializedProperty _property;
         private bool _initialized;
         
-        protected Rect _positionRect;
-        protected Rect _localRect;
-
         public event Action RepaintRequested;
         
         protected virtual void Initialize() {}
         
         protected virtual void DrawProperty(Rect position, GUIContent label)
         {
-            GUILayout.BeginArea(_positionRect);
-            var rect = EditorGUILayout.BeginVertical();
-
-            DrawPropertyLayout(label);
             
-            EditorGUILayout.EndVertical();
-            GUILayout.EndArea();
-
-            if (position.IsValid())
-            {
-                _localRect = rect;
-                _positionRect = position;
-                if (!_positionRect.height.LossyEquals(rect.height))
-                {
-                    RequestRepaint();
-                    _positionRect.height = rect.height;
-                }
-            }
         }
-        protected abstract void DrawPropertyLayout(GUIContent label);
 
-        public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
-            => _positionRect.height;
+        protected virtual float GetPropertyHeight(GUIContent label)
+            => EditorGUIUtility.singleLineHeight;
 
+        public sealed override float GetPropertyHeight(SerializedProperty property, GUIContent label)
+        {
+            _property = property;
+            
+            if (!_initialized)
+            {
+                Initialize();
+                _initialized = true;
+            }
+            
+            return GetPropertyHeight(label);
+        }
+        
         public sealed override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
             _property = property;
