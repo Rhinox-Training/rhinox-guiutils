@@ -61,7 +61,7 @@ namespace Rhinox.GUIUtils.Editor
         //==============================================================================================================
         // Helper methods
 
-        private static IOrderedDrawable DrawableMembersForSerializedObject(GenericHostInfo hostInfo, IEnumerable<SerializedObjectExtensions.FieldData> visibleFields, int depth)
+        private static VerticalGroupDrawable DrawableMembersForSerializedObject(GenericHostInfo hostInfo, IEnumerable<SerializedObjectExtensions.FieldData> visibleFields, int depth)
         {
             var drawable = new VerticalGroupDrawable();
             foreach (var fieldData in visibleFields)
@@ -125,7 +125,7 @@ namespace Rhinox.GUIUtils.Editor
 
         private static IOrderedDrawable CreateCompositeDrawable(GenericHostInfo hostInfo, int depth)
         {
-            CompositeDrawableMember drawable = new VerticalGroupDrawable();
+            var drawable = new VerticalGroupDrawable();
 
             var memberEntries = GetEditorVisibleFields(hostInfo);
             var drawables = new List<IOrderedDrawable>();
@@ -147,9 +147,8 @@ namespace Rhinox.GUIUtils.Editor
             drawable.AddRange(buttons);
 
             // Wrap in object composite
-            drawable = ObjectCompositeDrawableMember.CreateFrom(hostInfo, drawable);
-            
-            return drawable;
+            var resultDrawable = ObjectCompositeDrawableMember.CreateFrom(hostInfo, drawable);
+            return resultDrawable;
         }
 
         private static IOrderedDrawable CreateDrawableForSerializedProperty(SerializedProperty property)
@@ -184,9 +183,9 @@ namespace Rhinox.GUIUtils.Editor
                         else
                         {
                             var visibleFields = property.EnumerateEditorVisibleFields();
-                            drawable = DrawableMembersForSerializedObject(hostInfo, visibleFields, 0);
+                            var verticalGroupDrawable = DrawableMembersForSerializedObject(hostInfo, visibleFields, 0);
                             
-                            drawable = ObjectCompositeDrawableMember.CreateFrom(hostInfo, drawable);
+                            drawable = ObjectCompositeDrawableMember.CreateFrom(hostInfo, verticalGroupDrawable);
                         }
                     }
                 }

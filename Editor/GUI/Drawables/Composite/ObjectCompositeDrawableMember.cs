@@ -26,9 +26,14 @@ namespace Rhinox.GUIUtils.Editor
             }
         }
         
-        public static ObjectCompositeDrawableMember CreateFrom(GenericHostInfo hostInfo, IOrderedDrawable contents, float order = 0)
+        public static ObjectCompositeDrawableMember CreateFrom(GenericHostInfo hostInfo, VerticalGroupDrawable contents, float order = 0)
         {
-            var objectCompositeDrawable = new ObjectCompositeDrawableMember(hostInfo, contents, order);
+            ObjectCompositeDrawableMember objectCompositeDrawable;
+            if (contents.Children.Count == 0)
+                objectCompositeDrawable = new ObjectCompositeDrawableMember(hostInfo, new UndrawableField(hostInfo), order);
+            else
+                objectCompositeDrawable = new ObjectCompositeDrawableMember(hostInfo, contents, order);
+            
             if (hostInfo != null)
             {
                 foreach (var attr in hostInfo.GetAttributes())
