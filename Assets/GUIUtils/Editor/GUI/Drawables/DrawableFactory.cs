@@ -96,6 +96,8 @@ namespace Rhinox.GUIUtils.Editor
             var buttons = FindCustomDrawables(hostInfo);
             drawable.AddRange(buttons);
 
+            drawable.Sort();
+
             return drawable;
         }
 
@@ -141,10 +143,11 @@ namespace Rhinox.GUIUtils.Editor
             }
 
             drawable.AddRange(drawables);
-            drawable.Sort();
             
             var buttons = FindCustomDrawables(hostInfo);
             drawable.AddRange(buttons);
+            
+            drawable.Sort();
 
             // Wrap in object composite
             var resultDrawable = ObjectCompositeDrawableMember.CreateFrom(hostInfo, drawable);
