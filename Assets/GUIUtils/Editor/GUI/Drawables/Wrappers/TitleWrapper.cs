@@ -20,9 +20,9 @@ namespace Rhinox.GUIUtils.Editor
         {
         }
 
-        protected override void Initialize()
+        protected override void OnInitialize()
         {
-            base.Initialize();
+            base.OnInitialize();
             
             _style = _bold ? CustomGUIStyles.BoldTitle : CustomGUIStyles.Title;
 

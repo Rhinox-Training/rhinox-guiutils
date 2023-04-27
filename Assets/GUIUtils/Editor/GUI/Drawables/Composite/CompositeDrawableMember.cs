@@ -39,6 +39,11 @@ namespace Rhinox.GUIUtils.Editor
             return _attributes.OfType<TAttribute>();
         }
 
+        public virtual void TryInitialize()
+        {
+            
+        }
+
         public virtual void AddAttribute(Attribute attribute)
         {
             _attributes.AddUnique(attribute);
@@ -90,8 +95,13 @@ namespace Rhinox.GUIUtils.Editor
 
         public void Sort()
         {
-            foreach (var drawable in Children)
+            if (_drawableMemberChildren == null)
+                return;
+            
+            foreach (var drawable in _drawableMemberChildren)
             {
+                drawable.TryInitialize();
+                
                 if (drawable is CompositeDrawableMember compositeDrawableMember)
                     compositeDrawableMember.Sort();
             }
