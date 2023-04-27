@@ -12,7 +12,7 @@ namespace Rhinox.GUIUtils.Editor
         }
         
         protected BaseMemberValueDrawable(GenericHostInfo hostInfo)
-            :base(hostInfo)
+            : base(hostInfo)
         {
         }
 

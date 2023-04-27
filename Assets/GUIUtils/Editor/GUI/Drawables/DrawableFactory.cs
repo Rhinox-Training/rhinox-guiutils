@@ -203,7 +203,7 @@ namespace Rhinox.GUIUtils.Editor
             var returnType = hostInfo.GetReturnType();
             if (returnType.InheritsFrom(typeof(IList)))
             {
-                drawable = new DrawableList(property);
+                drawable = new ListDrawable(property);
                 return true;
             }
 
@@ -260,7 +260,14 @@ namespace Rhinox.GUIUtils.Editor
             
             if (type == typeof(Type))
             {
-                drawableMember = new UndrawableField(hostInfo);
+                drawableMember = new UndrawableField<Type>(hostInfo);
+                return true;
+            }
+
+            var drawerType = PropertyDrawerHelper.GetDrawerTypeFor(type);
+            if (drawerType != null && drawerType.HasInterfaceType<IHostInfoDrawer>())
+            {
+                drawableMember = new DrawableAsUnityProperty(hostInfo, drawerType);
                 return true;
             }
 
@@ -272,7 +279,7 @@ namespace Rhinox.GUIUtils.Editor
 
             if (type.InheritsFrom<IList>())
             {
-                drawableMember = new DrawableList(hostInfo);
+                drawableMember = new ListDrawable(hostInfo);
                 return true;
             }
 
@@ -370,8 +377,6 @@ namespace Rhinox.GUIUtils.Editor
             return list;
         }
         
-        
-        
         // =============================================================================================================
         // Generic Helper methods (TODO: move these to helper classes?)
         private static bool IsVisibleInEditor(this PropertyInfo propertyInfo)
@@ -401,33 +406,11 @@ namespace Rhinox.GUIUtils.Editor
         {
             if (property == null)
                 return false;
-            
-            var drawerTypes = TypeCache.GetTypesWithAttribute<CustomPropertyDrawer>();
-            if (!drawerTypes.IsNullOrEmpty())
-            {
-                var propertyType = property.GetHostInfo().GetReturnType();
-                foreach (var type in drawerTypes)
-                {
-                    var attrs = type.GetCustomAttributes<CustomPropertyDrawer>();
 
-                    foreach (var attr in attrs)
-                    {
-                        var t = attr.GetPropertyType();
-                        
-                        if (attr.IsUsedForChildren())
-                        {
-                            if (propertyType.InheritsFrom(t))
-                                return true;
-                        }
-                        else
-                        {
-                            if (propertyType == t)
-                                return true;
-                        }
-                    }
-
-                }
-            }
+            var type = property.GetHostInfo().GetReturnType();
+            var drawerType = PropertyDrawerHelper.GetDrawerTypeFor(type);
+            if (drawerType != null)
+                return true;
             
             switch (property.propertyType)
             {
