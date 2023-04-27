@@ -18,11 +18,12 @@ namespace Rhinox.GUIUtils.Editor
     }
     
     [UnityEditor.CustomEditor(typeof(SmartInternalObject))]
-    public class GenericSmartObjectEditor : UnityEditor.Editor, IEditor
+    public class GenericSmartObjectEditor : UnityEditor.Editor, IEditor, IRepaintRequestHandler
     {
         private DrawablePropertyView _propertyView;
         private MethodInfo[] _drawerMethods;
         private object _target;
+        private IRepaintRequest _repainter;
 
         private void OnEnable()
         {
@@ -33,7 +34,10 @@ namespace Rhinox.GUIUtils.Editor
             _target = smartInternalObj.Target;
             _drawerMethods = GetInspectorGUIMethods(_target);
             if (_target != null)
+            {
                 _propertyView = new DrawablePropertyView(_target);
+                _propertyView.RepaintRequested += RequestRepaint;
+            }
         }
         
         public bool CanDraw() => _target != null;
@@ -83,6 +87,19 @@ namespace Rhinox.GUIUtils.Editor
         public void Destroy()
         {
             Object.DestroyImmediate(this);
+        }
+
+        public void RequestRepaint()
+        {
+            if (_repainter != null)
+                _repainter.RequestRepaint();
+            else
+                Repaint();
+        }
+
+        public void UpdateRequestTarget(IRepaintRequest target)
+        {
+            _repainter = target;
         }
     }
 }

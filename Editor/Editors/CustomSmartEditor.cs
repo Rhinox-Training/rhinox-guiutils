@@ -11,7 +11,7 @@ namespace Rhinox.GUIUtils.Editor
     public class CustomSmartEditor : BaseEditor<MonoBehaviour>, IRepaintRequestHandler
     {
         private DrawablePropertyView _propertyView;
-        private IRepaintRequest _target;
+        private IRepaintRequest _repainter;
         
         public override void OnInspectorGUI()
         {
@@ -42,14 +42,6 @@ namespace Rhinox.GUIUtils.Editor
             _propertyView.DrawLayout();
         }
 
-        private void OnRepaintRequested()
-        {
-            if (_target != null)
-                _target.RequestRepaint();
-            else
-                Repaint();
-        }
-
         private static int CountDrawnProperties(SerializedObject obj)
         {
             SerializedProperty iterator = obj.GetIterator();
@@ -63,10 +55,18 @@ namespace Rhinox.GUIUtils.Editor
 
             return count;
         }
+        
+        private void OnRepaintRequested()
+        {
+            if (_repainter != null)
+                _repainter.RequestRepaint();
+            else
+                Repaint();
+        }
 
         public void UpdateRequestTarget(IRepaintRequest target)
         {
-            _target = target;
+            _repainter = target;
         }
     }
 }

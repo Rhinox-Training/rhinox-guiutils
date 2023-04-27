@@ -80,17 +80,17 @@ namespace Rhinox.GUIUtils.Editor
         {
             Path = null;
         }
-        
-        protected override void BeforeValueChanged()
-        {
-            base.BeforeValueChanged();
-            //_root.ApplyModifiedProperties(); // TODO: do we need ApplyModifiedProperties here?
-        }
-        
+
         protected override void OnValueChanged()
         {
             Root.Update();
             base.OnValueChanged();
+        }
+
+        public override void Apply()
+        {
+            Root.ApplyModifiedProperties();
+            base.Apply();
         }
     }
     
@@ -277,6 +277,11 @@ namespace Rhinox.GUIUtils.Editor
             if (ArrayIndex != -1) throw new InvalidOperationException("GenericHostInfo already has in index, cannot create sub entry.");
 
             return new GenericHostInfo(this, MemberInfo, index);
+        }
+
+        public virtual void Apply()
+        {
+            
         }
     }
 }

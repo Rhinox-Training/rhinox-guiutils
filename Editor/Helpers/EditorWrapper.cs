@@ -22,12 +22,14 @@ namespace Rhinox.GUIUtils.Editor
     /// <summary>
     /// Wrapper for an object to draw a certain object keeping editing capabilities
     /// </summary>
-    public struct EditorWrapper : IEditor
+    public struct EditorWrapper : IEditor, IRepaintRequestHandler
     {
         [ShowIf(nameof(_expanded)), ShowInInspector]
         [InlineEditor(Expanded = true, ObjectFieldMode = InlineEditorObjectFieldModes.CompletelyHidden)]
         public object Target;
         
+        private IRepaintRequest _repaintHandler;
+
 #if ODIN_INSPECTOR
         private PropertyTree _tree;
 #else
@@ -69,6 +71,7 @@ namespace Rhinox.GUIUtils.Editor
             _expanded = expanded;
             _closedIcon = null;
             _openIcon = null;
+            _repaintHandler = null;
 #if ODIN_INSPECTOR
             _tree = null;
 #else
@@ -119,8 +122,11 @@ namespace Rhinox.GUIUtils.Editor
         
             SirenixEditorGUI.EndFadeGroup();
 #else
-            if (_view == null) 
+            if (_view == null)
+            {
                 _view = new DrawablePropertyView(Target);
+                _view.RepaintRequested += RequestRepaint;
+            }
             _view.DrawLayout();
 #endif
         }
@@ -179,5 +185,15 @@ namespace Rhinox.GUIUtils.Editor
         }
     #endif
 #endif
+        public void RequestRepaint()
+        {
+            if (_repaintHandler != null)
+                _repaintHandler.RequestRepaint();
+        }
+
+        public void UpdateRequestTarget(IRepaintRequest target)
+        {
+            _repaintHandler = target;
+        }
     }
 }

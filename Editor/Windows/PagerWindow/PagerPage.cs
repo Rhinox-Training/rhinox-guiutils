@@ -50,7 +50,7 @@ namespace Rhinox.GUIUtils.Editor
         }
     }
 
-    public abstract class PagerPage
+    public abstract class PagerPage : IRepaintRequestHandler, IRepaintRequest
     {
         protected SlidePagedWindowNavigationHelper<object> _pager;
 
@@ -152,6 +152,18 @@ namespace Rhinox.GUIUtils.Editor
         protected virtual void NavigateBack()
         {
             EditorApplication.delayCall += _pager.NavigateBack;
+        }
+
+        private IRepaintRequest _repaintTarget;
+        public void UpdateRequestTarget(IRepaintRequest target)
+        {
+            _repaintTarget = target;
+        }
+
+        public void RequestRepaint()
+        {
+            if (_repaintTarget != null)
+                _repaintTarget.RequestRepaint();
         }
     }
 }

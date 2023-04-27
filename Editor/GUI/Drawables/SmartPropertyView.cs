@@ -15,7 +15,6 @@ namespace Rhinox.GUIUtils.Editor
         private readonly DrawablePropertyView _odinlessDrawer;
 #endif
 
-        private bool _repaintRequested;
         public event Action RepaintRequested;
         
         public SmartPropertyView(object instance)
@@ -25,15 +24,9 @@ namespace Rhinox.GUIUtils.Editor
             _allowUndo = instance is UnityEngine.Object;
 #else
             _odinlessDrawer = new DrawablePropertyView(instance);
-            _odinlessDrawer.RepaintRequested += OnRepaintRequested;
+            _odinlessDrawer.RepaintRequested += RequestRepaint;
 #endif
         }
-
-        private void OnRepaintRequested()
-        {
-            _repaintRequested = true;
-        }
-
         public SmartPropertyView(SerializedObject serializedObject)
         {
 #if ODIN_INSPECTOR
@@ -41,6 +34,7 @@ namespace Rhinox.GUIUtils.Editor
             _allowUndo = true;
 #else
             _odinlessDrawer = new DrawablePropertyView(serializedObject);
+            _odinlessDrawer.RepaintRequested += RequestRepaint;
 #endif
         }
 
@@ -51,13 +45,10 @@ namespace Rhinox.GUIUtils.Editor
 #else
             _odinlessDrawer.DrawLayout();
 #endif
-            if (_repaintRequested)
-                RequestRepaint();
         }
 
         private void RequestRepaint()
         {
-            _repaintRequested = false;
             RepaintRequested?.Invoke();
         }
     }

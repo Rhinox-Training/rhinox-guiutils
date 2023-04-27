@@ -21,4 +21,23 @@ namespace Rhinox.GUIUtils.Editor
             EditorGUI.PrefixLabel(rect, label);
         }
     }
+    
+    public class UndrawableField<T> : BaseMemberValueDrawable<T>
+    {
+        public UndrawableField(GenericHostInfo hostInfo) : base(hostInfo)
+        {
+            
+        }
+        protected override T DrawValue(GUIContent label, T value, params GUILayoutOption[] options)
+        {
+            EditorGUILayout.LabelField(label, options);
+            return value;
+        }
+
+        protected override T DrawValue(Rect rect, GUIContent label, T value)
+        {
+            EditorGUI.LabelField(rect, label);
+            return value;
+        }
+    }
 }
