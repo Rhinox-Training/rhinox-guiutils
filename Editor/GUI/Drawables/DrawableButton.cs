@@ -29,9 +29,9 @@ namespace Rhinox.GUIUtils.Editor
             _hostInfo = new MethodHostInfo(instanceVal, method);
         }
 
-        protected override void Initialize()
+        protected override void OnInitialize()
         {
-            base.Initialize();
+            base.OnInitialize();
             if (Name.IsNullOrEmpty())
                 Name = _hostInfo.NiceName;
         }

@@ -16,6 +16,7 @@ namespace Rhinox.GUIUtils.Editor
         event Action RepaintRequested;
 
         IEnumerable<TAttribute> GetDrawableAttributes<TAttribute>() where TAttribute : Attribute;
+        void TryInitialize();
         void Draw(GUIContent label, params GUILayoutOption[] options);
         void Draw(Rect rect, GUIContent label);
 

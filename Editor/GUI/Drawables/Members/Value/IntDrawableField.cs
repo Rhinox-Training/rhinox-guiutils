@@ -14,9 +14,9 @@ namespace Rhinox.GUIUtils.Editor
 
         public IntDrawableField(GenericHostInfo hostInfo) : base(hostInfo) { }
 
-        protected override void Initialize()
+        protected override void OnInitialize()
         {
-            base.Initialize();
+            base.OnInitialize();
 
             if (TryGetDrawableAttribute(out MinValueAttribute minAttr))
                 _min = (int) Math.Round(minAttr.MinValue);

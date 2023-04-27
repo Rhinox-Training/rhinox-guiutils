@@ -65,11 +65,7 @@ namespace Rhinox.GUIUtils.Editor
         /// </summary>
         protected virtual void OnPreDraw()
         {
-            if (!_initialized)
-            {
-                Initialize();
-                _initialized = true;
-            }
+            TryInitialize();
         }
         
         protected virtual void OnPostDraw()
@@ -96,8 +92,16 @@ namespace Rhinox.GUIUtils.Editor
             attribute = attributes.FirstOrDefault();
             return !attributes.IsNullOrEmpty();
         }
+
+        public void TryInitialize()
+        {
+            if (_initialized)
+                return;
+            OnInitialize();
+            _initialized = true;
+        }
         
-        protected virtual void Initialize()
+        protected virtual void OnInitialize()
         {
             var orderAttr = GetDrawableAttributes<PropertyOrderAttribute>().FirstOrDefault();
             if (orderAttr != null)
