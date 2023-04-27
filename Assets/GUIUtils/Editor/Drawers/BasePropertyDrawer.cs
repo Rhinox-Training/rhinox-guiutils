@@ -1,49 +1,32 @@
+using System;
 using Rhinox.Lightspeed;
 using UnityEditor;
+using UnityEditor.Graphs;
 using UnityEngine;
 
 namespace Rhinox.GUIUtils.Editor
 {
-    public abstract class ValuePropertyDrawer<T> : BasePropertyDrawer
+    public interface IHostInfoDrawer
     {
-        private HostInfo _hostInfo;
-        
-        public T SmartValue
-        {
-            get => _hostInfo.GetSmartValue<T>();
-            set => _hostInfo.TrySetValue(value);
-        }
-        
-        protected override void Initialize()
-        {
-            _hostInfo = Property.GetHostInfo();
-            
-            base.Initialize();
-        }
+        GenericHostInfo HostInfo { get; set; }
+        event Action RepaintRequested;
     }
     
     public abstract class BasePropertyDrawer : PropertyDrawer
     {
-        protected SerializedProperty Property;
-        
+        protected SerializedProperty _property;
         private bool _initialized;
-        protected Rect _rect;
+        
+        protected Rect _positionRect;
+        protected Rect _localRect;
+
+        public event Action RepaintRequested;
         
         protected virtual void Initialize() {}
         
-        protected abstract void DrawPropertyLayout(GUIContent label);
-
-        public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
+        protected virtual void DrawProperty(Rect position, GUIContent label)
         {
-            Property = property;
-            
-            if (!_initialized)
-            {
-                Initialize();
-                _initialized = true;
-            }
-
-            GUILayout.BeginArea(_rect);
+            GUILayout.BeginArea(_positionRect);
             var rect = EditorGUILayout.BeginVertical();
 
             DrawPropertyLayout(label);
@@ -53,13 +36,68 @@ namespace Rhinox.GUIUtils.Editor
 
             if (position.IsValid())
             {
-                _rect = position;
-                _rect.height = rect.height;
+                _localRect = rect;
+                _positionRect = position;
+                if (!_positionRect.height.LossyEquals(rect.height))
+                {
+                    RequestRepaint();
+                    _positionRect.height = rect.height;
+                }
             }
-            
         }
+        protected abstract void DrawPropertyLayout(GUIContent label);
 
         public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
-            => _rect.height;
+            => _positionRect.height;
+
+        public sealed override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
+        {
+            _property = property;
+
+            if (!_initialized)
+            {
+                Initialize();
+                _initialized = true;
+            }
+
+            DrawProperty(position, label);
+        }
+
+        protected virtual void Apply()
+        {
+            _property.serializedObject.ApplyModifiedProperties();
+        }
+
+        protected void RequestRepaint()
+        {
+            RepaintRequested?.Invoke();
+        }
+    }
+    
+    public abstract class BasePropertyDrawer<T> : BasePropertyDrawer, IHostInfoDrawer
+    {
+        public GenericHostInfo HostInfo { get; set; }
+        protected Type FieldType;
+        
+        public T SmartValue
+        {
+            get => HostInfo.GetSmartValue<T>();
+            set => HostInfo.TrySetValue(value);
+        }
+        
+        protected override void Initialize()
+        {
+            base.Initialize();
+
+            if (HostInfo == null)
+                HostInfo = _property.GetHostInfo();
+            
+            FieldType = HostInfo.GetReturnType(false);
+        }
+
+        protected override void Apply()
+        {
+            HostInfo.Apply();
+        }
     }
 }

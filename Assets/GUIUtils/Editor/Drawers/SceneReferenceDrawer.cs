@@ -8,7 +8,7 @@ using BuildUtils = Rhinox.GUIUtils.Editor.BuildUtils;
 namespace Rhinox.GUIUtils.Editor
 {
     [CustomPropertyDrawer(typeof(SceneReferenceData), true)]
-    public class SceneReferenceDrawer : PropertyDrawer
+    public class SceneReferenceDrawer : BasePropertyDrawer<SceneReferenceData>
     {
         private static readonly GUIStyle boxStyle = EditorStyles.helpBox;
         private static readonly RectOffset boxPadding = boxStyle.padding;
@@ -19,8 +19,7 @@ namespace Rhinox.GUIUtils.Editor
         private static readonly float lineHeight = EditorGUIUtility.singleLineHeight;
         private static readonly float paddedLine = lineHeight + PAD_SIZE;
         
-        //protected override void DrawPropertyLayout(GUIContent label)
-        public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
+        protected override void DrawPropertyLayout(GUIContent label)
         {
             EditorGUILayout.BeginVertical(boxStyle);
             using (new eUtility.IndentedLayout())
@@ -31,8 +30,7 @@ namespace Rhinox.GUIUtils.Editor
                     EditorGUILayout.PrefixLabel(label);
 
                 // Draw scene selector
-                SceneReferenceData smartValue = property.GetValue() as SceneReferenceData;
-                var asset = smartValue.SceneAsset;
+                var asset = SmartValue?.SceneAsset;
 
                 var newAsset = EditorGUILayout.ObjectField(asset, typeof(SceneAsset), false);
 
@@ -41,13 +39,12 @@ namespace Rhinox.GUIUtils.Editor
                     if (newAsset != null)
                     {
                         // Call Constructor taking a SceneAsset
-                        smartValue = Activator.CreateInstance(fieldInfo.FieldType, new[] {newAsset}) as SceneReferenceData;
-                        property.SetValue(smartValue);
-                        property.serializedObject.ApplyModifiedProperties();
+                        SmartValue = Activator.CreateInstance(FieldType, new[] {newAsset}) as SceneReferenceData;
+                        Apply();
                         asset = newAsset;
                     }
                     else
-                        smartValue.ScenePath = null;
+                        SmartValue.ScenePath = null;
                 }
 
                 // End of scene selector

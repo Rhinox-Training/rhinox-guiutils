@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using Rhinox.GUIUtils.Attributes;
 using Rhinox.Lightspeed;
 using Rhinox.Lightspeed.Reflection;
@@ -11,13 +12,8 @@ using UnityEngine;
 namespace Rhinox.GUIUtils.Editor
 {
     [CustomPropertyDrawer(typeof(SerializableType))]
-    public class SerializableTypeDrawer : ValuePropertyDrawer<SerializableType>
+    public class SerializableTypeDrawer : BasePropertyDrawer<SerializableType>
     {
-        // Yeah it's ugly but eh
-        public class Null
-        {
-        }
-
         private string _typeMethod;
         private string _title;
         private Type _baseType;
@@ -41,7 +37,7 @@ namespace Rhinox.GUIUtils.Editor
                 _typeMethod = typeFilter.MemberName;
                 _title = typeFilter.DropdownTitle;
 
-                _rawGetter = MemberHelper.Create<object>(this.Property, _typeMethod);
+                _rawGetter = MemberHelper.Create<object>(HostInfo, _typeMethod);
             }
         }
 
@@ -78,7 +74,7 @@ namespace Rhinox.GUIUtils.Editor
             if (string.IsNullOrWhiteSpace(title)) title = "<None>";
 
             if (EditorGUILayout.DropdownButton(GUIContentHelper.TempContent(title), FocusType.Keyboard))
-                DoTypeDropdown(_rect);
+                DoTypeDropdown(_localRect);
             
             GUILayout.EndHorizontal();
         }
@@ -97,9 +93,9 @@ namespace Rhinox.GUIUtils.Editor
                 return;
             }
             
-            IEnumerable<Type> list;
+            ICollection<Type> list;
             if (_rawGetter != null)
-                list = ResolveRawGetter();
+                list = ResolveRawGetter().ToArray();
             else if (_baseType != null)
                 list = ReflectionUtility.GetTypesInheritingFrom(_baseType);
             else
