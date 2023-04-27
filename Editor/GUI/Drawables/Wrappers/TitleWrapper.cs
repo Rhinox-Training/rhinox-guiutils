@@ -7,7 +7,7 @@ namespace Rhinox.GUIUtils.Editor
 {
     public class TitleWrapper : BaseWrapperDrawable
     {
-        public string _title;
+        public IPropertyMemberHelper<string> _titleMemberHelper;
         public bool _bold;
         public TitleAlignments _alignment;
 
@@ -38,9 +38,11 @@ namespace Rhinox.GUIUtils.Editor
 
         protected override void DrawInner(GUIContent label, params GUILayoutOption[] options)
         {
-            if (!string.IsNullOrEmpty(_title))
+            _titleMemberHelper.DrawError();
+            var title = _titleMemberHelper.GetSmartValue();
+            if (!string.IsNullOrEmpty(title))
             {
-                GUILayout.Label(_title, _bold ? CustomGUIStyles.BoldTitle : CustomGUIStyles.Title);
+                GUILayout.Label(title, _bold ? CustomGUIStyles.BoldTitle : CustomGUIStyles.Title);
                 CustomEditorGUI.HorizontalLine(CustomGUIStyles.LightBorderColor, thickness: 1);
                 GUILayout.Space(3.0f);
             }
@@ -49,12 +51,14 @@ namespace Rhinox.GUIUtils.Editor
 
         protected override void DrawInner(Rect rect, GUIContent label)
         {
-            if (!string.IsNullOrEmpty(_title))
+            _titleMemberHelper.DrawError(rect);
+            var title = _titleMemberHelper.GetSmartValue();
+            if (!string.IsNullOrEmpty(title))
             {
                 var labelRect = rect.AlignTop(EditorGUIUtility.singleLineHeight);
                 rect.y += labelRect.height;
                 rect.height -= labelRect.height;
-                EditorGUI.LabelField(labelRect, _title, _bold ? CustomGUIStyles.BoldTitle : CustomGUIStyles.Title);
+                EditorGUI.LabelField(labelRect, title, _bold ? CustomGUIStyles.BoldTitle : CustomGUIStyles.Title);
                 var lineRect = rect.AlignTop(1.0f);
                 CustomEditorGUI.HorizontalLine(lineRect, CustomGUIStyles.LightBorderColor, 1);
                 rect.y += 4.0f;
@@ -66,9 +70,11 @@ namespace Rhinox.GUIUtils.Editor
         [WrapDrawer(typeof(TitleAttribute), -10000)]
         public static BaseWrapperDrawable Create(TitleAttribute attr, IOrderedDrawable drawable)
         {
+            var memberHelper = MemberHelper.Create<string>(drawable.HostInfo, attr.Title);
+            
             return new TitleWrapper(drawable)
             {
-                _title = attr.Title,
+                _titleMemberHelper = memberHelper,
                 _bold = attr.Bold,
                 _alignment = attr.TitleAlignment
             };
