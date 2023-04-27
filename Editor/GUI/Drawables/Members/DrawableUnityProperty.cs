@@ -8,6 +8,18 @@ namespace Rhinox.GUIUtils.Editor
     {
         protected override string LabelString => Property != null ? Property.displayName : base.LabelString;
 
+        public override float ElementHeight 
+        {
+            get
+            {
+                if (Property == null)
+                    return base.ElementHeight;
+                
+                float propertyHeight = EditorGUI.GetPropertyHeight(Property);
+                return propertyHeight;
+            }
+        }
+
         public SerializedProperty Property { get; }
         
         public DrawableUnityProperty(SerializedProperty prop)
