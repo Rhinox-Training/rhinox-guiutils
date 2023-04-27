@@ -441,23 +441,26 @@ namespace Rhinox.GUIUtils.Editor
         public class PaddedGUIScope : GUI.Scope
         {
             private float m_LabelWidth;
+            private readonly float? m_CustomMargin;
             private const string STYLESHEET_NAME = "sb-settings-panel-client-area";
             public PaddedGUIScope(float? customMargin = null, float? labelWidth = null)
             {
+                this.m_CustomMargin = customMargin;
                 this.m_LabelWidth = EditorGUIUtility.labelWidth;
                 if (labelWidth.HasValue)
                     EditorGUIUtility.labelWidth = labelWidth.Value;
                 GUILayout.BeginHorizontal();
-                float marginLeft = customMargin.HasValue ? customMargin.Value : ExposedEditorResources.GetFloat(STYLESHEET_NAME, ExposedStyleCatalog.marginLeft);
-                float marginRight = customMargin.HasValue ? customMargin.Value : ExposedEditorResources.GetFloat(STYLESHEET_NAME, ExposedStyleCatalog.marginRight);
+                float marginLeft = m_CustomMargin.HasValue ? m_CustomMargin.Value : ExposedEditorResources.GetFloat(STYLESHEET_NAME, ExposedStyleCatalog.marginLeft);
+                
                 GUILayout.Space(marginLeft);
                 GUILayout.BeginVertical();
-                GUILayout.Space(marginRight);
             }
 
             protected override void CloseScope()
             {
                 GUILayout.EndVertical();
+                float marginRight = m_CustomMargin.HasValue ? m_CustomMargin.Value : ExposedEditorResources.GetFloat(STYLESHEET_NAME, ExposedStyleCatalog.marginRight);
+                GUILayout.Space(marginRight);
                 GUILayout.EndHorizontal();
                 EditorGUIUtility.labelWidth = this.m_LabelWidth;
             }
