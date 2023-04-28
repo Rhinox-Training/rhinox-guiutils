@@ -83,7 +83,7 @@ namespace Rhinox.GUIUtils.Editor
                 drawable.Add(fieldDrawable);
             }
 
-            foreach (var propertyMember in hostInfo.HostType.GetEditorVisibleProperties())
+            foreach (var propertyMember in hostInfo.GetReturnType().GetEditorVisibleProperties())
             {
                 var propHostInfo = new GenericHostInfo(hostInfo, propertyMember);
                 var propertyDrawable = CreateDrawableForMember(propHostInfo, depth);
