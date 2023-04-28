@@ -38,6 +38,12 @@ namespace Rhinox.GUIUtils.Editor
             EditorGUI.PropertyField(rect, Property, label);
         }
 
+        protected override void OnPostDraw()
+        {
+            base.OnPostDraw();
+            Property.serializedObject.ApplyModifiedProperties();
+        }
+
         public object GetValue()
         {
             return HostInfo.GetValue();
