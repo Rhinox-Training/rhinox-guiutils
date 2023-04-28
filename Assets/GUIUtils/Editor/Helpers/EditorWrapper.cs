@@ -124,10 +124,12 @@ namespace Rhinox.GUIUtils.Editor
 #else
             if (_view == null)
             {
-                _view = new DrawablePropertyView(Target);
+                _view = new DrawablePropertyView(new RootHostInfo(this));
                 _view.RepaintRequested += RequestRepaint;
             }
-            _view.DrawLayout();
+            
+            if (_expanded)
+                _view.DrawLayout();
 #endif
         }
 
