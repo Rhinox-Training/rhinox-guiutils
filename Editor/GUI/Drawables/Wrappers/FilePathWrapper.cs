@@ -1,3 +1,5 @@
+using System.IO;
+using Rhinox.Lightspeed;
 using Sirenix.OdinInspector;
 using UnityEditor;
 using UnityEngine;
@@ -32,11 +34,38 @@ namespace Rhinox.GUIUtils.Editor
                 path = EditorUtility.OpenFolderPanel("Choose a folder", _parentPath, "");
             else 
                 path = EditorUtility.OpenFilePanel("Choose a file", _parentPath, _filters);
-            
+
             if (!string.IsNullOrEmpty(path))
-                SetValue(path);
+            {
+                if (ValidatePath(ref path))
+                    SetValue(path);
+            }
             
             GUIUtility.ExitGUI();
+        }
+
+        private bool ValidatePath(ref string path)
+        {
+            if (_absolute && !Path.IsPathRooted(path))
+                path = Path.GetFullPath(path);
+
+            if (_requireExistingPath)
+            {
+                if (_chooseFolder)
+                {
+                    if (!Directory.Exists(path))
+                        return false;
+                }
+                else if (!File.Exists(path))
+                    return false;
+            }
+
+            if (_useBackslashes)
+                path = path.Replace("/", "\\");
+            else
+                path = path.Replace("\\", "/");
+
+            return true;
         }
 
         [WrapDrawer(typeof(FolderPathAttribute), -5000)]
