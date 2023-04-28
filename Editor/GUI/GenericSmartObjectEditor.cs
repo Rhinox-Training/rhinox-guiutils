@@ -26,6 +26,9 @@ namespace Rhinox.GUIUtils.Editor
 
         private void OnEnable()
         {
+            if (target == null)
+                return;
+            
             var smartInternalObj = serializedObject.targetObject as SmartInternalObject;
             if (smartInternalObj == null)
                 return;
