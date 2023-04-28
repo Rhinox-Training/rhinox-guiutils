@@ -21,7 +21,6 @@ namespace Rhinox.GUIUtils.Editor
     public class GenericSmartObjectEditor : UnityEditor.Editor, IEditor, IRepaintRequestHandler
     {
         private DrawablePropertyView _propertyView;
-        private MethodInfo[] _drawerMethods;
         private object _target;
         private IRepaintRequest _repainter;
 
@@ -32,7 +31,6 @@ namespace Rhinox.GUIUtils.Editor
                 return;
 
             _target = smartInternalObj.Target;
-            _drawerMethods = GetInspectorGUIMethods(_target);
             if (_target != null)
             {
                 _propertyView = new DrawablePropertyView(_target);
@@ -47,24 +45,8 @@ namespace Rhinox.GUIUtils.Editor
         {
             if (_propertyView != null)
                 _propertyView.DrawLayout();
-            
-            foreach (var info in _drawerMethods)
-                info.Invoke(_target, null);
         }
         
-        private MethodInfo[] GetInspectorGUIMethods(object o)
-        {
-            if (o == null)
-            {
-                return Array.Empty<MethodInfo>();
-            }
-
-            var methods = o.GetType().GetMethods(BindingFlags.FlattenHierarchy | BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
-                .Where(x => x.GetCustomAttribute<OnInspectorGUIAttribute>() != null)
-                .ToArray();
-            return methods;
-        }
-
         public static GenericSmartObjectEditor Create(object systemObj)
         {
             GenericSmartObjectEditor customEditor = null;
