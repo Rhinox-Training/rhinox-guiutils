@@ -38,7 +38,7 @@ namespace Rhinox.GUIUtils.Editor
         public virtual bool UseScrollView
         {
             get => _useScrollView;
-            set => _useScrollView = true;
+            set => _useScrollView = value;
         }
 
         [SerializeField, HideInInspector] private bool _drawUnityEditorPreview;
