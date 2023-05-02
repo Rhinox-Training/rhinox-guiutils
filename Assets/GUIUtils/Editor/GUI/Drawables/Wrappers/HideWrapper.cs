@@ -39,6 +39,8 @@ namespace Rhinox.GUIUtils.Editor
             var value = _stateMember.GetValue();
             if (_stateMemberValue != null)
                 value = object.Equals(value, _stateMemberValue);
+            else if (!(value is bool))
+                value = value == null;
             return (bool) (value ?? false) == _state;
         }
 
