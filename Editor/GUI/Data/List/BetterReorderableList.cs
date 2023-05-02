@@ -72,7 +72,20 @@ namespace Rhinox.GUIUtils.Editor
             bool displayAddButton = true,
             bool displayRemoveButton = true)
         {
-            this.InitList(null, null, elements, 
+            this.InitList(null, null, elements, elements.GetType(), 
+                draggable, displayHeader,
+                displayAddButton, displayRemoveButton);
+        }
+        
+        public BetterReorderableList(
+            IList elements,
+            Type listElementType,
+            bool draggable = true,
+            bool displayHeader = true,
+            bool displayAddButton = true,
+            bool displayRemoveButton = true)
+        {
+            this.InitList(null, null, elements, listElementType, 
                 draggable, displayHeader,
                 displayAddButton, displayRemoveButton);
         }
@@ -85,7 +98,7 @@ namespace Rhinox.GUIUtils.Editor
             bool displayAddButton = true,
             bool displayRemoveButton = true)
         {
-            this.InitList(serializedObject, property, null, 
+            this.InitList(serializedObject, property, null, property.FindFieldInfo().FieldType,
                 draggable, displayHeader, 
                 displayAddButton, displayRemoveButton);
         }
@@ -94,6 +107,7 @@ namespace Rhinox.GUIUtils.Editor
             SerializedObject serializedObject,
             SerializedProperty property,
             IList elementList,
+            Type listType,
             bool draggable,
             bool displayHeader,
             bool displayAddButton,
@@ -103,19 +117,11 @@ namespace Rhinox.GUIUtils.Editor
             this.m_SerializedObject = serializedObject;
             this.m_ElementsProperty = property;
             this.m_ElementList = elementList;
+            this.m_ListType = listType;
             footerHeight = 0;
 
-            if (elementList != null)
-            {
-                this.m_ListType = elementList.GetType();
+            if (m_ListType != null)
                 this.m_ElementType = this.m_ListType.GetCollectionElementType();
-            }
-            else
-            {
-                System.Reflection.FieldInfo fi = property.FindFieldInfo();
-                this.m_ListType = fi.FieldType;
-                this.m_ElementType = this.m_ListType.GetCollectionElementType();
-            }
             
             this.m_Draggable = draggable;
             this.m_Dragging = false;
@@ -204,7 +210,7 @@ namespace Rhinox.GUIUtils.Editor
             get
             {
                 if (this.m_ElementsProperty == null)
-                    return this.m_ElementList.Count;
+                    return this.m_ElementList != null ? m_ElementList.Count : 0;
                 if (!this.m_ElementsProperty.hasMultipleDifferentValues)
                     return this.m_ElementsProperty.arraySize;
                 int val2 = this.m_ElementsProperty.arraySize;
