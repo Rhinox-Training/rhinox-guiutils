@@ -8,10 +8,9 @@ namespace Rhinox.GUIUtils.Editor
 {
     [CustomEditor(typeof(MonoBehaviour), true)]
     [CanEditMultipleObjects]
-    public class CustomSmartEditor : BaseEditor<MonoBehaviour>, IRepaintRequestHandler
+    public class CustomSmartEditor : BaseEditor<MonoBehaviour>
     {
         private DrawablePropertyView _propertyView;
-        private IRepaintRequest _repainter;
         
         public override void OnInspectorGUI()
         {
@@ -35,7 +34,7 @@ namespace Rhinox.GUIUtils.Editor
             if (_propertyView == null)
             {
                 _propertyView = new DrawablePropertyView(serializedObject);
-                _propertyView.RepaintRequested += OnRepaintRequested;
+                _propertyView.RepaintRequested += RequestRepaint;
             }
             
             DrawScriptField();
@@ -54,19 +53,6 @@ namespace Rhinox.GUIUtils.Editor
             }
 
             return count;
-        }
-        
-        private void OnRepaintRequested()
-        {
-            if (_repainter != null)
-                _repainter.RequestRepaint();
-            else
-                Repaint();
-        }
-
-        public void UpdateRequestTarget(IRepaintRequest target)
-        {
-            _repainter = target;
         }
     }
 }
