@@ -125,7 +125,12 @@ public class GenericPicker : PopupWindowContent
     {
         _pickerHandler = handler;
         
-        _listView = new PageableReorderableList(_pickerHandler.FilteredValues, false, true, false, false);
+        _listView = new PageableReorderableList(_pickerHandler.FilteredValues)
+        {
+            Draggable = false,
+            DisplayAdd = false,
+            DisplayRemove = false
+        };
         _listView.onSelectCallback += OnOptionSelected;
         _listView.RepaintRequested += OnRepaintRequested;
 

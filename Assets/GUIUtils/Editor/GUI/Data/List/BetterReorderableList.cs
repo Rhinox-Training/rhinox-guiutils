@@ -33,27 +33,36 @@ namespace Rhinox.GUIUtils.Editor
         public BetterReorderableList.CanRemoveCallbackDelegate onCanRemoveCallback;
         public BetterReorderableList.CanAddCallbackDelegate onCanAddCallback;
         public BetterReorderableList.ChangedCallbackDelegate onChangedCallback;
+        
         private int m_ActiveElement = -1;
         private float m_DragOffset = 0.0f;
         private ExposedGUISlideGroup m_SlideGroup;
+
+        protected GenericHostInfo _hostInfo;
         protected SerializedObject m_SerializedObject;
-        protected SerializedProperty m_ElementsProperty;
+        protected SerializedProperty m_SerializedProperty;
         protected IList m_ElementList;
+        
         protected Type m_ListType;
         protected Type m_ElementType;
-        private bool m_Draggable;
-        private float m_DraggedY;
-        private bool m_Dragging;
-        private List<int> m_NonDragTargetIndices;
+        
         public bool DisplayHeader;
         public bool DisplayAdd;
         public bool DisplayRemove;
+        public bool Draggable;
+        
+        private float m_DraggedY;
+        private bool m_Dragging;
+        private List<int> m_NonDragTargetIndices;
+        
         private int id = -1;
         protected static BetterReorderableList.Defaults s_Defaults;
+        
         public float elementHeight = 21f;
         public float headerHeight = 20f;
         public float footerHeight = 20f;
         public bool showDefaultBackground = true;
+        
         private float elementMargin = 4f;
         private const float kListElementBottomPadding = 4f;
         private int _elementHovering = -1;
@@ -65,81 +74,56 @@ namespace Rhinox.GUIUtils.Editor
 
         public static BetterReorderableList.Defaults defaultBehaviours => BetterReorderableList.s_Defaults;
 
-        public BetterReorderableList(
-            IList elements,
-            bool draggable = true,
-            bool displayHeader = true,
-            bool displayAddButton = true,
-            bool displayRemoveButton = true)
+        public BetterReorderableList(IList elements)
+            : this()
         {
-            this.InitList(null, null, elements, elements.GetType(), 
-                draggable, displayHeader,
-                displayAddButton, displayRemoveButton);
-        }
-        
-        public BetterReorderableList(
-            IList elements,
-            Type listElementType,
-            bool draggable = true,
-            bool displayHeader = true,
-            bool displayAddButton = true,
-            bool displayRemoveButton = true)
-        {
-            this.InitList(null, null, elements, listElementType, 
-                draggable, displayHeader,
-                displayAddButton, displayRemoveButton);
+            this.Initialize(null, elements);
         }
 
-        public BetterReorderableList(
-            SerializedObject serializedObject,
-            SerializedProperty property,
-            bool draggable = true,
-            bool displayHeader = true,
-            bool displayAddButton = true,
-            bool displayRemoveButton = true)
+        public BetterReorderableList(SerializedProperty property)
+            : this()
         {
-            this.InitList(serializedObject, property, null, property.FindFieldInfo().FieldType,
-                draggable, displayHeader, 
-                displayAddButton, displayRemoveButton);
+            this.Initialize(property, null);
         }
 
-        protected virtual void InitList(
-            SerializedObject serializedObject,
-            SerializedProperty property,
-            IList elementList,
-            Type listType,
-            bool draggable,
-            bool displayHeader,
-            bool displayAddButton,
-            bool displayRemoveButton)
+        protected BetterReorderableList()
         {
-            this.id = CustomGUIUtility.GetPermanentControlID();
-            this.m_SerializedObject = serializedObject;
-            this.m_ElementsProperty = property;
-            this.m_ElementList = elementList;
-            this.m_ListType = listType;
-            footerHeight = 0;
-
-            if (m_ListType != null)
-                this.m_ElementType = this.m_ListType.GetCollectionElementType();
-            
-            this.m_Draggable = draggable;
+            this.DisplayAdd = true;
+            this.DisplayHeader = true;
+            this.DisplayRemove = true;
+            this.Draggable = true;
             this.m_Dragging = false;
             this.m_SlideGroup = new ExposedGUISlideGroup();
-            this.DisplayAdd = displayAddButton;
-            this.DisplayHeader = displayHeader;
-            this.DisplayRemove = displayRemoveButton;
-            if (this.m_ElementsProperty != null && !this.m_ElementsProperty.editable)
-                this.m_Draggable = false;
-            if (this.m_ElementsProperty == null || this.m_ElementsProperty.isArray)
+        }
+
+        protected virtual void Initialize(SerializedProperty property, IList list)
+        {
+            this.id = CustomGUIUtility.GetPermanentControlID();
+            this.m_SerializedProperty = property;
+            if (property != null)
+                this.m_SerializedObject = property.serializedObject;
+            this.m_ElementList = list;
+            footerHeight = 0;
+
+            if (m_SerializedProperty != null)
+                _hostInfo = m_SerializedProperty.GetHostInfo();
+            else if (_hostInfo == null)
+                _hostInfo = new RootHostInfo(m_ElementList);
+            
+            this.m_ListType = _hostInfo.GetReturnType();
+            this.m_ElementType = this.m_ListType.GetCollectionElementType();
+
+            if (this.m_SerializedProperty != null && !this.m_SerializedProperty.editable)
+                this.Draggable = false;
+            if (this.m_SerializedProperty == null || this.m_SerializedProperty.isArray)
                 return;
             Debug.LogError("Input elements should be an Array SerializedProperty");
         }
 
         public SerializedProperty SerializedProperty
         {
-            get => m_ElementsProperty;
-            set => m_ElementsProperty = value;
+            get => m_SerializedProperty;
+            set => m_SerializedProperty = value;
         }
 
         public IList List
@@ -160,8 +144,8 @@ namespace Rhinox.GUIUtils.Editor
 
         public bool AreElementsDraggable
         {
-            get => m_Draggable;
-            set => m_Draggable = value;
+            get => Draggable;
+            set => Draggable = value;
         }
 
         private Rect GetContentRect(Rect rect)
@@ -209,14 +193,14 @@ namespace Rhinox.GUIUtils.Editor
         {
             get
             {
-                if (this.m_ElementsProperty == null)
-                    return this.m_ElementList != null ? m_ElementList.Count : 0;
-                if (!this.m_ElementsProperty.hasMultipleDifferentValues)
-                    return this.m_ElementsProperty.arraySize;
-                int val2 = this.m_ElementsProperty.arraySize;
-                foreach (UnityEngine.Object targetObject in this.m_ElementsProperty.serializedObject.targetObjects)
+                if (this.m_SerializedProperty == null)
+                    return this.m_ElementList.Count;
+                if (!this.m_SerializedProperty.hasMultipleDifferentValues)
+                    return this.m_SerializedProperty.arraySize;
+                int val2 = this.m_SerializedProperty.arraySize;
+                foreach (UnityEngine.Object targetObject in this.m_SerializedProperty.serializedObject.targetObjects)
                     val2 = Math.Min(
-                        new SerializedObject(targetObject).FindProperty(this.m_ElementsProperty.propertyPath).arraySize, val2);
+                        new SerializedObject(targetObject).FindProperty(this.m_SerializedProperty.propertyPath).arraySize, val2);
                 return val2;
             }
         }
@@ -321,7 +305,7 @@ namespace Rhinox.GUIUtils.Editor
             if (elementRect.IsValid())
                 elementRect.height = this.elementHeight;
 
-            if ((this.m_ElementsProperty != null && this.m_ElementsProperty.isArray || this.m_ElementList != null) && count > 0)
+            if ((this.m_SerializedProperty != null && this.m_SerializedProperty.isArray || this.m_ElementList != null) && count > 0)
             {
                 if (this.IsDragging() && Event.current.type == UnityEngine.EventType.Repaint)
                 {
@@ -348,9 +332,9 @@ namespace Rhinox.GUIUtils.Editor
                                     elementRect.y += GetElementHeight(this.m_ActiveElement);
                                 elementRect = this.m_SlideGroup.GetRect(this.m_NonDragTargetIndices[index], elementRect);
                             }
-                            OnDrawElementBackground(elementRect, index, false, false, m_Draggable);
+                            OnDrawElementBackground(elementRect, index, false, false, Draggable);
                             
-                            s_Defaults.DrawElementDraggingHandle(elementRect, index, false, false, this.m_Draggable);
+                            s_Defaults.DrawElementDraggingHandle(elementRect, index, false, false, this.Draggable);
                             Rect contentRect = this.GetContentRect(elementRect);
                             
                             DrawElement(contentRect, this.m_NonDragTargetIndices[index]);
@@ -362,8 +346,8 @@ namespace Rhinox.GUIUtils.Editor
                     if (elementRect.IsValid())
                         elementRect.y = this.m_DraggedY - this.m_DragOffset + listRect.y;
                     
-                    OnDrawElementBackground(elementRect, this.m_ActiveElement, true, true, m_Draggable);
-                    s_Defaults.DrawElementDraggingHandle(elementRect, this.m_ActiveElement, true, true, this.m_Draggable);
+                    OnDrawElementBackground(elementRect, this.m_ActiveElement, true, true, Draggable);
+                    s_Defaults.DrawElementDraggingHandle(elementRect, this.m_ActiveElement, true, true, this.Draggable);
                     Rect contentRect1 = this.GetContentRect(elementRect);
 
                     DrawElement(contentRect1, m_ActiveElement, true, true);
@@ -380,8 +364,8 @@ namespace Rhinox.GUIUtils.Editor
                             elementRect.y = listRect.y + this.GetElementYOffset(index);
                         }
 
-                        OnDrawElementBackground(elementRect, index, isSelected, isFocused, this.m_Draggable);
-                        s_Defaults.DrawElementDraggingHandle(elementRect, index, isSelected, isFocused, this.m_Draggable);
+                        OnDrawElementBackground(elementRect, index, isSelected, isFocused, this.Draggable);
+                        s_Defaults.DrawElementDraggingHandle(elementRect, index, isSelected, isFocused, this.Draggable);
                         Rect contentRect = this.GetContentRect(elementRect);
                         
                         DrawElement(contentRect, index, isSelected, isFocused);
@@ -399,7 +383,7 @@ namespace Rhinox.GUIUtils.Editor
                 rect2.xMin += 6f;
                 rect2.xMax -= 6f;
                 if (this.drawNoneElementCallback == null)
-                    BetterReorderableList.s_Defaults.DrawNoneElement(rect2, this.m_Draggable);
+                    BetterReorderableList.s_Defaults.DrawNoneElement(rect2, this.Draggable);
                 else
                     this.drawNoneElementCallback(rect2);
             }
@@ -426,18 +410,18 @@ namespace Rhinox.GUIUtils.Editor
 
             if (this.drawElementCallback == null)
             {
-                if (this.m_ElementsProperty != null)
+                if (this.m_SerializedProperty != null)
                     s_Defaults.DrawElement(contentRect,
-                        this.m_ElementsProperty.GetArrayElementAtIndex(elementIndex),
+                        this.m_SerializedProperty.GetArrayElementAtIndex(elementIndex),
                         (object) null, 
                         selected, focused, 
-                        this.m_Draggable);
+                        this.Draggable);
                 else
                     s_Defaults.DrawElement(contentRect, 
                         (SerializedProperty) null,
                         this.m_ElementList[elementIndex], 
                         selected, focused,
-                        this.m_Draggable);
+                        this.Draggable);
             }
             else
                 this.drawElementCallback(contentRect, elementIndex, selected, focused);
@@ -477,12 +461,15 @@ namespace Rhinox.GUIUtils.Editor
         {
             if (!this.DisplayHeader)
                 return;
-            s_Defaults.DrawHeader(headerRect, this.m_SerializedObject, this.m_ElementsProperty, this.m_ElementList);
+            s_Defaults.DrawHeader(headerRect, this.m_SerializedProperty, this.m_ElementList);
         }
         
         protected virtual void OnAddElement(Rect rect)
         {
-            s_Defaults.DoAddButton(this);
+            if (s_Defaults.TryCreateElement(this, out object item, out string error))
+                Add(item);
+            else
+                Debug.LogError(error);
         }
 
         protected virtual void DoListFooter(Rect footerRect)
@@ -528,7 +515,7 @@ namespace Rhinox.GUIUtils.Editor
                     {
                         CustomEditorGUI.EndEditingActiveTextField();
                         this.m_ActiveElement = this.GetRowIndex(Event.current.mousePosition.y - listRect.y);
-                        if (this.m_Draggable && Event.current.button == 0)
+                        if (this.Draggable && Event.current.button == 0)
                         {
                             this.m_DragOffset = Event.current.mousePosition.y - listRect.y -
                                                 this.GetElementYOffset(this.m_ActiveElement);
@@ -551,7 +538,7 @@ namespace Rhinox.GUIUtils.Editor
 
                     break;
                 case UnityEngine.EventType.MouseUp:
-                    if (!this.m_Draggable)
+                    if (!this.Draggable)
                     {
                         if (this.onMouseUpCallback != null && this.IsMouseInsideActiveElement(listRect))
                         {
@@ -571,9 +558,9 @@ namespace Rhinox.GUIUtils.Editor
                             int rowIndex = this.CalculateRowIndex();
                             if (this.m_ActiveElement != rowIndex)
                             {
-                                if (this.m_SerializedObject != null && this.m_ElementsProperty != null)
+                                if (this.m_SerializedObject != null && this.m_SerializedProperty != null)
                                 {
-                                    this.m_ElementsProperty.MoveArrayElement(this.m_ActiveElement, rowIndex);
+                                    this.m_SerializedProperty.MoveArrayElement(this.m_ActiveElement, rowIndex);
                                     this.m_SerializedObject.ApplyModifiedProperties();
                                     this.m_SerializedObject.Update();
                                 }
@@ -624,7 +611,7 @@ namespace Rhinox.GUIUtils.Editor
                     else
                         break;
                 case UnityEngine.EventType.MouseDrag:
-                    if (this.m_Draggable && GUIUtility.hotControl == this.id)
+                    if (this.Draggable && GUIUtility.hotControl == this.id)
                     {
                         this.m_Dragging = true;
                         if (this.onMouseDragCallback != null)
@@ -658,7 +645,7 @@ namespace Rhinox.GUIUtils.Editor
                     }
 
                     this.m_ActiveElement = Mathf.Clamp(this.m_ActiveElement, 0,
-                        this.m_ElementsProperty != null ? this.m_ElementsProperty.arraySize - 1 : this.m_ElementList.Count - 1);
+                        this.m_SerializedProperty != null ? this.m_SerializedProperty.arraySize - 1 : this.m_ElementList.Count - 1);
                     break;
             }
 
@@ -847,25 +834,13 @@ namespace Rhinox.GUIUtils.Editor
                 }
             }
 
-            public void DoAddButton(BetterReorderableList list, object item = null)
+            public bool TryCreateElement(BetterReorderableList list, out object item, out string error)
             {
-                if (list.SerializedProperty != null)
-                {
-                    ++list.SerializedProperty.arraySize;
-                    list.SelectedIndex = list.SerializedProperty.arraySize - 1;
-                    // var elementProperty = list.SerializedProperty.GetArrayElementAtIndex(list.SelectedIndex);
-                    // if (item != null)
-                    //     elementProperty.SetValue(item);
-                    list.m_SerializedObject.ApplyModifiedProperties();
-                }
-                else
-                {
-                    System.Type elementType = list.List.GetType().GetCollectionElementType();
-                    if (item != null || TryCreateElement(elementType, out item, out string errorString))
-                        list.SelectedIndex = list.List.Add(item);
-                    else
-                        Debug.LogError(errorString);
-                }
+                System.Type elementType = list._hostInfo.GetReturnType().GetCollectionElementType();
+                if (TryCreateElement(elementType, out item, out error))
+                    return true;
+                
+                return false;
             }
 
             public static bool TryCreateElement(Type elementType, out object element)
@@ -875,6 +850,7 @@ namespace Rhinox.GUIUtils.Editor
 
             public static bool TryCreateElement(Type elementType, out object element, out string errorString)
             {
+                errorString = null;
                 if (elementType == null)
                 {
                     element = null;
@@ -884,28 +860,28 @@ namespace Rhinox.GUIUtils.Editor
                 
                 if (elementType == typeof(string))
                 {
-                    element = "";
-                    errorString = null;
+                    element = string.Empty;
                     return true;
                 }
 
                 if (elementType.InheritsFrom<UnityEngine.Object>())
                 {
-                    element = (UnityEngine.Object)null;
-                    errorString = null;
+                    element = null;
                     return true;
                 }
-
-                if (elementType.GetConstructor(System.Type.EmptyTypes) == null)
+                
+                /*
+                var hasConstructor = elementType.GetConstructor(System.Type.EmptyTypes) != null;
+                
+                if (!hasConstructor)
                 {
                     element = null;
-                    errorString =
-                        $"Cannot add element. Type '{elementType.GetNiceName()}' has no default constructor. Implement a default constructor or implement your own add behaviour.";
+                    errorString = $"Cannot add element. Type '{elementType.GetNiceName()}' has no default constructor. " +
+                                  $"Implement a default constructor or implement your own add behaviour.";
                     return false;
-                }
+                }*/
                 
-                element = Activator.CreateInstance(elementType);
-                errorString = null;
+                element = elementType.CreateInstance();
                 return true;
             }
 
@@ -919,9 +895,9 @@ namespace Rhinox.GUIUtils.Editor
                     this.headerBackground.Draw(headerRect, false, false, false, false);
             }
 
-            public void DrawHeader(Rect headerRect, SerializedObject serializedObject, SerializedProperty element, IList elementList)
+            public void DrawHeader(Rect headerRect, SerializedProperty property, IList elementList)
             {
-                EditorGUI.LabelField(headerRect, GUIContentHelper.TempContent(element != null ? element.displayName : "IList"));
+                EditorGUI.LabelField(headerRect, GUIContentHelper.TempContent(property != null ? property.displayName : "IList"));
             }
 
             public void DrawElementBackground(
@@ -979,6 +955,37 @@ namespace Rhinox.GUIUtils.Editor
             public void DrawNoneElement(Rect rect, bool draggable) =>
                 EditorGUI.LabelField(rect, BetterReorderableList.Defaults.s_ListIsEmpty);
         }
-#endregion
+
+        protected virtual int Add(object element)
+        {
+            if (SerializedProperty != null)
+            {
+                ++SerializedProperty.arraySize;
+                var newIndex = SerializedProperty.arraySize - 1;
+                var elementInfo = _hostInfo.CreateArrayElement(newIndex);
+                elementInfo.SetValue(element);
+                return newIndex;
+            }
+
+            // if (m_ElementList == null)
+            //     m_ElementList = (IList)Activator.CreateInstance(this.m_ListType);
+
+            if (m_ElementList is Array)
+            {
+                var newIndex = List.Count;
+                SetArrayElement(newIndex, element);
+                return newIndex;
+            }
+            
+            return m_ElementList.Add(element);
+        }
+
+        protected virtual void SetArrayElement(int newIndex, object element)
+        {
+            m_ElementList = (IList)Utility.ResizeArrayGeneric(m_ElementList, newIndex + 1);
+            m_ElementList[newIndex] = element;
+        }
+
+        #endregion
     }
 }

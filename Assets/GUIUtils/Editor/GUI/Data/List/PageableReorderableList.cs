@@ -34,7 +34,6 @@ namespace Rhinox.GUIUtils.Editor
         private GUIContent _addContent;
 
         private static Dictionary<Type, TypeCache.TypeCollection> _typeOptionsByType = new Dictionary<Type, TypeCache.TypeCollection>();
-        private readonly GenericHostInfo _hostInfo;
         
         private bool HasMultipleTypeOptions
         {
@@ -52,30 +51,37 @@ namespace Rhinox.GUIUtils.Editor
             }
         }
         
-        public PageableReorderableList(IList elements, bool draggable = true, bool displayHeader = true, bool displayAdd = true, bool displayRemove = true)
-            : base(elements, draggable, displayHeader, displayAdd, displayRemove)
+        public PageableReorderableList(IList elements)
+            : base(elements)
         {
         }
         
-        public PageableReorderableList(SerializedObject serializedObject, SerializedProperty elements, 
-            bool draggable = true, bool displayHeader = true, bool displayAddButton = true, bool displayRemoveButton = true) 
-            : base(serializedObject, elements, draggable, displayHeader, displayAddButton, displayRemoveButton)
+        public PageableReorderableList(SerializedProperty elements)
+            : base(elements)
         {
             MaxItemsPerPage = DEFAULT_ITEMS_PER_PAGE;
         }
 
-        public PageableReorderableList(GenericHostInfo hostInfo, 
-            bool draggable = true, bool displayHeader = true, bool displayAddButton = true, bool displayRemoveButton = true)
-            : base(hostInfo.GetSmartValue<IList>(), hostInfo.GetReturnType(), draggable, displayHeader, displayAddButton, displayRemoveButton)
+        public PageableReorderableList(GenericHostInfo hostInfo)
+            : base()
         {
             MaxItemsPerPage = DEFAULT_ITEMS_PER_PAGE;
             _hostInfo = hostInfo;
+
+            var list = _hostInfo.GetSmartValue<IList>();
+            if (list == null)
+            {
+                var listType = _hostInfo.GetReturnType();
+                // TODO: if we have an interface this will fail
+                list = (IList) listType.CreateInstance();
+            }
+            
+            Initialize(null, list);
         }
 
-        protected override void InitList(SerializedObject serializedObject, SerializedProperty elements, IList elementList, Type listType, 
-            bool draggable, bool displayHeader, bool displayAddButton, bool displayRemoveButton)
+        protected override void Initialize(SerializedProperty property, IList list)
         {
-            base.InitList(serializedObject, elements, elementList, listType, draggable, displayHeader, displayAddButton, displayRemoveButton);
+            base.Initialize(property, list);
 
             _isUnityType = m_ElementType != null && m_ElementType.InheritsFrom<Object>();
             _addContent = new GUIContent(UnityIcon.AssetIcon("Fa_Plus"), tooltip: "Add Item");
@@ -117,7 +123,7 @@ namespace Rhinox.GUIUtils.Editor
                 if (eUtility.DropZone(m_ElementType, out Object[] items, rect))
                 {
                     foreach (var item in items)
-                        s_Defaults.DoAddButton(this, item);
+                        Add(item);
                 }
             }
 
@@ -203,7 +209,7 @@ namespace Rhinox.GUIUtils.Editor
             if (label == null || label == GUIContent.none)
             {
                 if (SerializedProperty != null)
-                    return GUIContentHelper.TempContent(m_ElementsProperty.displayName);
+                    return GUIContentHelper.TempContent(m_SerializedProperty.displayName);
                 else if (_hostInfo != null)
                     return GUIContentHelper.TempContent(_hostInfo.NiceName);
             }
@@ -323,48 +329,38 @@ namespace Rhinox.GUIUtils.Editor
                         Debug.LogError(errorString);
                         return;
                     }
+
+                    Add(element);
                     
-                    if (SerializedProperty != null)
-                    {
-                        ++SerializedProperty.arraySize;
-                        var serializedPropElement = SerializedProperty.GetArrayElementAtIndex(SerializedProperty.arraySize - 1);
-                        var hostInfo = serializedPropElement.GetHostInfo();
-                        hostInfo.SetValue(element);
-                    }
-                    else
-                    {
-                        if (m_ElementList == null)
-                            m_ElementList = (IList)Activator.CreateInstance(this.m_ListType);
-
-                        if (m_ElementList is Array)
-                        {
-                            m_ElementList = (IList) Utility.ResizeArrayGeneric(m_ElementList, List.Count + 1);
-                            if (_hostInfo != null)
-                                _hostInfo.TrySetValue(m_ElementList);
-                            SelectedIndex = m_ElementList.Count - 1;
-
-                            if (_hostInfo != null)
-                            {
-                                var hostInfo = _hostInfo.CreateArrayElement(SelectedIndex);
-                                hostInfo.SetValue(element);
-                            }
-                            else 
-                                m_ElementList[SelectedIndex] = element;
-                        }
-                        else
-                        {
-                            SelectedIndex = m_ElementList.Add(element);
-                        
-                            if (_hostInfo != null)
-                                _hostInfo.TrySetValue(m_ElementList);
-                        }
-                    }
-
                     if (onChangedCallback != null)
                         onChangedCallback.Invoke(this);
                 });
             }
             genericMenu.DropdownLeft(rect);
+        }
+
+        protected override int Add(object element)
+        {
+            var index = base.Add(element);
+            
+            // If we have a SerializedProperty this should have already been handled
+            // If we have a RootHostInfo we can't set
+            if (SerializedProperty == null && !(_hostInfo is RootHostInfo))
+                _hostInfo.TrySetValue(m_ElementList);
+            // TODO handle structs
+
+            return index;
+        }
+
+        protected override void SetArrayElement(int newIndex, object element)
+        {
+            base.SetArrayElement(newIndex, element);
+            // The array reference changed (due to resizing)
+            // It will only get here when there is no SerializedProperty
+            if (_hostInfo is RootHostInfo rootInfo)
+                Debug.LogWarning("Cannot change reference of array, how do we handle this?");
+            else 
+                _hostInfo.TrySetValue(m_ElementList);
         }
 
         protected override GUIContent GetAddIcon()

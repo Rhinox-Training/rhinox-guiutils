@@ -75,13 +75,8 @@ namespace Rhinox.GUIUtils.Editor
 
             _listDrawerAttr = listProperty.GetAttributeOrCreate<ListDrawerSettingsAttribute>();
 
-            _listRO = new PageableReorderableList(listProperty.serializedObject, listProperty,
-                _listDrawerAttr.DraggableItems, true,
-                !_listDrawerAttr.IsReadOnly && !_listDrawerAttr.HideAddButton,
-                !_listDrawerAttr.IsReadOnly && !_listDrawerAttr.HideRemoveButton)
-            {
-                MaxItemsPerPage = _listDrawerAttr.NumberOfItemsPerPage
-            };
+            _listRO = new PageableReorderableList(listProperty);
+            ApplyAttribute(_listDrawerAttr);
 
             Initialize(_listRO);
         }
@@ -91,15 +86,18 @@ namespace Rhinox.GUIUtils.Editor
             _listProperty = null;
             _listDrawerAttr = hostInfo.GetAttribute<ListDrawerSettingsAttribute>() ?? new ListDrawerSettingsAttribute();
 
-            _listRO = new PageableReorderableList(hostInfo,
-                _listDrawerAttr.DraggableItems, true,
-                !_listDrawerAttr.IsReadOnly && !_listDrawerAttr.HideAddButton,
-                !_listDrawerAttr.IsReadOnly && !_listDrawerAttr.HideRemoveButton)
-            {
-                MaxItemsPerPage = _listDrawerAttr.NumberOfItemsPerPage
-            };
+            _listRO = new PageableReorderableList(hostInfo);
+            ApplyAttribute(_listDrawerAttr);
             
             Initialize(_listRO);
+        }
+
+        private void ApplyAttribute(ListDrawerSettingsAttribute attr)
+        {
+            _listRO.MaxItemsPerPage = attr.NumberOfItemsPerPage;
+            _listRO.Draggable = attr.DraggableItems;
+            _listRO.DisplayAdd = !attr.IsReadOnly && !attr.HideAddButton;
+            _listRO.DisplayRemove = !attr.IsReadOnly && !attr.HideRemoveButton;
         }
 
         private void Initialize(BetterReorderableList roList)
@@ -208,10 +206,6 @@ namespace Rhinox.GUIUtils.Editor
             {
                 if (_listProperty.serializedObject != null)
                     _listProperty.serializedObject.ApplyModifiedProperties();
-            }
-            else
-            {
-                _hostInfo.TrySetValue(_listRO.List);
             }
         }
     }
