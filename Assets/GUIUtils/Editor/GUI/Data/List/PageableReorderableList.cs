@@ -66,16 +66,16 @@ namespace Rhinox.GUIUtils.Editor
 
         public PageableReorderableList(GenericHostInfo hostInfo, 
             bool draggable = true, bool displayHeader = true, bool displayAddButton = true, bool displayRemoveButton = true)
-            : base(hostInfo.GetSmartValue<IList>(), draggable, displayHeader, displayAddButton, displayRemoveButton)
+            : base(hostInfo.GetSmartValue<IList>(), hostInfo.GetReturnType(), draggable, displayHeader, displayAddButton, displayRemoveButton)
         {
             MaxItemsPerPage = DEFAULT_ITEMS_PER_PAGE;
             _hostInfo = hostInfo;
         }
 
-        protected override void InitList(SerializedObject serializedObject, SerializedProperty elements, IList elementList, 
+        protected override void InitList(SerializedObject serializedObject, SerializedProperty elements, IList elementList, Type listType, 
             bool draggable, bool displayHeader, bool displayAddButton, bool displayRemoveButton)
         {
-            base.InitList(serializedObject, elements, elementList, draggable, displayHeader, displayAddButton, displayRemoveButton);
+            base.InitList(serializedObject, elements, elementList, listType, draggable, displayHeader, displayAddButton, displayRemoveButton);
 
             _isUnityType = m_ElementType != null && m_ElementType.InheritsFrom<Object>();
             _addContent = new GUIContent(UnityIcon.AssetIcon("Fa_Plus"), tooltip: "Add Item");
