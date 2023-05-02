@@ -19,7 +19,7 @@ namespace Rhinox.GUIUtils.Editor
         CustomEditorWindow where T : CustomEditorWindow
 #endif
     {
-        protected SlidePagedWindowNavigationHelper<object> _pager;
+        protected SlidePageNavigationHelper<object> _pager;
 
         private Vector2 _scrollPosition;
         protected bool _alwaysShowHorizontalScrollbar = false;
@@ -60,12 +60,11 @@ namespace Rhinox.GUIUtils.Editor
 
             if (this._pager != null) return;
 
-            var windowType = this as T;
-            _pager = new SlidePagedWindowNavigationHelper<object>(windowType);
+            _pager = new SlidePageNavigationHelper<object>();
+            _pager.UpdateRequestTarget(this);
             _pager.PushPage(RootPage, RootPageName);
-            (RootPage as PagerPage)?.SetPager(_pager);
         }
-
+        
         protected virtual void Update()
         {
             if (CurrentPage?.Value is PagerPage page)
@@ -82,7 +81,7 @@ namespace Rhinox.GUIUtils.Editor
 
         protected virtual void Refresh()
         {
-            var refreshable = _pager?.CurrentPage.Value as IRefreshable;
+            var refreshable = CurrentPage.Value as IRefreshable;
             refreshable?.Refresh();
         }
 
@@ -109,7 +108,7 @@ namespace Rhinox.GUIUtils.Editor
                 .SetHeight(20);
             
             _pager.DrawPageNavigation(pageNavigationRect);
-            // Draw pages:
+            // Draw pages: (Note: BeginGroup also starts a scrollview)
             _pager.BeginGroup();
             
             var i = 0;

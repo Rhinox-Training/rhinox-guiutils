@@ -73,13 +73,14 @@ namespace Rhinox.GUIUtils.Editor
             const string ROOT_ID = "root";
             const string PROPERTY_ID = "property";
             const string VALUE_ID = "value";
-
+            
             GenericHostInfo relevantHostInfo = null;
+
             string[] parts = input.Split(new[] { "." }, StringSplitOptions.RemoveEmptyEntries);
             for (int i = 0; i < parts.Length; ++i)
             {
                 bool actionTaken = true;
-                
+
                 switch (parts[i])
                 {
                     case PROPERTY_ID:
@@ -111,6 +112,7 @@ namespace Rhinox.GUIUtils.Editor
                         }
                         break;
                     default:
+                        relevantHostInfo = null;
                         if (i != parts.Length - 1) // if we're not at the last part
                         {
                             // try to resolve it
@@ -128,7 +130,10 @@ namespace Rhinox.GUIUtils.Editor
                 }
 
                 if (relevantHostInfo != null)
+                {
                     _host = relevantHostInfo.GetHost();
+                    _objectType = relevantHostInfo.HostType;
+                }
                         
                 if (!actionTaken)
                     break;

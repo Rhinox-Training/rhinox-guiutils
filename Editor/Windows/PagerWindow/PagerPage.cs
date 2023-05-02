@@ -10,11 +10,11 @@ namespace Rhinox.GUIUtils.Editor
     {
         protected Rhinox.GUIUtils.Editor.EditorWrapper _targetWrapper;
 
-        protected PagerTreePage(SlidePagedWindowNavigationHelper<object> pager) : base(pager)
+        protected PagerTreePage(SlidePageNavigationHelper<object> pager) : base(pager)
         {
         }
 
-        protected PagerTreePage(SlidePagedWindowNavigationHelper<object> pager, object target) : base(pager)
+        protected PagerTreePage(SlidePageNavigationHelper<object> pager, object target) : base(pager)
         {
             SetTarget(target);
         }
@@ -50,33 +50,33 @@ namespace Rhinox.GUIUtils.Editor
         }
     }
 
-    public abstract class PagerPage : IRepaintRequestHandler, IRepaintRequest
+    public abstract class PagerPage : BasePagerPage<object>
     {
-        protected SlidePagedWindowNavigationHelper<object> _pager;
+        protected PagerPage(SlidePageNavigationHelper<object> pager)
+            : base(pager)
+        {
+        }
+    }
+
+    public abstract class BasePagerPage<T> : IRepaintRequestHandler, IRepaintRequest
+    {
+        protected SlidePageNavigationHelper<T> _pager;
 
         protected int _topWidth;
         protected int _topHeight = 18;
 
-        private Vector2 _scrollPos;
         private Rect _rect;
 
         protected bool _changed;
 
-        protected PagerPage(SlidePagedWindowNavigationHelper<object> pager)
+        protected BasePagerPage(SlidePageNavigationHelper<T> pager)
         {
             _pager = pager;
         }
-
 
         public virtual void Update()
         {
 
-        }
-
-        // for after deserialization, etc
-        public void SetPager(SlidePagedWindowNavigationHelper<object> pager)
-        {
-            _pager = pager;
         }
 
         protected virtual int CalculateTopWidth()
@@ -87,26 +87,11 @@ namespace Rhinox.GUIUtils.Editor
         [Sirenix.OdinInspector.OnInspectorGUI]
         public void Draw()
         {
-            GUILayout.BeginVertical();
-
-            OnDrawTop();
-
-            _scrollPos = GUILayout.BeginScrollView(_scrollPos, GUIStyle.none);
+            GUILayout.BeginVertical(CustomGUIStyles.Clean);
 
             OnDraw();
-
-            GUILayout.EndScrollView();
-
-            OnDrawBottom();
+            
             GUILayout.EndVertical();
-        }
-
-        protected virtual void OnDrawTop()
-        {
-        }
-
-        protected virtual void OnDrawBottom()
-        {
         }
 
         protected virtual void OnDraw()
@@ -162,8 +147,7 @@ namespace Rhinox.GUIUtils.Editor
 
         public void RequestRepaint()
         {
-            if (_repaintTarget != null)
-                _repaintTarget.RequestRepaint();
+            _repaintTarget?.RequestRepaint();
         }
     }
 }

@@ -16,6 +16,7 @@ namespace Rhinox.GUIUtils.Editor
         private readonly IOrderedDrawable _rootDrawable;
         
         public float Height => _rootDrawable.ElementHeight;
+        public object Target => _instance ?? _hostInfo.GetHost();
 
         public event Action RepaintRequested;
 
