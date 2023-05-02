@@ -962,8 +962,9 @@ namespace Rhinox.GUIUtils.Editor
             {
                 ++SerializedProperty.arraySize;
                 var newIndex = SerializedProperty.arraySize - 1;
-                var elementInfo = _hostInfo.CreateArrayElement(newIndex);
-                elementInfo.SetValue(element);
+                var elementProperty = SerializedProperty.GetArrayElementAtIndex(newIndex);
+                if (element != null)
+                    elementProperty.SetValue(element);
                 return newIndex;
             }
 
