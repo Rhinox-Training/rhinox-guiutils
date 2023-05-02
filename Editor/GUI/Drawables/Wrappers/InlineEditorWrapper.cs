@@ -26,7 +26,7 @@ namespace Rhinox.GUIUtils.Editor
         protected override void OnPreDraw()
         {
             base.OnPreDraw();
-            if (_serializedObj.targetObject != _readableDrawable.GetValue())
+            if (!ReferenceEquals(_serializedObj.targetObject, _readableDrawable.GetValue()))
                 CreateBackingObjects();
         }
 
