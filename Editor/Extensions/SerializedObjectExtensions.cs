@@ -73,11 +73,33 @@ namespace Rhinox.GUIUtils.Editor
             index = int.Parse(match.Groups[2].Value);
             return true;
         }
+
+        /// <summary>
+        /// Returns the fieldinfo for the given property
+        /// NOTE: Will only work properly when depth == 0 (aka no nesting or arrays)
+        /// In those cases, you should use GetHostInfo
+        public static FieldInfo FindFieldInfo(this SerializedProperty property)
+        {
+            if (property == null)
+                return null;
+            
+            System.Type parentType = property.serializedObject.targetObject.GetType();
+            ReflectionUtility.TryGetField(parentType, property.propertyPath, out FieldInfo fi);
+            return fi;
+        }
         
         public static void SetValue(this SerializedProperty property, object value)
         {
-            var fi = property.FindFieldInfo();
-            fi.SetValue(property.serializedObject.targetObject, value);
+            if (property.depth == 0)
+            {
+                var fi = property.FindFieldInfo();
+                fi.SetValue(property.serializedObject.targetObject, value);
+            }
+            else
+            {
+                var info = property.GetHostInfo();
+                info.TrySetValue(value);
+            }
         }
         
         public static object GetValue(this SerializedProperty prop)
@@ -141,22 +163,6 @@ namespace Rhinox.GUIUtils.Editor
                     return fi.GetValue(prop.serializedObject.targetObject);
             }
             
-        }
-
-        public static FieldInfo FindFieldInfo(this SerializedProperty property)
-        {
-            if (property == null)
-                return null;
-            
-            if (property.propertyPath.Contains(".Array.data[") || property.propertyPath.Contains("."))
-            {
-                var hostInfo = property.GetHostInfo();
-                return (FieldInfo)hostInfo.MemberInfo;
-            }
-            
-            System.Type parentType = property.serializedObject.targetObject.GetType();
-            ReflectionUtility.TryGetField(parentType, property.propertyPath, out FieldInfo fi);
-            return fi;
         }
 
         private static HostInfo GetValueInfo(SerializedObject root, string element, int arrayIndex = -1)
