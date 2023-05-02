@@ -6,7 +6,7 @@ namespace Rhinox.GUIUtils.Attributes
     {
         public bool AllowUnityIfAble { get; }
         
-        public SmartFallbackDrawnAttribute(bool allowUnityIfAble = true)
+        public SmartFallbackDrawnAttribute(bool allowUnityIfAble = false)
         {
             AllowUnityIfAble = allowUnityIfAble;
         }
