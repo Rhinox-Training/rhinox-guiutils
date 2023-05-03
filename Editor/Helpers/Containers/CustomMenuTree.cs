@@ -56,9 +56,12 @@ namespace Rhinox.GUIUtils.Editor
         private List<HierarchyMenuItem> _groupingItems;
         private HierarchyMenuItem _rootItems;
         private bool _groupingIsDirty;
+        private string _searchString = string.Empty;
 #endif
 
-        public IReadOnlyList<IMenuItem> MenuItems => _items != null ? (IReadOnlyList<IMenuItem>) _items.AsReadOnly() : Array.Empty<IMenuItem>();        
+        public IReadOnlyList<IMenuItem> MenuItems =>
+            _items != null ? (IReadOnlyList<IMenuItem>)_items.AsReadOnly() : Array.Empty<IMenuItem>();
+
         public IReadOnlyCollection<IMenuItem> Enumerate()
         {
             return (IReadOnlyCollection<IMenuItem>)_items ?? Array.Empty<IMenuItem>();
@@ -137,7 +140,8 @@ namespace Rhinox.GUIUtils.Editor
 
                 foreach (var item in _rootItems.Children)
                 {
-                    DrawItem(item, evt);
+                    if (item.FullPath.Contains(_searchString))
+                        DrawItem(item, evt);
                 }
             }
             else
@@ -183,14 +187,16 @@ namespace Rhinox.GUIUtils.Editor
                 {
                     DrawGroupHeader(subGroup, evt, indent + 1);
                 }
-                
+
                 foreach (var child in item.Children)
                 {
-                    child.Draw(evt, indent + 1, (x) => x.Substring(x.LastIndexOf(GroupingString) + GroupingString.Length));
+                    if (child.FullPath.Contains(_searchString))
+                        child.Draw(evt, indent + 1,
+                            (x) => x.Substring(x.LastIndexOf(GroupingString) + GroupingString.Length));
                 }
             }
         }
-        
+
         private void CreateGroupingItems()
         {
             _groupingItems = new List<HierarchyMenuItem>();
@@ -230,6 +236,17 @@ namespace Rhinox.GUIUtils.Editor
                 }
 
                 dict[path].Children.Add(item);
+            }
+
+
+            foreach (var item in _groupingItems)
+            {
+                if (item.CorrespondingItem != null)
+                    continue;
+
+                var validItems = _rootItems.Children.Where(x => x.FullPath == item.FullPath).ToArray();
+                if (validItems.Length > 0)
+                    item.CorrespondingItem = validItems[0];
             }
         }
 #endif
