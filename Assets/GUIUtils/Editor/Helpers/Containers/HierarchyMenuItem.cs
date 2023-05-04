@@ -8,6 +8,8 @@ namespace Rhinox.GUIUtils.Editor
         public List<IMenuItem> Children;
         public List<HierarchyMenuItem> SubGroups;
 
+        public IMenuItem CorrespondingItem;
+        
         private Texture _closedIcon;
         private Texture _openIcon;
 
@@ -27,6 +29,8 @@ namespace Rhinox.GUIUtils.Editor
 
         protected override bool PerformClick()
         {
+            CorrespondingItem?.Select();
+            
             SetExpanded(!Expanded);
             return true;
             
