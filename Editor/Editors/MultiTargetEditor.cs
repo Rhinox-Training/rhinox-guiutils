@@ -36,7 +36,6 @@ namespace Rhinox.GUIUtils.Editor
         protected Vector2 _currentScrollPosition;
         
         private object[] _currentPaintedTargets = Array.Empty<object>();
-        private ReadOnlyCollection<object> _currentTargetsImm;
         private bool _initialized;
         
         protected override void OnEnable()
@@ -50,8 +49,8 @@ namespace Rhinox.GUIUtils.Editor
             if (_initialized)
                 return;
             _initialized = true;
-            Selection.selectionChanged -= Repaint;
-            Selection.selectionChanged += Repaint;
+            Selection.selectionChanged -= RequestRepaint;
+            Selection.selectionChanged += RequestRepaint;
             Initialize();
         }
         
@@ -120,7 +119,7 @@ namespace Rhinox.GUIUtils.Editor
 
                 Array.Resize(ref _currentPaintedTargets, targetList.Count);
                 Array.Resize(ref _editors, targetList.Count);
-                Repaint();
+                RequestRepaint();
             }
 
             for (int index = 0; index < targetList.Count; ++index)
@@ -137,11 +136,9 @@ namespace Rhinox.GUIUtils.Editor
                         _editors[index].Destroy();
                     
                     // Create new editor
-                    _editors[index] = CreateEditorForTarget(obj);
+                    _editors[index] = EditorCreator.CreateEditorForTarget(obj);
                 }
             }
-
-            _currentTargetsImm = new ReadOnlyCollection<object>(_currentPaintedTargets);
         }
         
         protected virtual void DrawEditors()

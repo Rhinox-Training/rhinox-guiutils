@@ -78,61 +78,7 @@ namespace Rhinox.GUIUtils.Editor
             Object.DestroyImmediate(this);
         }
         
-        protected virtual IEditor CreateEditorForTarget(object obj)
-        {
-            if (obj is EditorWindow editorWindow)
-                return TryCreateGenericEditor(editorWindow);
-
-            if (obj is Object targetObject)
-            {
-                var curEditor = CreateStandardEditor(targetObject);
-                if (curEditor == null)
-                    curEditor = TryCreateGenericEditor(targetObject);
-
-                return curEditor;
-            }
-
-            return TryCreateGenericNonUnityEditor(obj);
-        }
         
-        protected IEditor TryCreateGenericNonUnityEditor(object systemObj)
-        {
-            try
-            {
-                return GenericSmartObjectEditor.Create(systemObj);
-            }
-            catch (Exception e)
-            {
-                Debug.LogError(e);
-                return null;
-            }
-        }
-
-        protected static IEditor CreateStandardEditor(UnityEngine.Object targetObject)
-        {
-            var editor = UnityEditor.Editor.CreateEditor(targetObject);
-            // if (editor is MaterialEditor matEditor && s_materialForceVisibleProperty != null)
-            //     s_materialForceVisibleProperty.SetValue(matEditor, true, null);
-            if (editor != null)
-                return new UnityEditorWrapper(editor);
-            return null;
-        }
-        
-        protected IEditor TryCreateGenericEditor(Object targetObject)
-        {
-            UnityEditor.Editor customEditor = null;
-            try
-            {
-                customEditor = UnityEditor.Editor.CreateEditor(targetObject, typeof(GenericSmartUnityObjectEditor));
-            }
-            catch (Exception e)
-            {
-                Debug.LogError(e);
-                return null;
-            }
-            
-            return new UnityEditorWrapper(customEditor);
-        }
         
         public void RequestRepaint()
         {
