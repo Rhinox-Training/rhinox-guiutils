@@ -58,11 +58,14 @@ namespace Rhinox.GUIUtils.Editor
 
         private List<IMenuItem> _items;
 #if !ODIN_INSPECTOR
-        public Func<IMenuItem ,string, bool> SearchFilter;
         private List<HierarchyMenuItem> _groupingItems;
         private HierarchyMenuItem _rootItems;
         private bool _groupingIsDirty;
+
+        public Func<IMenuItem, string, bool> SearchFilter;
         private string _searchString = string.Empty;
+        private List<HierarchyMenuItem> _filteredGroupingItems;
+        private HierarchyMenuItem _filteredRootItems;
 #endif
 
         public IReadOnlyList<IMenuItem> MenuItems =>
@@ -129,7 +132,13 @@ namespace Rhinox.GUIUtils.Editor
             if (_items == null)
                 return;
 
-            _searchString = GUILayout.TextField(_searchString);
+            string newSearchString = GUILayout.TextField(_searchString);
+            if (!string.Equals(newSearchString, _searchString))
+            {
+                _searchString = newSearchString;
+                CreateFilteredGroupingItems();
+            }
+
             _firstItem = true;
 
             if (ShowGrouped)
@@ -142,15 +151,14 @@ namespace Rhinox.GUIUtils.Editor
                 }
 
 
-                foreach (var item in _groupingItems)
+                foreach (var item in _filteredGroupingItems)
                 {
                     DrawGroupHeader(item, evt);
                 }
 
-                foreach (var item in _rootItems.Children)
+                foreach (var item in _filteredRootItems.Children)
                 {
-                    if(DoesItemMatchSearch(item))
-                        DrawItem(item, evt);
+                    DrawItem(item, evt);
                 }
             }
             else
@@ -199,25 +207,27 @@ namespace Rhinox.GUIUtils.Editor
 
                 foreach (var child in item.Children)
                 {
-                    if (DoesItemMatchSearch(child))
-                        child.Draw(evt, indent + 1,
-                            (x) => x.Substring(x.LastIndexOf(GroupingString) + GroupingString.Length));
+                    child.Draw(evt, indent + 1,
+                        (x) => x.Substring(x.LastIndexOf(GroupingString) + GroupingString.Length));
                 }
             }
         }
 
         private bool DoesItemMatchSearch(IMenuItem item)
         {
-            if(SearchFilter == null)
-                return item.FullPath.Contains(_searchString);
-            
-            return SearchFilter(item,_searchString);
+            if (SearchFilter == null)
+                return item.FullPath.Contains(_searchString, StringComparison.OrdinalIgnoreCase);
+
+            return SearchFilter(item, _searchString);
         }
 
         private void CreateGroupingItems()
         {
             _groupingItems = new List<HierarchyMenuItem>();
             _rootItems = new HierarchyMenuItem(this, "", true);
+
+            _filteredRootItems = new HierarchyMenuItem(this, "", true);
+            _filteredGroupingItems = new List<HierarchyMenuItem>();
 
             var dict = new Dictionary<string, HierarchyMenuItem>();
             foreach (var item in _items)
@@ -243,7 +253,7 @@ namespace Rhinox.GUIUtils.Editor
                             continue;
                         }
 
-                        var next = new HierarchyMenuItem(this, parts[i], false);
+                        var next = new HierarchyMenuItem(this, parts[i], true);
                         hierarchy?.SubGroups.Add(next);
                         hierarchy = next;
                         dict[full] = next;
@@ -268,6 +278,55 @@ namespace Rhinox.GUIUtils.Editor
                     _rootItems.Children.Remove(validItems[0]);
                 }
             }
+
+            CreateFilteredGroupingItems();
+        }
+
+
+        private void CreateFilteredGroupingItems()
+        {
+            _filteredGroupingItems.Clear();
+
+            // Get the root items that are valid
+            _filteredRootItems.Children = _rootItems.Children.Where(DoesItemMatchSearch).ToList();
+
+            // Get the subgroups that are valid
+            foreach (HierarchyMenuItem item in _groupingItems)
+            {
+                FilterSubGroups(item);
+            }
+        }
+
+        private void FilterSubGroups(HierarchyMenuItem item)
+        {
+            if (item == null)
+            {
+                Debug.LogWarning("[CustomMenuTree,FilterSubGroups], item is null");
+                return;
+            }
+
+            if (DoesItemMatchSearch(item))
+            {
+                _filteredGroupingItems.Add(item);
+                return;
+            }
+
+            // If any of the children are valid, add the item and return
+            var validChildren = item.Children.Where(DoesItemMatchSearch).ToList();
+            if (!validChildren.IsNullOrEmpty())
+            {
+                HierarchyMenuItem temp = new HierarchyMenuItem(this, item.Name, item.Expanded)
+                {
+                    Children = validChildren,
+                    Selectable = true
+                };
+                _filteredGroupingItems.Add(temp);
+                return;
+            }
+
+            // Get for valid subgroups
+            foreach (HierarchyMenuItem child in item.SubGroups)
+                FilterSubGroups(child);
         }
 #endif
 
@@ -313,11 +372,14 @@ namespace Rhinox.GUIUtils.Editor
             {
                 foreach (var item in _groupingItems)
                 {
-                    if (item == null)
-                        continue;
-
-                    item.Update();
+                    item?.Update();
                 }
+            }
+
+            if (_filteredGroupingItems != null && _filteredRootItems != null)
+            {
+                foreach (HierarchyMenuItem item in _filteredGroupingItems)
+                    item?.Update();
             }
 #endif
         }
@@ -354,7 +416,6 @@ namespace Rhinox.GUIUtils.Editor
                 return;
             if (_items == null)
                 _items = new List<IMenuItem>();
-            ;
             _items.AddUnique(customItem);
 #if !ODIN_INSPECTOR
             _groupingIsDirty = true;
