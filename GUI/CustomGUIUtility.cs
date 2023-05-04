@@ -13,5 +13,16 @@ namespace Rhinox.GUIUtils
                 BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public);
             return (int) methodInfo.Invoke(null, null);
         }
+        
+        public static GUIContent CreateGUIContentForObject(object obj)
+        {
+            if (obj is Component component)
+                return new GUIContent(component.gameObject.name);
+            
+            if (obj is UnityEngine.Object unityObj)
+                return new GUIContent(unityObj.name);
+            
+            return new GUIContent(obj.ToString());
+        }
     }
 }

@@ -12,7 +12,7 @@ using Object = UnityEngine.Object;
 
 namespace Rhinox.GUIUtils.Editor
 {
-    public class CustomEditorWindow : EditorWindow, ISerializationCallbackReceiver, IRepaintRequest
+    public partial class CustomEditorWindow : EditorWindow, ISerializationCallbackReceiver, IRepaintRequest
     {
         /// <summary>
         /// Gets the label width to be used. Values between 0 and 1 are treated as percentages, and values above as pixels.
@@ -55,7 +55,6 @@ namespace Rhinox.GUIUtils.Editor
             set => _defaultEditorPreviewHeight = value;
         }
         
-        
         private static PropertyInfo s_materialForceVisibleProperty = typeof(MaterialEditor).GetProperty("forceVisible",
             BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic |
             BindingFlags.FlattenHierarchy);
@@ -69,7 +68,6 @@ namespace Rhinox.GUIUtils.Editor
         [NonSerialized] private bool _initialized;
         private GUIStyle _marginStyle;
         private object[] _currentPaintedTargets = Array.Empty<object>();
-        private ReadOnlyCollection<object> _currentTargetsImm;
         private IEditor[] _editors = Array.Empty<IEditor>();
         private Vector2 _currentScrollPosition;
         private int _mouseDownId;
@@ -103,21 +101,7 @@ namespace Rhinox.GUIUtils.Editor
         {
             yield return GetTarget();
         }
-
-        /// <summary>
-        /// At the start of each OnGUI event when in the Layout event, the GetTargets() method is called and cached into a list which you can access from here.
-        /// </summary>
-        protected IReadOnlyList<object> CurrentDrawingTargets => _currentTargetsImm;
-
-        /// <summary>
-        /// Pops up an editor window for the given object in a drop-down window which closes when it loses its focus.
-        /// This particular overload uses a few frames to calculate the height of the content before showing the window with a height that matches its content.
-        /// </summary>
-        public static CustomEditorWindow InspectObjectInDropDown(object obj, Rect btnRect, float windowWidth)
-        {
-            return InspectObjectInDropDown(obj, btnRect, new Vector2(windowWidth, 0.0f));
-        }
-
+        
         private void SetupAutomaticHeightAdjustment(int maxHeight)
         {
             _preventContentFromExpanding = true;
@@ -162,167 +146,6 @@ namespace Rhinox.GUIUtils.Editor
                 EditorApplication.update += callback;
             };
             EditorApplication.update += callback;
-        }
-
-        /// <summary>
-        /// Pops up an editor window for the given object in a drop-down window which closes when it loses its focus.
-        /// </summary>
-        public static CustomEditorWindow InspectObjectInDropDown(object obj, Rect btnRect, Vector2 windowSize)
-        {
-            CustomEditorWindow window = CreateCustomEditorWindowInstanceForObject(obj);
-            if (windowSize.x <= 1.0)
-                windowSize.x = btnRect.width;
-            if (windowSize.x <= 1.0)
-                windowSize.x = 400f;
-            btnRect = RoundValues(btnRect);
-            windowSize.x = (int)windowSize.x;
-            windowSize.y = (int)windowSize.y;
-            try
-            {
-                EditorWindow curr = CustomEditorGUI.CurrentWindow();
-                if (curr != null)
-                    window.OnBeginGUI += () => curr.Repaint();
-            }
-            catch
-            {
-            }
-
-            window.OnEndGUI += () =>
-            {
-                Rect position = window.position;
-                double width = position.width;
-                position = window.position;
-                double height = position.height;
-                CustomEditorGUI.DrawBorders(new Rect(0.0f, 0.0f, (float)width, (float)height), 1);
-            };
-            window._labelWidth = 0.33f;
-            window.DrawUnityEditorPreview = true;
-            btnRect.position = GUIUtility.GUIToScreenPoint(btnRect.position);
-            if ((int)windowSize.y == 0)
-            {
-                window.ShowAsDropDown(btnRect, new Vector2(windowSize.x, 10f));
-                window.SetupAutomaticHeightAdjustment(600);
-            }
-            else
-                window.ShowAsDropDown(btnRect, windowSize);
-
-            return window;
-        }
-
-        /// <summary>
-        /// Pops up an editor window for the given object in a drop-down window which closes when it loses its focus.
-        /// </summary>
-        public static CustomEditorWindow InspectObjectInDropDown(object obj, Vector2 position)
-        {
-            Rect btnRect = new Rect(position.x, position.y, 1f, 1f);
-            return InspectObjectInDropDown(obj, btnRect, 350f);
-        }
-
-        /// <summary>
-        /// Pops up an editor window for the given object in a drop-down window which closes when it loses its focus.
-        /// </summary>
-        public static CustomEditorWindow InspectObjectInDropDown(object obj, float windowWidth)
-        {
-            Vector2 mousePosition = Event.current.mousePosition;
-            Rect btnRect = new Rect(mousePosition.x, mousePosition.y, 1f, 1f);
-            return InspectObjectInDropDown(obj, btnRect, windowWidth);
-        }
-
-        /// <summary>
-        /// <para>
-        /// Pops up an editor window for the given object in a drop-down window which closes when it loses its focus.
-        /// </para>
-        /// <para>Protip: You can subscribe to OnClose if you want to know when that occurs.</para>
-        /// </summary>
-        public static CustomEditorWindow InspectObjectInDropDown(object obj, Vector2 position, float windowWidth)
-        {
-            Rect btnRect = new Rect(position.x, position.y, 1f, 1f);
-            return InspectObjectInDropDown(obj, btnRect, windowWidth);
-        }
-
-        /// <summary>
-        /// <para>
-        /// Pops up an editor window for the given object in a drop-down window which closes when it loses its focus.
-        /// </para>
-        /// <para>Protip: You can subscribe to OnClose if you want to know when that occurs.</para>
-        /// </summary>
-        public static CustomEditorWindow InspectObjectInDropDown(object obj, float width, float height)
-        {
-            Rect btnRect = new Rect(Event.current.mousePosition, Vector2.one);
-            return InspectObjectInDropDown(obj, btnRect, new Vector2(width, height));
-        }
-
-        /// <summary>
-        /// <para>
-        /// Pops up an editor window for the given object in a drop-down window which closes when it loses its focus.
-        /// </para>
-        /// <para>Protip: You can subscribe to OnClose if you want to know when that occurs.</para>
-        /// </summary>
-        public static CustomEditorWindow InspectObjectInDropDown(object obj)
-            => InspectObjectInDropDown(obj, Event.current.mousePosition);
-
-        /// <summary>Pops up an editor window for the given object.</summary>
-        public static CustomEditorWindow InspectObject(object obj)
-        {
-            CustomEditorWindow instanceForObject = CreateCustomEditorWindowInstanceForObject(obj);
-            instanceForObject.Show();
-            Vector2 move = new Vector2(30f, 30f) * (s_inspectObjectWindowCount++ % 6 - 3);
-            var baseRect = RectExtensions.AlignCenter(CustomEditorGUI.GetEditorWindowRect(), 400f, 300f);
-            baseRect.position += move;
-            instanceForObject.position = baseRect;
-            return instanceForObject;
-        }
-
-        /// <summary>
-        /// Inspects the object using an existing CustomEditorWindow.
-        /// </summary>
-        public static CustomEditorWindow InspectObject(CustomEditorWindow window, object obj)
-        {
-            Object unityObj = obj as Object;
-            if (unityObj)
-            {
-                window._inspectTargetObject = null;
-                window._inspectorTargetSerialized = unityObj;
-            }
-            else
-            {
-                window._inspectTargetObject = obj;
-                window._inspectorTargetSerialized = null;
-            }
-
-            window.titleContent = GetObjectName(obj);
-            EditorUtility.SetDirty(window);
-            return window;
-        }
-
-        private static GUIContent GetObjectName(object obj)
-        {
-            if (obj is Component component)
-                return new GUIContent(component.gameObject.name);
-            else if (obj is UnityEngine.Object unityObj)
-                return new GUIContent(unityObj.name);
-            else
-                return new GUIContent(obj.ToString());
-        }
-
-        /// <summary>
-        /// Creates an editor window instance for the specified object, without opening the window.
-        /// </summary>
-        public static CustomEditorWindow CreateCustomEditorWindowInstanceForObject(object obj)
-        {
-            CustomEditorWindow instance = CreateInstance<CustomEditorWindow>();
-            GUIUtility.hotControl = 0;
-            GUIUtility.keyboardControl = 0;
-            Object @object = obj as Object;
-            if ((bool)@object)
-                instance._inspectorTargetSerialized = @object;
-            else
-                instance._inspectTargetObject = obj;
-            
-            instance.titleContent = GetObjectName(obj);
-            instance.position = RectExtensions.AlignCenter(CustomEditorGUI.GetEditorWindowRect(), 600f, 600f);
-            EditorUtility.SetDirty(instance);
-            return instance;
         }
 
         protected virtual void OnGUI()
@@ -462,67 +285,9 @@ namespace Rhinox.GUIUtils.Editor
                         _editors[index].Destroy();
                     
                     // Create new editor
-                    _editors[index] = CreateEditorForTarget(obj);
+                    _editors[index] = EditorCreator.CreateEditorForTarget(obj);
                 }
             }
-
-            _currentTargetsImm = new ReadOnlyCollection<object>(_currentPaintedTargets);
-        }
-
-        protected virtual IEditor CreateEditorForTarget(object obj)
-        {
-            if (obj is EditorWindow editorWindow)
-                return TryCreateGenericEditor(editorWindow);
-
-            if (obj is Object targetObject)
-            {
-                var curEditor = CreateStandardEditor(targetObject);
-                if (curEditor == null)
-                    curEditor = TryCreateGenericEditor(targetObject);
-
-                return curEditor;
-            }
-
-            return TryCreateGenericNonUnityEditor(obj);
-        }
-
-        protected IEditor TryCreateGenericNonUnityEditor(object systemObj)
-        {
-            try
-            {
-                return GenericSmartObjectEditor.Create(systemObj);
-            }
-            catch (Exception e)
-            {
-                Debug.LogError(e);
-                return null;
-            }
-        }
-
-        protected static IEditor CreateStandardEditor(UnityEngine.Object targetObject)
-        {
-            var editor = UnityEditor.Editor.CreateEditor(targetObject);
-            if (editor is MaterialEditor matEditor && s_materialForceVisibleProperty != null)
-                s_materialForceVisibleProperty.SetValue(matEditor, true, null);
-            if (editor != null)
-                return new UnityEditorWrapper(editor);
-            return null;
-        }
-
-        protected IEditor TryCreateGenericEditor(Object targetObject)
-        {
-            UnityEditor.Editor customEditor = null;
-            try
-            {
-                customEditor = UnityEditor.Editor.CreateEditor(targetObject, typeof(GenericSmartUnityObjectEditor));
-            }
-            catch (Exception e)
-            {
-                Debug.LogError(e);
-                return null;
-            }
-            
-            return new UnityEditorWrapper(customEditor);
         }
 
         protected virtual void OnEnable()
@@ -590,7 +355,7 @@ namespace Rhinox.GUIUtils.Editor
                 }
 
                 if (DrawUnityEditorPreview)
-                    DrawEditorPreview(index, _defaultEditorPreviewHeight);
+                    DrawEditorPreview(index, DefaultEditorPreviewHeight);
 
             }
             catch (ExitGUIException)
