@@ -58,6 +58,7 @@ namespace Rhinox.GUIUtils.Editor
 
         private List<IMenuItem> _items;
 #if !ODIN_INSPECTOR
+        public Func<IMenuItem ,string, bool> SearchFilter;
         private List<HierarchyMenuItem> _groupingItems;
         private HierarchyMenuItem _rootItems;
         private bool _groupingIsDirty;
@@ -205,17 +206,12 @@ namespace Rhinox.GUIUtils.Editor
             }
         }
 
-        private bool DoesItemMatchSearch(IMenuItem item, Func<IMenuItem, bool> filter = null)
+        private bool DoesItemMatchSearch(IMenuItem item)
         {
-            // Create a local variable to store the FullPath property of the item
-            string fullPath = item.FullPath;
+            if(SearchFilter == null)
+                return item.FullPath.Contains(_searchString);
             
-            // If filter is null, assign a lambda expression to it that always returns true
-            if (filter == null)
-                filter = i => true;
-
-            // Run the filter and check if the path contains the search string
-            return filter(item) && fullPath.Contains(_searchString);
+            return SearchFilter(item,_searchString);
         }
 
         private void CreateGroupingItems()
