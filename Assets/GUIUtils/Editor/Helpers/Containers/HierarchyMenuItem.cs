@@ -8,6 +8,11 @@ namespace Rhinox.GUIUtils.Editor
         public List<IMenuItem> Children;
         public List<HierarchyMenuItem> SubGroups;
 
+        /// <summary>
+        /// The menu item that is linked to this hierarchy menu item
+        /// </summary>
+        public IMenuItem LinkedMenuItem;
+        
         private Texture _closedIcon;
         private Texture _openIcon;
 
@@ -27,6 +32,8 @@ namespace Rhinox.GUIUtils.Editor
 
         protected override bool PerformClick()
         {
+            LinkedMenuItem?.Select();
+            
             SetExpanded(!Expanded);
             return true;
             
