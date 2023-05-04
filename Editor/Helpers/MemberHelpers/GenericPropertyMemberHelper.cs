@@ -35,7 +35,7 @@ namespace Rhinox.GUIUtils.Editor
             if (host is GenericHostInfo hostInfo)
             {
                 _hostInfo = hostInfo;
-                _host = _hostInfo.GetHost();
+                _host = FetchInstanceFrom(_hostInfo);
                 _objectType = _host?.GetType();
             }
             else
@@ -146,9 +146,22 @@ namespace Rhinox.GUIUtils.Editor
 
         protected override object GetInstance()
         {
-            if (_host == null && _hostInfo != null)
-                _host = _hostInfo.GetHost();
+            if (_host != null)
+                return _host;
+            
+            if (_hostInfo != null)
+                _host = FetchInstanceFrom(_hostInfo);
+            
             return _host;
+        }
+
+        private static object FetchInstanceFrom(GenericHostInfo info)
+        {
+            if (info == null) return null;
+            
+            if (info.ArrayIndex >= 0)
+                return info.GetValue();
+            return info.GetHost();
         }
     }
 }
