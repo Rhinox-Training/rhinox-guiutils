@@ -121,6 +121,7 @@ namespace Rhinox.GUIUtils.Editor
             if (_items == null) 
                 return;
             
+            _searchString = GUILayout.TextField(_searchString);
             _firstItem = true;
 
             if (ShowGrouped)
@@ -246,7 +247,10 @@ namespace Rhinox.GUIUtils.Editor
 
                 var validItems = _rootItems.Children.Where(x => x.FullPath == item.FullPath).ToArray();
                 if (validItems.Length > 0)
+                {
                     item.CorrespondingItem = validItems[0];
+                    _rootItems.Children.Remove(validItems[0]);
+                }
             }
         }
 #endif
