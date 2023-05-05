@@ -58,11 +58,11 @@ namespace Rhinox.GUIUtils.Editor
     public class ListDrawable : BaseMemberDrawable
     {
         private readonly PageableReorderableList _listRO;
-        private readonly ListDrawerSettingsAttribute _listDrawerAttr;
         private ListElementDrawable[] _listElements;
 
         private readonly SerializedProperty _listProperty;
-        
+        private bool _isReadOnly;
+
         public override float ElementHeight => _listRO.GetHeight();
 
         public ListDrawable(SerializedProperty listProperty)
@@ -72,11 +72,10 @@ namespace Rhinox.GUIUtils.Editor
                 throw new ArgumentNullException(nameof(listProperty));
             
             _listProperty = listProperty;
-
-            _listDrawerAttr = listProperty.GetAttributeOrCreate<ListDrawerSettingsAttribute>();
-
             _listRO = new PageableReorderableList(listProperty);
-            ApplyAttribute(_listDrawerAttr);
+            
+            var listDisplaySettings = ListDisplaySettings.Create(_hostInfo);
+            ApplyDrawerSettings(listDisplaySettings);
 
             Initialize(_listRO);
         }
@@ -84,20 +83,22 @@ namespace Rhinox.GUIUtils.Editor
         public ListDrawable(GenericHostInfo hostInfo) : base(hostInfo)
         {
             _listProperty = null;
-            _listDrawerAttr = hostInfo.GetAttribute<ListDrawerSettingsAttribute>() ?? new ListDrawerSettingsAttribute();
-
             _listRO = new PageableReorderableList(hostInfo);
-            ApplyAttribute(_listDrawerAttr);
+            
+            var listDisplaySettings = ListDisplaySettings.Create(hostInfo);
+            ApplyDrawerSettings(listDisplaySettings);
             
             Initialize(_listRO);
         }
 
-        private void ApplyAttribute(ListDrawerSettingsAttribute attr)
+        private void ApplyDrawerSettings(ListDisplaySettings settings)
         {
-            _listRO.MaxItemsPerPage = attr.NumberOfItemsPerPage;
-            _listRO.Draggable = attr.DraggableItems;
-            _listRO.DisplayAdd = !attr.IsReadOnly && !attr.HideAddButton;
-            _listRO.DisplayRemove = !attr.IsReadOnly && !attr.HideRemoveButton;
+            _listRO.MaxItemsPerPage = settings.MaxItemsPerPage;
+            _listRO.Draggable = settings.DraggableItems;
+            _listRO.DisplayAdd = !settings.IsReadOnly && !settings.HideAddButton;
+            _listRO.DisplayRemove = !settings.IsReadOnly && !settings.HideRemoveButton;
+            _listRO.DisplayHeader = !settings.HideHeader;
+            _isReadOnly = settings.IsReadOnly;
         }
 
         private void Initialize(BetterReorderableList roList)
@@ -125,30 +126,24 @@ namespace Rhinox.GUIUtils.Editor
         
         protected override void DrawInner(GUIContent label, params GUILayoutOption[] options)
         {
-            if (_listDrawerAttr != null)
+            OnBeginDraw();
+            EditorGUI.BeginDisabledGroup(_isReadOnly);
             {
-                OnBeginDraw();
-                EditorGUI.BeginDisabledGroup(_listDrawerAttr.IsReadOnly);
-                {
-                    _listRO.DoLayoutList(label);
-                }
-                EditorGUI.EndDisabledGroup();
-                OnEndDraw();
+                _listRO.DoLayoutList(label);
             }
+            EditorGUI.EndDisabledGroup();
+            OnEndDraw();
         }
         
         protected override void DrawInner(Rect rect, GUIContent label)
         {
-            if (_listDrawerAttr != null)
+            OnBeginDraw();
+            EditorGUI.BeginDisabledGroup(_isReadOnly);
             {
-                OnBeginDraw();
-                EditorGUI.BeginDisabledGroup(_listDrawerAttr.IsReadOnly);
-                {
-                    _listRO.DoList(rect, label);
-                }
-                EditorGUI.EndDisabledGroup();
-                OnEndDraw();
+                _listRO.DoList(rect, label);
             }
+            EditorGUI.EndDisabledGroup();
+            OnEndDraw();
         }
 
         private void OnChangedListCallback(BetterReorderableList list)
