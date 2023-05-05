@@ -22,6 +22,7 @@ namespace Rhinox.GUIUtils.Editor
         private PickerHandler _typePicker;
 
         private static List<Type> _allTypesCache;
+        private bool _isDirty;
 
         protected override void Initialize()
         {
@@ -75,12 +76,18 @@ namespace Rhinox.GUIUtils.Editor
 
             if (EditorGUI.DropdownButton(position, GUIContentHelper.TempContent(title), FocusType.Keyboard))
                 DoTypeDropdown(fullRect);
+
+            if (_isDirty)
+            {
+                _isDirty = false;
+                GUI.changed = true;
+            }
         }
 
         private void SetValue(Type type)
         {
             SmartValue = new SerializableType(type);
-            GUI.changed = true;
+            _isDirty = true;
         }
 
         private void DoTypeDropdown(Rect position)
