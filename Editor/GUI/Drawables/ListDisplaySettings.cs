@@ -49,7 +49,7 @@ namespace Rhinox.GUIUtils.Editor
                     Expanded = true,
                     HideAddButton = true,
                     HideRemoveButton = true,
-                    HideHeader = true,
+                    HideHeader = false,
                     DraggableItems = false,
                     ShowPaging = false,
                 };
