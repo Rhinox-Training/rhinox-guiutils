@@ -33,6 +33,7 @@ namespace Rhinox.GUIUtils.Editor
 
         protected override void DrawInner(Rect rect, GUIContent label)
         {
+            _drawerInterface.HostInfo = _hostInfo;
             _drawer.OnGUI(rect, null, label);
             _height = _drawer.GetPropertyHeight(null, label);
         }
