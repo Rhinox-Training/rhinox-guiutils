@@ -20,13 +20,13 @@ namespace Rhinox.GUIUtils.NoOdin.Editor
     {
         const float _padding = 2f;
 
-        private ListDrawerSettingsAttribute _settings;
+        private ListDisplaySettings _settings;
 
         private Dictionary<string, float> _cachedHeight = new Dictionary<string, float>();
 
         protected override void OnInitialize(SerializedProperty property)
         {
-            _settings = GetHostInfo(property).GetAttribute<ListDrawerSettingsAttribute>();
+            _settings = ListDisplaySettings.Create(GetHostInfo(property));
 
             if (_settings != null)
                 property.isExpanded = _settings.Expanded;

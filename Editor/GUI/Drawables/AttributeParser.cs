@@ -1,6 +1,7 @@
 ﻿using System.Reflection;
 using Rhinox.GUIUtils.Attributes;
 using Sirenix.OdinInspector;
+using UnityEditor;
 using UnityEngine;
 
 namespace Rhinox.GUIUtils.Editor
@@ -30,7 +31,6 @@ namespace Rhinox.GUIUtils.Editor
         {
             if (TryParseOrder(memberInfo, out int order))
                 drawable.Order = order;
-            
         }
     }
 }
