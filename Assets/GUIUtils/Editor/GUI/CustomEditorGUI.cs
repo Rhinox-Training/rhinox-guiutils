@@ -274,8 +274,23 @@ namespace Rhinox.GUIUtils.Editor
                 CustomGUIStyles.ToolbarButtonCentered, 
                 GUILayout.Height(22), GUILayout.ExpandWidth(false));
         }
+
+        public static void Title(GUIContent label, GUIStyle customLabelStyle = null, bool includeHorizontalLine = true)
+        {
+            GUILayout.Label(label, customLabelStyle ?? CustomGUIStyles.Title);
+            if (includeHorizontalLine)
+            {
+                CustomEditorGUI.HorizontalLine(CustomGUIStyles.LightBorderColor, thickness: 1);
+                GUILayout.Space(1.0f + CustomGUIUtility.Padding);
+            }
+        }
         
-            /// <summary>
+        public static void Title(string text, GUIStyle customLabelStyle = null, bool includeHorizontalLine = true)
+        {
+            Title(GUIContentHelper.TempContent(text), customLabelStyle, includeHorizontalLine);
+        }
+
+        /// <summary>
         /// Begins a horizontal toolbar. Remember to end with <see cref="M:Sirenix.Utilities.Editor.SirenixEditorGUI.EndHorizontalToolbar" />.
         /// </summary>
         /// <param name="height">The height of the toolbar.</param>

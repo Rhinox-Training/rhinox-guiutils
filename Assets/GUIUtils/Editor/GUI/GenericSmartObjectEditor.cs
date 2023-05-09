@@ -18,22 +18,27 @@ namespace Rhinox.GUIUtils.Editor
     }
     
     [UnityEditor.CustomEditor(typeof(SmartInternalObject))]
-    public class GenericSmartObjectEditor : UnityEditor.Editor, IEditor
+    public class GenericSmartObjectEditor : UnityEditor.Editor, IEditor, IRepaintRequestHandler
     {
         private DrawablePropertyView _propertyView;
-        private MethodInfo[] _drawerMethods;
         private object _target;
+        private IRepaintRequest _repainter;
 
         private void OnEnable()
         {
+            if (target == null)
+                return;
+            
             var smartInternalObj = serializedObject.targetObject as SmartInternalObject;
             if (smartInternalObj == null)
                 return;
 
             _target = smartInternalObj.Target;
-            _drawerMethods = GetInspectorGUIMethods(_target);
             if (_target != null)
+            {
                 _propertyView = new DrawablePropertyView(_target);
+                _propertyView.RepaintRequested += RequestRepaint;
+            }
         }
         
         public bool CanDraw() => _target != null;
@@ -43,24 +48,8 @@ namespace Rhinox.GUIUtils.Editor
         {
             if (_propertyView != null)
                 _propertyView.DrawLayout();
-            
-            foreach (var info in _drawerMethods)
-                info.Invoke(_target, null);
         }
         
-        private MethodInfo[] GetInspectorGUIMethods(object o)
-        {
-            if (o == null)
-            {
-                return Array.Empty<MethodInfo>();
-            }
-
-            var methods = o.GetType().GetMethods(BindingFlags.FlattenHierarchy | BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
-                .Where(x => x.GetCustomAttribute<OnInspectorGUIAttribute>() != null)
-                .ToArray();
-            return methods;
-        }
-
         public static GenericSmartObjectEditor Create(object systemObj)
         {
             GenericSmartObjectEditor customEditor = null;
@@ -83,6 +72,19 @@ namespace Rhinox.GUIUtils.Editor
         public void Destroy()
         {
             Object.DestroyImmediate(this);
+        }
+
+        public void RequestRepaint()
+        {
+            if (_repainter != null)
+                _repainter.RequestRepaint();
+            else
+                Repaint();
+        }
+
+        public void UpdateRequestTarget(IRepaintRequest target)
+        {
+            _repainter = target;
         }
     }
 }

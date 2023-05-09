@@ -14,10 +14,11 @@ namespace Rhinox.GUIUtils.Editor
         private readonly GenericHostInfo _hostInfo;
         private readonly SerializedObject _serializedObject;
         private readonly IOrderedDrawable _rootDrawable;
+        
+        public float Height => _rootDrawable.ElementHeight;
+        public object Target => _instance ?? _hostInfo.GetHost();
 
-        public bool ShouldRepaint { get; private set; }
-
-        public float Height => _rootDrawable != null ? _rootDrawable.ElementHeight : 0.0f;
+        public event Action RepaintRequested;
 
         public DrawablePropertyView(object instance)
         {
@@ -27,6 +28,7 @@ namespace Rhinox.GUIUtils.Editor
             _serializedObject = null;
             
             _rootDrawable = DrawableFactory.CreateDrawableFor(_instance);
+            _rootDrawable.RepaintRequested += RequestRepaint;
         }
         
         public DrawablePropertyView(GenericHostInfo hostInfo)
@@ -37,6 +39,8 @@ namespace Rhinox.GUIUtils.Editor
             _serializedObject = null;
 
             _rootDrawable = DrawableFactory.CreateDrawableFor(hostInfo);
+            _rootDrawable.RepaintRequested += RequestRepaint;
+
         }
         
         public DrawablePropertyView(SerializedObject serializedObject)
@@ -47,6 +51,7 @@ namespace Rhinox.GUIUtils.Editor
             _serializedObject = serializedObject;
             
             _rootDrawable = DrawableFactory.CreateDrawableFor(_serializedObject);
+            _rootDrawable.RepaintRequested += RequestRepaint;
         }
         
         public DrawablePropertyView(SerializedProperty property)
@@ -57,6 +62,7 @@ namespace Rhinox.GUIUtils.Editor
             _serializedObject = property.serializedObject;
             
             _rootDrawable = DrawableFactory.CreateDrawableFor(property);
+            _rootDrawable.RepaintRequested += RequestRepaint;
         }
         
         public void DrawLayout()
@@ -65,15 +71,7 @@ namespace Rhinox.GUIUtils.Editor
                 return;
 
             OnPreDraw();
-            try
-            {
-                _rootDrawable.Draw(GUIContent.none);
-            }
-            catch (ExitGUIException)
-            {
-                // Do nothing, this is supported behaviour
-            }
-
+            _rootDrawable.Draw(GUIContent.none);
             OnPostDraw();
         }
 
@@ -84,10 +82,10 @@ namespace Rhinox.GUIUtils.Editor
             
             OnPreDraw();
             
-            
             // TODO: should we force height?
             if (rect.IsValid())
                 rect.height = Height;
+            
             _rootDrawable.Draw(rect, GUIContent.none);
             
             OnPostDraw();
@@ -104,16 +102,13 @@ namespace Rhinox.GUIUtils.Editor
 
         private void OnPostDraw()
         {
-            if (_rootDrawable != null && _rootDrawable.ShouldRepaint)
-                ShouldRepaint = true;
-            
             if (_serializedObject != null)
                 _serializedObject.ApplyModifiedProperties();
         }
         
-        internal void MarkAsRepainted()
+        internal void RequestRepaint()
         {
-            ShouldRepaint = false;
+            RepaintRequested?.Invoke();
         }
 
         public bool HasPreviewGUI() => false;

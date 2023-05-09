@@ -74,17 +74,25 @@ namespace Rhinox.GUIUtils.Editor
         {
             Utility.SubscribeToSceneGui(ShowSceneGUI);
             Selection.selectionChanged += OnSelectionChanged;
-            _active.Set(true);
-            RepaintSceneAndGameViews();
+            ChangeActiveState(true);
         }
 
         public void UndockWindow()
         {
             Utility.UnsubscribeFromSceneGui(ShowSceneGUI);
             Selection.selectionChanged -= OnSelectionChanged;
-            _active.Set(false);
-            
+            ChangeActiveState(false);
+        }
+
+        private void ChangeActiveState(bool state)
+        {
+            _active.Set(state);
             RepaintSceneAndGameViews();
+            OnStateChanged(_active);
+        }
+
+        protected virtual void OnStateChanged(bool active)
+        {
         }
 
         protected virtual void OnSelectionChanged()

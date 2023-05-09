@@ -15,7 +15,7 @@ namespace Rhinox.GUIUtils.Editor
 {
     public abstract class PagerMenuEditorWindow<T> : CustomMenuEditorWindow where T : CustomMenuEditorWindow
     {
-        protected SlidePagedWindowNavigationHelper<object> _pager;
+        protected SlidePageNavigationHelper<object> _pager;
 
         private Vector2 _scrollPosition;
 
@@ -51,9 +51,9 @@ namespace Rhinox.GUIUtils.Editor
 
             if (this._pager != null) return;
 
-            _pager = new SlidePagedWindowNavigationHelper<object>(this as T);
+            _pager = new SlidePageNavigationHelper<object>();
+            _pager.UpdateRequestTarget(this);
             _pager.PushPage(RootPage, RootPageName);
-            (RootPage as PagerPage)?.SetPager(_pager);
         }
 
         protected override void OnDestroy()

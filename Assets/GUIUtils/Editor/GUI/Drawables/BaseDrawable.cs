@@ -22,9 +22,7 @@ namespace Rhinox.GUIUtils.Editor
                 return _cachedLabel; 
             }
         }
-
-        public virtual bool ShouldRepaint { get; protected set; }
-
+        
         protected GenericHostInfo _hostInfo;
         public GenericHostInfo HostInfo => _hostInfo;
         
@@ -33,6 +31,8 @@ namespace Rhinox.GUIUtils.Editor
         public virtual bool IsVisible => true;
 
         private bool _initialized;
+
+        public event Action RepaintRequested;
 
         protected BaseDrawable()
         {
@@ -65,13 +65,7 @@ namespace Rhinox.GUIUtils.Editor
         /// </summary>
         protected virtual void OnPreDraw()
         {
-            if (!_initialized)
-            {
-                Initialize();
-                _initialized = true;
-            }
-
-            ShouldRepaint = false;
+            TryInitialize();
         }
         
         protected virtual void OnPostDraw()
@@ -98,12 +92,25 @@ namespace Rhinox.GUIUtils.Editor
             attribute = attributes.FirstOrDefault();
             return !attributes.IsNullOrEmpty();
         }
+
+        public void TryInitialize()
+        {
+            if (_initialized)
+                return;
+            OnInitialize();
+            _initialized = true;
+        }
         
-        protected virtual void Initialize()
+        protected virtual void OnInitialize()
         {
             var orderAttr = GetDrawableAttributes<PropertyOrderAttribute>().FirstOrDefault();
             if (orderAttr != null)
                 Order = orderAttr.Order;
+        }
+
+        protected void RequestRepaint()
+        {
+            RepaintRequested?.Invoke();
         }
     }
 }

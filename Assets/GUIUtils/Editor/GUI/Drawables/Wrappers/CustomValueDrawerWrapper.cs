@@ -29,12 +29,28 @@ namespace Rhinox.GUIUtils.Editor
         
         protected override void DrawInner(Rect rect, GUIContent label)
         {
-            if (rect.IsValid())
+            if (rect.IsValid() && _cachedRect != rect)
+            {
                 _cachedRect = rect;
+                RequestRepaint();
+            }
+            else
+            {
+                rect = _cachedRect;
+                rect.xMax -= CustomGUIUtility.Padding;
+            }
             
-            GUILayout.BeginArea(_cachedRect, CustomGUIStyles.Clean);
+            GUILayout.BeginArea(_cachedRect);
+            var contentRect = EditorGUILayout.BeginVertical();
             Draw(label);
+            EditorGUILayout.EndVertical();
             GUILayout.EndArea();
+
+            if (!contentRect.height.LossyEquals(_cachedRect.height))
+            {
+                _cachedRect.height = contentRect.height;
+                RequestRepaint();
+            }
         }
 
         private void Draw(GUIContent label)

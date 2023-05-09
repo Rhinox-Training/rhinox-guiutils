@@ -1,4 +1,5 @@
 using Rhinox.GUIUtils.Attributes;
+using Rhinox.Lightspeed;
 using Sirenix.OdinInspector;
 using UnityEngine;
 
@@ -40,6 +41,9 @@ namespace Rhinox.GUIUtils.Editor
         [WrapDrawer(typeof(FittedLabelAttribute), -1000)]
         public static BaseWrapperDrawable Create(FittedLabelAttribute attr, IOrderedDrawable drawable)
         {
+            if (attr.Text.IsNullOrEmpty())
+                return null;
+            
             var member = MemberHelper.Create<string>(drawable.HostInfo, attr.Text);
             return new LabelTextWrapper(drawable)
             {

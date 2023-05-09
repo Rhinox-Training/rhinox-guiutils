@@ -7,19 +7,7 @@ using UnityEngine;
 
 namespace Rhinox.GUIUtils.Editor.Helpers
 {
-    public class SlidePagedWindowNavigationHelper<T> : SlidePageNavigationHelper<T> 
-    {
-        public EditorWindow Window;
-
-        public Page CurrentPage => this.GetCurrentPage();
-
-        public SlidePagedWindowNavigationHelper(EditorWindow window)
-        {
-            Window = window;
-        }
-    }
-    
-    public class SlidePageNavigationHelper<T>
+    public class SlidePageNavigationHelper<T> : IRepaintRequestHandler, IRepaintRequest
     {
         protected List<Page> pages;
         protected Page prev;
@@ -27,8 +15,12 @@ namespace Rhinox.GUIUtils.Editor.Helpers
         
         protected HoverTexture _icon;
         protected List<HoverRect> _pageTitles;
+
+        private IRepaintRequest _repainter;
         
         public Rect LastDrawnRect { get; protected set; }
+
+        public Page CurrentPage => GetCurrentPage();
 
         public SlidePageNavigationHelper()
         {
@@ -74,6 +66,9 @@ namespace Rhinox.GUIUtils.Editor.Helpers
             pages.Add(page);
             TabGroup.GoToPage(page.Tab);
             prev = null;
+            
+            if (obj is IRepaintRequestHandler handler)
+                handler.UpdateRequestTarget(_repainter);
         }
 
         public void NavigateBack()
@@ -201,6 +196,16 @@ namespace Rhinox.GUIUtils.Editor.Helpers
                 this.Name = name;
                 this.Tab = tab;
             }
+        }
+
+        public void UpdateRequestTarget(IRepaintRequest target)
+        {
+            _repainter = target;
+        }
+
+        public void RequestRepaint()
+        {
+            _repainter?.RequestRepaint();
         }
     }
 }

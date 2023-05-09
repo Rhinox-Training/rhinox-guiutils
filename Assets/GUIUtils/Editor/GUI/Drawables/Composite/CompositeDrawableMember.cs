@@ -14,9 +14,8 @@ namespace Rhinox.GUIUtils.Editor
         
         public bool IsVisible => true;
         public virtual GUIContent Label => GUIContent.none;
-
-        public virtual bool ShouldRepaint =>
-            _drawableMemberChildren == null ? false : _drawableMemberChildren.Any(x => x.ShouldRepaint);
+        
+        private bool _initialized;
 
         protected readonly List<IOrderedDrawable> _drawableMemberChildren = new List<IOrderedDrawable>();
         protected readonly List<Attribute> _attributes = new List<Attribute>();
@@ -26,6 +25,7 @@ namespace Rhinox.GUIUtils.Editor
         
         public abstract float ElementHeight { get; }
 
+        public event Action RepaintRequested;
         public event Action ChildrenChanged;
 
         protected CompositeDrawableMember(string name = null, float order = 0)
@@ -41,6 +41,20 @@ namespace Rhinox.GUIUtils.Editor
             return _attributes.OfType<TAttribute>();
         }
 
+        public void TryInitialize()
+        {
+            if (_initialized)
+                return;
+            
+            OnInitialize();
+            _initialized = true;
+        }
+
+        protected virtual void OnInitialize()
+        {
+            
+        }
+
         public virtual void AddAttribute(Attribute attribute)
         {
             _attributes.AddUnique(attribute);
@@ -50,6 +64,7 @@ namespace Rhinox.GUIUtils.Editor
         {
             if (AddInner(child))
                 OnChildrenChanged();
+            child.RepaintRequested += RequestRepaint;
         }
 
         protected virtual bool AddInner(IOrderedDrawable child)
@@ -66,6 +81,7 @@ namespace Rhinox.GUIUtils.Editor
                 return false;
             
             _drawableMemberChildren.Add(child);
+
             return true;
         }
         
@@ -90,8 +106,13 @@ namespace Rhinox.GUIUtils.Editor
 
         public void Sort()
         {
-            foreach (var drawable in Children)
+            if (_drawableMemberChildren == null)
+                return;
+            
+            foreach (var drawable in _drawableMemberChildren)
             {
+                drawable.TryInitialize();
+                
                 if (drawable is CompositeDrawableMember compositeDrawableMember)
                     compositeDrawableMember.Sort();
             }
@@ -125,6 +146,11 @@ namespace Rhinox.GUIUtils.Editor
         protected virtual void OnChildrenChanged()
         {
             ChildrenChanged?.Invoke();
+        }
+
+        protected void RequestRepaint()
+        {
+            RepaintRequested?.Invoke();
         }
     }
 }

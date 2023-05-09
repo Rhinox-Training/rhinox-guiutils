@@ -168,7 +168,7 @@ namespace Rhinox.GUIUtils.Editor
             _icon = icon;
         }
 
-        public virtual void Update()
+        public virtual void CheckForInteractions()
         {
             EventType type = Event.current.type;
 
@@ -198,6 +198,11 @@ namespace Rhinox.GUIUtils.Editor
             }
 
             return true;
+        }
+
+        public void ResetInteractionState()
+        {
+            IsHoveringItem = false;
         }
 
         public void Deselect()

@@ -13,27 +13,27 @@ namespace Rhinox.GUIUtils.Editor
 
         private GUIContent _label;
         private bool _hasLabel = false;
-        
-        private IOrderedDrawable _innerDrawable;
-        
-        public bool IsFoldout => Children.Any(drawable => drawable.IsVisible);
+        public bool IsFoldout => false;
 
         public override float ElementHeight
         {
             get
             {
-                var height = _innerDrawable.ElementHeight;
+                var height = Children.Sum(x => x.ElementHeight);
                 if (IsFoldout && _hasLabel)
                     height += EditorGUIUtility.singleLineHeight + CustomGUIUtility.Padding;
                 return height;
             }
         }
-
-        public override bool ShouldRepaint => base.ShouldRepaint || (_innerDrawable != null ? _innerDrawable.ShouldRepaint : false);
         
-        public static ObjectCompositeDrawableMember CreateFrom(GenericHostInfo hostInfo, IOrderedDrawable contents, float order = 0)
+        public static ObjectCompositeDrawableMember CreateFrom(GenericHostInfo hostInfo, VerticalGroupDrawable contents, float order = 0)
         {
-            var objectCompositeDrawable = new ObjectCompositeDrawableMember(hostInfo, contents, order);
+            ObjectCompositeDrawableMember objectCompositeDrawable;
+            if (contents.Children.Count == 0)
+                objectCompositeDrawable = new ObjectCompositeDrawableMember(hostInfo, new UndrawableField(hostInfo), order);
+            else
+                objectCompositeDrawable = new ObjectCompositeDrawableMember(hostInfo, contents, order);
+            
             if (hostInfo != null)
             {
                 foreach (var attr in hostInfo.GetAttributes())
@@ -47,7 +47,7 @@ namespace Rhinox.GUIUtils.Editor
             : base(hostInfo.NiceName, order)
         {
             HostInfo = hostInfo;
-            _innerDrawable = contents;
+            Add(contents);
             
             if (hostInfo.NiceName.IsNullOrEmpty())
                 _label = GUIContent.none;
@@ -68,7 +68,8 @@ namespace Rhinox.GUIUtils.Editor
                 }
                 ++EditorGUI.indentLevel;
                 
-                _innerDrawable.Draw(GUIContent.none);
+                foreach (var child in Children)
+                    child.Draw(GUIContent.none);
                 
                 --EditorGUI.indentLevel;
             }
@@ -83,7 +84,8 @@ namespace Rhinox.GUIUtils.Editor
                 var indent = EditorGUI.indentLevel;
                 EditorGUI.indentLevel = 0;
                 
-                _innerDrawable.Draw(GUIContent.none);
+                foreach (var child in Children)
+                    child.Draw(GUIContent.none);
                 
                 EditorGUI.indentLevel = indent;
                 
@@ -108,15 +110,15 @@ namespace Rhinox.GUIUtils.Editor
                 }
 
                 ++EditorGUI.indentLevel;
-                rect = EditorGUI.IndentedRect(rect);
+                if (rect.IsValid())
+                    rect = EditorGUI.IndentedRect(rect);
                 EditorGUI.indentLevel = 0;
             }
-            else
-            {
+            else if (rect.IsValid())
                 rect = EditorGUI.PrefixLabel(rect, label);
-            }
             
-            _innerDrawable.Draw(rect, GUIContent.none);
+            foreach (var child in Children)
+                child.Draw(rect, GUIContent.none);
 
             EditorGUI.indentLevel = indentLevel;
         }

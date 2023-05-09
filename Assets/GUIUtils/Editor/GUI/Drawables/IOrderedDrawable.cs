@@ -12,10 +12,13 @@ namespace Rhinox.GUIUtils.Editor
         GenericHostInfo HostInfo { get; }
         bool IsVisible { get; }
         GUIContent Label { get; }
-        bool ShouldRepaint { get; }
+        
+        event Action RepaintRequested;
 
         IEnumerable<TAttribute> GetDrawableAttributes<TAttribute>() where TAttribute : Attribute;
+        void TryInitialize();
         void Draw(GUIContent label, params GUILayoutOption[] options);
         void Draw(Rect rect, GUIContent label);
+
     }
 }

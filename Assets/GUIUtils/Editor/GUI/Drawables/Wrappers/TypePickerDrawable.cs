@@ -10,33 +10,28 @@ namespace Rhinox.GUIUtils.Editor
 {
     public class TypePickerDrawable : BaseWrapperDrawable
     {
-        private static readonly GUIContent NoneContent = new GUIContent("<Null>");
+        private static readonly GUIContent NoneContent = new GUIContent("Null");
         
-        private readonly Dictionary<string, GUIContent> _typeContentByName;
-        private readonly List<Type> _typeOptions;
         private readonly SerializedProperty _serializedProperty;
         private object _managedReferenceValue;
+        private PickerHandler _typePicker;
 
-        public TypePickerDrawable(SerializedProperty property) : base(new UndrawableField(property.GetHostInfo()))
+        public TypePickerDrawable(SerializedProperty property)
+            : this(property.GetHostInfo())
         {
             if (property == null)
                 throw new ArgumentNullException(nameof(property));
+            
             _serializedProperty = property;
-            _hostInfo = property.GetHostInfo();
-            _typeContentByName = new Dictionary<string, GUIContent>();
-            var type = _hostInfo.GetReturnType(true);
-            _typeOptions = ReflectionUtility.GetTypesInheritingFrom(type);
         }
 
-        public TypePickerDrawable(GenericHostInfo hostInfo) : base(new UndrawableField(hostInfo))
+        public TypePickerDrawable(GenericHostInfo hostInfo)
+            : base(new UndrawableField(hostInfo))
         {
             if (hostInfo == null)
                 throw new ArgumentNullException(nameof(hostInfo));
-            _serializedProperty = null;
+            
             _hostInfo = hostInfo;
-            _typeContentByName = new Dictionary<string, GUIContent>();
-            var type = _hostInfo.GetReturnType(false);
-            _typeOptions = ReflectionUtility.GetTypesInheritingFrom(type);
         }
 
         protected override void DrawInner(GUIContent label, params GUILayoutOption[] options)
@@ -44,7 +39,9 @@ namespace Rhinox.GUIUtils.Editor
             if (_managedReferenceValue == null)
             {
                 Rect dropdownPosition = EditorGUILayout.GetControlRect(true, options).AlignTop(EditorGUIUtility.singleLineHeight);
-                DrawTypePicker(dropdownPosition, GUIContent.none);
+
+                if (EditorGUI.DropdownButton(dropdownPosition, NoneContent, FocusType.Keyboard))
+                    DoTypeDropdown(dropdownPosition);
             }
             else
             {
@@ -56,7 +53,8 @@ namespace Rhinox.GUIUtils.Editor
         {
             if (_managedReferenceValue == null)
             {
-                DrawTypePicker(position, GUIContent.none);
+                if (EditorGUI.DropdownButton(position, NoneContent, FocusType.Keyboard))
+                    DoTypeDropdown(position);
             }
             else
             {
@@ -64,21 +62,18 @@ namespace Rhinox.GUIUtils.Editor
             }
         }
 
-        private void DrawTypePicker(Rect position, GUIContent label)
+        private void DoTypeDropdown(Rect position)
         {
-            if (label != null)
-                position = EditorGUI.PrefixLabel(position, label);
-
-            if (!EditorGUI.DropdownButton(position, GetTypeName(), FocusType.Passive))
+            if (_typePicker != null)
+            {
+                GenericPicker.Show(position, _typePicker);
                 return;
+            }
             
-            var menu = new GenericMenu();
-            menu.AddItem(NoneContent, false, SetManagedReference, null);
-            foreach (var type in _typeOptions)
-                menu.AddItem(GUIContentHelper.TempContent(type.Name), false,
-                    SetManagedReference,
-                    type);
-            menu.DropDown(position);
+            var type = _hostInfo.GetReturnType(false);
+            var options = ReflectionUtility.GetTypesInheritingFrom(type);
+
+            _typePicker = GenericPicker.Show(position, null, options, SetManagedReference);
         }
 
         private void SetManagedReference(object data)
@@ -108,40 +103,5 @@ namespace Rhinox.GUIUtils.Editor
                 _innerDrawable = DrawableFactory.CreateDrawableFor(_hostInfo);
         }
 
-        private GUIContent GetTypeName()
-        {
-            if (_hostInfo != null)
-                return GetTypeName(_hostInfo.GetReturnType().FullName);
-            if (_serializedProperty != null)
-            {
-                if (_serializedProperty.propertyType == SerializedPropertyType.ManagedReference)
-                    return GetTypeName(_serializedProperty.managedReferenceFullTypename);
-                return GetTypeName(_serializedProperty.type);
-            }
-            return GUIContent.none;
-        }
-
-        private GUIContent GetTypeName(string fullTypeName)
-        {
-            // Cache this string.
-            if (string.IsNullOrEmpty(fullTypeName))
-                return NoneContent;
-
-            if (_typeContentByName.TryGetValue(fullTypeName, out var cachedTypeName))
-                return cachedTypeName;
-
-            Type type = _hostInfo.GetReturnType(true);
-
-            if (type == null)
-                return NoneContent;
-
-            string typeName = type.GetCSharpName();
-
-            GUIContent result = new GUIContent(typeName);
-            _typeContentByName[fullTypeName] = result;
-            return result;
-        }
-
-        
     }
 }

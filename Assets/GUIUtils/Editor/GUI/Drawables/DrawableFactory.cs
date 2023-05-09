@@ -61,7 +61,7 @@ namespace Rhinox.GUIUtils.Editor
         //==============================================================================================================
         // Helper methods
 
-        private static IOrderedDrawable DrawableMembersForSerializedObject(GenericHostInfo hostInfo, IEnumerable<SerializedObjectExtensions.FieldData> visibleFields, int depth)
+        private static VerticalGroupDrawable DrawableMembersForSerializedObject(GenericHostInfo hostInfo, IEnumerable<SerializedObjectExtensions.FieldData> visibleFields, int depth)
         {
             var drawable = new VerticalGroupDrawable();
             foreach (var fieldData in visibleFields)
@@ -83,7 +83,7 @@ namespace Rhinox.GUIUtils.Editor
                 drawable.Add(fieldDrawable);
             }
 
-            foreach (var propertyMember in hostInfo.HostType.GetEditorVisibleProperties())
+            foreach (var propertyMember in hostInfo.GetReturnType().GetEditorVisibleProperties())
             {
                 var propHostInfo = new GenericHostInfo(hostInfo, propertyMember);
                 var propertyDrawable = CreateDrawableForMember(propHostInfo, depth);
@@ -95,6 +95,8 @@ namespace Rhinox.GUIUtils.Editor
 
             var buttons = FindCustomDrawables(hostInfo);
             drawable.AddRange(buttons);
+
+            drawable.Sort();
 
             return drawable;
         }
@@ -125,7 +127,7 @@ namespace Rhinox.GUIUtils.Editor
 
         private static IOrderedDrawable CreateCompositeDrawable(GenericHostInfo hostInfo, int depth)
         {
-            CompositeDrawableMember drawable = new VerticalGroupDrawable();
+            var drawable = new VerticalGroupDrawable();
 
             var memberEntries = GetEditorVisibleFields(hostInfo);
             var drawables = new List<IOrderedDrawable>();
@@ -141,15 +143,15 @@ namespace Rhinox.GUIUtils.Editor
             }
 
             drawable.AddRange(drawables);
-            drawable.Sort();
             
             var buttons = FindCustomDrawables(hostInfo);
             drawable.AddRange(buttons);
+            
+            drawable.Sort();
 
             // Wrap in object composite
-            drawable = ObjectCompositeDrawableMember.CreateFrom(hostInfo, drawable);
-            
-            return drawable;
+            var resultDrawable = ObjectCompositeDrawableMember.CreateFrom(hostInfo, drawable);
+            return resultDrawable;
         }
 
         private static IOrderedDrawable CreateDrawableForSerializedProperty(SerializedProperty property)
@@ -161,7 +163,7 @@ namespace Rhinox.GUIUtils.Editor
             IEnumerable<Attribute> attributes = null;
             if (CanUnityHandleDrawingProperty(property))
             {
-                drawable = new DrawableUnityProperty(property);
+                drawable = new UnityPropertyDrawable(property);
                 attributes = property.GetAttributes();
             }
             else
@@ -184,9 +186,9 @@ namespace Rhinox.GUIUtils.Editor
                         else
                         {
                             var visibleFields = property.EnumerateEditorVisibleFields();
-                            drawable = DrawableMembersForSerializedObject(hostInfo, visibleFields, 0);
+                            var verticalGroupDrawable = DrawableMembersForSerializedObject(hostInfo, visibleFields, 0);
                             
-                            drawable = ObjectCompositeDrawableMember.CreateFrom(hostInfo, drawable);
+                            drawable = ObjectCompositeDrawableMember.CreateFrom(hostInfo, verticalGroupDrawable);
                         }
                     }
                 }
@@ -203,7 +205,7 @@ namespace Rhinox.GUIUtils.Editor
             var returnType = hostInfo.GetReturnType();
             if (returnType.InheritsFrom(typeof(IList)))
             {
-                drawable = new DrawableList(property);
+                drawable = new ListDrawable(property);
                 return true;
             }
 
@@ -260,7 +262,14 @@ namespace Rhinox.GUIUtils.Editor
             
             if (type == typeof(Type))
             {
-                drawableMember = new UndrawableField(hostInfo);
+                drawableMember = new UndrawableField<Type>(hostInfo);
+                return true;
+            }
+
+            var drawerType = PropertyDrawerHelper.GetDrawerTypeFor(type);
+            if (drawerType != null && drawerType.HasInterfaceType<IHostInfoDrawer>())
+            {
+                drawableMember = new DrawableAsUnityProperty(hostInfo, drawerType);
                 return true;
             }
 
@@ -272,7 +281,7 @@ namespace Rhinox.GUIUtils.Editor
 
             if (type.InheritsFrom<IList>())
             {
-                drawableMember = new DrawableList(hostInfo);
+                drawableMember = new ListDrawable(hostInfo);
                 return true;
             }
 
@@ -370,8 +379,6 @@ namespace Rhinox.GUIUtils.Editor
             return list;
         }
         
-        
-        
         // =============================================================================================================
         // Generic Helper methods (TODO: move these to helper classes?)
         private static bool IsVisibleInEditor(this PropertyInfo propertyInfo)
@@ -396,11 +403,17 @@ namespace Rhinox.GUIUtils.Editor
                 yield return propertyMember;
             }
         }
-
+        
         private static bool CanUnityHandleDrawingProperty(SerializedProperty property)
         {
             if (property == null)
                 return false;
+
+            var type = property.GetHostInfo().GetReturnType();
+            var drawerType = PropertyDrawerHelper.GetDrawerTypeFor(type);
+            if (drawerType != null)
+                return true;
+            
             switch (property.propertyType)
             {
                 case SerializedPropertyType.ExposedReference:

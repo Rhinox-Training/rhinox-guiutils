@@ -23,6 +23,9 @@ namespace Rhinox.GUIUtils.Editor
         private int _maxPagesCount => Mathf.CeilToInt((float)List.Count / MaxItemsPerPage);
 
         private bool _isUnityType;
+        
+        public override object SelectedItem => List[SelectedIndex + MaxItemsPerPage * _drawPageIndex];
+
 
         // Each tracks their own rect so you do need multiple
         private readonly List<HoverTexture> _closeIcons = new List<HoverTexture>();
@@ -31,7 +34,6 @@ namespace Rhinox.GUIUtils.Editor
         private GUIContent _addContent;
 
         private static Dictionary<Type, TypeCache.TypeCollection> _typeOptionsByType = new Dictionary<Type, TypeCache.TypeCollection>();
-        private readonly GenericHostInfo _hostInfo;
         
         private bool HasMultipleTypeOptions
         {
@@ -49,30 +51,42 @@ namespace Rhinox.GUIUtils.Editor
             }
         }
         
-        public PageableReorderableList(SerializedObject serializedObject, SerializedProperty elements, 
-            bool draggable = true, bool displayHeader = true, bool displayAddButton = true, bool displayRemoveButton = true) 
-            : base(serializedObject, elements, draggable, displayHeader, displayAddButton, displayRemoveButton)
+        public PageableReorderableList(IList elements)
+            : base(elements)
+        {
+        }
+        
+        public PageableReorderableList(SerializedProperty elements)
+            : base(elements)
         {
             MaxItemsPerPage = DEFAULT_ITEMS_PER_PAGE;
         }
 
-        public PageableReorderableList(GenericHostInfo hostInfo, 
-            bool draggable = true, bool displayHeader = true, bool displayAddButton = true, bool displayRemoveButton = true)
-            : base(hostInfo.GetSmartValue<IList>(), draggable, displayHeader, displayAddButton, displayRemoveButton)
+        public PageableReorderableList(GenericHostInfo hostInfo)
+            : base()
         {
             MaxItemsPerPage = DEFAULT_ITEMS_PER_PAGE;
             _hostInfo = hostInfo;
+
+            var list = _hostInfo.GetSmartValue<IList>();
+            if (list == null)
+            {
+                var listType = _hostInfo.GetReturnType();
+                // TODO: if we have an interface this will fail
+                list = (IList) listType.CreateInstance();
+            }
+            
+            Initialize(null, list);
         }
 
-        protected override void InitList(SerializedObject serializedObject, SerializedProperty elements, IList elementList, 
-            bool draggable, bool displayHeader, bool displayAddButton, bool displayRemoveButton)
+        protected override void Initialize(SerializedProperty property, IList list)
         {
-            base.InitList(serializedObject, elements, elementList, draggable, displayHeader, displayAddButton, displayRemoveButton);
+            base.Initialize(property, list);
 
             _isUnityType = m_ElementType != null && m_ElementType.InheritsFrom<Object>();
             _addContent = new GUIContent(UnityIcon.AssetIcon("Fa_Plus"), tooltip: "Add Item");
             
-            if (this.displayAdd && this.m_ElementType != null)
+            if (this.DisplayAdd && this.m_ElementType != null)
             {
                 var options = new HashSet<Type>();
                 if (!m_ElementType.IsAbstract)
@@ -82,6 +96,13 @@ namespace Rhinox.GUIUtils.Editor
                 
                 foreach (var t in _typeOptionsByType[m_ElementType])
                 {
+                    if (t.IsGenericType && t.ContainsGenericParameters)
+                        continue;
+                    
+                    // NOTE: This is still not supported in Unity 2021, maybe they will add support in the future
+                    if (t.IsGenericType)
+                        continue;
+                    
                     if (!t.IsAbstract)
                         options.Add(t);
                 }
@@ -95,17 +116,22 @@ namespace Rhinox.GUIUtils.Editor
 
         protected override void OnDrawHeader(Rect rect, GUIContent label)
         {
-            if (GUI.enabled && displayAdd && _isUnityType)
+            if (!DisplayHeader) return;
+            
+            if (GUI.enabled && DisplayAdd && _isUnityType)
             {
                 if (eUtility.DropZone(m_ElementType, out Object[] items, rect))
                 {
                     foreach (var item in items)
-                        s_Defaults.DoAddButton(this, item);
+                        Add(item);
                 }
             }
 
-            if (rect.IsValid())
+            if (rect.IsValid() && _headerRect != rect)
+            {
                 _headerRect = rect;
+                RequestRepaint();
+            }
             
             GUILayout.BeginArea(_headerRect);
             GUILayout.BeginHorizontal();
@@ -115,12 +141,20 @@ namespace Rhinox.GUIUtils.Editor
             GUILayout.FlexibleSpace();
             GUILayout.Label($"{count} Items");
 
+            if (List != null)
+            {
+                var maxPagesCount = _maxPagesCount;
+
+                if (maxPagesCount > 1 && _drawPageIndex >= maxPagesCount)
+                    _drawPageIndex = maxPagesCount - 1;
+            }
+
             if (List != null && List.Count > GetListDrawCount())
             {
                 CustomEditorGUI.VerticalLine(CustomGUIStyles.LightBorderColor);
 
                 var maxPagesCount = _maxPagesCount;
-                
+
                 GUILayout.Label($"{_drawPageIndex + 1}/{maxPagesCount}");
 
                 var wasEnabled = GUI.enabled;
@@ -146,7 +180,7 @@ namespace Rhinox.GUIUtils.Editor
                 GUI.enabled = wasEnabled;
             }
 
-            if (displayAdd && GUI.enabled)
+            if (DisplayAdd && GUI.enabled)
             {
                 CustomEditorGUI.VerticalLine(CustomGUIStyles.LightBorderColor);
                 GUILayout.Space(CustomGUIUtility.Padding * 2);
@@ -155,12 +189,13 @@ namespace Rhinox.GUIUtils.Editor
                 {
                     if (CustomEditorGUI.IconButton(_addContent, null, 16, 16))
                     {
-                        OnAddElement(new Rect());
+                        var addElementRect = new Rect(0, 0, _headerRect.width, _headerRect.height);
+                        OnAddElement(addElementRect);
 
                         if (onChangedCallback != null)
                             onChangedCallback(this);
 
-                        m_SerializedObject.ApplyModifiedProperties();
+                        m_SerializedObject?.ApplyModifiedProperties();
                     }
                 }
             }
@@ -174,7 +209,7 @@ namespace Rhinox.GUIUtils.Editor
             if (label == null || label == GUIContent.none)
             {
                 if (SerializedProperty != null)
-                    return GUIContentHelper.TempContent(m_ElementsProperty.displayName);
+                    return GUIContentHelper.TempContent(m_SerializedProperty.displayName);
                 else if (_hostInfo != null)
                     return GUIContentHelper.TempContent(_hostInfo.NiceName);
             }
@@ -186,14 +221,14 @@ namespace Rhinox.GUIUtils.Editor
         {
             if (MaxItemsPerPage > 0 && elementIndex > MaxItemsPerPage)
                 return;
-            
+
             Rect removeBtnRect = default;
-            bool drawRemoveButton = this.displayRemove && GUI.enabled;
+            bool drawRemoveButton = this.DisplayRemove && GUI.enabled;
             if (drawRemoveButton && contentRect.IsValid())
             {
                 removeBtnRect = contentRect.AlignRight(18).AlignCenterVertical(18);
                 removeBtnRect.xMin += 6;
-                contentRect = contentRect.PadRight(18);
+                contentRect.xMax -= 18;
             }
 
             base.DrawElement(contentRect, elementIndex + _drawPageIndex * MaxItemsPerPage, selected, focused);
@@ -205,14 +240,20 @@ namespace Rhinox.GUIUtils.Editor
 
                 if (CustomEditorGUI.IconButton(removeBtnRect, _closeIcons[elementIndex], tooltip: "Remove entry."))
                 {
-                    this.index = elementIndex + _drawPageIndex * MaxItemsPerPage;
-                    HandleRemoveElement(this.index);
+                    this.SelectedIndex = elementIndex + _drawPageIndex * MaxItemsPerPage;
+                    HandleRemoveElement(this.SelectedIndex);
                     onChangedCallback?.Invoke(this);
                     if (_drawPageIndex * MaxItemsPerPage >= this.count && _drawPageIndex > 0)
                         --_drawPageIndex;
-                    GUIUtility.ExitGUI();
                 }
             }
+        }
+
+        protected override void CheckIfHovering(Rect contentRect, int elementIndex)
+        {
+            if (MaxItemsPerPage > 0)
+                elementIndex %= MaxItemsPerPage;
+            base.CheckIfHovering(contentRect, elementIndex);
         }
 
 
@@ -221,15 +262,15 @@ namespace Rhinox.GUIUtils.Editor
             if (SerializedProperty != null)
             {
                 SerializedProperty.DeleteArrayElementAtIndex(indexToRemove);
-                if (index >= SerializedProperty.arraySize - 1)
-                    index = SerializedProperty.arraySize - 1;
+                if (SelectedIndex >= SerializedProperty.arraySize - 1)
+                    SelectedIndex = SerializedProperty.arraySize - 1;
             }
             else
             {
                 var collection = m_ElementList;
                 if (collection is Array arr)
                 {
-                    m_ElementList = RemoveAtGeneric(arr, indexToRemove);
+                    m_ElementList = arr.RemoveAtGeneric(indexToRemove);
                     if (_hostInfo != null)
                         _hostInfo.TrySetValue(m_ElementList);
                 }
@@ -239,8 +280,8 @@ namespace Rhinox.GUIUtils.Editor
                     if (_hostInfo != null)
                         _hostInfo.TrySetValue(m_ElementList);
                 }
-                if (index >= List.Count - 1)
-                    index = List.Count - 1;
+                if (SelectedIndex >= List.Count - 1)
+                    SelectedIndex = List.Count - 1;
             }
         }
 
@@ -252,7 +293,13 @@ namespace Rhinox.GUIUtils.Editor
             base.OnDrawElementBackground(rect, index, selected, focused, draggable);
         }
 
-        protected override void DoLayoutFooter()
+        protected override Rect DoLayoutFooter()
+        {
+            // Don't draw footer
+            return Rect.zero;
+        }
+        
+        protected override void DoListFooter(Rect footerRect)
         {
             // Don't draw footer
         }
@@ -275,67 +322,45 @@ namespace Rhinox.GUIUtils.Editor
             var genericMenu = new GenericMenu();
             foreach (var option in this.m_AddOptionTypes)
             {
-                genericMenu.AddItem(new GUIContent(option.Name), false, () =>
+                genericMenu.AddItem(new GUIContent(option.GetNiceName(false)), false, () =>
                 {
                     if (!Defaults.TryCreateElement(option, out object element, out string errorString))
                     {
                         Debug.LogError(errorString);
                         return;
                     }
+
+                    Add(element);
                     
-                    if (SerializedProperty != null)
-                    {
-                        ++SerializedProperty.arraySize;
-                        var serializedPropElement = SerializedProperty.GetArrayElementAtIndex(SerializedProperty.arraySize - 1);
-                        var hostInfo = serializedPropElement.GetHostInfo();
-                        hostInfo.SetValue(element);
-                    }
-                    else
-                    {
-                        if (m_ElementList == null)
-                            m_ElementList = (IList)Activator.CreateInstance(this.m_ListType);
-
-                        if (m_ElementList is Array)
-                        {
-                            m_ElementList = (IList) ResizeArray(m_ElementList, List.Count + 1);
-                            if (_hostInfo != null)
-                                _hostInfo.TrySetValue(m_ElementList);
-                            index = m_ElementList.Count - 1;
-
-                            if (_hostInfo != null)
-                            {
-                                var hostInfo = _hostInfo.CreateArrayElement(index);
-                                hostInfo.SetValue(element);
-                            }
-                            else 
-                                m_ElementList[index] = element;
-                        }
-                        else
-                        {
-                            index = m_ElementList.Add(element);
-                        
-                            if (_hostInfo != null)
-                                _hostInfo.TrySetValue(m_ElementList);
-                        }
-                    }
-
                     if (onChangedCallback != null)
                         onChangedCallback.Invoke(this);
                 });
             }
-            genericMenu.DropDown(rect);
+            genericMenu.DropdownLeft(rect);
         }
-        
-        static object ResizeArray(object array, int n)
+
+        protected override int Add(object element)
         {
-            var type = array.GetType();
-            var elemType = type.GetElementType();
-            var resizeMethod = typeof(Array).GetMethod("Resize", BindingFlags.Static | BindingFlags.Public);
-            var properResizeMethod = resizeMethod.MakeGenericMethod(elemType);
-            var parameters = new object[] { array, n };
-            properResizeMethod.Invoke(null, parameters);
-            array = parameters[0];
-            return array;
+            var index = base.Add(element);
+            
+            // If we have a SerializedProperty this should have already been handled
+            // If we have a RootHostInfo we can't set
+            if (SerializedProperty == null && !(_hostInfo is RootHostInfo))
+                _hostInfo.TrySetValue(m_ElementList);
+            // TODO handle structs
+
+            return index;
+        }
+
+        protected override void SetArrayElement(int newIndex, object element)
+        {
+            base.SetArrayElement(newIndex, element);
+            // The array reference changed (due to resizing)
+            // It will only get here when there is no SerializedProperty
+            if (_hostInfo is RootHostInfo rootInfo)
+                Debug.LogWarning("Cannot change reference of array, how do we handle this?");
+            else 
+                _hostInfo.TrySetValue(m_ElementList);
         }
 
         protected override GUIContent GetAddIcon()

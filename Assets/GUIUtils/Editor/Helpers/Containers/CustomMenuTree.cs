@@ -16,12 +16,14 @@ namespace Rhinox.GUIUtils.Editor
     {
         /// <summary>A menu item was removed.</summary>
         ItemRemoved,
+
         /// <summary>A menu item was selected.</summary>
         ItemAdded,
+
         /// <summary>The selection was cleared.</summary>
         SelectionCleared,
     }
-    
+
     [Serializable]
     public class CustomMenuTree
     {
@@ -43,26 +45,37 @@ namespace Rhinox.GUIUtils.Editor
         public Rect VisibleRect { get; set; }
 
         public delegate void SelectionHandler(SelectionChangedType type);
+
         public event SelectionHandler SelectionChanged; // TODO: how to
         public event Action SelectionConfirmed;
-        
+
         public delegate void BeginMenuItemHandler(IMenuItem item, Rect fullRect, ref Rect rect);
+
         public delegate void MenuItemHandler(IMenuItem item, Rect fullRect);
+
         public event BeginMenuItemHandler BeginItemDraw;
         public event MenuItemHandler EndItemDraw;
 
         private List<IMenuItem> _items;
+        private List<IMenuItem> _filteredItems;
 #if !ODIN_INSPECTOR
         private List<HierarchyMenuItem> _groupingItems;
         private HierarchyMenuItem _rootItems;
         private bool _groupingIsDirty;
+        private Vector2 _scrollPosition;
+
+        public Func<IMenuItem, string, bool> SearchFilter;
+        private string _searchString = string.Empty;
 #endif
 
-        public IReadOnlyList<IMenuItem> MenuItems => _items != null ? (IReadOnlyList<IMenuItem>) _items.AsReadOnly() : Array.Empty<IMenuItem>();        
+        public IReadOnlyList<IMenuItem> MenuItems =>
+            _items != null ? (IReadOnlyList<IMenuItem>)_items.AsReadOnly() : Array.Empty<IMenuItem>();
+
         public IReadOnlyCollection<IMenuItem> Enumerate()
         {
             return (IReadOnlyCollection<IMenuItem>)_items ?? Array.Empty<IMenuItem>();
         }
+
         public object SelectedValue => Selection.Count == 0 ? null : Selection[0].RawValue;
 
 #if ODIN_INSPECTOR
@@ -83,11 +96,13 @@ namespace Rhinox.GUIUtils.Editor
         
 
         public static CustomMenuTree ActiveMenuTree { get; private set; }
+#else
+        public bool DrawSearchToolbar = true;
 #endif
-        
+
         // =============================================================================================================
         // Constructor
-        
+
         public CustomMenuTree()
 #if ODIN_INSPECTOR
             : this(new OdinMenuTree())
@@ -108,16 +123,46 @@ namespace Rhinox.GUIUtils.Editor
         // =============================================================================================================
         // GUI-methods
         private bool _firstItem;
-        public virtual void Draw()
+
+        public void Draw()
         {
 #if ODIN_INSPECTOR
             _menuTree.DrawMenuTree();
 #else
+            if (DrawSearchToolbar)
+            {
+                string newSearchString = GUILayout.TextField(_searchString, CustomGUIStyles.ToolbarSearchTextField);
+                if (!string.Equals(newSearchString, _searchString))
+                {
+                    _searchString = newSearchString;
+                    CreateFilteredItems();
+                }
+            }
+            
+            _scrollPosition = GUILayout.BeginScrollView(_scrollPosition);
+            {
+                OnDraw();
+            }
+            GUILayout.EndScrollView();
+#endif
+        }
+
+        protected virtual void OnDraw()
+        {
+#if !ODIN_INSPECTOR
             var evt = Event.current;
-            VisibleRect = CustomEditorGUI.GetVisibleRect().Padding(-300f);
-            if (_items == null) 
+            var rect = CustomEditorGUI.GetVisibleRect().Padding(-300f);
+            VisibleRect = rect;
+            
+            if (_items == null)
                 return;
             
+            if (evt.type == EventType.Repaint)
+            {
+                foreach (var item in _items)
+                    item.ResetInteractionState();
+            }
+
             _firstItem = true;
 
             if (ShowGrouped)
@@ -129,6 +174,10 @@ namespace Rhinox.GUIUtils.Editor
                     _groupingIsDirty = false;
                 }
 
+                if (_groupingItems.IsNullOrEmpty() && _rootItems.Children.IsNullOrEmpty())
+                {
+                    GUILayout.Label("No items match the filter...", CustomGUIStyles.MiniLabel);
+                }
 
                 foreach (var item in _groupingItems)
                 {
@@ -156,7 +205,7 @@ namespace Rhinox.GUIUtils.Editor
         {
             item.UseBorders = !_firstItem;
             _firstItem = false;
-            
+
             item.Draw(evt, indent);
         }
 
@@ -164,7 +213,7 @@ namespace Rhinox.GUIUtils.Editor
         {
             BeginItemDraw?.Invoke(uiItem, fullRect, ref rect);
         }
-        
+
         public void OnEndItemDraw(IMenuItem uiItem, Rect fullRect)
         {
             EndItemDraw?.Invoke(uiItem, fullRect);
@@ -175,7 +224,7 @@ namespace Rhinox.GUIUtils.Editor
         {
             item.UseBorders = !_firstItem;
             _firstItem = false;
-            
+
             item.Draw(evt, indent);
             if (item.Expanded)
             {
@@ -183,21 +232,32 @@ namespace Rhinox.GUIUtils.Editor
                 {
                     DrawGroupHeader(subGroup, evt, indent + 1);
                 }
-                
+
                 foreach (var child in item.Children)
                 {
-                    child.Draw(evt, indent + 1, (x) => x.Substring(x.LastIndexOf(GroupingString) + GroupingString.Length));
+                    child.Draw(evt, indent + 1,
+                        (x) => x.Substring(x.LastIndexOf(GroupingString) + GroupingString.Length));
                 }
             }
         }
-        
+
+        private bool DoesItemMatchSearch(IMenuItem item)
+        {
+            if (SearchFilter == null)
+                return item.FullPath.Contains(_searchString, StringComparison.OrdinalIgnoreCase);
+
+            return SearchFilter(item, _searchString);
+        }
+
         private void CreateGroupingItems()
         {
             _groupingItems = new List<HierarchyMenuItem>();
             _rootItems = new HierarchyMenuItem(this, "", true);
-            
+
             var dict = new Dictionary<string, HierarchyMenuItem>();
-            foreach (var item in _items)
+            var source = _filteredItems ?? _items;
+            
+            foreach (var item in source)
             {
                 var splitI = item.Name.LastIndexOf(GroupingString);
                 if (splitI < 0)
@@ -220,7 +280,7 @@ namespace Rhinox.GUIUtils.Editor
                             continue;
                         }
 
-                        var next = new HierarchyMenuItem(this, parts[i], false);
+                        var next = new HierarchyMenuItem(this, parts[i], true);
                         hierarchy?.SubGroups.Add(next);
                         hierarchy = next;
                         dict[full] = next;
@@ -231,6 +291,26 @@ namespace Rhinox.GUIUtils.Editor
 
                 dict[path].Children.Add(item);
             }
+
+
+            foreach (var item in _groupingItems)
+            {
+                if (item.LinkedMenuItem != null)
+                    continue;
+
+                var validItems = _rootItems.Children.Where(x => x.FullPath == item.FullPath).ToArray();
+                if (validItems.Length > 0)
+                {
+                    item.LinkedMenuItem = validItems[0];
+                    _rootItems.Children.Remove(validItems[0]);
+                }
+            }
+        }
+
+        private void CreateFilteredItems()
+        {
+            _filteredItems = _items.Where(DoesItemMatchSearch).ToList();
+            _groupingIsDirty = true;
         }
 #endif
 
@@ -254,7 +334,7 @@ namespace Rhinox.GUIUtils.Editor
 
         // =============================================================================================================
         // Update
-        
+
         public virtual void Update()
         {
 #if ODIN_INSPECTOR
@@ -268,26 +348,23 @@ namespace Rhinox.GUIUtils.Editor
                     if (item == null)
                         continue;
 
-                    item.Update();
-                } 
+                    item.CheckForInteractions();
+                }
             }
-#if !ODIN_INSPECTOR 
+#if !ODIN_INSPECTOR
             if (_groupingItems != null && ShowGrouped)
             {
                 foreach (var item in _groupingItems)
                 {
-                    if (item == null)
-                        continue;
-
-                    item.Update();
-                } 
+                    item?.CheckForInteractions();
+                }
             }
 #endif
         }
 
         // =============================================================================================================
         // Data handling
-        
+
         public void Add(string path, object entryVal, Texture icon = null)
         {
             if (_items == null)
@@ -316,14 +393,14 @@ namespace Rhinox.GUIUtils.Editor
             if (customItem == null || customItem.MenuTree != this)
                 return;
             if (_items == null)
-                _items = new List<IMenuItem>(); ;
+                _items = new List<IMenuItem>();
             _items.AddUnique(customItem);
 #if !ODIN_INSPECTOR
             _groupingIsDirty = true;
 #endif
         }
-               
-        
+
+
         // =============================================================================================================
         // Selection
         public void AddSelection(IMenuItem uiMenuItem, bool clearList)
@@ -338,7 +415,7 @@ namespace Rhinox.GUIUtils.Editor
             }
 
             Selection.AddUnique(uiMenuItem);
-            
+
 #if !ODIN_INSPECTOR
             OnSelectionChanged(SelectionChangedType.ItemAdded);
 #endif
@@ -349,13 +426,13 @@ namespace Rhinox.GUIUtils.Editor
             Selection.Remove(uiMenuItem);
 #if !ODIN_INSPECTOR
             OnSelectionChanged(SelectionChangedType.ItemRemoved);
-#endif       
+#endif
         }
-        
+
         public void ClearSelection()
         {
             if (Selection == null) return;
-            
+
 #if ODIN_INSPECTOR
             _menuTree.Selection.Clear();
 #endif
@@ -367,7 +444,7 @@ namespace Rhinox.GUIUtils.Editor
 
         // =============================================================================================================
         // Other tree methods
-        
+
         public void TryExpandAllParentItems(IMenuItem menuItem)
         {
 #if ODIN_INSPECTOR
@@ -384,13 +461,13 @@ namespace Rhinox.GUIUtils.Editor
             }
 #endif
         }
-        
-#if !ODIN_INSPECTOR 
+
+#if !ODIN_INSPECTOR
         private ICollection<IMenuItem> GetParentMenuItemsRecursive(IMenuItem item, bool includeSelf = false)
         {
             if (item == null)
                 return Array.Empty<IMenuItem>();
-            
+
             var list = new List<IMenuItem>();
             if (_groupingItems != null)
             {
@@ -420,7 +497,8 @@ namespace Rhinox.GUIUtils.Editor
             return list;
         }
 
-        private static void EnumerateSubgroupsAndAddToList(IMenuItem item, HierarchyMenuItem parentItem, ref List<IMenuItem> resultSet)
+        private static void EnumerateSubgroupsAndAddToList(IMenuItem item, HierarchyMenuItem parentItem,
+            ref List<IMenuItem> resultSet)
         {
             foreach (var childItems in parentItem.SubGroups)
             {
@@ -451,17 +529,17 @@ namespace Rhinox.GUIUtils.Editor
             else
                 _items.SortByDescending(x => x.Name);
         }
-        
+
 #if ODIN_INSPECTOR
         public void TryUseThumbnailIcons()
         {
             _menuTree.EnumerateTree().AddThumbnailIcons();
         }
 #endif
-        
+
         // =============================================================================================================
         // Event handling
-        
+
 #if ODIN_INSPECTOR
         private void OnOdinSelectionChanged(Sirenix.OdinInspector.Editor.SelectionChangedType obj)
         {
@@ -558,6 +636,4 @@ namespace Rhinox.GUIUtils.Editor
             return _items.FirstOrDefault(x => x.Name == null ? menuItemName == null : x.Name.Equals(menuItemName));
         }
     }
-
-
 }

@@ -141,8 +141,7 @@ namespace Rhinox.GUIUtils.Editor
             }
 
             GUILayout.Space(1f);
-            Rect rect1 = EditorGUILayout.BeginVertical(style,
-                GUILayout.ExpandWidth(true), GUILayout.ExpandHeight(this.ExpandHeight));
+            Rect rect1 = EditorGUILayout.BeginVertical(style, GUILayout.ExpandWidth(true), GUILayout.ExpandHeight(this.ExpandHeight));
             if (this.drawToolbar)
                 this.DrawToolbar();
             if (this.InnerRect.width > 0.0 && !this.ExpandHeight)
@@ -164,8 +163,7 @@ namespace Rhinox.GUIUtils.Editor
             GUIContentHelper.PushDisabled(true);
             GUILayout.BeginScrollView(this.scrollPosition, false, false, GUIStyle.none, GUIStyle.none, this.options);
             GUIContentHelper.PopDisabled();
-            Rect rect2 =
-                EditorGUILayout.BeginHorizontal(GUILayout.ExpandHeight(this.ExpandHeight));
+            Rect rect2 = EditorGUILayout.BeginHorizontal(GUILayout.ExpandHeight(this.ExpandHeight));
             if (Event.current.type != EventType.Repaint)
                 return;
             this.OuterRect = rect1;

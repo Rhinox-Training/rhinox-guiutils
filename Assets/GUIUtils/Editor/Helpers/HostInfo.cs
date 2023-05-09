@@ -53,7 +53,7 @@ namespace Rhinox.GUIUtils.Editor
     {
         public string Path;
         private SerializedObject _hostSerializedObject;
-
+        
         public new HostInfo Parent => (HostInfo) base.Parent;
         
         public SerializedObject Root
@@ -80,17 +80,18 @@ namespace Rhinox.GUIUtils.Editor
         {
             Path = null;
         }
-        
-        protected override void BeforeValueChanged()
-        {
-            base.BeforeValueChanged();
-            //_root.ApplyModifiedProperties(); // TODO: do we need ApplyModifiedProperties here?
-        }
-        
-        protected override void OnValueChanged()
+
+        protected override void OnValueChanged(object host)
         {
             Root.Update();
-            base.OnValueChanged();
+            // Update should handle what base.OnValueChanged does
+            // base.OnValueChanged(host);
+        }
+
+        public override void Apply()
+        {
+            Root.ApplyModifiedProperties();
+            base.Apply();
         }
     }
     
@@ -156,6 +157,9 @@ namespace Rhinox.GUIUtils.Editor
         {
             var host = GetHost();
             
+            if (host == null)
+                throw new ArgumentException($"Cannot resolve host.");
+            
             // If we are not a list element, we need to fetch the value from our host
             if (ArrayIndex < 0)
                 return MemberInfo.GetValue(host);
@@ -175,18 +179,17 @@ namespace Rhinox.GUIUtils.Editor
 
         public virtual bool TrySetValue(object val)
         {
+            var host = GetHost();
+
             if (ArrayIndex < 0)
             {
-                BeforeValueChanged();
-                MemberInfo.SetValue(GetHost(), val);
-                OnValueChanged();
+                MemberInfo.SetValue(host, val);
+                OnValueChanged(host);
                 return true;
             }
 
-            var value = GetHost();
-            if (value is IList e)
+            if (host is IList e)
             {
-                BeforeValueChanged();
                 if (ArrayIndex >= e.Count)
                 {
                     if (e is Array eArr)
@@ -203,21 +206,17 @@ namespace Rhinox.GUIUtils.Editor
                 else
                     e[ArrayIndex] = val;
 
-                OnValueChanged();
+                OnValueChanged(host);
                 return true;
             }
 
             return false;
         }
 
-        protected virtual void BeforeValueChanged()
+        protected virtual void OnValueChanged(object host)
         {
-            
-        }
-
-        protected virtual void OnValueChanged()
-        {
-            
+            if (HostType.IsValueType && Parent != null)
+                Parent.TrySetValue(host);
         }
 
         // TODO: Do we migrate this to Rhinox.Lightspeed?
@@ -277,6 +276,11 @@ namespace Rhinox.GUIUtils.Editor
             if (ArrayIndex != -1) throw new InvalidOperationException("GenericHostInfo already has in index, cannot create sub entry.");
 
             return new GenericHostInfo(this, MemberInfo, index);
+        }
+
+        public virtual void Apply()
+        {
+            
         }
     }
 }

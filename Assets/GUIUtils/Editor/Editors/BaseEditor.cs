@@ -29,7 +29,7 @@ namespace Rhinox.GUIUtils.Editor
 #endif
     }
 
-    public abstract class BaseEditor<T> : BaseEditor, IEditor
+    public abstract class BaseEditor<T> : BaseEditor, IEditor, IRepaintRequest, IRepaintRequestHandler
         where T : class // UnityEngine.Object
     {
         public Type TargetType = typeof(T);
@@ -37,6 +37,16 @@ namespace Rhinox.GUIUtils.Editor
 
         protected T Target => ConvertObject(target);
         protected T[] Targets => Array.ConvertAll(targets, ConvertObject);
+        
+        private bool _repaintRequested;
+        private IRepaintRequest _repainter;
+        
+        //==============================================================================================================
+        // EVENTS
+
+        public event Action OnBeginGUI;
+        public event Action OnEndGUI;
+        public event Action OnClose;
 
         protected void DrawScriptField()
         {
@@ -54,12 +64,43 @@ namespace Rhinox.GUIUtils.Editor
 
         public void Draw()
         {
+            OnBeginGUI?.Invoke();
+
             OnInspectorGUI();
+            RepaintIfRequested();
+            
+            OnEndGUI?.Invoke();
         }
 
         public void Destroy()
         {
+            OnClose?.Invoke();
             Object.DestroyImmediate(this);
+        }
+        
+        
+        
+        public void RequestRepaint()
+        {
+            _repaintRequested = true;
+        }
+
+        protected void RepaintIfRequested()
+        {
+            if (!_repaintRequested)
+                return;
+            
+            if (_repainter != null)
+                _repainter.RequestRepaint();
+            else
+                Repaint();
+            
+            _repaintRequested = false;
+        }
+        
+        public void UpdateRequestTarget(IRepaintRequest target)
+        {
+            _repainter = target;
         }
 
         protected void Each(Action<T> update)

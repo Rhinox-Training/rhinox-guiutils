@@ -25,19 +25,8 @@ namespace Rhinox.GUIUtils.Editor
             _innerDrawable = drawable;
             _hostInfo = _innerDrawable.HostInfo;
             Order = _innerDrawable.Order;
-        }
 
-        private bool _localShouldRepaint;
-        public override bool ShouldRepaint
-        {
-            get
-            {
-                return _localShouldRepaint || _innerDrawable.ShouldRepaint;
-            }
-            protected set
-            {
-                _localShouldRepaint = value;
-            }
+            _innerDrawable.RepaintRequested += RequestRepaint;
         }
 
         public override IEnumerable<TAttribute> GetDrawableAttributes<TAttribute>()
@@ -55,13 +44,6 @@ namespace Rhinox.GUIUtils.Editor
             _innerDrawable.Draw(rect, label);
         }
 
-        protected override void OnPreDraw()
-        {
-            base.OnPreDraw();
-            _localShouldRepaint = false;
-        }
-        
-        
         protected object GetValue()
         {
             if (_innerDrawable is IDrawableRead memberDrawable)
