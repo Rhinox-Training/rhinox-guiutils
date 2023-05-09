@@ -288,7 +288,7 @@ namespace Rhinox.GUIUtils.Editor
                                 Host = property,
                                 FieldInfo = field,
                                 SerializedProperty = null,
-                                OverrideDrawable = new DrawableHelpBox(warning, MessageType.Warning, new HostInfo(hostInfo, field))
+                                OverrideDrawable = new HelpBoxDrawable(warning, MessageType.Warning, new HostInfo(hostInfo, field))
                             };
                             
                     }
@@ -343,7 +343,7 @@ namespace Rhinox.GUIUtils.Editor
                                 Host = serializedObject,
                                 FieldInfo = field,
                                 SerializedProperty = null,
-                                OverrideDrawable = new DrawableHelpBox(warning, MessageType.Warning, new GenericHostInfo(serializedObject.targetObject, field))
+                                OverrideDrawable = new HelpBoxDrawable(warning, MessageType.Warning, new GenericHostInfo(serializedObject.targetObject, field))
                             };
                             
                     }
