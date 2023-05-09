@@ -150,7 +150,6 @@ namespace Rhinox.GUIUtils.Editor
                         break;
                     case SerializedPropertyType.FixedBufferSize:
                         throw new InvalidOperationException("Cannot set FixedBufferSize");
-                        break;
                     case SerializedPropertyType.Vector2Int:
                         property.vector2IntValue = (Vector2Int)value;
                         break;
