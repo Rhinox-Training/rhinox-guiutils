@@ -15,6 +15,8 @@ namespace Rhinox.GUIUtils.Editor
         public bool IsVisible => true;
         public virtual GUIContent Label => GUIContent.none;
         
+        private bool _initialized;
+
         protected readonly List<IOrderedDrawable> _drawableMemberChildren = new List<IOrderedDrawable>();
         protected readonly List<Attribute> _attributes = new List<Attribute>();
 
@@ -39,7 +41,16 @@ namespace Rhinox.GUIUtils.Editor
             return _attributes.OfType<TAttribute>();
         }
 
-        public virtual void TryInitialize()
+        public void TryInitialize()
+        {
+            if (_initialized)
+                return;
+            
+            OnInitialize();
+            _initialized = true;
+        }
+
+        protected virtual void OnInitialize()
         {
             
         }
