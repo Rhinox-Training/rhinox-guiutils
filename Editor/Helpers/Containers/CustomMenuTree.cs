@@ -57,15 +57,15 @@ namespace Rhinox.GUIUtils.Editor
         public event MenuItemHandler EndItemDraw;
 
         private List<IMenuItem> _items;
+        private List<IMenuItem> _filteredItems;
 #if !ODIN_INSPECTOR
         private List<HierarchyMenuItem> _groupingItems;
         private HierarchyMenuItem _rootItems;
         private bool _groupingIsDirty;
+        private Vector2 _scrollPosition;
 
         public Func<IMenuItem, string, bool> SearchFilter;
         private string _searchString = string.Empty;
-        private List<HierarchyMenuItem> _filteredGroupingItems;
-        private HierarchyMenuItem _filteredRootItems;
 #endif
 
         public IReadOnlyList<IMenuItem> MenuItems =>
@@ -96,6 +96,8 @@ namespace Rhinox.GUIUtils.Editor
         
 
         public static CustomMenuTree ActiveMenuTree { get; private set; }
+#else
+        public bool DrawSearchToolbar = true;
 #endif
 
         // =============================================================================================================
@@ -122,21 +124,43 @@ namespace Rhinox.GUIUtils.Editor
         // GUI-methods
         private bool _firstItem;
 
-        public virtual void Draw()
+        public void Draw()
         {
 #if ODIN_INSPECTOR
             _menuTree.DrawMenuTree();
 #else
+            if (DrawSearchToolbar)
+            {
+                string newSearchString = GUILayout.TextField(_searchString, CustomGUIStyles.ToolbarSearchTextField);
+                if (!string.Equals(newSearchString, _searchString))
+                {
+                    _searchString = newSearchString;
+                    CreateFilteredItems();
+                }
+            }
+            
+            _scrollPosition = GUILayout.BeginScrollView(_scrollPosition);
+            {
+                OnDraw();
+            }
+            GUILayout.EndScrollView();
+#endif
+        }
+
+        protected virtual void OnDraw()
+        {
+#if !ODIN_INSPECTOR
             var evt = Event.current;
-            VisibleRect = CustomEditorGUI.GetVisibleRect().Padding(-300f);
+            var rect = CustomEditorGUI.GetVisibleRect().Padding(-300f);
+            VisibleRect = rect;
+            
             if (_items == null)
                 return;
-
-            string newSearchString = GUILayout.TextField(_searchString);
-            if (!string.Equals(newSearchString, _searchString))
+            
+            if (evt.type == EventType.Repaint)
             {
-                _searchString = newSearchString;
-                CreateFilteredGroupingItems();
+                foreach (var item in _items)
+                    item.ResetInteractionState();
             }
 
             _firstItem = true;
@@ -150,13 +174,17 @@ namespace Rhinox.GUIUtils.Editor
                     _groupingIsDirty = false;
                 }
 
+                if (_groupingItems.IsNullOrEmpty() && _rootItems.Children.IsNullOrEmpty())
+                {
+                    GUILayout.Label("No items match the filter...", CustomGUIStyles.MiniLabel);
+                }
 
-                foreach (var item in _filteredGroupingItems)
+                foreach (var item in _groupingItems)
                 {
                     DrawGroupHeader(item, evt);
                 }
 
-                foreach (var item in _filteredRootItems.Children)
+                foreach (var item in _rootItems.Children)
                 {
                     DrawItem(item, evt);
                 }
@@ -226,11 +254,10 @@ namespace Rhinox.GUIUtils.Editor
             _groupingItems = new List<HierarchyMenuItem>();
             _rootItems = new HierarchyMenuItem(this, "", true);
 
-            _filteredRootItems = new HierarchyMenuItem(this, "", true);
-            _filteredGroupingItems = new List<HierarchyMenuItem>();
-
             var dict = new Dictionary<string, HierarchyMenuItem>();
-            foreach (var item in _items)
+            var source = _filteredItems ?? _items;
+            
+            foreach (var item in source)
             {
                 var splitI = item.Name.LastIndexOf(GroupingString);
                 if (splitI < 0)
@@ -278,55 +305,12 @@ namespace Rhinox.GUIUtils.Editor
                     _rootItems.Children.Remove(validItems[0]);
                 }
             }
-
-            CreateFilteredGroupingItems();
         }
 
-
-        private void CreateFilteredGroupingItems()
+        private void CreateFilteredItems()
         {
-            _filteredGroupingItems.Clear();
-
-            // Get the root items that are valid
-            _filteredRootItems.Children = _rootItems.Children.Where(DoesItemMatchSearch).ToList();
-
-            // Get the subgroups that are valid
-            foreach (HierarchyMenuItem item in _groupingItems)
-            {
-                FilterSubGroups(item);
-            }
-        }
-
-        private void FilterSubGroups(HierarchyMenuItem item)
-        {
-            if (item == null)
-            {
-                Debug.LogWarning("[CustomMenuTree,FilterSubGroups], item is null");
-                return;
-            }
-
-            if (DoesItemMatchSearch(item))
-            {
-                _filteredGroupingItems.Add(item);
-                return;
-            }
-
-            // If any of the children are valid, add the item and return
-            var validChildren = item.Children.Where(DoesItemMatchSearch).ToList();
-            if (!validChildren.IsNullOrEmpty())
-            {
-                HierarchyMenuItem temp = new HierarchyMenuItem(this, item.Name, item.Expanded)
-                {
-                    Children = validChildren,
-                    Selectable = true
-                };
-                _filteredGroupingItems.Add(temp);
-                return;
-            }
-
-            // Get for valid subgroups
-            foreach (HierarchyMenuItem child in item.SubGroups)
-                FilterSubGroups(child);
+            _filteredItems = _items.Where(DoesItemMatchSearch).ToList();
+            _groupingIsDirty = true;
         }
 #endif
 
@@ -364,7 +348,7 @@ namespace Rhinox.GUIUtils.Editor
                     if (item == null)
                         continue;
 
-                    item.Update();
+                    item.CheckForInteractions();
                 }
             }
 #if !ODIN_INSPECTOR
@@ -372,14 +356,8 @@ namespace Rhinox.GUIUtils.Editor
             {
                 foreach (var item in _groupingItems)
                 {
-                    item?.Update();
+                    item?.CheckForInteractions();
                 }
-            }
-
-            if (_filteredGroupingItems != null && _filteredRootItems != null)
-            {
-                foreach (HierarchyMenuItem item in _filteredGroupingItems)
-                    item?.Update();
             }
 #endif
         }
