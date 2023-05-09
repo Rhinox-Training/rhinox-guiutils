@@ -90,88 +90,88 @@ namespace Rhinox.GUIUtils.Editor
         
         public static void SetValue(this SerializedProperty property, object value)
         {
-            if (property.depth == 0)
+            switch (property.propertyType)
             {
-                switch (property.propertyType)
-                {
-                    case SerializedPropertyType.Integer:
-                        property.intValue = (int)value;
-                        break;
-                    case SerializedPropertyType.Boolean:
-                        property.boolValue = (bool)value;
-                        break;
-                    case SerializedPropertyType.Float:
-                        property.floatValue = (float)value;
-                        break;
-                    case SerializedPropertyType.String:
-                        property.stringValue = (string)value;
-                        break;
-                    case SerializedPropertyType.Color:
-                        property.colorValue = (Color)value;
-                        break;
-                    case SerializedPropertyType.ObjectReference:
-                        property.objectReferenceValue = (UnityEngine.Object)value;
-                        break;
-                    case SerializedPropertyType.LayerMask:
-                        property.intValue = (int)value;
-                        break;
-                    case SerializedPropertyType.Enum:
-                        property.enumValueIndex = (int)value;
-                        break;
-                    case SerializedPropertyType.Vector2:
-                        property.vector2Value = (Vector2)value;
-                        break;
-                    case SerializedPropertyType.Vector3:
-                        property.vector3Value = (Vector3)value;
-                        break;
-                    case SerializedPropertyType.Vector4:
-                        property.vector4Value = (Vector4)value;
-                        break;
-                    case SerializedPropertyType.Rect:
-                        property.rectValue = (Rect)value;
-                        break;
-                    case SerializedPropertyType.ArraySize:
-                        property.arraySize = (int)value;
-                        break;
-                    case SerializedPropertyType.Character:
-                        property.intValue = (int)value;
-                        break;
-                    case SerializedPropertyType.AnimationCurve:
-                        property.animationCurveValue = (AnimationCurve)value;
-                        break;
-                    case SerializedPropertyType.Quaternion:
-                        property.quaternionValue = (Quaternion)value;
-                        break;
-                    case SerializedPropertyType.ExposedReference:
-                        property.exposedReferenceValue = (UnityEngine.Object)value;
-                        break;
-                    case SerializedPropertyType.Bounds:
-                        property.boundsValue = (Bounds)value;
-                        break;
-                    case SerializedPropertyType.FixedBufferSize:
-                        throw new InvalidOperationException("Cannot set FixedBufferSize");
-                    case SerializedPropertyType.Vector2Int:
-                        property.vector2IntValue = (Vector2Int)value;
-                        break;
-                    case SerializedPropertyType.Vector3Int:
-                        property.vector3IntValue = (Vector3Int)value;
-                        break;
-                    case SerializedPropertyType.RectInt:
-                        property.rectIntValue = (RectInt)value;
-                        break;
-                    case SerializedPropertyType.BoundsInt:
-                        property.boundsIntValue = (BoundsInt)value;
-                        break;
-                    default:
+                case SerializedPropertyType.Integer:
+                    property.intValue = (int)value;
+                    break;
+                case SerializedPropertyType.Boolean:
+                    property.boolValue = (bool)value;
+                    break;
+                case SerializedPropertyType.Float:
+                    property.floatValue = (float)value;
+                    break;
+                case SerializedPropertyType.String:
+                    property.stringValue = (string)value;
+                    break;
+                case SerializedPropertyType.Color:
+                    property.colorValue = (Color)value;
+                    break;
+                case SerializedPropertyType.ObjectReference:
+                    property.objectReferenceValue = (UnityEngine.Object)value;
+                    break;
+                case SerializedPropertyType.LayerMask:
+                    property.intValue = (int)value;
+                    break;
+                case SerializedPropertyType.Enum:
+                    property.enumValueIndex = (int)value;
+                    break;
+                case SerializedPropertyType.Vector2:
+                    property.vector2Value = (Vector2)value;
+                    break;
+                case SerializedPropertyType.Vector3:
+                    property.vector3Value = (Vector3)value;
+                    break;
+                case SerializedPropertyType.Vector4:
+                    property.vector4Value = (Vector4)value;
+                    break;
+                case SerializedPropertyType.Rect:
+                    property.rectValue = (Rect)value;
+                    break;
+                case SerializedPropertyType.ArraySize:
+                    property.arraySize = (int)value;
+                    break;
+                case SerializedPropertyType.Character:
+                    property.intValue = (int)value;
+                    break;
+                case SerializedPropertyType.AnimationCurve:
+                    property.animationCurveValue = (AnimationCurve)value;
+                    break;
+                case SerializedPropertyType.Quaternion:
+                    property.quaternionValue = (Quaternion)value;
+                    break;
+                case SerializedPropertyType.ExposedReference:
+                    property.exposedReferenceValue = (UnityEngine.Object)value;
+                    break;
+                case SerializedPropertyType.Bounds:
+                    property.boundsValue = (Bounds)value;
+                    break;
+                case SerializedPropertyType.FixedBufferSize:
+                    throw new InvalidOperationException("Cannot set FixedBufferSize");
+                case SerializedPropertyType.Vector2Int:
+                    property.vector2IntValue = (Vector2Int)value;
+                    break;
+                case SerializedPropertyType.Vector3Int:
+                    property.vector3IntValue = (Vector3Int)value;
+                    break;
+                case SerializedPropertyType.RectInt:
+                    property.rectIntValue = (RectInt)value;
+                    break;
+                case SerializedPropertyType.BoundsInt:
+                    property.boundsIntValue = (BoundsInt)value;
+                    break;
+                default:
+                    if (property.depth == 0)
+                    {
                         var fi = property.FindFieldInfo();
                         fi.SetValue(property.serializedObject.targetObject, value);
-                        break;
-                }
-            }
-            else
-            {
-                var info = property.GetHostInfo();
-                info.TrySetValue(value);
+                    }
+                    else
+                    {
+                        var info = property.GetHostInfo();
+                        info.TrySetValue(value);
+                    }
+                    break;
             }
         }
         
