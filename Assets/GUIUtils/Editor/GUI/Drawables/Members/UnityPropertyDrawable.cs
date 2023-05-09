@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace Rhinox.GUIUtils.Editor
 {
-    public class DrawableUnityProperty : BaseMemberDrawable, IDrawableReadWrite
+    public class UnityPropertyDrawable : BaseMemberDrawable, IDrawableReadWrite
     {
         protected override string LabelString => Property != null ? Property.displayName : base.LabelString;
 
@@ -22,7 +22,7 @@ namespace Rhinox.GUIUtils.Editor
 
         public SerializedProperty Property { get; }
         
-        public DrawableUnityProperty(SerializedProperty prop)
+        public UnityPropertyDrawable(SerializedProperty prop)
             : base(prop.GetHostInfo())
         {
             Property = prop;

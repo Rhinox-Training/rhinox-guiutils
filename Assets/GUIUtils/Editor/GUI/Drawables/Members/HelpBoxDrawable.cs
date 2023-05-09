@@ -4,13 +4,13 @@ using UnityEngine;
 
 namespace Rhinox.GUIUtils.Editor
 {
-    public class DrawableHelpBox : BaseMemberDrawable
+    public class HelpBoxDrawable : BaseMemberDrawable
     {
         public string HelpMessage { get; }
         public MessageType MsgType { get; }
 
         
-        public DrawableHelpBox(string helpMessage, MessageType type, GenericHostInfo hostInfo) 
+        public HelpBoxDrawable(string helpMessage, MessageType type, GenericHostInfo hostInfo) 
             : base(hostInfo)
         {
             HelpMessage = helpMessage;

@@ -163,7 +163,7 @@ namespace Rhinox.GUIUtils.Editor
             IEnumerable<Attribute> attributes = null;
             if (CanUnityHandleDrawingProperty(property))
             {
-                drawable = new DrawableUnityProperty(property);
+                drawable = new UnityPropertyDrawable(property);
                 attributes = property.GetAttributes();
             }
             else
