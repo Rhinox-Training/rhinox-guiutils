@@ -5,6 +5,7 @@ using Rhinox.Lightspeed;
 using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace Rhinox.GUIUtils.Editor
 {
@@ -341,6 +342,8 @@ namespace Rhinox.GUIUtils.Editor
             string result = _toolbarSearchFieldMethodInfo.Invoke(null, new object[] {searchText, layoutOptions}) as string;
             return result ?? string.Empty;
         }
+
+        
         
         public static void SelectObject(UnityEngine.Object obj)
         {
