@@ -192,10 +192,10 @@ namespace Rhinox.GUIUtils.Editor
                         var addElementRect = new Rect(0, 0, _headerRect.width, _headerRect.height);
                         OnAddElement(addElementRect);
 
+                        m_SerializedObject?.ApplyModifiedProperties();
+                        
                         if (onChangedCallback != null)
                             onChangedCallback(this);
-
-                        m_SerializedObject?.ApplyModifiedProperties();
                     }
                 }
             }
