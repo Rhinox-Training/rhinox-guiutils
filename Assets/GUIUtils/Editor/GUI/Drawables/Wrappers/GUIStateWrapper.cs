@@ -40,9 +40,11 @@ namespace Rhinox.GUIUtils.Editor
                 return !_state;
 
             var value = _stateMember.GetValue();
-            if (_stateMemberValue == null)
-                return  (bool) (value ?? false) != _state;
-            return (value == _stateMemberValue) != _state;
+            if (_stateMemberValue != null)
+                value = object.Equals(value, _stateMemberValue);
+            else if (!(value is bool))
+                value = value == null;
+            return  (bool) (value ?? false) != _state;
         }
 
         [WrapDrawer(typeof(EnableIfAttribute), -10500)]
