@@ -75,19 +75,19 @@ namespace Rhinox.GUIUtils.Editor
             return false;
         }
 
-        public override void Update()
+        public override void CheckForInteractions()
         {
-            base.Update();
+            base.CheckForInteractions();
             if (SubGroups != null)
             {
                 foreach (var group in SubGroups)
-                    group.Update();
+                    group.CheckForInteractions();
             }
 
             if (Children != null)
             {
                 foreach (var entry in Children)
-                    entry.Update();
+                    entry.CheckForInteractions();
             }
         }
     }

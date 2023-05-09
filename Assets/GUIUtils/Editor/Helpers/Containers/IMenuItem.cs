@@ -22,8 +22,9 @@ namespace Rhinox.GUIUtils.Editor
         event MenuItemEventHandler RightMouseClicked;
 
         void Draw(Event evt, int i, Func<string, string> nameTransformer = null);
-        void Update();
-        
+        void CheckForInteractions();
+        void ResetInteractionState();
+
         void Select(bool multiSelect = false);
         void Deselect();
     }
