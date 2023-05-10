@@ -249,6 +249,12 @@ namespace Rhinox.GUIUtils.Editor
                 return type.GetElementType();
             return type.GetArgumentsOfInheritedOpenGenericClass(typeof(IList<>)).First();
         }
+
+        public bool TryGetAttribute<T>(out T attribute) where T : Attribute
+        {
+            attribute = GetAttribute<T>();
+            return attribute != null;
+        }
         
         public T GetAttribute<T>() where T : Attribute
         {

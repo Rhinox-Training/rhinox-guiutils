@@ -8,7 +8,7 @@ using UnityEngine;
 
 namespace Rhinox.GUIUtils.Editor
 {
-    public abstract class BaseDrawable : IOrderedDrawable
+    public abstract class BaseDrawable : IOrderedDrawable, IRepaintable
     {
         public float Order { get; set; }
         public virtual float ElementHeight => EditorGUIUtility.singleLineHeight;
@@ -108,7 +108,7 @@ namespace Rhinox.GUIUtils.Editor
                 Order = orderAttr.Order;
         }
 
-        protected void RequestRepaint()
+        public void RequestRepaint()
         {
             RepaintRequested?.Invoke();
         }

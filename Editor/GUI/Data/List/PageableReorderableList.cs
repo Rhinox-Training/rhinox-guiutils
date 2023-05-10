@@ -145,7 +145,8 @@ namespace Rhinox.GUIUtils.Editor
             {
                 var maxPagesCount = _maxPagesCount;
 
-                if (maxPagesCount > 1 && _drawPageIndex >= maxPagesCount)
+                // If at a page beyond the max, return to the last valid page
+                if (_drawPageIndex >= maxPagesCount)
                     _drawPageIndex = maxPagesCount - 1;
             }
 

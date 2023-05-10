@@ -12,7 +12,7 @@ using Object = UnityEngine.Object;
 
 namespace Rhinox.GUIUtils.Editor
 {
-    public class ListElementDrawable : IRepaintRequest
+    public class ListElementDrawable : IRepaintable
     {
         public float ElementHeight => _propertyView?.Height ?? _defaultElementHeight;
 

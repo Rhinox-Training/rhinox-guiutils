@@ -20,12 +20,13 @@ namespace Rhinox.GUIUtils.Editor
             _drawerType = drawerType;
             _drawer = (PropertyDrawer) Activator.CreateInstance(drawerType);
             _drawerInterface = (IHostInfoDrawer) _drawer;
-            _drawerInterface.RepaintRequested += RequestRepaint;
+            if (_drawer is IRepaintEvent repaintEventHandler)
+                repaintEventHandler.RepaintRequested += RequestRepaint;
         }
         
         protected override void DrawInner(GUIContent label, params GUILayoutOption[] options)
         {
-            _drawerInterface.HostInfo = _hostInfo;
+            _drawerInterface.SetupForHostInfo(_hostInfo, string.Empty);
             _height = _drawer.GetPropertyHeight(null, label);
             var position = GUILayoutUtility.GetRect(0, _height);
             _drawer.OnGUI(position, null, label);
@@ -33,7 +34,7 @@ namespace Rhinox.GUIUtils.Editor
 
         protected override void DrawInner(Rect rect, GUIContent label)
         {
-            _drawerInterface.HostInfo = _hostInfo;
+            _drawerInterface.SetupForHostInfo(_hostInfo, string.Empty);
             _drawer.OnGUI(rect, null, label);
             _height = _drawer.GetPropertyHeight(null, label);
         }
