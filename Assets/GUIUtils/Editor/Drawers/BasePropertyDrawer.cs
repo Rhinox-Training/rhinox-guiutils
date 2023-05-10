@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Rhinox.Lightspeed;
 using UnityEditor;
 using UnityEditor.Graphs;
@@ -8,88 +9,162 @@ namespace Rhinox.GUIUtils.Editor
 {
     public interface IHostInfoDrawer
     {
-        GenericHostInfo HostInfo { get; set; }
-        event Action RepaintRequested;
+        void SetupForHostInfo(GenericHostInfo info, string key);
     }
     
-    public abstract class BasePropertyDrawer : PropertyDrawer
+    public abstract class BasePropertyDrawer : PropertyDrawer, IRepaintEvent, IRepaintable
     {
-        protected SerializedProperty _property;
+        private SerializedProperty _property;
         private bool _initialized;
         
         public event Action RepaintRequested;
-        
-        protected virtual void Initialize() {}
-        
-        protected virtual void DrawProperty(Rect position, GUIContent label)
+
+        private void Initialize()
         {
+            if (_initialized) return;
             
+            OnInitialize();
+            _initialized = true;
         }
+        
+        protected virtual void OnInitialize() {}
+
+        protected abstract void DrawProperty(Rect position, GUIContent label);
 
         protected virtual float GetPropertyHeight(GUIContent label)
             => EditorGUIUtility.singleLineHeight;
 
         public sealed override float GetPropertyHeight(SerializedProperty property, GUIContent label)
         {
+            Initialize();
+
             _property = property;
-            
-            if (!_initialized)
-            {
-                Initialize();
-                _initialized = true;
-            }
+            UpdateData(property);
             
             return GetPropertyHeight(label);
         }
         
         public sealed override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
-        {
+        { 
+            Initialize();
+            
             _property = property;
-
-            if (!_initialized)
-            {
-                Initialize();
-                _initialized = true;
-            }
+            UpdateData(property);
 
             DrawProperty(position, label);
+
+            Apply();
+            SaveData(property);
         }
 
+        protected abstract void UpdateData(SerializedProperty property);
+
+
+        protected virtual void SaveData(SerializedProperty property)
+        { }
+        
         protected virtual void Apply()
         {
             _property.serializedObject.ApplyModifiedProperties();
         }
 
-        protected void RequestRepaint()
+        public void RequestRepaint()
         {
             RepaintRequested?.Invoke();
         }
     }
     
-    public abstract class BasePropertyDrawer<T> : BasePropertyDrawer, IHostInfoDrawer
+    public abstract class BasePropertyDrawer<T, TData> : BasePropertyDrawer, IHostInfoDrawer
     {
-        public GenericHostInfo HostInfo { get; set; }
-        protected Type FieldType;
         
-        public T SmartValue
+        // Property drawers are created per type - not per value, so we need to switch context when we get a different SerializedProperty
+        private Dictionary<string, TData> _dataByPropertyPath;
+
+        private TData _activeData;
+
+        protected Type FieldType => GetHostInfo(_activeData).GetReturnType();
+        
+        protected T SmartValue
         {
             get => HostInfo.GetSmartValue<T>();
             set => HostInfo.TrySetValue(value);
         }
-        
-        protected override void Initialize()
-        {
-            base.Initialize();
 
-            if (HostInfo == null)
-                HostInfo = _property.GetHostInfo();
-            
-            FieldType = HostInfo.GetReturnType(false);
+        private GenericHostInfo HostInfo => GetHostInfo(_activeData);
+
+        protected override void OnInitialize()
+        {
+            base.OnInitialize();
+            _dataByPropertyPath = new Dictionary<string, TData>();    
         }
 
+        protected sealed override void DrawProperty(Rect position, GUIContent label)
+        {
+            DrawProperty(position, ref _activeData, label);
+        }
+
+        protected abstract void DrawProperty(Rect position, ref TData data, GUIContent label);
+        
+        protected sealed override float GetPropertyHeight(GUIContent label)
+            => GetPropertyHeight(label, in _activeData);
+
+        protected virtual float GetPropertyHeight(GUIContent label, in TData data)
+            => EditorGUIUtility.singleLineHeight;
+        
+        protected override void UpdateData(SerializedProperty property)
+        {
+            if (property == null) return;
+
+            var path = property.propertyPath;
+
+            if (!_dataByPropertyPath.ContainsKey(path))
+            {
+
+                var info = property.GetHostInfo();
+                _activeData = CreateData(info);
+
+                _dataByPropertyPath[path] = _activeData;
+            }
+            else
+                _activeData = _dataByPropertyPath[path];
+            
+            OnUpdateData();
+        }
+
+        protected sealed override void SaveData(SerializedProperty property)
+        {
+            OnSaveData(_activeData, property.propertyPath);
+        }
+
+        protected virtual void OnSaveData(TData data, string key)
+        {
+            _dataByPropertyPath[key] = data;
+        }
+
+        protected virtual void OnUpdateData()
+        {
+        }
+
+        public void SetupForHostInfo(GenericHostInfo info, string key)
+        {
+            _activeData = CreateData(info);
+            _dataByPropertyPath[key] = _activeData;
+        }
+
+        protected abstract TData CreateData(GenericHostInfo info);
+
+        protected abstract GenericHostInfo GetHostInfo(TData data);
+        
         protected override void Apply()
         {
-            HostInfo.Apply();
+            HostInfo?.Apply();
         }
+    }
+    
+    public abstract class BasePropertyDrawer<T> : BasePropertyDrawer<T, GenericHostInfo>
+    {
+        protected override GenericHostInfo GetHostInfo(GenericHostInfo data) => data;
+        
+        protected override GenericHostInfo CreateData(GenericHostInfo info) => info;
     }
 }

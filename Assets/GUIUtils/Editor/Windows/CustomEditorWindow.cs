@@ -12,7 +12,7 @@ using Object = UnityEngine.Object;
 
 namespace Rhinox.GUIUtils.Editor
 {
-    public partial class CustomEditorWindow : EditorWindow, ISerializationCallbackReceiver, IRepaintRequest
+    public partial class CustomEditorWindow : EditorWindow, ISerializationCallbackReceiver, IRepaintable
     {
         /// <summary>
         /// Gets the label width to be used. Values between 0 and 1 are treated as percentages, and values above as pixels.

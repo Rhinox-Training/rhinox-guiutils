@@ -19,7 +19,7 @@ namespace Rhinox.GUIUtils.Editor
         private static readonly float lineHeight = EditorGUIUtility.singleLineHeight;
         private static readonly float paddedLine = lineHeight + PAD_SIZE;
 
-        protected override void DrawProperty(Rect position, GUIContent label)
+        protected override void DrawProperty(Rect position, ref GenericHostInfo info, GUIContent label)
         {
             GUI.Box(position.HorizontalPadding(-CustomGUIUtility.Padding*2), string.Empty, boxStyle);
 
@@ -33,7 +33,7 @@ namespace Rhinox.GUIUtils.Editor
                 valueRect = EditorGUI.PrefixLabel(valueRect, label);
 
             // Draw scene selector
-            var asset = SmartValue?.SceneAsset;
+            var asset = SmartValue.SceneAsset;
 
             var newAsset = EditorGUI.ObjectField(valueRect, asset, typeof(SceneAsset), false);
 
@@ -60,10 +60,10 @@ namespace Rhinox.GUIUtils.Editor
                 DrawSceneInfoGUI(infoRect, _buildScene);
         }
 
-        protected override float GetPropertyHeight(GUIContent label)
+        protected override float GetPropertyHeight(GUIContent label, in GenericHostInfo info)
         {
             if (_buildScene.assetGUID.Empty())
-                return base.GetPropertyHeight(label) + CustomGUIUtility.Padding * 2;
+                return base.GetPropertyHeight(label, in info) + CustomGUIUtility.Padding * 2;
 
             return EditorGUIUtility.singleLineHeight * 2 + CustomGUIUtility.Padding * 3;
         }

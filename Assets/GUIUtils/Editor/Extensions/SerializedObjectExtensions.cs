@@ -173,6 +173,11 @@ namespace Rhinox.GUIUtils.Editor
                     }
                     break;
             }
+
+            if (property.serializedObject.hasModifiedProperties)
+                property.serializedObject.ApplyModifiedProperties();
+            else
+                property.serializedObject.Update();
         }
         
         public static object GetValue(this SerializedProperty prop)

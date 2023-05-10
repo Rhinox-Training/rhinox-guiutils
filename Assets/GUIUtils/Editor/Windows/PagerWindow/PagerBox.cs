@@ -9,7 +9,7 @@ using UnityEngine;
 
 namespace Rhinox.GUIUtils.Editor
 {
-    public class PagerBox : IRepaintRequestHandler, IRepaintRequest
+    public class PagerBox : IRepaintRequestHandler, IRepaintable
     {
         private SlidePageNavigationHelper<object> _pager;
         
@@ -18,7 +18,7 @@ namespace Rhinox.GUIUtils.Editor
         public SlidePageNavigationHelper<object>.Page CurrentPage => _pager.CurrentPage;
         
         private IEditor[] _editors = Array.Empty<IEditor>();
-
+        
         public PagerBox(object root, string name)
         {
             _pager = new SlidePageNavigationHelper<object>();
@@ -158,8 +158,8 @@ namespace Rhinox.GUIUtils.Editor
             _pager.NavigateBack();
         }
 
-        private IRepaintRequest _target;
-        public void UpdateRequestTarget(IRepaintRequest target)
+        private IRepaintable _target;
+        public void UpdateRequestTarget(IRepaintable target)
         {
             _target = target;
         }

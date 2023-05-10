@@ -29,7 +29,7 @@ namespace Rhinox.GUIUtils.Editor
 #endif
     }
 
-    public abstract class BaseEditor<T> : BaseEditor, IEditor, IRepaintRequest, IRepaintRequestHandler
+    public abstract class BaseEditor<T> : BaseEditor, IEditor, IRepaintRequestHandler, IRepaintable
         where T : class // UnityEngine.Object
     {
         public Type TargetType = typeof(T);
@@ -39,7 +39,7 @@ namespace Rhinox.GUIUtils.Editor
         protected T[] Targets => Array.ConvertAll(targets, ConvertObject);
         
         private bool _repaintRequested;
-        private IRepaintRequest _repainter;
+        private IRepaintable _repainter;
         
         //==============================================================================================================
         // EVENTS
@@ -77,9 +77,7 @@ namespace Rhinox.GUIUtils.Editor
             OnClose?.Invoke();
             Object.DestroyImmediate(this);
         }
-        
-        
-        
+
         public void RequestRepaint()
         {
             _repaintRequested = true;
@@ -98,7 +96,7 @@ namespace Rhinox.GUIUtils.Editor
             _repaintRequested = false;
         }
         
-        public void UpdateRequestTarget(IRepaintRequest target)
+        public void UpdateRequestTarget(IRepaintable target)
         {
             _repainter = target;
         }

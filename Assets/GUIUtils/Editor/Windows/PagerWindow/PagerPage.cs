@@ -1,4 +1,5 @@
-﻿using Rhinox.GUIUtils.Editor;
+﻿using System;
+using Rhinox.GUIUtils.Editor;
 using Rhinox.GUIUtils.Editor.Helpers;
 using Rhinox.Lightspeed;
 using UnityEditor;
@@ -58,7 +59,7 @@ namespace Rhinox.GUIUtils.Editor
         }
     }
 
-    public abstract class BasePagerPage<T> : IRepaintRequestHandler, IRepaintRequest
+    public abstract class BasePagerPage<T> : IRepaintable
     {
         protected SlidePageNavigationHelper<T> _pager;
 
@@ -68,6 +69,8 @@ namespace Rhinox.GUIUtils.Editor
         private Rect _rect;
 
         protected bool _changed;
+
+        public event Action RepaintRequested;
 
         protected BasePagerPage(SlidePageNavigationHelper<T> pager)
         {
@@ -139,15 +142,9 @@ namespace Rhinox.GUIUtils.Editor
             EditorApplication.delayCall += _pager.NavigateBack;
         }
 
-        private IRepaintRequest _repaintTarget;
-        public void UpdateRequestTarget(IRepaintRequest target)
-        {
-            _repaintTarget = target;
-        }
-
         public void RequestRepaint()
         {
-            _repaintTarget?.RequestRepaint();
+            RepaintRequested?.Invoke();
         }
     }
 }
