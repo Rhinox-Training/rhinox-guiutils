@@ -18,8 +18,13 @@ public abstract class PickerHandler
 
     public event Action OptionSelected;
 
-    public static PickerHandler Create<T>(T initialValue, ICollection<T> options, Action<T> handleSelection)
-        => new DefaultPickerHandler<T>(initialValue, options, handleSelection);
+    public static PickerHandler Create<T>(
+            T initialValue,
+            ICollection<T> options,
+            Action<T> handleSelection,
+            Func<T, string> textSelector,
+            Func<T, string> subtextSelector)
+        => new DefaultPickerHandler<T>(initialValue, options, handleSelection, textSelector, subtextSelector);
 
     protected PickerHandler(object initialValue, IEnumerable options, int optionsCount)
     {
@@ -45,16 +50,22 @@ public abstract class PickerHandler
     }
 
     protected abstract bool MatchesFilter(object o, string filter);
+    public abstract string GetTextFor(object o);
+    public abstract string GetSubTextFor(object o);
 }
 
 public class DefaultPickerHandler<T> : PickerHandler
 {
     protected Action<T> _selectionHandler;
+    protected Func<T, string> _textSelector;
+    protected Func<T, string> _subTextSelector;
 
-    public DefaultPickerHandler(T initialValue, ICollection<T> options, Action<T> handleSelection)
+    public DefaultPickerHandler(T initialValue, ICollection<T> options, Action<T> handleSelection, Func<T, string> textSelector, Func<T, string> subTextSelector)
         : base(initialValue, options, options.Count)
     {
         _selectionHandler = handleSelection;
+        _textSelector = textSelector;
+        _subTextSelector = subTextSelector;
     }
 
     public override void Select(object o)
@@ -65,8 +76,30 @@ public class DefaultPickerHandler<T> : PickerHandler
 
     protected override bool MatchesFilter(object value, string filter)
     {
-        return string.IsNullOrEmpty(filter)
-               || value.ToString().Contains(filter, StringComparison.InvariantCultureIgnoreCase);
+        if (string.IsNullOrEmpty(filter))
+            return true;
+        
+        var text = GetTextFor(value);
+        if (!string.IsNullOrEmpty(text) && text.Contains(filter, StringComparison.InvariantCultureIgnoreCase))
+            return true;
+        
+        var subText = GetSubTextFor(value);
+        if (!string.IsNullOrEmpty(subText) && subText.Contains(filter, StringComparison.InvariantCultureIgnoreCase))
+            return true;
+
+        return false;
+    }
+
+    public override string GetTextFor(object o)
+    {
+        if (_textSelector == null) return o.ToString();
+        return _textSelector.Invoke((T) o);
+    }
+
+    public override string GetSubTextFor(object o)
+    {
+        if (_subTextSelector == null) return null;
+        return _subTextSelector.Invoke((T)o);
     }
 }
 
@@ -96,9 +129,15 @@ public class GenericPicker : PopupWindowContent
         }
     }
     
-    public static PickerHandler Show<T>(Rect rect, T initialValue, ICollection<T> options, Action<T> handleSelection)
+    public static PickerHandler Show<T>(
+        Rect rect,
+        T initialValue,
+        ICollection<T> options,
+        Action<T> handleSelection,
+        Func<T, string> textSelector = null,
+        Func<T, string> subtextSelector = null)
     {
-        var picker = PickerHandler.Create(initialValue, options, handleSelection);
+        var picker = PickerHandler.Create(initialValue, options, handleSelection, textSelector, subtextSelector);
         Show(rect, picker);
         return picker;
     }
@@ -133,11 +172,32 @@ public class GenericPicker : PopupWindowContent
         };
         _listView.onSelectCallback += OnOptionSelected;
         _listView.RepaintRequested += OnRepaintRequested;
+        _listView.drawElementCallback = DrawElement;
 
         MaxOptionsShown = DefaultItemsPerPage;
         ShowSearchField = MaxOptionsShown < _pickerHandler.AmountOfOptions;
 
         _pickerHandler.UpdateSearch(string.Empty);
+    }
+
+    private void DrawElement(Rect rect, int index, bool isactive, bool isfocused)
+    {
+        var obj = _pickerHandler.FilteredValues[index];
+
+        if (obj == null)
+        {
+            GUI.Label(rect, GUIContentHelper.TempContent("<None>"));
+            return;
+        }
+        
+        var text = _pickerHandler.GetTextFor(obj);
+        var subText = _pickerHandler.GetSubTextFor(obj);
+        
+        var style = CustomGUIStyles.MiniLabel;
+        var width = style.CalcMaxWidth(subText);
+        
+        GUI.Label(rect.AlignLeft(rect.width - width), text);
+        GUI.Label(rect.AlignRight(width), subText, style);
     }
 
     private void OnOptionSelected(BetterReorderableList list)

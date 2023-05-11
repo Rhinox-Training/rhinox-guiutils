@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace Rhinox.GUIUtils.Editor.Helpers
 {
-    public class SlidePageNavigationHelper<T> : IRepaintRequestHandler, IRepaintRequest
+    public class SlidePageNavigationHelper<T> : IRepaintRequestHandler
     {
         protected List<Page> pages;
         protected Page prev;
@@ -16,7 +16,7 @@ namespace Rhinox.GUIUtils.Editor.Helpers
         protected HoverTexture _icon;
         protected List<HoverRect> _pageTitles;
 
-        private IRepaintRequest _repainter;
+        private IRepaintable _repainter;
         
         public Rect LastDrawnRect { get; protected set; }
 
@@ -198,7 +198,7 @@ namespace Rhinox.GUIUtils.Editor.Helpers
             }
         }
 
-        public void UpdateRequestTarget(IRepaintRequest target)
+        public void UpdateRequestTarget(IRepaintable target)
         {
             _repainter = target;
         }

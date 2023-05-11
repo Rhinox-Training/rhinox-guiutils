@@ -28,7 +28,7 @@ namespace Rhinox.GUIUtils.Editor
         [InlineEditor(Expanded = true, ObjectFieldMode = InlineEditorObjectFieldModes.CompletelyHidden)]
         public object Target;
         
-        private IRepaintRequest _repaintHandler;
+        private IRepaintable _repaintHandler;
 
 #if ODIN_INSPECTOR
         private PropertyTree _tree;
@@ -193,7 +193,7 @@ namespace Rhinox.GUIUtils.Editor
                 _repaintHandler.RequestRepaint();
         }
 
-        public void UpdateRequestTarget(IRepaintRequest target)
+        public void UpdateRequestTarget(IRepaintable target)
         {
             _repaintHandler = target;
         }

@@ -10,6 +10,11 @@ It features some optional features/dependencies on Sirenix Odin Inspector
 (see https://odininspector.com/ for information on how to get/buy Odin)
 
 
+
+
 # License
 
-Apache-2.0 © Rhinox NV
+Main code and project licensed under Apache-2.0 © Rhinox NV
+
+Parts of the code come from external authors or are being reused (or modified) from other open source projects:
+- UnityGUIChartEditor (https://github.com/alessandroTironi/UnityGUIChartEditor) - (c) Alessandro Tironi 2019 (MIT License)

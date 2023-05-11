@@ -22,7 +22,7 @@ namespace Rhinox.GUIUtils.Editor
     {
         private DrawablePropertyView _propertyView;
         private object _target;
-        private IRepaintRequest _repainter;
+        private IRepaintable _repainter;
 
         private void OnEnable()
         {
@@ -82,7 +82,7 @@ namespace Rhinox.GUIUtils.Editor
                 Repaint();
         }
 
-        public void UpdateRequestTarget(IRepaintRequest target)
+        public void UpdateRequestTarget(IRepaintable target)
         {
             _repainter = target;
         }
