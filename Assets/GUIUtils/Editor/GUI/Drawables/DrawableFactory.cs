@@ -47,6 +47,20 @@ namespace Rhinox.GUIUtils.Editor
             return drawable;
         }
 
+        public static IOrderedDrawable CreateDrawableForParametersOf(ParameterInfo[] parameters, object[] parameterArray)
+        {
+            var group = new VerticalGroupDrawable();
+            var rootHostInfo = new RootHostInfo(parameterArray);
+            for (int i = 0; i < parameters.Length; i++)
+            {
+                var elementDrawable = CreateDrawableForParameter(parameters[i], i, rootHostInfo);
+                group.Add(elementDrawable);
+            }
+
+            return group;
+        }
+
+
         public static void SortDrawables(this List<IOrderedDrawable> drawables)
         {
             foreach (var drawable in drawables)
@@ -100,7 +114,7 @@ namespace Rhinox.GUIUtils.Editor
 
             return drawable;
         }
-
+        
         private static IOrderedDrawable CreateDrawableForMember(GenericHostInfo hostInfo, int depth)
         {
             IOrderedDrawable resultingMember;
@@ -123,6 +137,14 @@ namespace Rhinox.GUIUtils.Editor
             // Check for decorators
             resultingMember = DrawableWrapperFactory.TryWrapDrawable(resultingMember, hostInfo.GetAttributes());
             return resultingMember;
+        }
+        
+        private static IOrderedDrawable CreateDrawableForParameter(ParameterInfo pi, int index, GenericHostInfo arrayHostInfo)
+        {
+            var hostInfo = new ParameterHostInfo(arrayHostInfo, pi, index);
+            if (TryCreateDirect(hostInfo, out IOrderedDrawable drawable))
+                return drawable;
+            return new UndrawableField(hostInfo);
         }
 
         private static IOrderedDrawable CreateCompositeDrawable(GenericHostInfo hostInfo, int depth)
