@@ -127,7 +127,7 @@ namespace Rhinox.GUIUtils.Editor
             CurrentChart.pointQueue.Enqueue(p);
         }
 
-        public static void PushDataToDistribution(ICollection<float> data, Color pointColor, int increments = 10, bool autoSize = true)
+        public static DistributionInfo PushDataToDistribution(ICollection<float> data, Color pointColor, int increments = 10, bool autoSize = true)
         {
             if (increments <= 0)
                 increments = 10;
@@ -135,7 +135,7 @@ namespace Rhinox.GUIUtils.Editor
             float maxValue = data.Max();
             float breadth = maxValue - minValue;
             if (breadth < float.Epsilon)
-                return;
+                return new DistributionInfo() { SampleCount = data.Count };
             float barWidth = breadth / increments;
 
             Vector2[] samples = new Vector2[increments];
@@ -159,6 +159,14 @@ namespace Rhinox.GUIUtils.Editor
             }
 
             PushLineChart(samples, pointColor);
+            
+            
+            return new DistributionInfo()
+            {
+                SampleCount = data.Count, 
+                Min = minValue,
+                Max = maxValue
+            };
         }
 
         /// <summary>
