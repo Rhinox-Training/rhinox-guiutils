@@ -6,6 +6,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.Serialization.Formatters.Binary;
 using Rhinox.Lightspeed;
 using Rhinox.Lightspeed.IO;
+using Rhinox.Lightspeed.Reflection;
 using UnityEditor;
 using UnityEngine;
 #if ODIN_INSPECTOR
@@ -68,14 +69,16 @@ namespace Rhinox.GUIUtils.Editor
                 var loadedEntry = list.FirstOrDefault(x => x.Path == _path);
                 if (loadedEntry != null)
                 {
-                    byte[] bytes = Convert.FromBase64String(loadedEntry.Value);
-                    object obj = ObjectFromByteArray(bytes);
-                    _value = obj is T ? (T)obj : default(T);
+                    var obj = DeserializeFromString(loadedEntry.Value);
+                    if (typeof(T).IsEnum || typeof(T).IsPrimitive)
+                        _value = (T) obj;
+                    else
+                        _value = obj is T ? (T) obj : default(T);
                 }
                 
             }
         }
-        
+
         private void UpdateBackedValue()
         {
             var path = Path.Combine(Application.persistentDataPath, "persistentvalues.json");
@@ -89,21 +92,52 @@ namespace Rhinox.GUIUtils.Editor
             var entry = list.FirstOrDefault(x => x.Path == _path);
             if (entry != null)
             {
-                entry.Value = Convert.ToBase64String(ObjectToByteArray(_value));
+                Debug.Log($"{typeof(T).Name}_value: {_value} - isPlaying: {Application.isPlaying} - isEntering {EditorApplication.isPlayingOrWillChangePlaymode}");
+                entry.Value = SerializeValueToString(_value);
             }
             else
+            {
+                Debug.Log($"{typeof(T).Name}_value: {_value} - isPlaying: {Application.isPlaying} - isEntering {EditorApplication.isPlayingOrWillChangePlaymode} (DEFAULT)");
                 list.Add(new SimplePersistentEntry()
                 {
                     Path = _path,
-                    Value = Convert.ToBase64String(ObjectToByteArray(_value))
+                    Value = SerializeValueToString(_value)
                 });
-            
+            }
+
             string resultJson = JsonHelper.ToJson(list.ToArray(), true);
+            Debug.Log("Saved file");
             File.WriteAllText(path, resultJson);
         }
-        
+
+        private string SerializeValueToString(T value)
+        {
+            if (value is int)
+                return value.ToString();
+            if (value is Enum)
+                return value.ToString();
+            return Convert.ToBase64String(ObjectToByteArray(_value));
+        }
+
+        private static object DeserializeFromString(string value)
+        {
+            if (typeof(T) == typeof(int))
+            {
+                return int.Parse(value);
+            }
+            else if (typeof(T).IsEnum)
+            {
+                return Enum.Parse(typeof(T), value);
+            }
+            byte[] bytes = Convert.FromBase64String(value);
+            object obj = ObjectFromByteArray(bytes);
+            return obj;
+        }
+
         private static byte[] ObjectToByteArray(System.Object obj)
         {
+            if (obj.GetType().IsEnum)
+                obj = (int) obj;
             BinaryFormatter bf = new BinaryFormatter();
             using (var ms = new MemoryStream())
             {
