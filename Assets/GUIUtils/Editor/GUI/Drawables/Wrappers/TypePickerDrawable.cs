@@ -14,7 +14,7 @@ namespace Rhinox.GUIUtils.Editor
         
         private readonly SerializedProperty _serializedProperty;
         private object _managedReferenceValue;
-        private PickerHandler _typePicker;
+        private SimplePicker<Type> _typePicker;
 
         public TypePickerDrawable(SerializedProperty property)
             : this(property.GetHostInfo())
@@ -66,14 +66,15 @@ namespace Rhinox.GUIUtils.Editor
         {
             if (_typePicker != null)
             {
-                GenericPicker.Show(position, _typePicker);
+                _typePicker.Show(position);
                 return;
             }
             
             var type = _hostInfo.GetReturnType(false);
             var options = ReflectionUtility.GetTypesInheritingFrom(type);
 
-            _typePicker = GenericPicker.Show(position, null, options, SetManagedReference);
+            _typePicker = GenericPicker.Show(position, options);
+            _typePicker.OptionSelected += SetManagedReference;
         }
 
         private void SetManagedReference(object data)

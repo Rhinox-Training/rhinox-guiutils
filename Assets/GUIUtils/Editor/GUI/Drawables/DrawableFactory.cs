@@ -284,7 +284,7 @@ namespace Rhinox.GUIUtils.Editor
             
             if (type == typeof(Type))
             {
-                drawableMember = new UndrawableField<Type>(hostInfo);
+                drawableMember = new TypeDrawableField(hostInfo);
                 return true;
             }
 

@@ -42,6 +42,9 @@ namespace Rhinox.GUIUtils.Editor
             var directAttr = _info.GetCustomAttributes();
             return directAttr.Concat(typeAttr).ToArray();
         }
+
+        protected override void OnValueChanged(object host)
+        { }
     }
 
     public class MethodHostInfo : GenericHostInfo
