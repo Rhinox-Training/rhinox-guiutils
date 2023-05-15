@@ -22,7 +22,7 @@ namespace Rhinox.GUIUtils.Editor
             public string Title;
             public Type BaseType;
             public IPropertyMemberHelper RawGetter;
-            public PickerHandler TypePicker;
+            public TypePicker TypePicker;
             public bool IsDirty;
         }
         
@@ -61,9 +61,8 @@ namespace Rhinox.GUIUtils.Editor
             if (label != null)
                 position = EditorGUI.PrefixLabel(position, label);
 
-            var title = data.Title;
-            if (string.IsNullOrWhiteSpace(title)) title = SmartValue?.Name;
-            if (string.IsNullOrWhiteSpace(title)) title = "<None>";
+            var title = data.Title ?? "<None>";
+            if (SmartValue != null) title = SmartValue.Name;
 
             if (EditorGUI.DropdownButton(position, GUIContentHelper.TempContent(title), FocusType.Keyboard))
                 DoTypeDropdown(fullRect, data);
@@ -83,25 +82,25 @@ namespace Rhinox.GUIUtils.Editor
 
         private void DoTypeDropdown(Rect position, DrawerData data)
         {
-            if (data.TypePicker != null)
+            if (data.TypePicker == null)
             {
-                GenericPicker.Show(position, data.TypePicker);
-                return;
+                ICollection<Type> list;
+                if (data.RawGetter != null)
+                    list = ResolveRawGetter(data).ToArray();
+                else if (data.BaseType != null)
+                    list = ReflectionUtility.GetTypesInheritingFrom(data.BaseType);
+                else
+                {
+                    if (_allTypesCache == null) // cache this between drawers so it doesn't get created multiple times
+                        _allTypesCache = ReflectionUtility.GetTypesInheritingFrom(typeof(object));
+                    list = _allTypesCache;
+                }
+                
+                data.TypePicker = new TypePicker(list);
+                data.TypePicker.OptionSelected += x => SetValue(x, data);
             }
             
-            ICollection<Type> list;
-            if (data.RawGetter != null)
-                list = ResolveRawGetter(data).ToArray();
-            else if (data.BaseType != null)
-                list = ReflectionUtility.GetTypesInheritingFrom(data.BaseType);
-            else
-            {
-                if (_allTypesCache == null) // cache this between drawers so it doesn't get created multiple times
-                    _allTypesCache = ReflectionUtility.GetTypesInheritingFrom(typeof(object));
-                list = _allTypesCache;
-            }
-            
-            data.TypePicker = GenericPicker.Show(position, SmartValue?.Type, list, x => SetValue(x, data));
+            data.TypePicker.Show(position);
         }
         
         private IEnumerable<Type> ResolveRawGetter(DrawerData data)
