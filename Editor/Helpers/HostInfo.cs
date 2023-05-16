@@ -146,7 +146,7 @@ namespace Rhinox.GUIUtils.Editor
         }
 
         public GenericHostInfo(GenericHostInfo parent, MemberInfo mi, int index = -1)
-            : this(null, mi, index, parent)
+            : this((object) null, mi, index, parent)
         {
         }
         
