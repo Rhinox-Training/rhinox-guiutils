@@ -171,9 +171,11 @@ namespace Rhinox.GUIUtils.Editor
         public void SetupForHostInfo(GenericHostInfo info, string key)
         {
             Initialize();
+
+            if (!_dataByPropertyPath.ContainsKey(key))
+                _dataByPropertyPath[key] = CreateData(info);
             
-            _activeData = CreateData(info);
-            _dataByPropertyPath[key] = _activeData;
+            _activeData = _dataByPropertyPath[key];
         }
 
         protected abstract TData CreateData(GenericHostInfo info);
