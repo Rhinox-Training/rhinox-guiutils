@@ -17,13 +17,13 @@ namespace Rhinox.GUIUtils.Editor
         
         //==============================================================================================================
         // Public API
-        public static IOrderedDrawable CreateDrawableFor(GenericHostInfo hostInfo)
-        {
-            return CreateDrawableForMember(hostInfo, 0);
-        }
-
         public static IOrderedDrawable CreateDrawableFor(object instance)
             => CreateDrawableFor(new RootHostInfo(instance));
+        
+        public static IOrderedDrawable CreateDrawableFor(GenericHostInfo hostInfo, bool handleUnityPropertyDrawer = true)
+        {
+            return CreateDrawableForMember(hostInfo, 0, handleUnityPropertyDrawer);
+        }
         
         public static IOrderedDrawable CreateDrawableFor(SerializedObject obj)
         {
@@ -86,7 +86,7 @@ namespace Rhinox.GUIUtils.Editor
                 else if (!fieldData.IsSerialized)
                 {
                     var fieldHostInfo = new GenericHostInfo(hostInfo, fieldData.FieldInfo);
-                    fieldDrawable = CreateDrawableForMember(fieldHostInfo, depth);
+                    fieldDrawable = CreateDrawableForMember(fieldHostInfo, depth, true);
                 }
                 else
                     fieldDrawable = CreateDrawableForSerializedProperty(fieldData.SerializedProperty);
@@ -100,7 +100,7 @@ namespace Rhinox.GUIUtils.Editor
             foreach (var propertyMember in hostInfo.GetReturnType().GetEditorVisibleProperties())
             {
                 var propHostInfo = new GenericHostInfo(hostInfo, propertyMember);
-                var propertyDrawable = CreateDrawableForMember(propHostInfo, depth);
+                var propertyDrawable = CreateDrawableForMember(propHostInfo, depth, true);
                 if (propertyDrawable == null)
                     continue;
 
@@ -115,10 +115,10 @@ namespace Rhinox.GUIUtils.Editor
             return drawable;
         }
         
-        private static IOrderedDrawable CreateDrawableForMember(GenericHostInfo hostInfo, int depth)
+        private static IOrderedDrawable CreateDrawableForMember(GenericHostInfo hostInfo, int depth, bool handleUnityPropertyDrawer)
         {
             IOrderedDrawable resultingMember;
-            if (TryCreateDirect(hostInfo, out var drawableMember) || depth >= MAX_DEPTH)
+            if (TryCreateDirect(hostInfo, handleUnityPropertyDrawer, out var drawableMember) || depth >= MAX_DEPTH)
                 resultingMember = drawableMember;
             else
             {
@@ -128,7 +128,7 @@ namespace Rhinox.GUIUtils.Editor
                 if (subInstance == null)
                     return new TypePickerDrawable(hostInfo);
                 
-                resultingMember = CreateCompositeDrawable(hostInfo, depth + 1);
+                resultingMember = CreateCompositeDrawable(hostInfo, depth + 1, handleUnityPropertyDrawer);
             }
 
             if (resultingMember == null)
@@ -142,12 +142,12 @@ namespace Rhinox.GUIUtils.Editor
         private static IOrderedDrawable CreateDrawableForParameter(ParameterInfo pi, int index, GenericHostInfo arrayHostInfo)
         {
             var hostInfo = new ParameterHostInfo(arrayHostInfo, pi, index);
-            if (TryCreateDirect(hostInfo, out IOrderedDrawable drawable))
+            if (TryCreateDirect(hostInfo, true, out IOrderedDrawable drawable))
                 return drawable;
             return new UndrawableField(hostInfo);
         }
 
-        private static IOrderedDrawable CreateCompositeDrawable(GenericHostInfo hostInfo, int depth)
+        private static IOrderedDrawable CreateCompositeDrawable(GenericHostInfo hostInfo, int depth, bool handleUnityPropertyDrawer)
         {
             var drawable = new VerticalGroupDrawable();
 
@@ -158,7 +158,7 @@ namespace Rhinox.GUIUtils.Editor
                 if (memberEntry.MemberInfo is PropertyInfo propertyInfo && !propertyInfo.IsVisibleInEditor())
                     continue;
 
-                IOrderedDrawable resultingMember = CreateDrawableForMember(memberEntry, depth);
+                IOrderedDrawable resultingMember = CreateDrawableForMember(memberEntry, depth, handleUnityPropertyDrawer);
 
                 if (resultingMember != null)
                     drawables.Add(resultingMember);
@@ -242,7 +242,7 @@ namespace Rhinox.GUIUtils.Editor
             return false;
         }
 
-        private static bool TryCreateDirect(GenericHostInfo hostInfo, out IOrderedDrawable drawableMember)
+        private static bool TryCreateDirect(GenericHostInfo hostInfo, bool handleUnityPropertyDrawer, out IOrderedDrawable drawableMember)
         {
             var type = hostInfo.GetReturnType();
 
@@ -251,6 +251,9 @@ namespace Rhinox.GUIUtils.Editor
                 drawableMember = null;
                 return false;
             }
+
+            if (handleUnityPropertyDrawer && TryCreateUnityPropertyDrawer(hostInfo, out drawableMember, type)) 
+                return true;
 
             if (type == typeof(string))
             {
@@ -288,13 +291,6 @@ namespace Rhinox.GUIUtils.Editor
                 return true;
             }
 
-            var drawerType = PropertyDrawerHelper.GetDrawerTypeFor(type);
-            if (drawerType != null && drawerType.HasInterfaceType<IHostInfoDrawer>())
-            {
-                drawableMember = new DrawableAsUnityProperty(hostInfo, drawerType);
-                return true;
-            }
-
             if (type == typeof(LayerMask))
             {
                 drawableMember = new LayerMaskDrawableField(hostInfo);
@@ -316,6 +312,19 @@ namespace Rhinox.GUIUtils.Editor
             if (type.InheritsFrom<UnityEngine.Object>())
             {
                 drawableMember = new UnityObjectDrawableField(hostInfo);
+                return true;
+            }
+
+            drawableMember = null;
+            return false;
+        }
+
+        private static bool TryCreateUnityPropertyDrawer(GenericHostInfo hostInfo, out IOrderedDrawable drawableMember, Type type)
+        {
+            var drawerType = PropertyDrawerHelper.GetDrawerTypeFor(type);
+            if (drawerType != null && drawerType.HasInterfaceType<IHostInfoDrawer>())
+            {
+                drawableMember = new DrawableAsUnityProperty(hostInfo, drawerType);
                 return true;
             }
 
