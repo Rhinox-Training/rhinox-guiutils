@@ -33,6 +33,9 @@ namespace Rhinox.GUIUtils.Editor
 
         protected virtual int Order => -1;
 
+        // Determined by unity
+        protected const float MaxWidth = 210; 
+
         private static T GetWindowInstance()
         {
             if (_window == null)

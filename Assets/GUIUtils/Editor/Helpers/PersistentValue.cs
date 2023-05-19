@@ -92,12 +92,12 @@ namespace Rhinox.GUIUtils.Editor
             var entry = list.FirstOrDefault(x => x.Path == _path);
             if (entry != null)
             {
-                Debug.Log($"{typeof(T).Name}_value: {_value} - isPlaying: {Application.isPlaying} - isEntering {EditorApplication.isPlayingOrWillChangePlaymode}");
+                // Debug.Log($"{typeof(T).Name}_value: {_value} - isPlaying: {Application.isPlaying} - isEntering {EditorApplication.isPlayingOrWillChangePlaymode}");
                 entry.Value = SerializeValueToString(_value);
             }
             else
             {
-                Debug.Log($"{typeof(T).Name}_value: {_value} - isPlaying: {Application.isPlaying} - isEntering {EditorApplication.isPlayingOrWillChangePlaymode} (DEFAULT)");
+                // Debug.Log($"{typeof(T).Name}_value: {_value} - isPlaying: {Application.isPlaying} - isEntering {EditorApplication.isPlayingOrWillChangePlaymode} (DEFAULT)");
                 list.Add(new SimplePersistentEntry()
                 {
                     Path = _path,
@@ -106,7 +106,7 @@ namespace Rhinox.GUIUtils.Editor
             }
 
             string resultJson = JsonHelper.ToJson(list.ToArray(), true);
-            Debug.Log("Saved file");
+            // Debug.Log("Saved file");
             File.WriteAllText(path, resultJson);
         }
 
