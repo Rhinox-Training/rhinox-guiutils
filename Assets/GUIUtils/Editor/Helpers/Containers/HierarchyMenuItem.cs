@@ -30,7 +30,7 @@ namespace Rhinox.GUIUtils.Editor
             SubGroups = new List<HierarchyMenuItem>();
         }
 
-        protected override bool PerformClick()
+        protected override bool PerformClick(bool multi)
         {
             LinkedMenuItem?.Select();
             
@@ -75,19 +75,19 @@ namespace Rhinox.GUIUtils.Editor
             return false;
         }
 
-        public override void CheckForInteractions()
+        public override void CheckForInteractions(bool multi)
         {
-            base.CheckForInteractions();
+            base.CheckForInteractions(multi);
             if (SubGroups != null)
             {
                 foreach (var group in SubGroups)
-                    group.CheckForInteractions();
+                    group.CheckForInteractions(multi);
             }
 
             if (Children != null)
             {
                 foreach (var entry in Children)
-                    entry.CheckForInteractions();
+                    entry.CheckForInteractions(multi);
             }
         }
     }

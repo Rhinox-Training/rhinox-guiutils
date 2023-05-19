@@ -22,7 +22,7 @@ namespace Rhinox.GUIUtils.Editor
         event MenuItemEventHandler RightMouseClicked;
 
         void Draw(Event evt, int i, Func<string, string> nameTransformer = null);
-        void CheckForInteractions();
+        void CheckForInteractions(bool multi);
         void ResetInteractionState();
 
         void Select(bool multiSelect = false);
