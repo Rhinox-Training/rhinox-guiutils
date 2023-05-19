@@ -265,6 +265,8 @@ namespace Rhinox.GUIUtils.Editor
                 SerializedProperty.DeleteArrayElementAtIndex(indexToRemove);
                 if (SelectedIndex >= SerializedProperty.arraySize - 1)
                     SelectedIndex = SerializedProperty.arraySize - 1;
+
+                m_SerializedObject.ApplyModifiedProperties();
             }
             else
             {
