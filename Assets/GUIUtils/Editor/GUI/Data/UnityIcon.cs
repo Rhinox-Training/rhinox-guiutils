@@ -158,6 +158,12 @@ namespace Rhinox.GUIUtils.Editor
             return  (Texture2D) _getIconForType.Invoke(null, _arr);
         }
     }
+
+    public class OdinUnityIcon : UnityIcon
+    {
+        public override string TextureUsage => "EditorIcons.{Name}.Active";
+        
+    }
     
      /// <summary>
     /// A struct used for displaying all icons used in UnityIconsViewer
@@ -243,9 +249,9 @@ namespace Rhinox.GUIUtils.Editor
 
         /// ================================================================================================================
         /// ICON LISTS
-#if ODIN_INSPECTOR
         public static Dictionary<string, Texture> GetAllOdinIcons()
         {
+#if ODIN_INSPECTOR
             return typeof(EditorIcons)
                 .GetProperties(BindingFlags.Public | BindingFlags.Static)
                 .Where(f => f.PropertyType == typeof(EditorIcon) || f.PropertyType == typeof(Texture2D))
@@ -256,7 +262,9 @@ namespace Rhinox.GUIUtils.Editor
                         var val = x.GetValue(null, null);
                         return val as Texture2D ?? ((EditorIcon) val)?.Active;
                     });
-        }
+#else
+            return new Dictionary<string, Texture>();
 #endif
+        }
     }
 }
