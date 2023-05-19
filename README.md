@@ -4,13 +4,14 @@
 
 GUI Utils for Unity projects, mostly Editor extensions. (Optional Odin extensions)
 
-# Dependencies
+## Dependencies
 
-It features some optional features/dependencies on Sirenix Odin Inspector
-(see https://odininspector.com/ for information on how to get/buy Odin)
+- Lightspeed (https://github.com/Rhinox-Training/rhinox-lightspeed)
 
+## Optional dependencies
 
-
+- OdinInspector (https://odininspector.com/)
+  - It features some optional features/dependencies on Sirenix Odin Inspector (see https://odininspector.com/ for information on how to get/buy Odin)
 
 # License
 
