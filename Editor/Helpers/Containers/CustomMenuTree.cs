@@ -129,6 +129,8 @@ namespace Rhinox.GUIUtils.Editor
 #if ODIN_INSPECTOR
             _menuTree.DrawMenuTree();
 #else
+            HandleInput();
+
             if (DrawSearchToolbar)
             {
                 string newSearchString = GUILayout.TextField(_searchString, CustomGUIStyles.ToolbarSearchTextField);
@@ -145,6 +147,45 @@ namespace Rhinox.GUIUtils.Editor
             }
             GUILayout.EndScrollView();
 #endif
+        }
+
+        private void HandleInput()
+        {
+            var evt = Event.current;
+            if (evt.type != EventType.KeyDown)
+                return;
+            
+            var lastSelected = Selection.LastOrDefault();
+            if (lastSelected == null)
+                return;
+            
+            var source = _filteredItems ?? _items;
+
+            var lastSelectedI = source.IndexOf(lastSelected);
+            if (lastSelectedI < 0)
+                return;
+
+            IMenuItem next = null;
+            
+            switch (evt.keyCode)
+            {
+                case KeyCode.UpArrow:
+                    next = source.GetAtIndex(lastSelectedI - 1);
+                    break;
+                case KeyCode.DownArrow:
+                    next = source.GetAtIndex(lastSelectedI + 1);
+                    break;
+            }
+
+            if (next == null)
+                return;
+            
+            next.Select(CanMultiSelect(evt));
+        }
+
+        protected virtual bool CanMultiSelect(Event evt)
+        {
+            return (evt.modifiers & EventModifiers.Control) != 0;
         }
 
         protected virtual void OnDraw()
@@ -341,6 +382,8 @@ namespace Rhinox.GUIUtils.Editor
             _menuTree.HandleKeybaordMenuNavigation();
 #endif
 
+            bool multi = CanMultiSelect(Event.current);
+            
             if (_items != null)
             {
                 foreach (var item in _items)
@@ -348,7 +391,7 @@ namespace Rhinox.GUIUtils.Editor
                     if (item == null)
                         continue;
 
-                    item.CheckForInteractions();
+                    item.CheckForInteractions(multi);
                 }
             }
 #if !ODIN_INSPECTOR
@@ -356,7 +399,7 @@ namespace Rhinox.GUIUtils.Editor
             {
                 foreach (var item in _groupingItems)
                 {
-                    item?.CheckForInteractions();
+                    item?.CheckForInteractions(multi);
                 }
             }
 #endif

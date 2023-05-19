@@ -41,17 +41,17 @@ namespace Rhinox.GUIUtils.Editor
             return RawValue;
         }
 
-        public void Select(bool multiSelect = false)
+        public void Select(bool multi = false)
         {
             IsSelected = !IsSelected;
 
             if (MenuTree == null)
                 return;
-            if (multiSelect && !IsSelected)
+            if (multi && !IsSelected)
                 MenuTree.RemoveSelection(this);
             else
             {
-                MenuTree.AddSelection(this, !multiSelect);
+                MenuTree.AddSelection(this, !multi);
                 IsSelected = true;
             }
         }
@@ -168,13 +168,13 @@ namespace Rhinox.GUIUtils.Editor
             _icon = icon;
         }
 
-        public virtual void CheckForInteractions()
+        public virtual void CheckForInteractions(bool multi)
         {
             EventType type = Event.current.type;
 
             if (IsHoveringItem && type == EventType.MouseDown)
             {
-                if (PerformClick())
+                if (PerformClick(multi))
                 {
                     CustomEditorGUI.RemoveFocusControl();
                     Event.current.Use();
@@ -182,20 +182,15 @@ namespace Rhinox.GUIUtils.Editor
             }
         }
 
-        protected virtual bool PerformClick()
+        protected virtual bool PerformClick(bool multi)
         {
             if (!Selectable)
                 return false;
             
             if (Event.current.button == 0)
-            {
-                bool multiSelect = Event.current.modifiers == EventModifiers.Control;
-                this.Select(multiSelect);
-            }
+                this.Select(multi);
             else if (Event.current.button == 1)
-            {
                 RightMouseClicked?.Invoke(this);
-            }
 
             return true;
         }
