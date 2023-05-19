@@ -611,7 +611,7 @@ namespace Rhinox.GUIUtils
                 return _buttonStyleSelected;
             }
         }
-
+        
         private static GUIStyle _buttonStyleLeft;
         public static GUIStyle ButtonLeft
         {

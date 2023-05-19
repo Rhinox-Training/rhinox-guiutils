@@ -19,7 +19,7 @@ namespace Rhinox.GUIUtils.Editor
         
         public event Action RepaintRequested;
 
-        private void Initialize()
+        protected void Initialize()
         {
             if (_initialized) return;
             
@@ -81,6 +81,7 @@ namespace Rhinox.GUIUtils.Editor
         private Dictionary<string, TData> _dataByPropertyPath;
 
         private TData _activeData;
+        private IOrderedDrawable _innerDrawable;
 
         protected Type FieldType => GetHostInfo(_activeData).GetReturnType();
         
@@ -104,6 +105,26 @@ namespace Rhinox.GUIUtils.Editor
         }
 
         protected abstract void DrawProperty(Rect position, ref TData data, GUIContent label);
+
+        protected virtual float GetInnerDrawerHeight(GUIContent label)
+        {
+            if (_innerDrawable == null)
+                return base.GetPropertyHeight(label);
+            return _innerDrawable.ElementHeight;
+        }
+        
+        protected virtual Rect CallInnerDrawer(Rect position, GUIContent label)
+        {
+            if (_innerDrawable == null)
+                _innerDrawable = DrawableFactory.CreateDrawableFor(HostInfo, false);
+            float oldHeight = position.height;
+            float innerDrawableHeight = _innerDrawable.ElementHeight;
+            position.height = innerDrawableHeight;
+            _innerDrawable.Draw(position, label);
+            position.height = oldHeight;
+            position.y += innerDrawableHeight;
+            return position;
+        }
         
         protected sealed override float GetPropertyHeight(GUIContent label)
             => GetPropertyHeight(label, in _activeData);
@@ -133,6 +154,8 @@ namespace Rhinox.GUIUtils.Editor
 
         protected sealed override void SaveData(SerializedProperty property)
         {
+            if (property == null)
+                return;
             OnSaveData(_activeData, property.propertyPath);
         }
 
@@ -147,8 +170,12 @@ namespace Rhinox.GUIUtils.Editor
 
         public void SetupForHostInfo(GenericHostInfo info, string key)
         {
-            _activeData = CreateData(info);
-            _dataByPropertyPath[key] = _activeData;
+            Initialize();
+
+            if (!_dataByPropertyPath.ContainsKey(key))
+                _dataByPropertyPath[key] = CreateData(info);
+            
+            _activeData = _dataByPropertyPath[key];
         }
 
         protected abstract TData CreateData(GenericHostInfo info);

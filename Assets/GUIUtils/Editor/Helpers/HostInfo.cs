@@ -19,7 +19,34 @@ namespace Rhinox.GUIUtils.Editor
         public override Type GetReturnType(bool preferValueType = true) => HostType;
         public override Attribute[] GetAttributes() => Array.Empty<Attribute>();
     }
-    
+
+    public class ParameterHostInfo : GenericHostInfo
+    {
+        private ParameterInfo _info;
+        
+        public ParameterHostInfo(GenericHostInfo parent, ParameterInfo pi, int arrayIndex)
+            : base(parent, null, arrayIndex)
+        {
+            _info = pi;
+            NiceName = _info.GetNiceName();
+        }
+
+        public override Type GetReturnType(bool preferValueType = true)
+        {
+            return _info.ParameterType;
+        }
+
+        public override Attribute[] GetAttributes()
+        {
+            var typeAttr = GetReturnType().GetCustomAttributes();
+            var directAttr = _info.GetCustomAttributes();
+            return directAttr.Concat(typeAttr).ToArray();
+        }
+
+        protected override void OnValueChanged(object host)
+        { }
+    }
+
     public class MethodHostInfo : GenericHostInfo
     {
         private ParameterInfo[] _parameters;
@@ -106,7 +133,7 @@ namespace Rhinox.GUIUtils.Editor
         
         private static MethodInfo _resizeMethod;
 
-        public string NiceName { get; }
+        public string NiceName { get; protected set; }
 
         public GenericHostInfo(object host, MemberInfo mi, int index = -1)
             : this(host, mi, index, null)
@@ -119,11 +146,17 @@ namespace Rhinox.GUIUtils.Editor
         }
 
         public GenericHostInfo(GenericHostInfo parent, MemberInfo mi, int index = -1)
-            : this(null, mi, index, parent)
+            : this((object) null, mi, index, parent)
         {
         }
-
+        
+        public GenericHostInfo(GenericHostInfo parent, MemberInfo mi, Type type, int index = -1)
+            : this(type, mi, index, parent)
+        {
+        }
+        
         private GenericHostInfo(object host, MemberInfo memberInfo, int arrayIndex, GenericHostInfo parent)
+            : this(null, memberInfo, arrayIndex, parent)
         {
             if (parent != null)
                 HostType = parent.GetReturnType();
@@ -131,8 +164,13 @@ namespace Rhinox.GUIUtils.Editor
                 HostType = host.GetType();
             else
                 throw new ArgumentException($"{nameof(parent)} and {nameof(host)} cannot be null at the same time");
-
+            
             _hostRootInstance = host;
+        }
+        
+        private GenericHostInfo(Type type, MemberInfo memberInfo, int arrayIndex, GenericHostInfo parent)
+        {
+            HostType = type;
             MemberInfo = memberInfo;
             ArrayIndex = arrayIndex;
             Parent = parent;
@@ -242,8 +280,12 @@ namespace Rhinox.GUIUtils.Editor
                 if (value != null)
                     return value.GetType();
             }
+
+            Type type = MemberInfo.GetReturnType();
             
-            var type = MemberInfo.GetReturnType();
+            if (MemberInfo == null)
+                return HostType;
+            
             if (ArrayIndex < 0) return type;
             if (type.IsArray)
                 return type.GetElementType();
@@ -276,10 +318,13 @@ namespace Rhinox.GUIUtils.Editor
             return $"{_hostRootInstance}.{NiceName} {(Parent != null ? ($"(Child of {Parent.NiceName})") : "")}";
         }
 
-        public virtual GenericHostInfo CreateArrayElement(int index)
+        public virtual GenericHostInfo CreateArrayElement(int index, Type overrideType = null)
         {
             if (index < 0) throw new ArgumentException(nameof(index));
             if (ArrayIndex != -1) throw new InvalidOperationException("GenericHostInfo already has in index, cannot create sub entry.");
+            
+            if (overrideType != null)
+                return new GenericHostInfo(this, MemberInfo, overrideType, index);
 
             return new GenericHostInfo(this, MemberInfo, index);
         }
