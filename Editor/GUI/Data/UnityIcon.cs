@@ -163,6 +163,25 @@ namespace Rhinox.GUIUtils.Editor
     {
         public override string TextureUsage => "EditorIcons.{Name}.Active";
         
+        /// ================================================================================================================
+        /// STATIC
+        public static Dictionary<string, Texture> GetAll()
+        {
+#if ODIN_INSPECTOR
+            return typeof(EditorIcons)
+                .GetProperties(BindingFlags.Public | BindingFlags.Static)
+                .Where(f => f.PropertyType == typeof(EditorIcon) || f.PropertyType == typeof(Texture2D))
+                .ToDictionary(
+                    x => x.Name,
+                    x =>
+                    {
+                        var val = x.GetValue(null, null);
+                        return val as Texture2D ?? ((EditorIcon) val)?.Active;
+                    });
+#else
+            return new Dictionary<string, Texture>();
+#endif
+        }
     }
     
      /// <summary>
@@ -249,22 +268,5 @@ namespace Rhinox.GUIUtils.Editor
 
         /// ================================================================================================================
         /// ICON LISTS
-        public static Dictionary<string, Texture> GetAllOdinIcons()
-        {
-#if ODIN_INSPECTOR
-            return typeof(EditorIcons)
-                .GetProperties(BindingFlags.Public | BindingFlags.Static)
-                .Where(f => f.PropertyType == typeof(EditorIcon) || f.PropertyType == typeof(Texture2D))
-                .ToDictionary(
-                    x => x.Name,
-                    x =>
-                    {
-                        var val = x.GetValue(null, null);
-                        return val as Texture2D ?? ((EditorIcon) val)?.Active;
-                    });
-#else
-            return new Dictionary<string, Texture>();
-#endif
-        }
     }
 }
