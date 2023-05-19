@@ -23,6 +23,8 @@ namespace Rhinox.GUIUtils.Editor
         protected PageableReorderableList _listView;
         private const int DefaultItemsPerPage = 10;
 
+        protected virtual float MinWidth => 210;
+
         protected FilteredCollection FilteredCollection;
         protected string _searchValue;
         protected string _controlName = GUID.Generate().ToString();
@@ -31,7 +33,7 @@ namespace Rhinox.GUIUtils.Editor
 
         public void Show(Rect rect)
         {
-            _size = new Vector2(rect.width, GetHeight());
+            _size = new Vector2(Mathf.Max(MinWidth, rect.width), GetHeight());
             PopupWindow.Show(rect, this);
         }
 
