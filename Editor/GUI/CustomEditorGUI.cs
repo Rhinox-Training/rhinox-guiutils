@@ -263,6 +263,20 @@ namespace Rhinox.GUIUtils.Editor
             style = style ?? CustomGUIStyles.IconButton;
             return GUI.Button(rect, content, style);
         }
+        
+        public static bool IconToggle(Texture icon, bool toggled, int width = DEFAULT_ICON_WIDTH, int height = DEFAULT_ICON_HEIGHT, string tooltip = "")
+        {
+            var color = toggled ? Color.white : Color.gray;
+
+            using (new eUtility.GuiColor(GUI.color * color))
+            {
+                return GUILayout.Toggle(toggled, GUIContentHelper.TempContent(icon, tooltip), CustomGUIStyles.Clean, new []
+                {
+                    GUILayout.Width(width),
+                    GUILayout.Height(height)
+                });
+            }
+        }
 
         public static bool ToolbarButton(string text, string tooltip = "")
         {
@@ -343,8 +357,6 @@ namespace Rhinox.GUIUtils.Editor
             return result ?? string.Empty;
         }
 
-        
-        
         public static void SelectObject(UnityEngine.Object obj)
         {
             if (obj == null)
