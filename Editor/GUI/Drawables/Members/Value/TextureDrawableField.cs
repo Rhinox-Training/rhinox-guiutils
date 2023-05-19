@@ -43,7 +43,7 @@ namespace Rhinox.GUIUtils.Editor
                     rect = GUILayoutUtility.GetRect(DEFAULT_SIZE, DEFAULT_SIZE, GUILayout.ExpandWidth(false), GUILayout.ExpandHeight(false));
                 }
 
-                DrawTexturePreview(ref memberVal, rect);
+                DrawTexturePreview(rect, ref memberVal);
                 return memberVal;
             }
             return EditorGUILayout.ObjectField(memberVal, HostInfo.GetReturnType(), true, options) as Texture;
@@ -53,7 +53,7 @@ namespace Rhinox.GUIUtils.Editor
         {
             if (_previewAttr != null)
             {
-                DrawTexturePreview(ref memberVal, rect);
+                DrawTexturePreview(rect, ref memberVal);
                 return memberVal;
             }
             return EditorGUI.ObjectField(rect, memberVal, HostInfo.GetReturnType(), true) as Texture;
@@ -80,13 +80,13 @@ namespace Rhinox.GUIUtils.Editor
             }
         }
 
-        private void DrawTexturePreview(ref Texture memberVal, Rect rect)
+        private void DrawTexturePreview(Rect rect, ref Texture memberVal)
         {
             Texture targetPaint = memberVal;
             if (targetPaint == null)
                 targetPaint = Utility.GetColorTexture(Color.gray);
             
-            EditorGUI.DrawPreviewTexture(rect, targetPaint, null, ScaleMode.ScaleToFit);
+            EditorGUI.DrawTextureTransparent(rect, targetPaint, ScaleMode.ScaleToFit);
 
             var isReadOnly = CheckIfIsReadOnly();
 
@@ -100,6 +100,10 @@ namespace Rhinox.GUIUtils.Editor
                     EditorGUIUtility.ShowObjectPicker<Texture2D> (memberVal, true, "", _activeControlId);
                 }
             }
+
+            if (Event.current.type == EventType.MouseDown && eUtility.IsMouseOver(rect))
+                Selection.activeObject = memberVal;
+                
         }
 
         private bool CheckIfIsReadOnly()
