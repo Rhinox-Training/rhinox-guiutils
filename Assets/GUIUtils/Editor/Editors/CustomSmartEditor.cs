@@ -3,12 +3,13 @@ using Rhinox.GUIUtils.Attributes;
 using Rhinox.Lightspeed.Reflection;
 using UnityEditor;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace Rhinox.GUIUtils.Editor
 {
-    [CustomEditor(typeof(MonoBehaviour), true)]
+    [CustomEditor(typeof(Object), true)]
     [CanEditMultipleObjects]
-    public class CustomSmartEditor : BaseEditor<MonoBehaviour>
+    public class CustomSmartEditor : BaseEditor<Object>
     {
         private DrawablePropertyView _propertyView;
         
