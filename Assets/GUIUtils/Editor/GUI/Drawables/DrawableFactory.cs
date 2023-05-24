@@ -207,6 +207,10 @@ namespace Rhinox.GUIUtils.Editor
                         }
                         else
                         {
+                            var instanceVal = hostInfo.GetValue();
+                            if (instanceVal == null)
+                                return new TypePickerDrawable(property);
+                            
                             var visibleFields = property.EnumerateEditorVisibleFields();
                             var verticalGroupDrawable = DrawableMembersForSerializedObject(hostInfo, visibleFields, 0);
                             

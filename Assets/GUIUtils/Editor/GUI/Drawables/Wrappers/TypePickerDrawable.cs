@@ -73,8 +73,9 @@ namespace Rhinox.GUIUtils.Editor
             var type = _hostInfo.GetReturnType(false);
             var options = ReflectionUtility.GetTypesInheritingFrom(type);
 
-            _typePicker = GenericPicker.Show(position, options);
+            _typePicker = new TypePicker(options);
             _typePicker.OptionSelected += SetManagedReference;
+            _typePicker.Show(position);
         }
 
         private void SetManagedReference(object data)

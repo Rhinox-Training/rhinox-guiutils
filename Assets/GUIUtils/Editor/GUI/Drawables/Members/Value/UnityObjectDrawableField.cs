@@ -1,5 +1,6 @@
 ﻿using System.Reflection;
 using Rhinox.Lightspeed.Reflection;
+using Sirenix.OdinInspector;
 using UnityEditor;
 using UnityEngine;
 using Object = System.Object;
@@ -12,7 +13,7 @@ namespace Rhinox.GUIUtils.Editor
 
         public UnityObjectDrawableField(GenericHostInfo hostInfo) : base(hostInfo)
         {
-            
+            AllowSceneObjects = hostInfo.GetReturnType().GetCustomAttribute<AssetsOnlyAttribute>() == null;
         }
         
         protected override UnityEngine.Object DrawValue(GUIContent label, UnityEngine.Object memberVal, params GUILayoutOption[] options)
