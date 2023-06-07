@@ -16,12 +16,15 @@ namespace Rhinox.GUIUtils.Editor
             {
                 case ButtonGroupAttribute buttonGroupAttribute:
                     return new ButtonGroupDrawable(parent, groupingAttr.GroupID, groupingAttr.Order);
+                    return new ButtonGroupDrawable(parent, groupingAttr.GroupID, groupingAttr.Order);
                 case HorizontalGroupAttribute horizontalGroupAttribute:
                     return new HorizontalGroupDrawable(parent, groupingAttr.GroupID, groupingAttr.Order);
                 case TitleGroupAttribute titleGroupAttribute:
                     return new TitleGroupDrawable(parent, groupingAttr.GroupID, groupingAttr.Order);
                 case VerticalGroupAttribute verticalGroupAttribute:
                     return new VerticalGroupDrawable(parent, groupingAttr.GroupID, groupingAttr.Order);
+                case TabGroupAttribute tabGroupAttribute:
+                    return new TabGroupDrawable(parent, groupingAttr.GroupID, groupingAttr.Order);
                 default:
                     Debug.LogWarning($"Unimplemented Group type: {groupingAttr.GetType().Name}, falling back to FallbackGroup (layout: Vertical)...");
                     return new FallbackGroupDrawable(parent, groupingAttr.GroupID, groupingAttr.Order);
