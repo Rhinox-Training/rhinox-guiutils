@@ -52,7 +52,8 @@ public class EditorTest : MonoBehaviour
     public Shader AlsoAShader;
 
     public Shader Shader;
-    public ShaderParameterType Type;
+    //public ShaderParameterType Type;
+
 
     [ShaderParameterSelector(nameof(Shader), nameof(Type))]
     public string ShaderParam;
