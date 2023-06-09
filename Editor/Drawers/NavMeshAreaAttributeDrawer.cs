@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Reflection;
 using Rhinox.GUIUtils.Attributes;
+using Rhinox.Lightspeed;
 using Rhinox.Lightspeed.Reflection;
 using UnityEditor;
 using UnityEngine;
@@ -12,8 +13,8 @@ namespace Rhinox.GUIUtils.Editor
     [CustomPropertyDrawer(typeof(NavMeshAreaAttribute))]
     public class NavMeshLayerAttributeDrawer : PropertyDrawer
     {
-        private Dictionary<int, string> _areaNameByIndex;
-        
+        private List<KeyValuePair<int, string>> _areaNameByIndex = new List<KeyValuePair<int, string>>();
+
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
             if (fieldInfo.GetReturnType() != typeof(int))
@@ -22,32 +23,68 @@ namespace Rhinox.GUIUtils.Editor
                 return;
             }
 
-            if (((NavMeshAreaAttribute) attribute).IsMask)
+            //this can props be optimized by caching the values, but
+            //If the navmesh area list change, the cache has to be update,
+            //and i don't know if there is an event for when that updates
+            var options = GameObjectUtility.GetNavMeshAreaNames();
+            _areaNameByIndex = options.Select(x => new KeyValuePair<int, string>(NavMesh.GetAreaFromName(x), x)).ToList();
+
+            if (((NavMeshAreaAttribute)attribute).IsMask)
             {
-                var options = GameObjectUtility.GetNavMeshAreaNames();
-                property.intValue = EditorGUI.MaskField(position, label, property.intValue, options);
-            }
-            else
-            {
-                var options = GameObjectUtility.GetNavMeshAreaNames();
-                if (_areaNameByIndex == null || options.Any(x => !_areaNameByIndex.ContainsValue(x)))
+                int convertedMask = 0;
+                if (property.intValue != 0)
                 {
-                    _areaNameByIndex = new Dictionary<int, string>();
-                    foreach (var option in options)
+                    for (int index = 0; index < 32; index++)
                     {
-                        _areaNameByIndex.Add(NavMesh.GetAreaFromName(option), option);
+                        if ((property.intValue >> index & 1) == 1)
+                        {
+                            convertedMask |= 1 << _areaNameByIndex.FindIndex(x => x.Key == index);
+
+                            property.intValue -= 1 << index;
+                            if (property.intValue == 0)
+                                break;
+                        }
                     }
                 }
 
-                if (!_areaNameByIndex.ContainsKey(property.intValue))
+                convertedMask = EditorGUI.MaskField(position, label, convertedMask, options);
+
+                property.intValue = 0;
+                if (convertedMask != 0)
+                {
+                    for (int index = 0; index < _areaNameByIndex.Count; index++)
+                    {
+                        if ((convertedMask >> index & 1) == 1)
+                        {
+                            property.intValue |= 1 << _areaNameByIndex[index].Key;
+
+                            convertedMask -= 1 << index;
+                            if (convertedMask == 0)
+                                break;
+                        }
+                    }
+                }
+            }
+            else
+            {
+                var result = _areaNameByIndex.FirstOrDefault(x => x.Key == property.intValue);
+                string dropDownText;
+                if (!result.IsDefault())
+                {
+                    dropDownText = result.Value;
+                }
+                else
+                {
+                    dropDownText = "<Select a value>";
                     property.intValue = -1;
+                }
 
                 EditorGUILayout.BeginHorizontal();
                 var controlRect = EditorGUI.PrefixLabel(position, label);
-                if (EditorGUI.DropdownButton(controlRect, GUIContentHelper.TempContent(property.intValue == -1 ? "<Select a value>" : _areaNameByIndex[property.intValue]), FocusType.Passive, EditorStyles.miniPullDown))
+                if (EditorGUI.DropdownButton(controlRect, GUIContentHelper.TempContent(dropDownText), FocusType.Passive, EditorStyles.miniPullDown))
                 {
                     var menu = new GenericMenu();
-                    
+
                     foreach (var option in options)
                     {
                         menu.AddItem(new GUIContent(option), false, () =>
