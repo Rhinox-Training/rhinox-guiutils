@@ -5,16 +5,12 @@ using UnityEditor;
 using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEngine.AI;
-using UnityEditor.UIElements;
-using Rhinox.Lightspeed;
 
 namespace Rhinox.GUIUtils.Editor
 {
     [CustomPropertyDrawer(typeof(LayerAttribute))]
     public class LayerAttributeDrawer : PropertyDrawer
     {
-        //private Dictionary<int, string> _layerNameByIndex;
         private List<KeyValuePair<int, string>> _layerNameByIndex = new List<KeyValuePair<int, string>>();
 
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
@@ -25,15 +21,20 @@ namespace Rhinox.GUIUtils.Editor
                 return;
             }
 
+
+            //I recreate the list instead of caching it.
+            //If the Tags & Layers list changes (add,remove or rename), then the cache will be stale.
+            //Beacuse there is (AFAIK) no direct method when the Tags & Layers names update.
             var options = LayerUtils.GetLayerNames();
             _layerNameByIndex = options.Select(x => new KeyValuePair<int, string>(LayerMask.NameToLayer(x), x)).ToList();
 
             if (((LayerAttribute)attribute).IsMask)
             {
+                //convert the value from full list with empty entries to the null without empty entries
                 int convertedMask = 0;
                 if (property.intValue != 0)
                 {
-                    for (int index = 0; index < 32; index++)
+                    for (int index = 0; index < 32; index++)//there are only 32 layer fields in Unity
                     {
                         if ((property.intValue >> index & 1) == 1)
                         {
@@ -48,6 +49,7 @@ namespace Rhinox.GUIUtils.Editor
 
                 convertedMask = EditorGUI.MaskField(position, label, convertedMask, options);
 
+                //convert the value from the non-null list to the full list with empty entries mask value
                 property.intValue = 0;
                 if (convertedMask != 0)
                 {
@@ -66,35 +68,7 @@ namespace Rhinox.GUIUtils.Editor
             }
             else
             {
-                var result = _layerNameByIndex.FirstOrDefault(x => x.Key == property.intValue);
-                string dropDownText;
-                if (!result.IsDefault())
-                {
-                    dropDownText = result.Value;
-                }
-                else
-                {
-                    dropDownText = "<Select a value>";
-                    property.intValue = -1;
-                }
-
-                EditorGUILayout.BeginHorizontal();
-                var controlRect = EditorGUI.PrefixLabel(position, label);
-                if (EditorGUI.DropdownButton(controlRect, GUIContentHelper.TempContent(dropDownText), FocusType.Passive, EditorStyles.miniPullDown))
-                {
-                    var menu = new GenericMenu();
-
-                    foreach (var option in options)
-                    {
-                        menu.AddItem(new GUIContent(option), false, () =>
-                        {
-                            property.intValue = LayerMask.NameToLayer(option);
-                            property.serializedObject.ApplyModifiedProperties();
-                        });
-                    }
-                    menu.DropDown(controlRect);
-                }
-                EditorGUILayout.EndHorizontal();
+                property.intValue = EditorGUI.LayerField(position, label, property.intValue);
             }
         }
     }

@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using Rhinox.GUIUtils.Attributes;
 using Rhinox.Lightspeed;
 using Rhinox.Lightspeed.Reflection;
@@ -23,9 +22,9 @@ namespace Rhinox.GUIUtils.Editor
                 return;
             }
 
-            //this can props be optimized by caching the values, but
-            //If the navmesh area list change, the cache has to be update,
-            //and i don't know if there is an event for when that updates
+            //I recreate the list instead of caching it.
+            //If the navmesh area list changes (add,remove or rename), then the cache will be stale.
+            //Beacuse there is (AFAIK) no direct method when the Navmesh area names update.
             var options = GameObjectUtility.GetNavMeshAreaNames();
             _areaNameByIndex = options.Select(x => new KeyValuePair<int, string>(NavMesh.GetAreaFromName(x), x)).ToList();
 
@@ -87,7 +86,7 @@ namespace Rhinox.GUIUtils.Editor
 
                     foreach (var option in options)
                     {
-                        menu.AddItem(new GUIContent(option), false, () =>
+                        menu.AddItem(new GUIContent(option), dropDownText.Equals(option), () =>
                         {
                             property.intValue = NavMesh.GetAreaFromName(option);
                             property.serializedObject.ApplyModifiedProperties();
