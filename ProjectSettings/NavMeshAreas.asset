@@ -11,7 +11,21 @@ NavMeshProjectSettings:
     cost: 1
   - name: Jump
     cost: 2
+  - name: Teleport
+    cost: 1
+  - name: NoTeleport
+    cost: 1
+  - name: Water
+    cost: 1
   - name: 
+    cost: 1
+  - name: 
+    cost: 1
+  - name: 
+    cost: 1
+  - name: 
+    cost: 1
+  - name: sjdbfjksdb
     cost: 1
   - name: 
     cost: 1
@@ -29,21 +43,7 @@ NavMeshProjectSettings:
     cost: 1
   - name: 
     cost: 1
-  - name: 
-    cost: 1
-  - name: 
-    cost: 1
-  - name: 
-    cost: 1
-  - name: 
-    cost: 1
-  - name: 
-    cost: 1
-  - name: 
-    cost: 1
-  - name: 
-    cost: 1
-  - name: 
+  - name: RaNdOm ArEA
     cost: 1
   - name: 
     cost: 1
