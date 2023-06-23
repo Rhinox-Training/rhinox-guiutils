@@ -154,7 +154,10 @@ MonoBehaviour:
     _assemblyName: 
     _assemblyQualifiedName: 
     _name: 
-  Layer: 5
+  Layer: 9
+  MaskLayer: 64
+  NavMeshArea: 4
+  MaskNavMeshArea: 16
 --- !u!4 &655071756
 Transform:
   m_ObjectHideFlags: 0
