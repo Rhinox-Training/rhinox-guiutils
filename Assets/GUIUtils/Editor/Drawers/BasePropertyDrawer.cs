@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Rhinox.Lightspeed;
+using Rhinox.Lightspeed.Reflection;
 using UnityEditor;
 using UnityEditor.Graphs;
 using UnityEngine;
@@ -101,6 +102,11 @@ namespace Rhinox.GUIUtils.Editor
 
         protected sealed override void DrawProperty(Rect position, GUIContent label)
         {
+            if (!HostInfo.GetReturnType().InheritsFrom(typeof(T)))
+            {
+                CallInnerDrawer(position, label);
+                return;
+            }
             DrawProperty(position, ref _activeData, label);
         }
 
