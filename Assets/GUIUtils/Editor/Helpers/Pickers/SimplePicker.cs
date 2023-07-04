@@ -22,6 +22,11 @@ namespace Rhinox.GUIUtils.Editor
             InitData(filteredCollection);
         }
 
+        public SimplePicker(FilteredCollection collectionFilter)
+        {
+            InitData(collectionFilter);
+        }
+
         protected override void OnOptionSelected(object option)
         {
             OptionSelected?.Invoke((T) option);
