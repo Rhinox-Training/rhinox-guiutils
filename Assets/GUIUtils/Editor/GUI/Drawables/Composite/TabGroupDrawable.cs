@@ -27,8 +27,6 @@ namespace Rhinox.GUIUtils.Editor
             }
             
             _dic[attr.TabName].Add(child);
-            
-            
         }
 
         protected override void ParseAttributeSmart(TabGroupAttribute attr)
@@ -45,7 +43,7 @@ namespace Rhinox.GUIUtils.Editor
                 return;
 
             GUILayout.BeginVertical(CustomGUIStyles.Clean, GetLayoutOptions(_size));
-            // EditorGUILayout.BeginFadeGroup()
+            
             _index = GUILayout.Toolbar(_index, _tabs.ToArray());
             
             for (var i = 0; i < _drawableMemberChildren.Count; i++)
@@ -55,12 +53,13 @@ namespace Rhinox.GUIUtils.Editor
                 if (childDrawable == null || !childDrawable.IsVisible)
                     continue;
           
-                if (!_dic[activeTab].Contains(childDrawable)) continue;
+                if (!_dic[activeTab].Contains(childDrawable)) 
+                    continue;
 
                 childDrawable.Draw(childDrawable.Label);
 
-                if (_drawableMemberChildren.Count - 1 != i)
-                    GUILayout.Space(CustomGUIUtility.Padding); // padding
+                if (i < _drawableMemberChildren.Count - 1)
+                    GUILayout.Space(CustomGUIUtility.Padding); // padding while not the last element
             }
 
             GUILayout.EndVertical();

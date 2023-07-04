@@ -16,7 +16,6 @@ namespace Rhinox.GUIUtils.Editor
             {
                 case ButtonGroupAttribute buttonGroupAttribute:
                     return new ButtonGroupDrawable(parent, groupingAttr.GroupID, groupingAttr.Order);
-                    return new ButtonGroupDrawable(parent, groupingAttr.GroupID, groupingAttr.Order);
                 case HorizontalGroupAttribute horizontalGroupAttribute:
                     return new HorizontalGroupDrawable(parent, groupingAttr.GroupID, groupingAttr.Order);
                 case TitleGroupAttribute titleGroupAttribute:
