@@ -1,11 +1,7 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using Rhinox.GUIUtils;
 using Rhinox.GUIUtils.Attributes;
+using Rhinox.Lightspeed;
 using Rhinox.Lightspeed.Collections;
-using Sirenix.OdinInspector;
 using UnityEngine;
 
 [Serializable]

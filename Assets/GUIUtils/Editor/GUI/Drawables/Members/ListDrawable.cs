@@ -99,6 +99,7 @@ namespace Rhinox.GUIUtils.Editor
             _listRO.DisplayRemove = !settings.IsReadOnly && !settings.HideRemoveButton;
             _listRO.DisplayHeader = !settings.HideHeader;
             _isReadOnly = settings.IsReadOnly;
+            _listRO.SetExpanded(settings.Expanded);
         }
 
         private void Initialize(BetterReorderableList roList)
