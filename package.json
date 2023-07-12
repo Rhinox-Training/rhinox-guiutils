@@ -1,7 +1,7 @@
 {
   "name": "com.rhinox.open.guiutils",
   "displayName": "GUIUtils - Editor Graphical UI Extensions",
-  "version": "2.11.2",
+  "version": "2.11.3",
   "unity": "2019.4",
   "description": "GUI Utils for Unity projects, mostly Editor extensions. (Optional Odin extensions)",
   "keywords": [
