@@ -18,6 +18,7 @@ namespace Rhinox.GUIUtils.Editor
         private static object _parentView = null;
         private static PropertyInfo _screenPosProp;
         private static MethodInfo _toolbarSearchFieldMethodInfo;
+        private static MethodInfo _toolbarSearchFieldRectMethodInfo;
 
         public static Rect GetEditorWindowRect()
         {
@@ -356,6 +357,20 @@ namespace Rhinox.GUIUtils.Editor
             string result = _toolbarSearchFieldMethodInfo.Invoke(null, new object[] {searchText, layoutOptions}) as string;
             return result ?? string.Empty;
         }
+        
+        
+
+        public static string ToolbarSearchField(Rect rect, string searchText)
+        {
+            if (_toolbarSearchFieldRectMethodInfo == null)
+            {
+                var methods = typeof(EditorGUI).GetMethods( BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public);
+                _toolbarSearchFieldRectMethodInfo = methods.FirstOrDefault(x => x.Name.Equals(nameof(ToolbarSearchField)) && x.GetParameters().Length == 3);
+            }
+
+            string result = _toolbarSearchFieldRectMethodInfo.Invoke(null, new object[] {rect, searchText, false}) as string;
+            return result ?? string.Empty;
+        }
 
         public static void SelectObject(UnityEngine.Object obj)
         {
@@ -375,6 +390,46 @@ namespace Rhinox.GUIUtils.Editor
                     obj = (obj as Component).gameObject;
                 Selection.activeObject = obj;
             }
+        }
+        
+        private static float slideRectSensitivity = 0.0f;
+        private static float slideDeltaBuffer;
+
+        public static int SlideRectInt(Rect rect, int id, int value)
+        {
+            if (!GUI.enabled)
+                return value;
+            UnityEngine.EventType type = Event.current.type;
+            if (type == UnityEngine.EventType.Layout)
+                return value;
+            EditorGUIUtility.AddCursorRect(rect, MouseCursor.SlideArrow);
+            if (type == UnityEngine.EventType.MouseDown && Event.current.button == 0 && rect.Contains(Event.current.mousePosition))
+            {
+                GUIUtility.hotControl = id;
+                EditorGUIUtility.SetWantsMouseJumping(1);
+                Event.current.Use();
+                GUIUtility.keyboardControl = 0;
+                slideRectSensitivity = Mathf.Max(0.5f, Mathf.Pow((float) Mathf.Abs(value), 0.5f) * 0.03f);
+                slideDeltaBuffer = 0.0f;
+            }
+            else if (GUIUtility.hotControl == id)
+            {
+                if (Event.current.rawType == UnityEngine.EventType.MouseDrag)
+                {
+                    float num = (HandleUtility.niceMouseDelta + slideDeltaBuffer) * slideRectSensitivity;
+                    value += (int) num;
+                    slideDeltaBuffer = num - (float) (int) num;
+                    GUI.changed = true;
+                    Event.current.Use();
+                }
+                else if (Event.current.rawType == UnityEngine.EventType.MouseUp)
+                {
+                    GUIUtility.hotControl = 0;
+                    EditorGUIUtility.SetWantsMouseJumping(0);
+                    Event.current.Use();
+                }
+            }
+            return value;
         }
     }
 }
