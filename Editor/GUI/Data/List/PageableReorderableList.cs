@@ -133,8 +133,22 @@ namespace Rhinox.GUIUtils.Editor
                 RequestRepaint();
             }
             
+            
             GUILayout.BeginArea(_headerRect);
             GUILayout.BeginHorizontal();
+
+            if (Collapsible)
+            {
+                bool wasEnabled = GUI.enabled;
+                GUI.enabled = true;
+                
+                var icon = m_Expanded ? "IN foldout on" : "IN_foldout";
+                if (CustomEditorGUI.IconButton(UnityIcon.InternalIcon(icon)))
+                    SetExpanded(!m_Expanded);
+                
+                GUI.enabled = wasEnabled;
+            }
+
             
             var drawnLabel = ValidateLabel(label);
             GUILayout.Label(drawnLabel);
@@ -158,7 +172,7 @@ namespace Rhinox.GUIUtils.Editor
 
                 GUILayout.Label($"{_drawPageIndex + 1}/{maxPagesCount}");
 
-                var wasEnabled = GUI.enabled;
+                bool wasEnabled = GUI.enabled;
                 GUI.enabled = _drawPageIndex > 0;
                 if (CustomEditorGUI.IconButton(UnityIcon.InternalIcon("ArrowNavigationLeft")))
                 {
