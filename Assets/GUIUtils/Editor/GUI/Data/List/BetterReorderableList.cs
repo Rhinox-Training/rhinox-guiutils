@@ -50,9 +50,11 @@ namespace Rhinox.GUIUtils.Editor
         public bool DisplayAdd;
         public bool DisplayRemove;
         public bool Draggable;
+        public bool Collapsible;
         
         private float m_DraggedY;
         private bool m_Dragging;
+        protected bool m_Expanded;
         private List<int> m_NonDragTargetIndices;
         
         private int id = -1;
@@ -68,6 +70,7 @@ namespace Rhinox.GUIUtils.Editor
         private int _elementHovering = -1;
         
         public Rect Rect { get; private set; }
+        public bool Expanded => m_Expanded;
         private readonly List<Rect> _cachedRects = new List<Rect>();
 
         public event Action RepaintRequested;
@@ -92,6 +95,7 @@ namespace Rhinox.GUIUtils.Editor
             this.DisplayHeader = true;
             this.DisplayRemove = true;
             this.Draggable = true;
+            this.Collapsible = true;
             this.m_Dragging = false;
             this.m_SlideGroup = new ExposedGUISlideGroup();
         }
@@ -106,7 +110,10 @@ namespace Rhinox.GUIUtils.Editor
             footerHeight = 0;
 
             if (m_SerializedProperty != null)
+            {
                 _hostInfo = m_SerializedProperty.GetHostInfo();
+                m_ElementList = _hostInfo.GetValue() as IList;
+            }
             else if (_hostInfo == null)
                 _hostInfo = new RootHostInfo(m_ElementList);
             
@@ -207,18 +214,29 @@ namespace Rhinox.GUIUtils.Editor
 
         public void DoLayoutList(GUIContent label)
         {
+            GUILayout.BeginVertical();
+
             if (BetterReorderableList.s_Defaults == null)
                 BetterReorderableList.s_Defaults = new BetterReorderableList.Defaults();
 
             var headerRect = DoLayoutHeader(label);
-            var elementsRect = DoLayoutElements();
-            var footerRect = DoLayoutFooter();
+            var combinedRect = new Rect(headerRect);
 
-            if (elementsRect.IsValid())
+            if (!Collapsible || Expanded)
             {
-                headerRect.height += elementsRect.height + footerRect.height;
-                Rect = headerRect;
+                var elementsRect = DoLayoutElements();
+                if (elementsRect.IsValid())
+                    combinedRect.height += elementsRect.height;
             }
+            
+            var footerRect = DoLayoutFooter();
+            if (footerRect.IsValid())
+                combinedRect.height += footerRect.height;
+            
+            if (combinedRect.IsValid())
+                Rect = combinedRect;
+            
+            GUILayout.EndVertical();
         }
 
         protected virtual Rect DoLayoutHeader(GUIContent label)
@@ -273,6 +291,9 @@ namespace Rhinox.GUIUtils.Editor
 
         private float GetListElementHeight()
         {
+            if (Collapsible && !Expanded)
+                return 0;
+                
             float num = 4f + this.listElementTopPadding;
             int count = GetListDrawCount();
             if (count == 0)
@@ -461,7 +482,13 @@ namespace Rhinox.GUIUtils.Editor
         {
             if (!this.DisplayHeader)
                 return;
-            s_Defaults.DrawHeader(headerRect, this.m_SerializedProperty, this.m_ElementList);
+            if (Collapsible)
+            {
+                var expanded = s_Defaults.DrawHeader(headerRect, m_Expanded, this.m_SerializedProperty, this.m_ElementList);
+                SetExpanded(expanded);
+            }
+            else
+                s_Defaults.DrawHeader(headerRect, this.m_SerializedProperty, this.m_ElementList);
         }
         
         protected virtual void OnAddElement(Rect rect)
@@ -693,6 +720,15 @@ namespace Rhinox.GUIUtils.Editor
             return s_Defaults.iconToolbarPlus;
         }
 
+        public void SetExpanded(bool value)
+        {
+            if (value == m_Expanded)
+                return;
+            
+            m_Expanded = value;
+            RequestRepaint();
+        }
+
         public void GrabKeyboardFocus() => GUIUtility.keyboardControl = this.id;
 
         public void ReleaseKeyboardFocus()
@@ -895,6 +931,16 @@ namespace Rhinox.GUIUtils.Editor
                     this.headerBackground.Draw(headerRect, false, false, false, false);
             }
 
+            public bool DrawHeader(Rect headerRect, bool expanded, SerializedProperty property, IList elementList)
+            {
+                var icon = expanded ? "IN foldout on" : "IN_foldout";
+                if (CustomEditorGUI.IconButton(UnityIcon.InternalIcon(icon)))
+                    expanded = !expanded;
+                
+                DrawHeader(headerRect, property, elementList);
+                return expanded;
+            }
+            
             public void DrawHeader(Rect headerRect, SerializedProperty property, IList elementList)
             {
                 EditorGUI.LabelField(headerRect, GUIContentHelper.TempContent(property != null ? property.displayName : "IList"));

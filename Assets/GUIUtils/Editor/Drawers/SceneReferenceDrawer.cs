@@ -33,7 +33,7 @@ namespace Rhinox.GUIUtils.Editor
                 valueRect = EditorGUI.PrefixLabel(valueRect, label);
 
             // Draw scene selector
-            var asset = SmartValue.SceneAsset;
+            var asset = SmartValue?.SceneAsset;
 
             var newAsset = EditorGUI.ObjectField(valueRect, asset, typeof(SceneAsset), false);
 
