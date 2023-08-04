@@ -643,9 +643,14 @@ namespace Rhinox.GUIUtils.Editor
                 _innerItem.DrawMenuItem(i);
             }
 
-            public void Update()
+            public void CheckForInteractions(bool multi)
             {
-                //_innerItem.
+                // NOP
+            }
+
+            public void ResetInteractionState()
+            {
+                // NOP
             }
 
             public void Deselect()

@@ -188,11 +188,11 @@ namespace Rhinox.GUIUtils.Editor
 #endif
         }
 
-        public static Texture Find(string name)
+        public static Texture2D Find(string name)
         {
             var odinIcons = GetAll();
             if (odinIcons.ContainsKey(name))
-                return odinIcons[name];
+                return odinIcons[name] as Texture2D;
             return null;
         }
     }
@@ -275,7 +275,7 @@ namespace Rhinox.GUIUtils.Editor
 
         public static Texture2D AssetIcon(string name, string ext = ".png") => AssetUnityIcon.Find(name, ext);
 
-        public static Texture OdinIcon(string name) => OdinUnityIcon.Find(name);
+        public static Texture2D OdinIcon(string name) => OdinUnityIcon.Find(name);
     }
 
     public static class UnityIconFinder

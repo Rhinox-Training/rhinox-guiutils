@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Rhinox.GUIUtils.Attributes;
+using Rhinox.Lightspeed;
 using Sirenix.OdinInspector.Editor;
 using Sirenix.Utilities;
 using Sirenix.Utilities.Editor;
