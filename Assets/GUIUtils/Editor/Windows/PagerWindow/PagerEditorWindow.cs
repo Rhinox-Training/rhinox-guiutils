@@ -14,7 +14,7 @@ namespace Rhinox.GUIUtils.Editor
 {
     public abstract class PagerEditorWindow<T> :
 #if ODIN_INSPECTOR
-        OdinEditorWindow where T : OdinEditorWindow
+        OdinEditorWindow, IRepaintable where T : OdinEditorWindow
 #else
         CustomEditorWindow where T : CustomEditorWindow
 #endif
@@ -163,5 +163,12 @@ namespace Rhinox.GUIUtils.Editor
         {
             return _pager.EnumeratePages.Select(x => x.Value);
         }
+
+#if ODIN_INSPECTOR
+        public void RequestRepaint()
+        {
+            this.Repaint();
+        }
+#endif
     }
 }
