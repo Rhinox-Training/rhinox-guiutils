@@ -15,11 +15,11 @@ namespace Rhinox.GUIUtils.Editor
             switch (groupingAttr)
             {
                 case ButtonGroupAttribute buttonGroupAttribute:
-                    return new ButtonGroupDrawable(parent, groupingAttr.GroupID, groupingAttr.Order);
+                    return new ButtonGroupDrawable(parent, groupingAttr.GroupID, (int)groupingAttr.Order);
                 case HorizontalGroupAttribute horizontalGroupAttribute:
-                    return new HorizontalGroupDrawable(parent, groupingAttr.GroupID, groupingAttr.Order);
+                    return new HorizontalGroupDrawable(parent, groupingAttr.GroupID, (int)groupingAttr.Order);
                 case TitleGroupAttribute titleGroupAttribute:
-                    return new TitleGroupDrawable(parent, groupingAttr.GroupID, groupingAttr.Order);
+                    return new TitleGroupDrawable(parent, groupingAttr.GroupID, (int)groupingAttr.Order);
                 case VerticalGroupAttribute verticalGroupAttribute:
                     return new VerticalGroupDrawable(parent, groupingAttr.GroupID, groupingAttr.Order);
                 case TabGroupAttribute tabGroupAttribute:
