@@ -13,7 +13,7 @@ namespace Rhinox.GUIUtils.Editor
             var orderAttr = memberInfo.GetCustomAttribute<PropertyOrderAttribute>();
             if (orderAttr != null)
             {
-                order = orderAttr.Order;
+                order = (int)orderAttr.Order;
                 return true;
             }
             
