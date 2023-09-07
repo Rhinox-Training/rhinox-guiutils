@@ -274,10 +274,18 @@ namespace Rhinox.GUIUtils.Editor
             Rect = rect;
 
             Rect headerRect = DisplayHeader ? new Rect(rect.x, rect.y, rect.width, this.headerHeight) : new Rect(rect.x, rect.y, rect.width, 0.0f);
-            Rect listRect = new Rect(rect.x, headerRect.y + headerRect.height, rect.width, this.GetListElementHeight());
-            Rect footerRect = new Rect(rect.x, listRect.y + listRect.height, rect.width, this.footerHeight);
+            Rect footerRect;
             this.DoListHeader(headerRect, label);
-            this.DoListElements(listRect);
+            if (!Collapsible || Expanded)
+            {
+                Rect listRect = new Rect(rect.x, headerRect.y + headerRect.height, rect.width, this.GetListElementHeight());
+                this.DoListElements(listRect);
+                footerRect = new Rect(rect.x, listRect.y + listRect.height, rect.width, this.footerHeight);
+            }
+            else
+            {
+                footerRect = new Rect(rect.x, headerRect.y + headerRect.height, rect.width, this.footerHeight);
+            }
             this.DoListFooter(footerRect);
         }
 
