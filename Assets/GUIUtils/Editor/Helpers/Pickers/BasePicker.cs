@@ -57,7 +57,8 @@ namespace Rhinox.GUIUtils.Editor
             {
                 Draggable = false,
                 DisplayAdd = false,
-                DisplayRemove = false
+                DisplayRemove = false,
+                Collapsible = false
             };
             _listView.onSelectCallback += OnOptionSelected;
             _listView.RepaintRequested += OnRepaintRequested;

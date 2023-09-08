@@ -56,6 +56,15 @@ namespace Rhinox.GUIUtils.Editor
             return null;
         }
 
+        public static float ContextWidth()
+        {
+            var guiViewType = typeof(UnityEditor.EditorGUIUtility);
+            var getProp = guiViewType.GetProperty("contextWidth", BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
+            if (getProp != null)
+                return (float)getProp.GetValue(null);
+            return 0.0f;
+        }
+
         public static Rect GetTopLevelLayoutRect()
         {
             var layoutUtilType = typeof(UnityEngine.GUILayoutUtility);

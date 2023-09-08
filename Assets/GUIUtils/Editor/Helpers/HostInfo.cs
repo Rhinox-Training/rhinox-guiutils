@@ -17,7 +17,11 @@ namespace Rhinox.GUIUtils.Editor
         
         public override object GetValue() => GetHost();
         public override Type GetReturnType(bool preferValueType = true) => HostType;
-        public override Attribute[] GetAttributes() => Array.Empty<Attribute>();
+
+        public override Attribute[] GetAttributes()
+        {
+            return GetReturnType().GetCustomAttributes();
+        }
     }
 
     public class ParameterHostInfo : GenericHostInfo
