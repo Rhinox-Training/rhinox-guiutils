@@ -124,6 +124,13 @@ namespace Rhinox.GUIUtils.Editor
             Root.ApplyModifiedProperties();
             base.Apply();
         }
+
+        protected override GenericHostInfo CreateChildHostInfo(MemberInfo member)
+        {
+            if (member is FieldInfo fieldInfo)
+                return new HostInfo(this, fieldInfo);
+            return base.CreateChildHostInfo(member);
+        }
     }
     
     public class GenericHostInfo
@@ -336,6 +343,43 @@ namespace Rhinox.GUIUtils.Editor
         public virtual void Apply()
         {
             
+        }
+
+        public bool TryGetChild(string name, out GenericHostInfo childHostInfo)
+        {
+            Type t = GetReturnType();
+            if (t == null)
+            {
+                childHostInfo = null;
+                return false;
+            }
+            
+            var members = t.GetMember(name);
+            if (members.Length > 1 || members.Length == 0)
+            {
+                childHostInfo = null;
+                return false;
+            }
+
+            childHostInfo = CreateChildHostInfo(members[0]);
+            return true;
+        }
+
+        public bool TryGetChild<T>(string name, out TypedHostInfoWrapper<T> childHostInfo)
+        {
+            if (TryGetChild(name, out var info))
+            {
+                childHostInfo = new TypedHostInfoWrapper<T>(info);
+                return true;
+            }
+
+            childHostInfo = null;
+            return false;
+        }
+
+        protected virtual GenericHostInfo CreateChildHostInfo(MemberInfo member)
+        {
+            return new GenericHostInfo(this, member);
         }
     }
 }
