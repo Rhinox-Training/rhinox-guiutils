@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Rhinox.Lightspeed;
+using UnityEngine;
 
 namespace Rhinox.GUIUtils.Editor
 {
@@ -8,12 +9,14 @@ namespace Rhinox.GUIUtils.Editor
     {
         protected Func<T, string> _textSelector;
         protected Func<T, string> _subTextSelector;
-        
-        public TypedFilteredCollection(ICollection<T> options, Func<T, string> textSelector, Func<T, string> subTextSelector)
+        protected Func<T, Texture> _iconSelector;
+
+        public TypedFilteredCollection(ICollection<T> options, Func<T, string> textSelector, Func<T, string> subTextSelector, Func<T, Texture> iconSelector = null)
             : base(options, options.Count)
         {
             _textSelector = textSelector;
             _subTextSelector = subTextSelector;
+            _iconSelector = iconSelector;
         }
 
         protected override bool MatchesFilter(object value, string filter)
@@ -42,6 +45,18 @@ namespace Rhinox.GUIUtils.Editor
         {
             if (_subTextSelector == null) return null;
             return _subTextSelector.Invoke((T)o);
+        }
+
+        public override bool TryGetIconFor(object o, out Texture t)
+        {
+            if (_iconSelector == null)
+            {
+                t = null;
+                return false;
+            }
+            
+            t = _iconSelector.Invoke((T)o);
+            return true;
         }
     }
 }

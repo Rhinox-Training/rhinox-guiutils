@@ -106,7 +106,7 @@ namespace Rhinox.GUIUtils.Editor
                 _serializedObject.ApplyModifiedProperties();
         }
         
-        internal void RequestRepaint()
+        public void RequestRepaint()
         {
             RepaintRequested?.Invoke();
         }

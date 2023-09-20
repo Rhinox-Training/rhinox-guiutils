@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEngine;
 
 namespace Rhinox.GUIUtils.Editor
 {
@@ -10,6 +11,7 @@ namespace Rhinox.GUIUtils.Editor
         public readonly int AmountOfOptions;
         public readonly List<object> FilteredValues = new List<object>();
         
+        // TODO: what is this doing here?
         public static FilteredCollection Create<T>(
             ICollection<T> options,
             Func<T, string> textSelector,
@@ -37,5 +39,11 @@ namespace Rhinox.GUIUtils.Editor
         protected abstract bool MatchesFilter(object o, string filter);
         public abstract string GetTextFor(object o);
         public abstract string GetSubTextFor(object o);
+        
+        public virtual bool TryGetIconFor(object o, out Texture icon)
+        {
+            icon = null;
+            return false;
+        }
     }
 }

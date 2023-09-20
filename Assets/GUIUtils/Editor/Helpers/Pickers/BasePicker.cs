@@ -1,3 +1,5 @@
+using System;
+using System.Linq;
 using Rhinox.GUIUtils;
 using Rhinox.GUIUtils.Editor;
 using Rhinox.Lightspeed;
@@ -19,6 +21,8 @@ namespace Rhinox.GUIUtils.Editor
                 _listView.DisplayHeader = value < FilteredCollection.AmountOfOptions;
             }
         }
+        
+        public event Action<object> OptionSelectedGeneric;
 
         protected PageableReorderableList _listView;
         private const int DefaultItemsPerPage = 10;
@@ -30,6 +34,7 @@ namespace Rhinox.GUIUtils.Editor
         protected string _controlName = GUID.Generate().ToString();
 
         protected Vector2 _size;
+        private bool _supportsIcons;
 
         public void Show(Rect rect)
         {
@@ -40,12 +45,20 @@ namespace Rhinox.GUIUtils.Editor
         protected void InitData(FilteredCollection handler)
         {
             FilteredCollection = handler;
+            int count = 0;
+            foreach (var option in handler.Options)
+            {
+                if (handler.TryGetIconFor(option, out _))
+                    ++count;
+            }
+            _supportsIcons = count > 0;
 
             _listView = new PageableReorderableList(FilteredCollection.FilteredValues)
             {
                 Draggable = false,
                 DisplayAdd = false,
-                DisplayRemove = false
+                DisplayRemove = false,
+                Collapsible = false
             };
             _listView.onSelectCallback += OnOptionSelected;
             _listView.RepaintRequested += OnRepaintRequested;
@@ -66,6 +79,7 @@ namespace Rhinox.GUIUtils.Editor
         private void OnOptionSelected(BetterReorderableList list)
         {
             OnOptionSelected(list.SelectedItem);
+            OptionSelectedGeneric?.Invoke(list.SelectedItem);
             editorWindow.Close();
         }
 
@@ -87,8 +101,19 @@ namespace Rhinox.GUIUtils.Editor
             var style = CustomGUIStyles.MiniLabel;
             var width = style.CalcMaxWidth(subText);
 
-            GUI.Label(rect.AlignLeft(rect.width - width), text);
-            GUI.Label(rect.AlignRight(width), subText, style);
+            if (_supportsIcons)
+            {
+                FilteredCollection.TryGetIconFor(obj, out var icon);
+                rect.SplitX(0.2f * rect.width, rect.width - width, out Rect left, out Rect middle, out Rect right);
+                GUI.DrawTexture(left, icon, ScaleMode.ScaleToFit);
+                GUI.Label(middle, GUIContentHelper.TempContent(text));
+                GUI.Label(right, subText, style);
+            }
+            else
+            {
+                GUI.Label(rect.AlignLeft(rect.width - width), GUIContentHelper.TempContent(text));
+                GUI.Label(rect.AlignRight(width), subText, style);
+            }
         }
 
         protected void OnRepaintRequested()

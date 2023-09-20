@@ -9,7 +9,6 @@ using Sirenix.Utilities.Editor;
 #endif
 using UnityEditor;
 using UnityEngine;
-
 using Object = UnityEngine.Object;
 using ObjectFieldAlignment = Sirenix.OdinInspector.ObjectFieldAlignment;
 
@@ -18,9 +17,12 @@ namespace Rhinox.GUIUtils.Editor
     public class InternalUnityIcon : UnityIcon
     {
         public override string TextureUsage => $"UnityIcon.InternalIcon(\"{GetBestName()}\")";
-        
-        [HorizontalGroup("Variants"), ReadOnly, LabelText("Light/Dark (d_)"), ToggleLeft] public bool HasLightDarkVariants;
-        [HorizontalGroup("Variants"), ReadOnly, LabelText("HighRes (@2x)"), ToggleLeft] public bool HasHighResVariants;
+
+        [HorizontalGroup("Variants"), ReadOnly, LabelText("Light/Dark (d_)"), ToggleLeft]
+        public bool HasLightDarkVariants;
+
+        [HorizontalGroup("Variants"), ReadOnly, LabelText("HighRes (@2x)"), ToggleLeft]
+        public bool HasHighResVariants;
 
         private string GetBestName()
         {
@@ -43,7 +45,7 @@ namespace Rhinox.GUIUtils.Editor
 
             return EditorUtility.IsPersistent(tex);
         }
-        
+
         public static Texture2D[] GetAll()
         {
             // FindObjectsOfTypeAll only does loaded; so load all
@@ -68,17 +70,18 @@ namespace Rhinox.GUIUtils.Editor
     {
         public string Extension { get; set; }
 
-        public override string TextureUsage => $"UnityIcon.AssetIcon(\"{Name}{(Extension == ".png" ? "" : $", \"{Extension}\"")}\")";
-        
+        public override string TextureUsage =>
+            $"UnityIcon.AssetIcon(\"{Name}{(Extension == ".png" ? "" : $", \"{Extension}\"")}\")";
+
         /// ================================================================================================================
         /// STATIC
-        public static readonly string[] IconFolders = new []
+        public static readonly string[] IconFolders = new[]
         {
             "Assets/Editor/Icons",
             "Assets/Icons",
-            
+
             "Assets/Plugins/Editor/Icons",
-            
+
             "Assets/GUIUtils/Icons",
             "Packages/com.rhinox.open.guiutils/Icons"
         };
@@ -91,19 +94,19 @@ namespace Rhinox.GUIUtils.Editor
             foreach (var folder in AssetUnityIcon.IconFolders)
             {
                 var path = FormatAssetsPath(folder);
-                
+
                 if (!AssetDatabase.IsValidFolder(path))
                     continue;
-                
+
                 var iconAsset = AssetDatabase.LoadAssetAtPath<Texture2D>(Path.Combine(path, name + ext));
-                
+
                 if (iconAsset)
                     return iconAsset;
             }
 
             return null;
         }
-        
+
         public static string[] GetAll()
         {
             var folders = IconFolders
@@ -112,12 +115,12 @@ namespace Rhinox.GUIUtils.Editor
                 .ToArray();
 
             if (!folders.Any()) return Array.Empty<string>();
-            
+
             return AssetDatabase.FindAssets("t:Texture", searchInFolders: folders)
                 .Select(AssetDatabase.GUIDToAssetPath)
                 .ToArray();
         }
-        
+
         public static string FormatAssetsPath(string assetFolderPath)
         {
             assetFolderPath = (assetFolderPath ?? "")
@@ -144,6 +147,7 @@ namespace Rhinox.GUIUtils.Editor
 
         private static MethodInfo _getIconForType;
         private static readonly object[] _arr = new object[1];
+
         private static Texture2D GetIconForObject(UnityEngine.Object o)
         {
             // TODO: made public in 2021.2
@@ -151,18 +155,19 @@ namespace Rhinox.GUIUtils.Editor
             {
                 // EditorGUIUtility.GetIconForObject
                 var type = typeof(UnityEditor.Editor).Assembly.GetType("UnityEditor.EditorGUIUtility");
-                _getIconForType = type.GetMethod("GetIconForObject", BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
+                _getIconForType = type.GetMethod("GetIconForObject",
+                    BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
             }
 
             _arr[0] = o;
-            return  (Texture2D) _getIconForType.Invoke(null, _arr);
+            return (Texture2D) _getIconForType.Invoke(null, _arr);
         }
     }
 
     public class OdinUnityIcon : UnityIcon
     {
         public override string TextureUsage => "EditorIcons.{Name}.Active";
-        
+
         /// ================================================================================================================
         /// STATIC
         public static Dictionary<string, Texture> GetAll()
@@ -182,9 +187,17 @@ namespace Rhinox.GUIUtils.Editor
             return new Dictionary<string, Texture>();
 #endif
         }
+
+        public static Texture2D Find(string name)
+        {
+            var odinIcons = GetAll();
+            if (odinIcons.ContainsKey(name))
+                return odinIcons[name] as Texture2D;
+            return null;
+        }
     }
-    
-     /// <summary>
+
+    /// <summary>
     /// A struct used for displaying all icons used in UnityIconsViewer
     /// Also used to find corresponding textures
     /// </summary>
@@ -192,19 +205,15 @@ namespace Rhinox.GUIUtils.Editor
     {
         /// ================================================================================================================
         /// EDITOR DISPLAY
-        [ReadOnly, HideLabel, Title("Info")]
-        [HorizontalGroup("H"), VerticalGroup("H/Left", 0)]
+        [ReadOnly, HideLabel, Title("Info")] [HorizontalGroup("H"), VerticalGroup("H/Left", 0)]
         public string Name;
 
-        [ReadOnly]
-        [VerticalGroup("H/Left", 0)]
+        [ReadOnly] [VerticalGroup("H/Left", 0)]
         public string Origin;
-        
-        [HideLabel, PreviewField(70, ObjectFieldAlignment.Right)]
-        [HorizontalGroup("H/Right", 70, 1)]
-        [ReadOnly]
+
+        [HideLabel, PreviewField(70, ObjectFieldAlignment.Right)] [HorizontalGroup("H/Right", 70, 1)] [ReadOnly]
         public Texture Icon;
-        
+
         public abstract string TextureUsage { get; }
 
         [PropertySpace(10)]
@@ -256,7 +265,7 @@ namespace Rhinox.GUIUtils.Editor
             var iconContent = EditorGUIUtility.IconContent(name);
             return iconContent?.image as Texture2D;
         }
-        
+
         public static Texture2D ScriptIcon(string name)
         {
             // There is a proper method but it is internal so...
@@ -266,7 +275,125 @@ namespace Rhinox.GUIUtils.Editor
 
         public static Texture2D AssetIcon(string name, string ext = ".png") => AssetUnityIcon.Find(name, ext);
 
-        /// ================================================================================================================
-        /// ICON LISTS
+        public static Texture2D OdinIcon(string name) => OdinUnityIcon.Find(name);
+    }
+
+    public static class UnityIconFinder
+    {
+        public static void FindIcons(ref List<UnityIcon> icons)
+        {
+            icons.Clear();
+
+            // Internal icons
+            var textures = InternalUnityIcon.GetAll();
+            foreach (var group in textures.GroupBy(x => InternalUnityIcon.TrimmedName(x)))
+            {
+                if (group.Count() == 1)
+                {
+                    var tex = group.First();
+                    icons.Add(new InternalUnityIcon
+                    {
+                        Icon = tex,
+                        Name = tex.name,
+                        Origin = "Internal",
+                    });
+                }
+                else
+                {
+                    Texture2D darkTex = null, lightTex = null, highresDarkTex = null, highresLightTex = null;
+                    foreach (var texture in group)
+                    {
+                        if (texture.name.EndsWith("@2x"))
+                        {
+                            if (texture.name.StartsWith("d_"))
+                                highresDarkTex = texture;
+                            else
+                                highresLightTex = texture;
+                        }
+                        else
+                        {
+                            if (texture.name.StartsWith("d_"))
+                                darkTex = texture;
+                            else
+                                lightTex = texture;
+                        }
+                    }
+
+                    Texture2D tex;
+
+                    if (EditorGUIUtility.isProSkin)
+                        tex = highresDarkTex ?? darkTex ?? highresLightTex ?? lightTex;
+                    else
+                        tex = highresLightTex ?? lightTex ?? highresDarkTex ?? darkTex;
+
+                    bool hasDarkLightVariants = darkTex && lightTex;
+                    bool hasHighResVariants = highresDarkTex || highresLightTex;
+
+                    icons.Add(new InternalUnityIcon
+                    {
+                        Icon = tex,
+                        Name = hasDarkLightVariants ? lightTex.name : tex.name,
+                        HasLightDarkVariants = hasDarkLightVariants,
+                        HasHighResVariants = hasHighResVariants,
+                        Origin = "Internal",
+                    });
+                }
+            }
+
+            // Class icons
+            textures = ScriptUnityIcon.GetAll();
+            foreach (var tex in textures)
+            {
+                icons.Add(new ScriptUnityIcon
+                {
+                    Icon = tex,
+                    Name = tex.name,
+                    Origin = "Script"
+                });
+            }
+
+            // Odin icons
+            var odinIcons = OdinUnityIcon.GetAll();
+            foreach (var pair in odinIcons)
+            {
+                icons.Add(new OdinUnityIcon
+                {
+                    Icon = pair.Value,
+                    Name = pair.Key,
+                    Origin = "Odin",
+                });
+            }
+
+            // resources icons
+            icons.AddRange(GetAssetIcons(AssetUnityIcon.GetAll()));
+
+            icons.Sort();
+            Resources.UnloadUnusedAssets();
+            GC.Collect();
+        }
+
+
+        private static List<UnityIcon> GetAssetIcons(string[] iconPaths)
+        {
+            var icons = new List<UnityIcon>();
+            foreach (var path in iconPaths)
+            {
+                var tex = AssetDatabase.LoadAssetAtPath<Texture>(path);
+                if (tex == null) continue;
+
+                var name = Path.GetFileNameWithoutExtension(path);
+                var ext = Path.GetExtension(path);
+
+                icons.Add(new AssetUnityIcon
+                {
+                    Name = name,
+                    Extension = ext,
+                    Icon = tex,
+                    Origin = "Asset Texture",
+                });
+            }
+
+            return icons;
+        }
     }
 }
