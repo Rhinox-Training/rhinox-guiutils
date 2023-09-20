@@ -404,7 +404,7 @@ namespace Rhinox.GUIUtils.Editor
         private static float slideRectSensitivity = 0.0f;
         private static float slideDeltaBuffer;
 
-        public static int SlideRectInt(Rect rect, int id, int value)
+        public static int TrackMouseDragForIntegerChange(Rect rect, int id, int value)
         {
             if (!GUI.enabled)
                 return value;
