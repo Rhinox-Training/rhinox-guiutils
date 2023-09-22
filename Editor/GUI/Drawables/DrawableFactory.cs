@@ -418,7 +418,7 @@ namespace Rhinox.GUIUtils.Editor
         // Generic Helper methods (TODO: move these to helper classes?)
         private static bool IsVisibleInEditor(this PropertyInfo propertyInfo)
         {
-            if (propertyInfo.GetGetMethod(false) == null)
+            if (propertyInfo.GetGetMethod(true) == null)
                 return false;
 
             if (propertyInfo.GetCustomAttribute<SerializeField>() == null &&
@@ -429,8 +429,8 @@ namespace Rhinox.GUIUtils.Editor
 
         private static IEnumerable<PropertyInfo> GetEditorVisibleProperties(this Type type)
         {
-            var properties = type.GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
-                .ToList();
+            var properties = ReflectionUtility.GetAllProperties(type);
+            
             foreach (var propertyMember in properties)
             {
                 if (!propertyMember.IsVisibleInEditor())
