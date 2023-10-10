@@ -53,7 +53,7 @@ namespace Rhinox.GUIUtils.Editor
                 if (childDrawable == null || !childDrawable.IsVisible)
                     continue;
 
-                GUILayoutOption[] childOptions = widths[i] > 0 ? new [] { GUILayout.Width(widths[i]) } : Array.Empty<GUILayoutOption>();
+                GUILayoutOption[] childOptions = widths[i] > 0 ? new [] { GUILayout.MaxWidth(widths[i]) } : Array.Empty<GUILayoutOption>();
                 // Debug.Log($"\tInner START {widths[i]}");
                 GUILayout.BeginVertical(CustomGUIStyles.Clean, childOptions);
 
@@ -68,6 +68,11 @@ namespace Rhinox.GUIUtils.Editor
 
             GUILayout.EndHorizontal();
             // Debug.Log($"{this.Name} - Outer End {rect.width}");
+            
+            // This causes stacking issues
+            var rect = GUILayoutUtility.GetLastRect();
+            if (rect.IsValid())
+                _cachedRect = rect;
         }
 
         public override void Draw(Rect rect, GUIContent label)

@@ -115,6 +115,7 @@ namespace Rhinox.GUIUtils.Editor
         protected override void OnValueChanged(object host)
         {
             Root.Update();
+            EditorUtility.SetDirty(Root.targetObject);
             // Update should handle what base.OnValueChanged does
             // base.OnValueChanged(host);
         }
