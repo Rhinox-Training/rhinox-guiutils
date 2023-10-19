@@ -56,8 +56,6 @@ namespace Rhinox.GUIUtils.Editor
                 _columnOptions = columnOptions;
                 _rowHeaders = rowHeaders;
                 _headerStyle = headerStyle ?? DefaultHeaderStyle;
-                
-                BeginDraw();
             }
 
             public void BeginDraw()
