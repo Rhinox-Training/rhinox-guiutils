@@ -110,7 +110,7 @@ namespace Rhinox.GUIUtils.Editor
             {
                 EditorGUILayout.EndVertical();
 
-                if (Event.current.type == EventType.Layout)
+                if (Event.current.type == EventType.Repaint)
                 {
                     _currentRenderWidth = _tableRect.width;
                 }
