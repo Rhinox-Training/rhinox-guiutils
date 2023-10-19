@@ -115,6 +115,7 @@ namespace Rhinox.GUIUtils.Editor
         protected override void OnValueChanged(object host)
         {
             Root.Update();
+            EditorUtility.SetDirty(Root.targetObject);
             // Update should handle what base.OnValueChanged does
             // base.OnValueChanged(host);
         }
@@ -380,6 +381,23 @@ namespace Rhinox.GUIUtils.Editor
         protected virtual GenericHostInfo CreateChildHostInfo(MemberInfo member)
         {
             return new GenericHostInfo(this, member);
+        }
+
+        public string GetNicePath()
+        {
+            string path = ArrayIndex == -1 ? $"{NiceName}" : $"element{ArrayIndex.ToString()}";
+
+            var currentHostInfo = Parent;
+            while (currentHostInfo != null)
+            {
+                path = currentHostInfo.ArrayIndex == -1 ?
+                    $"{currentHostInfo.NiceName}/{path}" :
+                    $"element{currentHostInfo.ArrayIndex}/{path}";
+
+                currentHostInfo = currentHostInfo.Parent;
+            }
+
+            return path;
         }
     }
 }

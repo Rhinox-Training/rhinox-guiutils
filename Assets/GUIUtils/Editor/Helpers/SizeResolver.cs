@@ -31,7 +31,7 @@ public class SizeResolver : List<SizeInfo>
 
     public float[] Resolve(float size, float padding)
     {
-        size -= padding * Count - 1;
+        size -= padding * (Count - 1);
 
         if (_resolvedArray != null && _resolvedArray.Length == Count &&
             size.LossyEquals(_resolvedSize))
