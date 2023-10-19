@@ -552,11 +552,18 @@ namespace Rhinox.GUIUtils.Editor
                     for (int i = 0; i < entries.Length; ++i)
                     {
                         var entry = entries[i];
-                        var content = GUIContentHelper.TempContent(entry != null ? entry.ToString() : "<NULL>");
-                        if (_columnOptions != null)
-                            EditorGUILayout.LabelField(content, CustomGUIStyles.CenteredLabel, _columnOptions[i]);
+                        if (entry is Action<GUILayoutOption[]> entryDrawer)
+                        {
+                            entryDrawer.Invoke(_columnOptions != null ? _columnOptions[i] : null);
+                        }
                         else
-                            EditorGUILayout.LabelField(content, CustomGUIStyles.CenteredLabel);
+                        {
+                            var content = GUIContentHelper.TempContent(entry != null ? entry.ToString() : "<NULL>");
+                            if (_columnOptions != null)
+                                EditorGUILayout.LabelField(content, CustomGUIStyles.CenteredLabel, _columnOptions[i]);
+                            else
+                                EditorGUILayout.LabelField(content, CustomGUIStyles.CenteredLabel);
+                        }
                     }
                 }
                 EditorGUILayout.EndHorizontal();
