@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Linq;
+using Rhinox.Lightspeed;
 using UnityEditor;
 using UnityEngine;
 
@@ -31,6 +33,7 @@ namespace Rhinox.GUIUtils.Editor
             private Rect _tableRect;
             private readonly string[] _rowHeaders;
             private readonly GUIStyle _headerStyle;
+            private float _currentRenderWidth;
 
             private GUIStyle DefaultHeaderStyle
             {
@@ -84,32 +87,35 @@ namespace Rhinox.GUIUtils.Editor
                 {
                     for (int i = 0; i < entries.Length; ++i)
                     {
+                        var columnOptions = _columnOptions != null ? _columnOptions[i] : Array.Empty<GUILayoutOption>();
+                        
+                        if (!columnOptions.Any(x => x.IsWidth()))
+                            columnOptions = Utility.JoinArrays(columnOptions,
+                                new[] {GUILayout.Width(_currentRenderWidth / _rowHeaders.Length)});
+                        
                         var entry = entries[i];
                         if (entry is Action<GUILayoutOption[]> entryDrawer)
                         {
-                            entryDrawer.Invoke(_columnOptions != null ? _columnOptions[i] : null);
+                            entryDrawer.Invoke(columnOptions);
                         }
                         else
                         {
                             var content = GUIContentHelper.TempContent(entry != null ? entry.ToString() : "<NULL>");
-                            if (_columnOptions != null)
-                                EditorGUILayout.LabelField(content, CustomGUIStyles.CenteredLabel, _columnOptions[i]);
-                            else
-                                EditorGUILayout.LabelField(content, CustomGUIStyles.CenteredLabel);
+                            EditorGUILayout.LabelField(content, CustomGUIStyles.CenteredLabel, columnOptions);
                         }
                     }
                 }
                 EditorGUILayout.EndHorizontal();
-
-                if (Event.current.type == EventType.Layout)
-                {
-                    
-                }
             }
 
             public void EndDraw()
             {
                 EditorGUILayout.EndVertical();
+
+                if (Event.current.type == EventType.Layout)
+                {
+                    _currentRenderWidth = _tableRect.width;
+                }
                 
             }
         }
