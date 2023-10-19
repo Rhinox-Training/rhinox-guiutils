@@ -260,12 +260,13 @@ namespace Rhinox.GUIUtils.Editor
         protected GUILayoutOption[] GetLayoutOptions(SizeInfo info)
         {
             if (info.PreferredSize > 0.0f)
-                return new [] { GUILayout.Width(info.PreferredSize) };
+                return new [] { GUILayout.Width(Mathf.Max(info.PreferredSize, info.MinSize)) };
 
             var list = new List<GUILayoutOption>();
 
-            if (info.MinSize > 0.0f)
-                list.Add(GUILayout.MinWidth(info.MinSize));
+            // MinSize overrides automatic layout, so it is essentially useless
+            // if (info.MinSize > 0.0f)
+            //     list.Add(GUILayout.MinWidth(info.MinSize));
             
             if (info.MaxSize > 0.0f)
                 list.Add(GUILayout.MaxWidth(info.MaxSize));
