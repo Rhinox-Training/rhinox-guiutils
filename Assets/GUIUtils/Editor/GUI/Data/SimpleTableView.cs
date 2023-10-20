@@ -48,6 +48,12 @@ namespace Rhinox.GUIUtils.Editor
             }
         }
 
+        public SimpleTableView(params string[] rowHeaders)
+         : this(rowHeaders, null, null)
+        {
+
+        }
+
         public SimpleTableView(string[] rowHeaders, GUILayoutOption[][] columnOptions = null,
             GUIStyle headerStyle = null)
         {
@@ -62,23 +68,24 @@ namespace Rhinox.GUIUtils.Editor
 
         public void BeginDraw()
         {
-            var topLevelRect = CustomEditorGUI.GetTopLevelLayoutRect();
+            GUILayout.BeginVertical(CustomGUIStyles.Clean, GUILayout.ExpandWidth(true));
 
-            
-            GUILayout.BeginVertical(CustomGUIStyles.Clean, GUILayout.MaxWidth(topLevelRect.width));
-
-            GUILayout.BeginHorizontal(CustomGUIStyles.Clean); //"RL Header"
+            GUIStyle gs = "RL Header";
+            GUILayout.BeginHorizontal(gs);
             {
                 for (int i = 0; i < _rowHeaders.Length; ++i)
                 {
                     var header = _rowHeaders[i];
-                    if (_columnOptions != null)
-                        EditorGUILayout.LabelField(header, CustomGUIStyles.Clean, _columnOptions[i]); //_headerStyle
-                    else
-                        EditorGUILayout.LabelField(header, CustomGUIStyles.Clean); //_headerStyle
+                    var columnOptions = GetColumnOptionsSmart(i);
+                    GUILayout.Label(header, _headerStyle, columnOptions);
                 }
             }
             GUILayout.EndHorizontal();
+
+            var rect = GUILayoutUtility.GetLastRect();
+
+            if (rect.IsValid())
+                _tableRect = rect;
         }
 
         public void DrawRow(params object[] entries)
@@ -86,22 +93,12 @@ namespace Rhinox.GUIUtils.Editor
             if (entries.Length != ColumnCount)
                 return;
 
-            GUILayout.BeginHorizontal(CustomGUIStyles.Clean); //CellStyle
+            GUILayout.BeginHorizontal(CellStyle);
             {
                 for (int i = 0; i < entries.Length; ++i)
                 {
-                    var columnOptions = _columnOptions != null ? _columnOptions[i] : Array.Empty<GUILayoutOption>();
-
-                    if (!columnOptions.Any(x => x.IsWidth()) && _tableRect.IsValid())
-                        columnOptions = Utility.JoinArrays(columnOptions,
-                            new[]
-                            {
-                                GUILayout.MaxWidth(
-                                    (_tableRect.width - ((_rowHeaders.Length + 50) * CustomGUIUtility.Padding)) /
-                                    _rowHeaders.Length)
-                            });
-
-
+                    var columnOptions = GetColumnOptionsSmart(i);
+                    
                     GUILayout.BeginVertical(CustomGUIStyles.Clean, columnOptions);
                     var entry = entries[i];
                     if (entry is Action<GUILayoutOption[]> entryDrawer)
@@ -111,7 +108,7 @@ namespace Rhinox.GUIUtils.Editor
                     else
                     {
                         var content = GUIContentHelper.TempContent(entry != null ? entry.ToString() : "<NULL>");
-                        EditorGUILayout.LabelField(content, CustomGUIStyles.CleanLabelField, columnOptions);
+                        GUILayout.Label(content, CustomGUIStyles.CenteredLabel, columnOptions);
                     }
                     GUILayout.EndVertical();
                 }
@@ -119,16 +116,31 @@ namespace Rhinox.GUIUtils.Editor
             GUILayout.EndHorizontal();
         }
 
+        private GUILayoutOption[] GetColumnOptionsSmart(int i, int paddingHorizontal = 0)
+        {
+            float padding = ((_rowHeaders.Length - 1) * CustomGUIUtility.Padding);
+            padding += paddingHorizontal;
+            return GetColumnOptions(i, padding);
+        }
+
+        private GUILayoutOption[] GetColumnOptions(int i, float padding)
+        {
+            var columnOptions = _columnOptions != null ? _columnOptions[i] : Array.Empty<GUILayoutOption>();
+            if (!columnOptions.Any(x => x.IsWidth()) && _tableRect.IsValid())
+            {
+                columnOptions = Utility.JoinArrays(columnOptions,
+                    new[]
+                    {
+                        GUILayout.MaxWidth((_tableRect.width - padding) / _rowHeaders.Length)
+                    });
+            }
+
+            return columnOptions;
+        }
+
         public void EndDraw()
         {
             GUILayout.EndVertical();
-
-            var rect = GUILayoutUtility.GetLastRect();
-
-            if (rect.IsValid())
-            {
-                _tableRect = rect;
-            }
         }
     }
 }

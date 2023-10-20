@@ -385,15 +385,19 @@ namespace Rhinox.GUIUtils.Editor
 
         public string GetNicePath()
         {
-            string path = ArrayIndex == -1 ? $"{NiceName}" : $"element{ArrayIndex.ToString()}";
+            string path = ArrayIndex == -1 ? $"{NiceName}" : $"[{ArrayIndex.ToString()}]";
 
             var currentHostInfo = Parent;
+            GenericHostInfo previousHostInfo = this;
             while (currentHostInfo != null)
             {
+                var suffixPath = previousHostInfo.ArrayIndex != -1 ? path : $".{path}";
+                
                 path = currentHostInfo.ArrayIndex == -1 ?
-                    $"{currentHostInfo.NiceName}/{path}" :
-                    $"element{currentHostInfo.ArrayIndex}/{path}";
+                    $"{currentHostInfo.NiceName}{suffixPath}" :
+                    $"[{currentHostInfo.ArrayIndex}]{suffixPath}";
 
+                previousHostInfo = currentHostInfo;
                 currentHostInfo = currentHostInfo.Parent;
             }
 
