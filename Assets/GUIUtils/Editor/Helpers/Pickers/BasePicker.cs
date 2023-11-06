@@ -53,6 +53,8 @@ namespace Rhinox.GUIUtils.Editor
             }
             _supportsIcons = count > 0;
 
+            FilteredCollection.UpdateSearch(string.Empty);
+            
             _listView = new PageableReorderableList(FilteredCollection.FilteredValues)
             {
                 Draggable = false,
@@ -66,8 +68,6 @@ namespace Rhinox.GUIUtils.Editor
 
             MaxOptionsShown = DefaultItemsPerPage;
             ShowSearchField = MaxOptionsShown < FilteredCollection.AmountOfOptions;
-
-            FilteredCollection.UpdateSearch(string.Empty);
         }
 
         protected float GetHeight()
