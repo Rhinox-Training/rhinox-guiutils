@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using Rhinox.Lightspeed;
 using UnityEngine;
@@ -10,6 +11,9 @@ namespace Rhinox.GUIUtils.Editor
         protected Func<T, string> _textSelector;
         protected Func<T, string> _subTextSelector;
         protected Func<T, Texture> _iconSelector;
+        protected List<T> _filteredValues = new List<T>();
+
+        public override IList FilteredValues => _filteredValues;
 
         public TypedFilteredCollection(ICollection<T> options, Func<T, string> textSelector, Func<T, string> subTextSelector, Func<T, Texture> iconSelector = null)
             : base(options, options.Count)

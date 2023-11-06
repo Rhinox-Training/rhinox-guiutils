@@ -52,7 +52,7 @@ namespace Rhinox.GUIUtils.Editor
             _labelMember.DrawError(rect);
         }
         
-        [WrapDrawer(typeof(SuffixLabelAttribute), -500)]
+        [WrapDrawer(typeof(SuffixLabelAttribute), Priority.Append)]
         public static BaseWrapperDrawable Create(SuffixLabelAttribute attr, IOrderedDrawable drawable)
         {
             if (attr.Label.IsNullOrEmpty())

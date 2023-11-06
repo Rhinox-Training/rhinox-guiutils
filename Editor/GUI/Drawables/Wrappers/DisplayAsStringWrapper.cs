@@ -105,7 +105,7 @@ namespace Rhinox.GUIUtils.Editor
             return true;
         }
 
-        [WrapDrawer(typeof(DisplayAsStringAttribute), -10)]
+        [WrapDrawer(typeof(DisplayAsStringAttribute), Priority.Important)]
         public static BaseWrapperDrawable Create(DisplayAsStringAttribute attr, IOrderedDrawable drawable)
         {
             return new DisplayAsStringWrapper(drawable)
@@ -115,7 +115,7 @@ namespace Rhinox.GUIUtils.Editor
             };
         }
 
-        [WrapDrawer(typeof(DisplayAsStringAlignedAttribute), -10)]
+        [WrapDrawer(typeof(DisplayAsStringAlignedAttribute), Priority.Important)]
         public static BaseWrapperDrawable Create(DisplayAsStringAlignedAttribute attr, IOrderedDrawable drawable)
         {
             return new DisplayAsStringWrapper(drawable)
