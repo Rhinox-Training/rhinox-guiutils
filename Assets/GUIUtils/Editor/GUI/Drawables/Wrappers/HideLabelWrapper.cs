@@ -19,7 +19,7 @@ namespace Rhinox.GUIUtils.Editor
             base.DrawInner(rect, GUIContent.none);
         }
 
-        [WrapDrawer(typeof(HideLabelAttribute), -8000)]
+        [WrapDrawer(typeof(HideLabelAttribute), Priority.BehaviourChange)]
         public static BaseWrapperDrawable Create(HideLabelAttribute attr, IOrderedDrawable drawable)
         {
             return new HideLabelWrapper(drawable)

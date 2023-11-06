@@ -68,7 +68,7 @@ namespace Rhinox.GUIUtils.Editor
             return true;
         }
 
-        [WrapDrawer(typeof(FolderPathAttribute), -5000)]
+        [WrapDrawer(typeof(FolderPathAttribute), Priority.Append)]
         public static BaseWrapperDrawable Create(FolderPathAttribute attr, IOrderedDrawable drawable)
         {
             return new FilePathWrapper(drawable)
@@ -81,7 +81,7 @@ namespace Rhinox.GUIUtils.Editor
             };
         }
         
-        [WrapDrawer(typeof(FilePathAttribute), -5000)]
+        [WrapDrawer(typeof(FilePathAttribute), Priority.Append)]
         public static BaseWrapperDrawable Create(FilePathAttribute attr, IOrderedDrawable drawable)
         {
             return new FilePathWrapper(drawable)

@@ -55,8 +55,12 @@ namespace Rhinox.GUIUtils.Editor
 
             _property = property;
             UpdateData(property);
+            
+            EditorGUI.BeginProperty(position, label, property);
 
             DrawProperty(position, label);
+            
+            EditorGUI.EndProperty();
 
             Apply();
             SaveData(property);
