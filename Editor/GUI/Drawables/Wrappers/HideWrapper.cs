@@ -44,7 +44,7 @@ namespace Rhinox.GUIUtils.Editor
             return (bool) (value ?? false) == _state;
         }
 
-        [WrapDrawer(typeof(ShowIfAttribute), -11000)]
+        [WrapDrawer(typeof(ShowIfAttribute), Priority.BehaviourPrevention)]
         public static BaseWrapperDrawable Create(ShowIfAttribute attr, IOrderedDrawable drawable)
         {
             var member = MemberHelper.Create<object>(drawable.HostInfo, attr.MemberName);
@@ -56,7 +56,7 @@ namespace Rhinox.GUIUtils.Editor
             };
         }
         
-        [WrapDrawer(typeof(HideIfAttribute), -11000)]
+        [WrapDrawer(typeof(HideIfAttribute), Priority.BehaviourPrevention)]
         public static BaseWrapperDrawable Create(HideIfAttribute attr, IOrderedDrawable drawable)
         {
             var member = MemberHelper.Create<object>(drawable.HostInfo, attr.MemberName);
@@ -68,7 +68,7 @@ namespace Rhinox.GUIUtils.Editor
             };
         }
         
-        [WrapDrawer(typeof(HideInInspector), -11000)]
+        [WrapDrawer(typeof(HideInInspector), Priority.BehaviourPrevention)]
         public static BaseWrapperDrawable Create(HideInInspector attr, IOrderedDrawable drawable)
         {
             return new HideWrapper(drawable)

@@ -50,7 +50,7 @@ namespace Rhinox.GUIUtils.Editor
         }
 
 
-        [WrapDrawer(typeof(LabelWidthAttribute), -500)]
+        [WrapDrawer(typeof(LabelWidthAttribute), Priority.BehaviourChange)]
         public static BaseWrapperDrawable Create(LabelWidthAttribute attr, IOrderedDrawable drawable)
         {
             return new LabelWidthWrapper(drawable)
@@ -59,7 +59,7 @@ namespace Rhinox.GUIUtils.Editor
             };
         }
         
-        [WrapDrawer(typeof(FittedLabelAttribute), -500)]
+        [WrapDrawer(typeof(FittedLabelAttribute), Priority.BehaviourChange)]
         public static BaseWrapperDrawable Create(FittedLabelAttribute attr, IOrderedDrawable drawable)
         {
             return new LabelWidthWrapper(drawable)

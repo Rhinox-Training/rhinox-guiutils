@@ -159,7 +159,7 @@ namespace Rhinox.GUIUtils.Editor
             return null;
         }
 
-        [WrapDrawer(typeof(ValueDropdownAttribute), -1)]
+        [WrapDrawer(typeof(ValueDropdownAttribute), Priority.Simple)]
         public static BaseWrapperDrawable Create(ValueDropdownAttribute attr, IOrderedDrawable drawable)
         {
             var member = MemberHelper.Create<IEnumerable>(drawable.HostInfo, attr.MemberName);

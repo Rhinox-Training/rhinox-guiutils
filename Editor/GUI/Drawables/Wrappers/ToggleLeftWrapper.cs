@@ -31,7 +31,7 @@ namespace Rhinox.GUIUtils.Editor
             EditorGUI.LabelField(labelRect, label);
         }
 
-        [WrapDrawer(typeof(ToggleLeftAttribute))]
+        [WrapDrawer(typeof(ToggleLeftAttribute), Priority.Simple)]
         public static BaseWrapperDrawable Create(ToggleLeftAttribute attr, IOrderedDrawable drawable)
         {
             return new ToggleLeftWrapper(drawable)

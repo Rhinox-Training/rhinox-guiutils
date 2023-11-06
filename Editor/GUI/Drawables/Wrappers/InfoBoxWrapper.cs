@@ -65,7 +65,7 @@ namespace Rhinox.GUIUtils.Editor
                 GUIContentHelper.TempContent(_message, (Texture)icon), width);
         }
 
-        [WrapDrawer(typeof(InfoBoxAttribute), -5000)]
+        [WrapDrawer(typeof(InfoBoxAttribute), Priority.Append)]
         public static BaseWrapperDrawable Create(InfoBoxAttribute attr, IOrderedDrawable drawable)
         {
             var member = MemberHelper.Create<bool>(drawable.HostInfo, attr.VisibleIf);

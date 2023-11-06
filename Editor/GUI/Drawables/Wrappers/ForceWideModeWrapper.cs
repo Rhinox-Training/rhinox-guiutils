@@ -34,7 +34,7 @@ namespace Rhinox.GUIUtils.Editor
             base.OnPostDraw();
         }
         
-        [WrapDrawer(typeof(ForceWideModeAttribute), -10)]
+        [WrapDrawer(typeof(ForceWideModeAttribute), Priority.BehaviourChange)]
         public static BaseWrapperDrawable Create(ForceWideModeAttribute attr, IOrderedDrawable drawable)
         {
             return new ForceWideModeWrapper(drawable);

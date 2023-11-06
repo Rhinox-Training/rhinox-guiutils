@@ -67,7 +67,7 @@ namespace Rhinox.GUIUtils.Editor
             base.DrawInner(rect, label);
         }
 
-        [WrapDrawer(typeof(TitleAttribute), -10000)]
+        [WrapDrawer(typeof(TitleAttribute), Priority.Append)]
         public static BaseWrapperDrawable Create(TitleAttribute attr, IOrderedDrawable drawable)
         {
             var memberHelper = MemberHelper.Create<string>(drawable.HostInfo, attr.Title);
