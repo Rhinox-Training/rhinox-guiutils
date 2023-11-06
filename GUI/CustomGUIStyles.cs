@@ -491,6 +491,7 @@ namespace Rhinox.GUIUtils
             }
         }
         
+        
         private static GUIStyle _toggleGroupBackground;
         public static GUIStyle ToggleGroupBackground
         {
@@ -501,12 +502,41 @@ namespace Rhinox.GUIUtils
                     _toggleGroupBackground = new GUIStyle("HelpBox")
                     {
                         overflow = new RectOffset(0, 0, 0, 0),
-                        margin = new RectOffset(0, 0, 0, 0),
+                        margin = new RectOffset(-2, -2, 0, 0),
                         padding = new RectOffset(0, 0, 0, 0)
                     };
                 }
 
                 return _toggleGroupBackground;
+            }
+        }
+        
+        private static GUIStyle _toggleGroupHeaderStyle;
+        public static GUIStyle ToggleGroupHeader
+        {
+            get
+            {
+                if (_toggleGroupHeaderStyle == null)
+                    _toggleGroupHeaderStyle = new GUIStyle("RL Header")
+                    {
+                        margin = new RectOffset(0, 0, 0, 0),
+                        padding = new RectOffset(2, 2, 0, 0)
+                    };
+                return _toggleGroupHeaderStyle;
+            }
+        }
+        
+        private static GUIStyle _toggleGroupContentStyle;
+        public static GUIStyle ToggleGroupContent
+        {
+            get
+            {
+                if (_toggleGroupContentStyle == null)
+                    _toggleGroupContentStyle = new GUIStyle(Clean)
+                    {
+                        padding = new RectOffset(2, 2, 0, 0)
+                    };
+                return _toggleGroupContentStyle;
             }
         }
 
