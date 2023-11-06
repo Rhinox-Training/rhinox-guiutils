@@ -34,7 +34,8 @@ namespace Rhinox.GUIUtils.Editor
         private GUIContent _addContent;
 
         private static Dictionary<Type, TypeCache.TypeCollection> _typeOptionsByType = new Dictionary<Type, TypeCache.TypeCollection>();
-        
+        private static Dictionary<Type, bool> _isValidByType = new Dictionary<Type, bool>();
+
         private bool HasMultipleTypeOptions
         {
             get 
@@ -96,15 +97,19 @@ namespace Rhinox.GUIUtils.Editor
                 
                 foreach (var t in _typeOptionsByType[m_ElementType])
                 {
-                    if (t.IsGenericType && t.ContainsGenericParameters)
+                    if (!_isValidByType.TryGetValue(t, out bool isValid))
+                    {
+                        // NOTE: This is still not supported in Unity 2021, maybe they will add support in the future
+                        isValid = !t.IsGenericType;// && t.ContainsGenericParameters;
+                        if (t.IsAbstract)
+                            isValid = false;
+                        _isValidByType[t] = isValid;
+                    }
+                    
+                    if (!isValid)
                         continue;
                     
-                    // NOTE: This is still not supported in Unity 2021, maybe they will add support in the future
-                    if (t.IsGenericType)
-                        continue;
-                    
-                    if (!t.IsAbstract)
-                        options.Add(t);
+                    options.Add(t);
                 }
                 this.m_AddOptionTypes = options;
             }
@@ -137,21 +142,24 @@ namespace Rhinox.GUIUtils.Editor
             GUILayout.BeginArea(_headerRect);
             GUILayout.BeginHorizontal();
 
+            var drawnLabel = ValidateLabel(label);
+
             if (Collapsible)
             {
                 bool wasEnabled = GUI.enabled;
                 GUI.enabled = true;
-                
-                var icon = m_Expanded ? "IN foldout on" : "IN_foldout";
-                if (CustomEditorGUI.IconButton(UnityIcon.InternalIcon(icon)))
-                    SetExpanded(!m_Expanded);
+
+                m_Expanded = eUtility.Foldout(m_Expanded, drawnLabel);
+
+                // var icon = m_Expanded ? "IN_foldout_on" : "IN_foldout";
+                // if (CustomEditorGUI.IconButton(UnityIcon.InternalIcon(icon)))
+                //     SetExpanded(!m_Expanded);
                 
                 GUI.enabled = wasEnabled;
             }
-
+            else
+                GUILayout.Label(drawnLabel);
             
-            var drawnLabel = ValidateLabel(label);
-            GUILayout.Label(drawnLabel);
             GUILayout.FlexibleSpace();
             GUILayout.Label($"{count} Items");
 

@@ -490,6 +490,7 @@ namespace Rhinox.GUIUtils.Editor
         {
             if (!this.DisplayHeader)
                 return;
+            
             if (Collapsible)
             {
                 var expanded = s_Defaults.DrawHeader(headerRect, m_Expanded, this.m_SerializedProperty, this.m_ElementList);
@@ -941,9 +942,11 @@ namespace Rhinox.GUIUtils.Editor
 
             public bool DrawHeader(Rect headerRect, bool expanded, SerializedProperty property, IList elementList)
             {
-                var icon = expanded ? "IN foldout on" : "IN_foldout";
-                if (CustomEditorGUI.IconButton(UnityIcon.InternalIcon(icon)))
-                    expanded = !expanded;
+                expanded = eUtility.Foldout(expanded, GUIContent.none);
+                
+                // var icon = expanded ? "IN_foldout_on" : "IN_foldout";
+                // if (CustomEditorGUI.IconButton(UnityIcon.InternalIcon(icon)))
+                //     expanded = !expanded;
                 
                 DrawHeader(headerRect, property, elementList);
                 return expanded;
