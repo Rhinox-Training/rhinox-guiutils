@@ -14,7 +14,7 @@ namespace Rhinox.GUIUtils.Editor
     {
         public class Box : EditorGUILayout.VerticalScope
         {
-            public Box(params GUILayoutOption[] options) : base("helpbox", options)
+            public Box(params GUILayoutOption[] options) : base(CustomGUIStyles.ToggleGroupBackground, options)
             {
                 
             }
@@ -22,6 +22,14 @@ namespace Rhinox.GUIUtils.Editor
             public Box(GUIStyle style, params GUILayoutOption[] options) : base(style, options)
             {
                 
+            }
+        }
+        
+        public class HiddenGroup : EditorGUILayout.FadeGroupScope
+        {
+            public HiddenGroup(bool hidden = true)
+                : base(hidden ? 0 : 1)
+            {
             }
         }
         

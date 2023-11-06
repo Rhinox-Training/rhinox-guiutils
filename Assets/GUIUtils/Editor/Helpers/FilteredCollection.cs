@@ -9,7 +9,7 @@ namespace Rhinox.GUIUtils.Editor
     {
         public readonly IEnumerable Options;
         public readonly int AmountOfOptions;
-        public readonly List<object> FilteredValues = new List<object>();
+        public virtual IList FilteredValues { get; }
         
         // TODO: what is this doing here?
         public static FilteredCollection Create<T>(

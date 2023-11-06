@@ -9,6 +9,30 @@ namespace Rhinox.GUIUtils.Editor
 {
     public abstract class BaseWrapperDrawable : BaseDrawable
     {
+        protected static class Priority
+        {
+            /// <summary>
+            /// Changes default editor GUI
+            /// </summary>
+            public const int Simple = -1;
+            /// <summary>
+            /// Changes default editor GUI, taking priority over Simple
+            /// </summary>
+            public const int Important = -10;
+            /// <summary>
+            /// Will pass through, but adds something
+            /// </summary>
+            public const int Append = -500;
+            /// <summary>
+            /// Will pass through, but changes some variables / GUI state
+            /// </summary>
+            public const int BehaviourChange = -1000;
+            /// <summary>
+            /// Will stop certain things from happening
+            /// </summary>
+            public const int BehaviourPrevention = -1250;
+        }
+        
         protected IOrderedDrawable _innerDrawable;
         
         public override float ElementHeight => _innerDrawable.ElementHeight;

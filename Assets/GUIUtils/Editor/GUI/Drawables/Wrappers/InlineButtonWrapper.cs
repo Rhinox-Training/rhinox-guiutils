@@ -43,7 +43,7 @@ namespace Rhinox.GUIUtils.Editor
             _methodHelper?.Invoke();
         }
 
-        [WrapDrawer(typeof(InlineButtonAttribute), -5000)]
+        [WrapDrawer(typeof(InlineButtonAttribute), Priority.Append)]
         public static BaseWrapperDrawable Create(InlineButtonAttribute attr, IOrderedDrawable drawable)
         {
             var member = MemberHelper.CreateMethod(drawable.HostInfo, attr.MemberMethod);

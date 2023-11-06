@@ -23,7 +23,7 @@ namespace Rhinox.GUIUtils.Editor
             base.OnPostDraw();
         }
 
-        [WrapDrawer(typeof(IndentAttribute), -11000)]
+        [WrapDrawer(typeof(IndentAttribute), Priority.BehaviourChange)]
         public static BaseWrapperDrawable Create(IndentAttribute attr, IOrderedDrawable drawable)
         {
             return new IndentWrapper(drawable)

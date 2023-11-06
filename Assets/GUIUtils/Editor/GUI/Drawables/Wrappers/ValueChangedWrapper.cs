@@ -37,7 +37,7 @@ namespace Rhinox.GUIUtils.Editor
             _methodMember?.DrawError(rect);
         }
 
-        [WrapDrawer(typeof(OnValueChangedAttribute), -500)]
+        [WrapDrawer(typeof(OnValueChangedAttribute), Priority.BehaviourChange)]
         public static BaseWrapperDrawable Create(OnValueChangedAttribute attr, IOrderedDrawable drawable)
         {
             var member = MemberHelper.CreateMethod(drawable.HostInfo, attr.MethodName);

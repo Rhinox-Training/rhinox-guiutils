@@ -28,7 +28,7 @@ namespace Rhinox.GUIUtils.Editor
             _stringHelper.DrawError(rect);
         }
         
-        [WrapDrawer(typeof(LabelTextAttribute), -1000)]
+        [WrapDrawer(typeof(LabelTextAttribute), Priority.BehaviourChange)]
         public static BaseWrapperDrawable Create(LabelTextAttribute attr, IOrderedDrawable drawable)
         {
             var member = MemberHelper.Create<string>(drawable.HostInfo, attr.Text);
@@ -38,7 +38,7 @@ namespace Rhinox.GUIUtils.Editor
             };
         }
         
-        [WrapDrawer(typeof(FittedLabelAttribute), -1000)]
+        [WrapDrawer(typeof(FittedLabelAttribute), Priority.BehaviourChange)]
         public static BaseWrapperDrawable Create(FittedLabelAttribute attr, IOrderedDrawable drawable)
         {
             if (attr.Text.IsNullOrEmpty())

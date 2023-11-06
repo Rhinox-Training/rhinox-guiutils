@@ -13,15 +13,22 @@ namespace Rhinox.GUIUtils.Editor
 
         private GUIContent _label;
         private bool _hasLabel = false;
-        public bool IsFoldout => false;
-
+        
+        private bool _expanded = true;
+        private bool _isFoldout = true;
+        
         public override float ElementHeight
         {
             get
             {
                 var height = Children.Sum(x => x.ElementHeight);
-                if (IsFoldout && _hasLabel)
-                    height += EditorGUIUtility.singleLineHeight + CustomGUIUtility.Padding;
+                if (_isFoldout && _hasLabel)
+                {
+                    var single = EditorGUIUtility.singleLineHeight + CustomGUIUtility.Padding;
+                    if (_expanded)
+                        height += single;
+                    else height = single;
+                }
                 return height;
             }
         }
@@ -59,19 +66,19 @@ namespace Rhinox.GUIUtils.Editor
         {
             _hasLabel = label != GUIContent.none;
 
-            if (IsFoldout)
+            if (_isFoldout && _hasLabel)
             {
-                if (_hasLabel)
+                _expanded = eUtility.FoldoutHeader(_expanded, label, null, CustomGUIStyles.Label);
+
+                if (_expanded)
                 {
-                    GUILayout.Label(label);
-                    GUILayout.Space(2);
+                    ++EditorGUI.indentLevel;
+                
+                    foreach (var child in Children)
+                        child.Draw(GUIContent.none);
+                
+                    --EditorGUI.indentLevel;
                 }
-                ++EditorGUI.indentLevel;
-                
-                foreach (var child in Children)
-                    child.Draw(GUIContent.none);
-                
-                --EditorGUI.indentLevel;
             }
             else
             {
@@ -97,17 +104,14 @@ namespace Rhinox.GUIUtils.Editor
         public override void Draw(Rect rect, GUIContent label)
         {
             var indentLevel = EditorGUI.indentLevel;
-            
-            if (IsFoldout)
+            _hasLabel = label != GUIContent.none;
+
+            if (_isFoldout && _hasLabel)
             {
-                _hasLabel = label != GUIContent.none;
-                if (_hasLabel)
-                {
-                    var height = EditorGUIUtility.singleLineHeight + 2;
-                    var labelRect = rect.AlignTop(height);
-                    EditorGUI.LabelField(labelRect, label);
-                    rect.yMin += height;
-                }
+                var height = EditorGUIUtility.singleLineHeight + 2;
+                var labelRect = rect.AlignTop(height);
+                EditorGUI.LabelField(labelRect, label);
+                rect.yMin += height;
 
                 ++EditorGUI.indentLevel;
                 if (rect.IsValid())
