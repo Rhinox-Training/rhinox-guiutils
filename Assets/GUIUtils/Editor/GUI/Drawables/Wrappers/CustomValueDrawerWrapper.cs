@@ -63,7 +63,7 @@ namespace Rhinox.GUIUtils.Editor
                 GUI.changed = true;
         }
 
-        [WrapDrawer(typeof(CustomValueDrawerAttribute), -1)]
+        [WrapDrawer(typeof(CustomValueDrawerAttribute), Priority.Simple)]
         public static BaseWrapperDrawable Create(CustomValueDrawerAttribute attr, IOrderedDrawable drawable)
         {
             var member = MemberHelper.CreateMethod(drawable.HostInfo, attr.MethodName);

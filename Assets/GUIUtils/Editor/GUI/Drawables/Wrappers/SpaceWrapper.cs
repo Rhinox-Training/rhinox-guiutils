@@ -31,7 +31,7 @@ namespace Rhinox.GUIUtils.Editor
                 GUILayout.Space(_amountAfter);
         }
 
-        [WrapDrawer(typeof(SpaceAttribute))]
+        [WrapDrawer(typeof(SpaceAttribute), Priority.Append)]
         public static BaseWrapperDrawable Create(SpaceAttribute attr, IOrderedDrawable drawable)
         {
             return new SpaceWrapper(drawable)
@@ -40,7 +40,7 @@ namespace Rhinox.GUIUtils.Editor
             };
         }
         
-        [WrapDrawer(typeof(PropertySpaceAttribute))]
+        [WrapDrawer(typeof(PropertySpaceAttribute), Priority.Append)]
         public static BaseWrapperDrawable Create(PropertySpaceAttribute attr, IOrderedDrawable drawable)
         {
             return new SpaceWrapper(drawable)

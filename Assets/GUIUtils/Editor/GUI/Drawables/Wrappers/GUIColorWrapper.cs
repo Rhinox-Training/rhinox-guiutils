@@ -27,7 +27,7 @@ namespace Rhinox.GUIUtils.Editor
             base.OnPostDraw();
         }
 
-        [WrapDrawer(typeof(GUIColorAttribute), -10000)]
+        [WrapDrawer(typeof(GUIColorAttribute), Priority.BehaviourChange)]
         public static BaseWrapperDrawable Create(GUIColorAttribute attr, IOrderedDrawable drawable)
         {
             return new GUIColorWrapper(drawable)

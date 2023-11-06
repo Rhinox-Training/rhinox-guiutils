@@ -47,7 +47,7 @@ namespace Rhinox.GUIUtils.Editor
             return  (bool) (value ?? false) != _state;
         }
 
-        [WrapDrawer(typeof(EnableIfAttribute), -10500)]
+        [WrapDrawer(typeof(EnableIfAttribute), Priority.BehaviourChange)]
         public static BaseWrapperDrawable Create(EnableIfAttribute attr, IOrderedDrawable drawable)
         { 
             var member = MemberHelper.Create<object>(drawable.HostInfo, attr.MemberName);
@@ -59,7 +59,7 @@ namespace Rhinox.GUIUtils.Editor
             };
         }
         
-        [WrapDrawer(typeof(DisableIfAttribute), -10500)]
+        [WrapDrawer(typeof(DisableIfAttribute), Priority.BehaviourChange)]
         public static BaseWrapperDrawable Create(DisableIfAttribute attr, IOrderedDrawable drawable)
         {
             var member = MemberHelper.Create<object>(drawable.HostInfo, attr.MemberName);
@@ -72,7 +72,7 @@ namespace Rhinox.GUIUtils.Editor
             };
         }
         
-        [WrapDrawer(typeof(ReadOnlyAttribute), -10500)]
+        [WrapDrawer(typeof(ReadOnlyAttribute), Priority.BehaviourChange)]
         public static BaseWrapperDrawable Create(ReadOnlyAttribute attr, IOrderedDrawable drawable)
         {
             return new GUIStateWrapper(drawable)
