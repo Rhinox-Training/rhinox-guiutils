@@ -185,10 +185,14 @@ namespace Rhinox.GUIUtils.Editor
                 _innerDrawable = DrawableFactory.CreateDrawableFor(HostInfo, false);
             float oldHeight = position.height;
             float innerDrawableHeight = _innerDrawable.ElementHeight;
-            position.height = innerDrawableHeight;
+            if (position.IsValid())
+                position.height = innerDrawableHeight;
             _innerDrawable.Draw(position, label);
-            position.height = oldHeight;
-            position.y += innerDrawableHeight;
+            if (position.IsValid())
+            {
+                position.height = oldHeight;    
+                position.y += innerDrawableHeight;
+            }
             return position;
         }
 
