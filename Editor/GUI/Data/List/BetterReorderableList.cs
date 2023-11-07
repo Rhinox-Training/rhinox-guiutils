@@ -273,7 +273,10 @@ namespace Rhinox.GUIUtils.Editor
 
             Rect = rect;
 
-            Rect headerRect = DisplayHeader ? new Rect(rect.x, rect.y, rect.width, this.headerHeight) : new Rect(rect.x, rect.y, rect.width, 0.0f);
+            Rect headerRect = new Rect(rect.x, rect.y, rect.width, 0.0f);
+            if (DisplayHeader && rect.IsValid())
+                headerRect = new Rect(rect.x, rect.y, rect.width, this.headerHeight);
+            
             Rect footerRect;
             this.DoListHeader(headerRect, label);
             if (!Collapsible || Expanded)
@@ -478,10 +481,13 @@ namespace Rhinox.GUIUtils.Editor
         {
             if (this.showDefaultBackground && Event.current.type == UnityEngine.EventType.Repaint)
                 BetterReorderableList.s_Defaults.DrawHeaderBackground(headerRect);
-            headerRect.xMin += 6f;
-            headerRect.xMax -= 6f;
-            headerRect.height -= 2f;
-            ++headerRect.y;
+            if (headerRect.IsValid())
+            {
+                headerRect.xMin += 6f;
+                headerRect.xMax -= 6f;
+                headerRect.height -= 2f;
+                ++headerRect.y;
+            }
             
             OnDrawHeader(headerRect, label);
         }
