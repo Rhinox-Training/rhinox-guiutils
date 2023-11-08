@@ -15,7 +15,7 @@ namespace Rhinox.GUIUtils.Editor
         
         public override void OnInspectorGUI()
         {
-            var attr = target.GetType().GetCustomAttribute<SmartFallbackDrawnAttribute>();
+            var attr = AttributeProcessorHelper.FindAttributeInclusive<SmartFallbackDrawnAttribute>(target.GetType());
             if (attr == null)
             {
                 base.OnInspectorGUI();

@@ -106,7 +106,7 @@ namespace Rhinox.GUIUtils.Editor
 
         public override IEnumerable<TAttribute> GetDrawableAttributes<TAttribute>()
         {
-            return HostInfo.MemberInfo.GetCustomAttributes<TAttribute>();
+            return AttributeProcessorHelper.FindAttributesInclusive<TAttribute>(HostInfo.MemberInfo);
         }
     }
 }

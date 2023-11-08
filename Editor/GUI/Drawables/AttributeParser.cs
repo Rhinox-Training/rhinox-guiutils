@@ -10,7 +10,7 @@ namespace Rhinox.GUIUtils.Editor
     {
         public static bool TryParseOrder(MemberInfo memberInfo, out int order, int defaultReturn = 0)
         {
-            var orderAttr = memberInfo.GetCustomAttribute<PropertyOrderAttribute>();
+            var orderAttr = AttributeProcessorHelper.FindAttributeInclusive<PropertyOrderAttribute>(memberInfo);
             if (orderAttr != null)
             {
                 order = (int)orderAttr.Order;
@@ -23,7 +23,7 @@ namespace Rhinox.GUIUtils.Editor
 
         public static bool ParseDrawAsUnity(MemberInfo memberInfo)
         {
-            var attr = memberInfo.GetCustomAttribute<DrawAsUnityObjectAttribute>();
+            var attr = AttributeProcessorHelper.FindAttributeInclusive<DrawAsUnityObjectAttribute>(memberInfo);
             return attr != null;
         }
 

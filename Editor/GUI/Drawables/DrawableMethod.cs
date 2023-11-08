@@ -49,7 +49,7 @@ namespace Rhinox.GUIUtils.Editor
         {
             if (_methodInfo == null)
                 return base.GetDrawableAttributes<TAttribute>();
-            return _methodInfo.GetCustomAttributes<TAttribute>();
+            return AttributeProcessorHelper.FindAttributesInclusive<TAttribute>(_methodInfo);
         }
     }
 }

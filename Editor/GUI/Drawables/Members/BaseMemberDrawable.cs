@@ -13,7 +13,7 @@ namespace Rhinox.GUIUtils.Editor
     {
         protected override string LabelString => HostInfo.NiceName;
         
-        private Attribute[] _cachedAttributes;
+        private ICollection<Attribute> _cachedAttributes;
         
         protected BaseMemberDrawable(GenericHostInfo hostInfo)
         {
