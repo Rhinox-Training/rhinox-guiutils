@@ -111,11 +111,13 @@ namespace Rhinox.GUIUtils.Editor
                 var height = EditorGUIUtility.singleLineHeight + 2;
                 var labelRect = rect.AlignTop(height);
                 EditorGUI.LabelField(labelRect, label);
-                rect.yMin += height;
 
                 ++EditorGUI.indentLevel;
                 if (rect.IsValid())
+                {
+                    rect.yMin += height;
                     rect = EditorGUI.IndentedRect(rect);
+                }
                 EditorGUI.indentLevel = 0;
             }
             else if (rect.IsValid())
