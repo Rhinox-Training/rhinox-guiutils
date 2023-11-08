@@ -74,6 +74,9 @@ namespace Rhinox.GUIUtils.Editor
 
         public static IOrderedDrawable TryWrapDrawable(IOrderedDrawable drawable, IEnumerable<Attribute> attributes)
         {
+            if (drawable == null)
+                return null;
+            
             if (!_initialized)
                 Initialize();
 

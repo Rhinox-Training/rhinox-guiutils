@@ -56,11 +56,13 @@ namespace Rhinox.GUIUtils.Editor
             _property = property;
             UpdateData(property);
             
-            EditorGUI.BeginProperty(position, label, property);
+            if (property != null)
+                EditorGUI.BeginProperty(position, label, property);
 
             DrawProperty(position, label);
             
-            EditorGUI.EndProperty();
+            if (property != null)
+                EditorGUI.EndProperty();
 
             Apply();
             SaveData(property);
@@ -179,16 +181,39 @@ namespace Rhinox.GUIUtils.Editor
             return _innerDrawable.ElementHeight;
         }
 
+        private class TypeExclusionModifier<TFilter> : StandardDepthChecker
+        {
+            public TypeExclusionModifier()
+            {
+                if (typeof(TFilter) == typeof(object) || typeof(TFilter) == typeof(UnityEngine.Object))
+                    throw new ArgumentException("TFilter cannot support object type");
+            }
+            
+            public override DrawableCreationMode Find(GenericHostInfo hostInfo, int depth)
+            {
+                if (!CheckDepth(depth))
+                    return DrawableCreationMode.None;
+                var returnType = hostInfo.GetReturnType();
+                if (returnType == typeof(TFilter))
+                    return DrawableCreationMode.Composite;
+                return DrawableCreationMode.Auto;
+            }
+        }
+
         protected virtual Rect CallInnerDrawer(Rect position, GUIContent label)
         {
             if (_innerDrawable == null)
-                _innerDrawable = DrawableFactory.CreateDrawableFor(HostInfo, false);
+                _innerDrawable = DrawableFactory.CreateDrawableFor(HostInfo, new TypeExclusionModifier<T>());
             float oldHeight = position.height;
             float innerDrawableHeight = _innerDrawable.ElementHeight;
-            position.height = innerDrawableHeight;
+            if (position.IsValid())
+                position.height = innerDrawableHeight;
             _innerDrawable.Draw(position, label);
-            position.height = oldHeight;
-            position.y += innerDrawableHeight;
+            if (position.IsValid())
+            {
+                position.height = oldHeight;    
+                position.y += innerDrawableHeight;
+            }
             return position;
         }
 
