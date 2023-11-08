@@ -356,7 +356,7 @@ namespace Rhinox.GUIUtils.Editor
                     continue;
 
                 // TypeCache only marks certain methods as using this attribute, now actually fetch it
-                var attributes = mi.GetCustomAttributes();
+                var attributes =  AttributeProcessorHelper.FindAllAttributesInclusive(mi);
                 var attr = attributes.OfType<ButtonAttribute>().First();
 
                 IOrderedDrawable button = new DrawableButton(info, mi)
@@ -373,7 +373,7 @@ namespace Rhinox.GUIUtils.Editor
                 var mi = drawMethods[i];
                 if (!ReflectionUtility.IsMethodOfType(type, ref mi))
                     continue;
-                var attributes = mi.GetCustomAttributes();
+                var attributes = AttributeProcessorHelper.FindAllAttributesInclusive(mi);
 
                 IOrderedDrawable drawable = new DrawableMethod(info, mi);
                 drawable = DrawableWrapperFactory.TryWrapDrawable(drawable, attributes);
@@ -398,7 +398,7 @@ namespace Rhinox.GUIUtils.Editor
                                                     BindingFlags.GetField | BindingFlags.GetProperty | BindingFlags.FlattenHierarchy);
             serializedMembers = serializedMembers
                 .Where(x => !(x is MethodBase))
-                .Where(x => x.IsSerialized() || x.GetCustomAttribute<ShowInInspectorAttribute>() != null)
+                .Where(x => x.IsSerialized() || AttributeProcessorHelper.FindAttributeInclusive<ShowInInspectorAttribute>(x) != null)
                 .ToArray();
 
             var instance = parent.GetValue();
@@ -421,8 +421,8 @@ namespace Rhinox.GUIUtils.Editor
             if (propertyInfo.GetGetMethod(true) == null)
                 return false;
 
-            if (propertyInfo.GetCustomAttribute<SerializeField>() == null &&
-                propertyInfo.GetCustomAttribute<ShowInInspectorAttribute>() == null)
+            if (AttributeProcessorHelper.FindAttributeInclusive<SerializeField>(propertyInfo) == null &&
+                AttributeProcessorHelper.FindAttributeInclusive<ShowInInspectorAttribute>(propertyInfo) == null)
                 return false;
             return true;
         }

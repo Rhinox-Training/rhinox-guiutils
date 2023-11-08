@@ -59,7 +59,7 @@ namespace Rhinox.GUIUtils.Editor
                 }
                 
                 // Check for the CustomEditor attribute
-                var customEditorAttribute = type.GetCustomAttribute<CustomEditor>();
+                var customEditorAttribute = AttributeProcessorHelper.FindAttributeInclusive<CustomEditor>(type);
                 if (customEditorAttribute == null)
                 {
                     Debug.LogError($"Failed to initialize {type}. Did you forget to add [CustomEditor] to your type?");
