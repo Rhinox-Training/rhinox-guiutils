@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Rhinox.Lightspeed;
 using Rhinox.Lightspeed.Reflection;
+using Sirenix.OdinInspector;
 using UnityEngine;
 
 namespace Rhinox.GUIUtils.Editor
@@ -44,6 +46,9 @@ namespace Rhinox.GUIUtils.Editor
 
             var totalAttrs = attributes.ToList();
             processor.ProcessType(ref totalAttrs);
+            
+            ExpandIncludeMyAttributes(ref totalAttrs);
+            
             return totalAttrs;
         }
         
@@ -56,7 +61,24 @@ namespace Rhinox.GUIUtils.Editor
 
             var totalAttrs = attributes;
             processor.ProcessMember(info, ref totalAttrs);
+
+            ExpandIncludeMyAttributes(ref totalAttrs);
+            
             return totalAttrs;
+        }
+
+        private static void ExpandIncludeMyAttributes(ref List<Attribute> totalAttrs)
+        {
+            foreach (var attr in totalAttrs.ToArray())
+            {
+                var attrType = attr.GetType();
+                if (attrType.GetCustomAttribute<IncludeMyAttributesAttribute>() == null)
+                    continue;
+
+                foreach (var includedAttr in attrType.GetCustomAttributes()
+                             .Where(x => x.GetType() != typeof(IncludeMyAttributesAttribute)))
+                    totalAttrs.Add(includedAttr);
+            }
         }
 
         private static IAttributeProcessor FindProcessor(Type t)
