@@ -13,7 +13,7 @@ namespace Rhinox.GUIUtils.Editor
 
         public UnityObjectDrawableField(GenericHostInfo hostInfo) : base(hostInfo)
         {
-            AllowSceneObjects = hostInfo.GetReturnType().GetCustomAttribute<AssetsOnlyAttribute>() == null;
+            AllowSceneObjects = hostInfo.GetAttribute<AssetsOnlyAttribute>() == null;
         }
         
         protected override UnityEngine.Object DrawValue(GUIContent label, UnityEngine.Object memberVal, params GUILayoutOption[] options)

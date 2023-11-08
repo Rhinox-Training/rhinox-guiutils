@@ -18,9 +18,9 @@ namespace Rhinox.GUIUtils.Editor
         public override object GetValue() => GetHost();
         public override Type GetReturnType(bool preferValueType = true) => HostType;
 
-        public override Attribute[] GetAttributes()
+        public override ICollection<Attribute> GetAttributes()
         {
-            return GetReturnType().GetCustomAttributes();
+            return AttributeProcessorHelper.FindAllAttributesInclusive(GetReturnType());
         }
     }
 
@@ -40,10 +40,10 @@ namespace Rhinox.GUIUtils.Editor
             return _info.ParameterType;
         }
 
-        public override Attribute[] GetAttributes()
+        public override ICollection<Attribute> GetAttributes()
         {
-            var typeAttr = GetReturnType().GetCustomAttributes();
-            var directAttr = _info.GetCustomAttributes();
+            var typeAttr = AttributeProcessorHelper.FindAllAttributesInclusive(GetReturnType());
+            var directAttr = _info.GetCustomAttributes(); // ParameterInfo does not have injectable attributes
             return directAttr.Concat(typeAttr).ToArray();
         }
 
@@ -315,13 +315,13 @@ namespace Rhinox.GUIUtils.Editor
             return GetAttributes().OfType<T>().FirstOrDefault();
         }
         
-        public virtual Attribute[] GetAttributes()
+        public virtual ICollection<Attribute> GetAttributes()
         {
-            var typeAttr = GetReturnType().GetCustomAttributes();
+            var typeAttr = AttributeProcessorHelper.FindAllAttributesInclusive(GetReturnType());
             if (ArrayIndex != -1)
                 return typeAttr;
             
-            var directAttr = MemberInfo.GetCustomAttributes();
+            var directAttr = AttributeProcessorHelper.FindAllAttributesInclusive(MemberInfo);
             return directAttr.Concat(typeAttr).ToArray();
         }
 
