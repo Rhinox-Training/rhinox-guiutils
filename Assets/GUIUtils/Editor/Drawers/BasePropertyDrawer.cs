@@ -115,7 +115,7 @@ namespace Rhinox.GUIUtils.Editor
                 var property = _property;
                 while (property != null)
                 {
-                    attribute = searchType.GetCustomAttribute<T>();
+                    attribute = AttributeProcessorHelper.FindAttributeInclusive<T>(searchType);
                     if (attribute != null)
                         break;
 

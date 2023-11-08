@@ -14,7 +14,7 @@ namespace Rhinox.GUIUtils.Editor
         
         public EnumDrawableField(GenericHostInfo hostInfo) : base(hostInfo)
         {
-            HasFlags = hostInfo.GetReturnType().GetCustomAttribute<FlagsAttribute>() != null;
+            HasFlags = AttributeProcessorHelper.FindAttributeInclusive<FlagsAttribute>(hostInfo.GetReturnType()) != null;
             HasToggleButtons = hostInfo.GetAttribute<EnumToggleButtonsAttribute>() != null;
         }
 

@@ -43,7 +43,7 @@ namespace Rhinox.GUIUtils.Editor
 
             foreach (var target in targets)
             {
-                var attr = target.GetCustomAttribute<WrapDrawerAttribute>();
+                var attr = AttributeProcessorHelper.FindAttributeInclusive<WrapDrawerAttribute>(target);
                 Register(attr.AttributeType, target, attr.Priority);
             }
             _initialized = true;
