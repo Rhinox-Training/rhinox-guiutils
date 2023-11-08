@@ -15,7 +15,7 @@ using UnityEngine;
 namespace Rhinox.GUIUtils.NoOdin.Editor
 {
     [CustomPropertyDrawer(typeof(DrawAsReferenceAttribute))]
-    internal class DrawAsReferenceDrawer : BasePropertyDrawer<object, DrawAsReferenceDrawer.DrawerData>
+    public class DrawAsReferenceDrawer : BasePropertyDrawer<object, DrawAsReferenceDrawer.DrawerData>
     {
         public class DrawerData
         {
