@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using Rhinox.Lightspeed;
 using Rhinox.Lightspeed.Reflection;
 #if ODIN_INSPECTOR
@@ -49,113 +50,76 @@ namespace Rhinox.GUIUtils.Editor
             GUILayout.EndHorizontal();
             EditorGUILayout.EndVertical();
         }
-
+        
         public static bool Foldout(bool foldout, string label, GUIStyle style = null)
             => Foldout(foldout, GUIContentHelper.TempContent(label), style);
-
+        
+        public static bool Foldout(bool foldout, string label, out Rect contentRect, GUIStyle style = null)
+            => Foldout(foldout, GUIContentHelper.TempContent(label), out contentRect, style);
+        
+        public static bool Foldout(Rect rect, bool foldout, string label, GUIStyle style = null)
+            => Foldout(rect, foldout, GUIContentHelper.TempContent(label), style);
+        
+        public static bool Foldout(Rect rect, bool foldout, string label, out Rect contentRect, GUIStyle style = null)
+            => Foldout(rect, foldout, GUIContentHelper.TempContent(label), out contentRect, style);
+        
         public static bool Foldout(bool foldout, GUIContent label, GUIStyle style = null)
+            => EditorGUILayout.Foldout(foldout, label, true, style ?? EditorStyles.foldout);
+        
+        public static bool Foldout(bool foldout, GUIContent label, out Rect contentRect, GUIStyle style = null)
         {
-            if (style == null) style = EditorStyles.label;
-
-            GUILayout.BeginVertical(CustomGUIStyles.Clean); // start area so this entire header is grouped in 1 rect & we can fetch it with GetLastRect()
-
-            GUILayout.Space(1);
-
-            style.CalcMinMaxWidth(label, out float min, out float max);
-
-            // reserve space & calculate rects
-            var backgroundRect = GUILayoutUtility.GetRect(max + FoldoutPadding * 2, 17);
-
-            // Background rect should be full-width
-            backgroundRect.xMin = 0f;
-
-            foldout = Foldout(backgroundRect, foldout, label, style);
-            
-            GUILayout.Space(1);
-
-            GUILayout.EndVertical();
-
-            return foldout;
-        }
-
-        private const float FoldoutIconSize = 13f;
-        private const float FoldoutPadding = 16f;
-
-        public static bool Foldout(Rect rect, bool foldout, GUIContent label, GUIStyle style = null)
-        {
-            if (style == null) style = EditorStyles.label;
-            
-            var labelRect = rect;
-            labelRect.xMin += FoldoutPadding;
-            labelRect.xMax -= FoldoutPadding;
-
-            const float iconSize = FoldoutIconSize;
-            var foldoutRect = new Rect(rect);
-            foldoutRect.y += 1f;
-            foldoutRect.width = iconSize;
-            
-            foldoutRect.height = iconSize;
-
-            EditorGUI.LabelField(labelRect, label, style);
-            
-            foldout = GUI.Toggle(foldoutRect, foldout, GUIContent.none, EditorStyles.foldout);
-
-            // handle mouse
-            var e = Event.current;
-            if (e.type == EventType.MouseDown && IsMouseOver(rect, e) && e.button == 0)
-            {
-                foldout = !foldout;
-                e.Use ();
-            }
-
-            return foldout;
-        }
-
-        public static bool FoldoutHeader(bool foldout, string title, GUIStyle headerStyle = null)
-        {
-            return FoldoutHeader(foldout, GUIContentHelper.TempContent(title), headerStyle: headerStyle);
+            var rect = GUILayoutUtility.GetRect(label, style);
+            return Foldout(rect, foldout, label, out contentRect, style ?? EditorStyles.foldout);
         }
         
-        public static bool FoldoutHeader(bool foldout, string title, string subTitle, GUIStyle headerStyle = null)
+        public static bool Foldout(Rect rect, bool foldout, GUIContent label, out Rect contentRect, GUIStyle style = null)
         {
-            return FoldoutHeader(foldout, GUIContentHelper.TempContent(title), subTitle, headerStyle);
+            rect.SplitX(EditorGUIUtility.labelWidth + CustomGUIUtility.Padding, out Rect foldoutRect, out contentRect);
+            return Foldout(foldoutRect, foldout, label, style);
         }
 
-        public static bool FoldoutHeader(bool foldout, GUIContent titleContent, string subTitle = null, GUIStyle headerStyle = null)
+        public static bool Foldout(Rect rect, bool foldout, GUIContent label, GUIStyle style = null)
+            => EditorGUI.Foldout(rect, foldout, label, true, style ?? EditorStyles.foldout);
+        
+
+        public static bool FoldoutHeader(Rect rect, bool foldout, GUIContent titleContent, out Rect contentRect, GUIStyle boxStyle = null)
         {
-            if (headerStyle == null) headerStyle = EditorStyles.boldLabel;
+            boxStyle?.Draw(rect, false, false, false, false);
+            return Foldout(rect, foldout, titleContent, out contentRect, CustomGUIStyles.BoldFoldout);
+        }
+
+        public static bool FoldoutHeader(bool foldout, string title)
+            => FoldoutHeader(foldout, GUIContentHelper.TempContent(title));
+
+        public static bool FoldoutHeader(bool foldout, string title, string subTitle)
+            => FoldoutHeader(foldout, GUIContentHelper.TempContent(title), subTitle);
+
+        public static bool FoldoutHeader(bool foldout, GUIContent titleContent, string subTitle = null)
+        {
+            var style = CustomGUIStyles.BoldFoldout;
             
-            GUILayout.BeginVertical(); // start area so this entire header is grouped in 1 rect & we can fetch it with GetLastRect()
+            GUILayout.BeginVertical(CustomGUIStyles.Clean); // start area so this entire header is grouped in 1 rect & we can fetch it with GetLastRect()
             
             GUILayout.Space(1);
-            
-            // reserve space & calculate rects
-            var backgroundRect = GUILayoutUtility.GetRect(1, 17);
-            // Background rect should be full-width
-            // backgroundRect.xMin = 0f;
+            var rect = GUILayoutUtility.GetRect(titleContent, style);
 
             // Draw rects
-            EditorGUI.DrawRect(backgroundRect, CustomGUIStyles.BoxBackgroundColor);
-
-            foldout = Foldout(backgroundRect, foldout, titleContent, headerStyle);
+            EditorGUI.DrawRect(rect, CustomGUIStyles.BoxBackgroundColor);
+            
+            foldout = Foldout(rect, foldout, titleContent, style);
             
             if (!string.IsNullOrWhiteSpace(subTitle))
             {
                 var subHeaderStyle = CustomGUIStyles.SubtitleRight;
 
-                var labelSize = headerStyle.CalcSize(titleContent).x;
+                var labelSize = style.CalcSize(titleContent).x;
 
-                backgroundRect.xMin += FoldoutPadding;
-                backgroundRect.xMax -= FoldoutPadding;
-
-                var remaining = FoldoutIconSize + backgroundRect.width - labelSize;
-
-                backgroundRect.x += FoldoutIconSize;
-                backgroundRect.y += 3;
+                var remaining = rect.width - labelSize;
+                rect.y += 3;
                 
                 titleContent = GUIContentHelper.TempContent(subTitle);
                 if (remaining > subHeaderStyle.CalcSize(titleContent).x)
-                    EditorGUI.LabelField(backgroundRect, titleContent, CustomGUIStyles.SubtitleRight);
+                    EditorGUI.LabelField(rect, titleContent, CustomGUIStyles.SubtitleRight);
             }
             
             GUILayout.Space(1);
@@ -165,58 +129,32 @@ namespace Rhinox.GUIUtils.Editor
             return foldout;
         }
         
-        public static bool FoldoutHeader(bool foldout, GUIContent titleContent, out Rect contentRect, GUIStyle headerStyle = null, GUIStyle boxStyle = null)
+        public static bool FoldoutHeader(bool foldout, GUIContent titleContent, out Rect contentRect, GUIStyle boxStyle = null)
         {
-            if (headerStyle == null) headerStyle = EditorStyles.boldLabel;
-            
-            GUILayout.BeginVertical(boxStyle); // start area so this entire header is grouped in 1 rect & we can fetch it with GetLastRect()
-            
+            GUILayout.BeginVertical(boxStyle ?? CustomGUIStyles.Clean); // start area so this entire header is grouped in 1 rect & we can fetch it with GetLastRect()
             GUILayout.Space(1);
 
-            // reserve space & calculate rects
-            var backgroundRect = GUILayoutUtility.GetRect(1, 17);
+            foldout = Foldout(foldout, titleContent, out contentRect, CustomGUIStyles.BoldFoldout);
             
-            backgroundRect.SplitX(EditorGUIUtility.labelWidth + CustomGUIUtility.Padding, out Rect labelRect, out contentRect);
-            
-            // Background rect should be full-width
-            backgroundRect.xMin = 0f;
-            
-            // Draw rects
-            if (boxStyle == null)
-                EditorGUI.DrawRect(backgroundRect, CustomGUIStyles.BoxBackgroundColor);
-
-            foldout = Foldout(labelRect, foldout, titleContent, headerStyle);
-
             GUILayout.Space(1);
             GUILayout.EndVertical();
 
             return foldout;
         }
-
-        public static void Header(GUIContent titleContent, string subTitle = null, GUIStyle headerStyle = null)
+        
+        public static void Header(Rect rect, GUIContent titleContent, string subTitle = null, GUIStyle headerStyle = null)
         {
             if (headerStyle == null) headerStyle = EditorStyles.boldLabel;
 
-            GUILayout.Space(1);
-
-            // reserve space & calculate rects
-            var backgroundRect = GUILayoutUtility.GetRect(1, 17);
-
-            var labelRect = backgroundRect;
+            var labelRect = rect;
             labelRect.xMin += 16f;
-            labelRect.xMax -= 16f;
-
-            const float iconSize = 13f;
-            var foldoutRect = new Rect(backgroundRect);
-            foldoutRect.y += 1f;
-            foldoutRect.width = iconSize;
-            foldoutRect.height = iconSize;
+            labelRect.xMax -= CustomGUIUtility.Padding;
 
             // Background rect should be full-width
-            backgroundRect.xMin = 0f;
+            rect.xMin = 0f;
 
             // Draw rects
-            EditorGUI.DrawRect(backgroundRect, CustomGUIStyles.BoxBackgroundColor);
+            EditorGUI.DrawRect(rect, CustomGUIStyles.BoxBackgroundColor);
 
             EditorGUI.LabelField(labelRect, titleContent, headerStyle);
 
@@ -234,6 +172,45 @@ namespace Rhinox.GUIUtils.Editor
                 if (remaining > subHeaderStyle.CalcSize(titleContent).x)
                     EditorGUI.LabelField(labelRect, titleContent, CustomGUIStyles.SubtitleRight);
             }
+        }
+
+        public static void Header(GUIContent titleContent, string subTitle = null, GUIStyle headerStyle = null)
+        {
+            GUILayout.Space(1);
+
+            // reserve space & calculate rects
+            var backgroundRect = GUILayoutUtility.GetRect(1, 17);
+
+            Header(backgroundRect, titleContent, subTitle, headerStyle);
+
+            GUILayout.Space(1);
+        }
+
+
+        public static void Header(Rect rect, GUIContent titleContent, out Rect contentRect, GUIStyle headerStyle = null)
+        {
+            if (headerStyle == null) headerStyle = EditorStyles.boldLabel;
+
+            // Draw rects
+            EditorGUI.DrawRect(rect, CustomGUIStyles.BoxBackgroundColor);
+
+            rect.SplitX(EditorGUIUtility.labelWidth + CustomGUIUtility.Padding, out Rect labelRect, out contentRect);
+            labelRect.xMax -= CustomGUIUtility.Padding;
+
+            // labelRect.xMin += 16f;
+            // labelRect.xMax -= 16f;
+            
+            EditorGUI.LabelField(labelRect, titleContent, headerStyle);
+        }
+
+        public static void Header(GUIContent titleContent, out Rect contentRect, GUIStyle headerStyle = null)
+        {
+            GUILayout.Space(1);
+
+            // reserve space & calculate rects
+            var backgroundRect = GUILayoutUtility.GetRect(1, 17);
+
+            Header(backgroundRect, titleContent, out contentRect, headerStyle);
 
             GUILayout.Space(1);
         }

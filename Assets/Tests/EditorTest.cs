@@ -2,6 +2,7 @@ using System;
 using Rhinox.GUIUtils.Attributes;
 using Rhinox.Lightspeed;
 using Rhinox.Lightspeed.Collections;
+using UnityEditor;
 using UnityEngine;
 
 [Serializable]
@@ -33,13 +34,19 @@ public class SimpleNumberData : ISerializeReferenceTester
 {
     public float Float;
 }
+
+[SmartFallbackDrawn]
 public class EditorTest : MonoBehaviour
 {
     [SerializeReference, DrawAsReference]
     public ISerializeReferenceTester SerializeReferenceTesterWithStupidlyLongName;
     
+    [SerializeReference]
+    public ISerializeReferenceTester SerializeReferenceNodraw;
+    
     [SerializeReference, DrawAsReference]
     public ISerializeReferenceTester[] SerializeReferenceTesterArray;
+    
     public ShaderData ShaderParamData;
 
     [ToggleButtonOpposite("Right")]
