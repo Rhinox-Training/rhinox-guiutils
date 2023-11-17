@@ -2,17 +2,19 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using NUnit.Framework;
 using Rhinox.Lightspeed;
 using Rhinox.Lightspeed.Reflection;
 using Sirenix.OdinInspector;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace Rhinox.GUIUtils.Editor
 {
     public static class AttributeProcessorHelper
     {
         private static Dictionary<Type, IAttributeProcessor> _attributeProcessors;
-
+        
         public static T FindAttributeInclusive<T>(Type type) where T : Attribute
         {
             var attrs = FindAllAttributesInclusive(type);
@@ -44,8 +46,11 @@ namespace Rhinox.GUIUtils.Editor
             if (processor == null)
                 return attributes;
 
-            var totalAttrs = attributes.ToList();
+            var totalAttrs = new List<Attribute>();
             processor.ProcessType(ref totalAttrs);
+            
+            totalAttrs.AddRange(attributes);
+
             
             ExpandIncludeMyAttributes(ref totalAttrs);
             
@@ -54,13 +59,15 @@ namespace Rhinox.GUIUtils.Editor
         
         public static ICollection<Attribute> FindAllAttributesInclusive(MemberInfo info)
         {
-            var attributes = info.GetCustomAttributes().ToList();
-            var processor = FindProcessor(info.DeclaringType);
+            var attributes = info.GetCustomAttributes().ToArray();
+            var processor = FindProcessor(info.ReflectedType);
             if (processor == null)
                 return attributes;
 
-            var totalAttrs = attributes;
+            var totalAttrs = new List<Attribute>();
             processor.ProcessMember(info, ref totalAttrs);
+            
+            totalAttrs.AddRange(attributes);
 
             ExpandIncludeMyAttributes(ref totalAttrs);
             

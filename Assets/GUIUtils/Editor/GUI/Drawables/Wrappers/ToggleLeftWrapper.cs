@@ -34,6 +34,8 @@ namespace Rhinox.GUIUtils.Editor
         [WrapDrawer(typeof(ToggleLeftAttribute), Priority.Simple)]
         public static BaseWrapperDrawable Create(ToggleLeftAttribute attr, IOrderedDrawable drawable)
         {
+            if (drawable.HostInfo.GetReturnType() != typeof(bool))
+                return null;
             return new ToggleLeftWrapper(drawable)
             {
             };

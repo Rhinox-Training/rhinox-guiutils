@@ -85,7 +85,7 @@ namespace Rhinox.GUIUtils.Editor
             staticGetter = null;
             instanceGetter = null;
             
-            if (!TryFindMember(input, out MemberInfo info, isStatic))
+            if (!TryFindMember(input, out MemberInfo info, isStatic, !isStatic))
                 return false;
 
             if (!info.GetReturnType().InheritsFrom<T>())
@@ -99,11 +99,11 @@ namespace Rhinox.GUIUtils.Editor
             return true;
         }
         
-        protected bool TryFindMember(string filter, out MemberInfo info, bool isStatic = false)
+        protected bool TryFindMember(string filter, out MemberInfo info, bool isStatic = false, bool includeExtensionMethods = false)
         {
             var flags = isStatic ? BindingFlags.Static : (BindingFlags.Static | BindingFlags.Instance);
             flags |= BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.FlattenHierarchy;
-            return ReflectionUtility.TryGetMember(_objectType, AllowedMembers, filter, out info, flags);
+            return ReflectionUtility.TryGetMember(_objectType, AllowedMembers, filter, out info, flags, includeExtensionMethods);
         }
     }
 }

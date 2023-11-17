@@ -208,9 +208,6 @@ namespace Rhinox.GUIUtils.Editor
             var drawables = new List<IOrderedDrawable>();
             foreach (var memberEntry in memberEntries)
             {
-                if (memberEntry.MemberInfo is PropertyInfo propertyInfo && !propertyInfo.IsVisibleInEditor())
-                    continue;
-
                 IOrderedDrawable resultingMember = CreateDrawableForMember(memberEntry, depth, modifier);
 
                 if (resultingMember != null)
@@ -433,8 +430,7 @@ namespace Rhinox.GUIUtils.Editor
             // All public members
             var publicFields = t.GetFields(BindingFlags.Instance | BindingFlags.Public |
                                              BindingFlags.GetField | BindingFlags.FlattenHierarchy);
-            var publicProperties = t.GetProperties(BindingFlags.Instance | BindingFlags.Public |
-                                           BindingFlags.GetProperty | BindingFlags.FlattenHierarchy);
+            var visibleProperties = GetEditorVisibleProperties(t);
 
             // All non-publics that serialize or are visible
             var serializedMembers = t.GetMembers(BindingFlags.Instance | BindingFlags.NonPublic |
@@ -449,7 +445,7 @@ namespace Rhinox.GUIUtils.Editor
             var list = new List<GenericHostInfo>();
             foreach (var member in publicFields)
                 list.Add(new GenericHostInfo(parent, instance, member));
-            foreach (var member in publicProperties)
+            foreach (var member in visibleProperties)
                 list.Add(new GenericHostInfo(parent, instance, member));
             foreach (var member in serializedMembers)
                 list.Add(new GenericHostInfo(parent, instance, member));
@@ -464,8 +460,7 @@ namespace Rhinox.GUIUtils.Editor
             if (propertyInfo.GetGetMethod(true) == null)
                 return false;
 
-            if (AttributeProcessorHelper.FindAttributeInclusive<SerializeField>(propertyInfo) == null &&
-                AttributeProcessorHelper.FindAttributeInclusive<ShowInInspectorAttribute>(propertyInfo) == null)
+            if (AttributeProcessorHelper.FindAttributeInclusive<ShowInInspectorAttribute>(propertyInfo) == null)
                 return false;
             return true;
         }
