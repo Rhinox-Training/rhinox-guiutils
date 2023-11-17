@@ -14,11 +14,14 @@ namespace Rhinox.GUIUtils.Editor
         private const int DEFAULT_LINE_WIDTH = 1;
         private const int DEFAULT_ICON_WIDTH = 22;
         private const int DEFAULT_ICON_HEIGHT = 18;
+        private const int INDENT_SIZE = 15;
 
         private static object _parentView = null;
         private static PropertyInfo _screenPosProp;
         private static MethodInfo _toolbarSearchFieldMethodInfo;
         private static MethodInfo _toolbarSearchFieldRectMethodInfo;
+
+        public static float Indent => EditorGUI.indentLevel * INDENT_SIZE;
 
         public static Rect GetEditorWindowRect()
         {

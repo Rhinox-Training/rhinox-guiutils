@@ -25,11 +25,6 @@ namespace Rhinox.GUIUtils.Editor
 
         public delegate void WindowFunction(Object target, SceneView sceneView);
 
-        private static Assembly _editorAssembly;
-
-        private static Assembly EditorAssembly =>
-            _editorAssembly ?? (_editorAssembly = Assembly.GetAssembly(typeof(EditorWindow)));
-
         public static object AddWindow(string title, WindowFunction sceneViewFunc, int order = -1,
             WindowDisplayOption option = WindowDisplayOption.OneWindowPerTitle)
         {
@@ -44,7 +39,7 @@ namespace Rhinox.GUIUtils.Editor
 
         private static object OpenWindow(GUIContent title, WindowFunction sceneViewFunc, int order, WindowDisplayOption option)
         {
-            var t = EditorAssembly.GetType("UnityEditor.SceneViewOverlay");
+            var t = eUtility.EditorAssembly.GetType("UnityEditor.SceneViewOverlay");
 
             var mi = t.GetMethods(BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Static).Single(
                 m =>
