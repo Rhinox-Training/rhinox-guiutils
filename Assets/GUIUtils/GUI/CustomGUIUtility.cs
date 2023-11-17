@@ -6,6 +6,7 @@ namespace Rhinox.GUIUtils
     public static class CustomGUIUtility
     {
         public const float Padding = 2.0f;
+        public const float Indent = 15f;
         
         public static int GetPermanentControlID()
         {
