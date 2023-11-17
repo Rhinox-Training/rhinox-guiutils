@@ -29,8 +29,8 @@ namespace Rhinox.GUIUtils.NoOdin.Editor
 
         protected override float GetPropertyHeight(GUIContent label, in DrawerData data)
         {
-            var height = base.GetPropertyHeight(label, in data);
-            if (_expanded)
+            var height = EditorGUIUtility.singleLineHeight;
+            if (_expanded && SmartValue != null)
             {
                 height += GetInnerDrawerHeight(label);
                 height += CustomGUIUtility.Padding;
@@ -43,11 +43,25 @@ namespace Rhinox.GUIUtils.NoOdin.Editor
         {
             Rect dropdownPosition = position.AlignTop(EditorGUIUtility.singleLineHeight);
             position.y += EditorGUIUtility.singleLineHeight + CustomGUIUtility.Padding;
-            
-            if (EditorGUI.DropdownButton(dropdownPosition, label, FocusType.Passive))
-                data.Picker?.Show(dropdownPosition);
 
-            CallInnerDrawer(position, GUIContent.none);
+            var hasValue = SmartValue != null;
+            
+            Rect dropdownRect;
+            if (hasValue)
+                _expanded = eUtility.Foldout(dropdownPosition, _expanded, label, out dropdownRect);
+            else
+                eUtility.Header(dropdownPosition, label, out dropdownRect, CustomGUIStyles.Label);
+
+            string typeTitle = null;
+            if (hasValue) typeTitle = SmartValue.GetType().Name;
+            else typeTitle = $"{BasePicker.NoneContentLabel} [{HostInfo.GetReturnType().Name}]";
+
+            data.Picker.ShowDropdown(dropdownRect, GUIContentHelper.TempContent(typeTitle));
+
+            if (_expanded && hasValue)
+            {
+                CallInnerDrawer(position, GUIContent.none);
+            }
 
             // EditorGUI.PropertyField(position, property, GUIContent.none, true);
         }
@@ -71,6 +85,9 @@ namespace Rhinox.GUIUtils.NoOdin.Editor
         {
             var value = type.CreateInstance();
             HostInfo.SetValue(value);
+            // Ensure expanded once we select something
+            if (value != null)
+                _expanded = true;
         }
 
         protected override GenericHostInfo GetHostInfo(DrawerData data) => data.Info;

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Rhinox.Lightspeed;
+using Sirenix.OdinInspector;
 using UnityEditor;
 using UnityEngine;
 
@@ -61,23 +62,24 @@ namespace Rhinox.GUIUtils.Editor
             else
                 _label = new GUIContent(hostInfo.NiceName);
         }
-        
+
         public override void Draw(GUIContent label)
         {
             _hasLabel = label != GUIContent.none;
 
             if (_isFoldout && _hasLabel)
             {
-                _expanded = eUtility.FoldoutHeader(_expanded, label, null, CustomGUIStyles.Label);
+                _expanded = eUtility.Foldout(_expanded, label);
 
                 if (_expanded)
                 {
+                    var indent = EditorGUI.indentLevel;
                     ++EditorGUI.indentLevel;
                 
                     foreach (var child in Children)
                         child.Draw(GUIContent.none);
                 
-                    --EditorGUI.indentLevel;
+                    EditorGUI.indentLevel = indent;
                 }
             }
             else
@@ -106,25 +108,33 @@ namespace Rhinox.GUIUtils.Editor
             var indentLevel = EditorGUI.indentLevel;
             _hasLabel = label != GUIContent.none;
 
-            if (_isFoldout && _hasLabel)
-            {
-                var height = EditorGUIUtility.singleLineHeight + 2;
-                var labelRect = rect.AlignTop(height);
-                EditorGUI.LabelField(labelRect, label);
+            bool isFoldout = _isFoldout && _hasLabel;
 
+            if (isFoldout)
+            {
+                var height = EditorGUIUtility.singleLineHeight;
+                var labelRect = rect.AlignTop(height);
+                _expanded = eUtility.Foldout(labelRect, _expanded, label);
+                
                 ++EditorGUI.indentLevel;
                 if (rect.IsValid())
                 {
-                    rect.yMin += height;
+                    rect.yMin += height + CustomGUIUtility.Padding;
                     rect = EditorGUI.IndentedRect(rect);
                 }
+
                 EditorGUI.indentLevel = 0;
             }
             else if (rect.IsValid())
                 rect = EditorGUI.PrefixLabel(rect, label);
             
-            foreach (var child in Children)
-                child.Draw(rect, GUIContent.none);
+            if (!isFoldout || _expanded)
+            {
+                foreach (var child in Children)
+                {
+                    child.Draw(rect, GUIContent.none);
+                } 
+            }
 
             EditorGUI.indentLevel = indentLevel;
         }
