@@ -481,7 +481,7 @@ namespace Rhinox.GUIUtils.Editor
             public IndentedLayout(int increment = 1)
             {
                 _originalIndentLevel = EditorGUI.indentLevel;
-                EditorGUI.indentLevel = EditorGUI.indentLevel + increment;
+                EditorGUI.indentLevel += increment;
             }
             
             public void Dispose()

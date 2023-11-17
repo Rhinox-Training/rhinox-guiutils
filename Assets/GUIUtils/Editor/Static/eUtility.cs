@@ -15,6 +15,9 @@ namespace Rhinox.GUIUtils.Editor
 {
     public static partial class eUtility
     {
+        private static Assembly _editorAssembly;
+        public static Assembly EditorAssembly => _editorAssembly ?? (_editorAssembly = Assembly.GetAssembly(typeof(EditorWindow)));
+        
         /// ================================================================================================================
         /// ELEMENTS
         public static void Card(Action draw, Action onClick = null, Action<Rect> postDraw = null, float alpha = 0f)
