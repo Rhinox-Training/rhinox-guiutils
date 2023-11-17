@@ -20,8 +20,8 @@ namespace Rhinox.GUIUtils.Editor
                 {
                     if (!child.IsVisible)
                         continue;
-                    if (height > 0)
-                        height += CustomGUIUtility.Padding;
+                    // if (height > 0)
+                    //     height += CustomGUIUtility.Padding;
                     height += child.ElementHeight;
                 }
                 return height;
@@ -36,8 +36,10 @@ namespace Rhinox.GUIUtils.Editor
         {
             if (_drawableMemberChildren == null)
                 return;
-
-            GUILayout.BeginVertical(CustomGUIStyles.Clean, GetLayoutOptions(_size));
+            
+            // Note: Starting a vertical group adds a Padding offset for some reason
+            // Since we should basically alwas be in Vertical mode, this is unneeded anyways
+            // GUILayout.BeginVertical(CustomGUIStyles.Clean, GetLayoutOptions(_size));
 
             for (var i = 0; i < _drawableMemberChildren.Count; i++)
             {
@@ -47,11 +49,11 @@ namespace Rhinox.GUIUtils.Editor
 
                 childDrawable.Draw(childDrawable.Label);
 
-                if (_drawableMemberChildren.Count - 1 != i)
-                    GUILayout.Space(CustomGUIUtility.Padding); // padding
+                // if (_drawableMemberChildren.Count - 1 != i)
+                //     GUILayout.Space(CustomGUIUtility.Padding); // padding
             }
 
-            GUILayout.EndVertical();
+            // GUILayout.EndVertical();
         }
 
         public override void Draw(Rect rect, GUIContent label)
