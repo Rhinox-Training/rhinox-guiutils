@@ -80,6 +80,10 @@ namespace Rhinox.GUIUtils.Editor
             if (!_initialized)
                 Initialize();
 
+
+            if (!drawable.HostInfo.CanSetValue())
+                attributes = attributes.Append(new Sirenix.OdinInspector.ReadOnlyAttribute());
+            
             var builderPairs = attributes
                 .Distinct() // IDK why but it's needed? are Attribute's Equal overridden?
                 .ToDictionary(
@@ -87,10 +91,11 @@ namespace Rhinox.GUIUtils.Editor
                     x => _buildersByAttribute.GetOrDefault(x.GetType(), Array.Empty<AttributeBuilder>())
                 )
                 .Flatten(x => x.Value.Select(y => (Attribute : x.Key, Builder: y)))
-                .OrderByDescending(x => x.Builder.Priority)
-                .ToArray();
+                .ToList();
+            
+            var orderedBuilderPairs = builderPairs.OrderByDescending(x => x.Builder.Priority);
 
-            foreach (var pair in builderPairs)
+            foreach (var pair in orderedBuilderPairs)
             {
                 var creator = pair.Builder.Creator;
                 var targetDrawable = creator.Invoke(pair.Attribute, drawable);
