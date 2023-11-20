@@ -292,6 +292,49 @@ namespace Rhinox.GUIUtils.Editor
         {
             HostInfo?.Apply();
         }
+        
+        private class ChildDrawer : IEditorDrawable
+        {
+            private IOrderedDrawable _childDrawable;
+
+            public ChildDrawer(GenericHostInfo hostInfo)
+            {
+                _childDrawable = DrawableFactory.CreateDrawableFor(hostInfo);
+            }
+
+            public float ElementHeight => _childDrawable.ElementHeight;
+
+            public void Draw(GUIContent label, params GUILayoutOption[] options)
+            {
+                _childDrawable.Draw(label, options);
+            }
+
+            public void Draw(Rect position, GUIContent label)
+            {
+                float oldHeight = position.height;
+                float innerDrawableHeight = _childDrawable.ElementHeight;
+                if (position.IsValid())
+                    position.height = innerDrawableHeight;
+                _childDrawable.Draw(position, label);
+                if (position.IsValid())
+                {
+                    position.height = oldHeight;    
+                    position.y += innerDrawableHeight;
+                }
+            }
+        }
+
+        protected IEditorDrawable GetChildDrawer(string memberDataName, int index = -1)
+        {
+            return GetChildDrawer(memberDataName, out _, index);
+        }
+
+        protected IEditorDrawable GetChildDrawer(string memberDataName, out GenericHostInfo childHostInfo, int index = -1)
+        {
+            HostInfo.TryGetChild(memberDataName, out childHostInfo, index);
+            var childDrawer = new ChildDrawer(childHostInfo);
+            return childDrawer;
+        }
     }
 
     public abstract class BasePropertyDrawer<T> : BasePropertyDrawer<T, GenericHostInfo>
