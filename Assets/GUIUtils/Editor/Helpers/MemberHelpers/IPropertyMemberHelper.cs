@@ -5,8 +5,9 @@ namespace Rhinox.GUIUtils.Editor
 {
     public interface IPropertyMemberHelper
     {
-        void DrawError();
-        void DrawError(Rect rect);
+        bool HasError { get; }
+        bool DrawError();
+        bool DrawError(Rect rect);
 
         object GetValue();
     }
