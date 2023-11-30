@@ -206,6 +206,14 @@ namespace Rhinox.GUIUtils.Editor
                 return DrawableCreationMode.Auto;
             }
 
+            public override bool ShouldWrap(GenericHostInfo hostInfo, int depth)
+            {
+                var returnType = hostInfo.GetReturnType();
+                if (CheckType(returnType))
+                    return false;
+                return base.ShouldWrap(hostInfo, depth);
+            }
+
             private bool CheckType(Type returnType)
             {
                 if (InheritsFrom)
