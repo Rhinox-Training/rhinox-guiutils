@@ -58,9 +58,11 @@ namespace Rhinox.GUIUtils.Editor
         public void ConfirmMessage(string confirm) => _dialogData.ConfirmButton = confirm;
         public void CancelMessage(string cancel) => _dialogData.CancelButton = cancel;
 
-        private DialogBuilder Add<T, TValue>(T field, out ValueReference<TValue> reference, TValue initialValue)
+        private DialogBuilder Add<T, TValue>(T field, out ValueReference<TValue> reference, TValue initialValue, Func<TValue, bool> validation = null)
             where T : DialogInputField<TValue>
         {
+            if (validation != null)
+                field.SetValidator(validation);
             reference = new FieldWrapper<TValue>(_dialogData.Add(field, initialValue));
             return this;
         }
@@ -73,59 +75,74 @@ namespace Rhinox.GUIUtils.Editor
         }
 
         public DialogBuilder IntField(string name, out ValueReference<int> reference, int initialValue = default,
-            string tooltip = null)
+            string tooltip = null, Func<int, bool> validation = null)
         {
             var field = new Int32InputField(name, tooltip);
-            return Add(field, out reference, initialValue);
+            return Add(field, out reference, initialValue, validation);
         }
 
         public DialogBuilder FloatField(string name, out ValueReference<float> reference, float initialValue = default,
-            string tooltip = null)
+            string tooltip = null, Func<float, bool> validation = null)
         {
             var field = new FloatInputField(name, tooltip);
-            return Add(field, out reference, initialValue);
+            return Add(field, out reference, initialValue, validation);
         }
 
         public DialogBuilder TextField(string name, out ValueReference<string> reference, string initialValue = "",
-            string tooltip = null)
+            string tooltip = null, Func<string, bool> validation = null)
         {
             var field = new TextInputField(name, tooltip);
-            return Add(field, out reference, initialValue);
+            return Add(field, out reference, initialValue, validation);
         }
         
         public DialogBuilder GenericUnityObjectField<T>(string name, out ValueReference<T> reference,
-            T initialValue = null, string tooltip = null) where T : UnityEngine.Object
+            T initialValue = null, string tooltip = null, Func<T, bool> validation = null) where T : UnityEngine.Object
         {
             var field = new GenericUnityObjectInputField<T>(name, tooltip);
-            return Add(field, out reference, initialValue);
+            return Add(field, out reference, initialValue, validation);
         }
 
         public DialogBuilder TransformField(string name, out ValueReference<Transform> reference,
-            Transform initialValue = null, string tooltip = null)
+            Transform initialValue = null, string tooltip = null, Func<Transform, bool> validation = null)
         {
             var field = new TransformInputField(name, tooltip);
-            return Add(field, out reference, initialValue);
+            return Add(field, out reference, initialValue, validation);
         }
 
         public DialogBuilder GameObjectField(string name, out ValueReference<GameObject> reference,
-            GameObject initialValue = null, string tooltip = null)
+            GameObject initialValue = null, string tooltip = null, Func<GameObject, bool> validation = null)
         {
             var field = new GameObjectInputField(name, tooltip);
-            return Add(field, out reference, initialValue);
+            return Add(field, out reference, initialValue, validation);
         }
 
         public DialogBuilder MaterialField(string name, out ValueReference<Material> reference,
-            Material initialValue = null, string tooltip = null)
+            Material initialValue = null, string tooltip = null, Func<Material, bool> validation = null)
         {
             var field = new MaterialInputField(name, tooltip);
-            return Add(field, out reference, initialValue);
+            return Add(field, out reference, initialValue, validation);
         }
 
         public DialogBuilder TextureField(string name, out ValueReference<Texture> reference,
-            Texture initialValue = null, string tooltip = null)
+            Texture initialValue = null, string tooltip = null, Func<Texture, bool> validation = null)
         {
             var field = new TextureInputField(name, tooltip);
-            return Add(field, out reference, initialValue);
+            return Add(field, out reference, initialValue, validation);
+        }
+
+        public DialogBuilder SaveFileField(string name, out ValueReference<string> reference,
+            string initialValue = null, string initialFolder = null, string tooltip = null, Func<string, bool> validation = null)
+        {
+            
+            var field = new SaveFileField(name, tooltip, initialFolder);
+            return Add(field, out reference, initialValue, validation);
+        }
+
+        public DialogBuilder OpenFolderField(string name, out ValueReference<string> reference,
+            string initialValue = null, string initialFolder = null, string tooltip = null, Func<string, bool> validation = null)
+        {
+            var field = new OpenFolderField(name, tooltip, initialFolder);
+            return Add(field, out reference, initialValue, validation);
         }
 
         public DialogBuilder Dropdown<T>(string name, ICollection<T> options, Func<T, string> nameSelector, out ValueReference<T> reference, T initialValue

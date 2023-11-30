@@ -41,8 +41,10 @@ namespace Rhinox.GUIUtils.Editor
             EditorGUILayout.BeginVertical(options);
             EditorGUILayout.LabelField(label);
             _scrollPosition = EditorGUILayout.BeginScrollView(_scrollPosition, GUILayout.MaxHeight(ViewableLines * EditorGUIUtility.singleLineHeight));
-            string newText = EditorGUILayout.TextArea(GetValue() as string, GUILayout.MaxHeight(ViewableLines * EditorGUIUtility.singleLineHeight));
-            SetValue(newText);
+            var oldText = GetValue() as string;
+            string newText = EditorGUILayout.TextArea(oldText, GUILayout.MaxHeight(ViewableLines * EditorGUIUtility.singleLineHeight));
+            if (!string.Equals(oldText, newText, StringComparison.InvariantCulture))
+                SetValue(newText);
             EditorGUILayout.EndScrollView();
             EditorGUILayout.EndVertical();
         }
@@ -56,11 +58,13 @@ namespace Rhinox.GUIUtils.Editor
             var areaRect = _cachedRect.MoveDownLine(1).SetHeight(ViewableLines * EditorGUIUtility.singleLineHeight);
             
             GUILayout.BeginArea(areaRect, CustomGUIStyles.Clean);
-            {;
+            {
                 
                 _scrollPosition = GUILayout.BeginScrollView(_scrollPosition);
-                string newText = EditorGUILayout.TextArea(GetValue() as string);
-                SetValue(newText);
+                var oldText = GetValue() as string;
+                string newText = EditorGUILayout.TextArea(oldText);
+                if (!string.Equals(oldText, newText, StringComparison.InvariantCulture))
+                    SetValue(newText);
                 GUILayout.EndScrollView();
             }
             GUILayout.EndArea();

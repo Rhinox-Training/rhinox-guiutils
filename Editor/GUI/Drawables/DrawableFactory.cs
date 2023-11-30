@@ -22,6 +22,7 @@ namespace Rhinox.GUIUtils.Editor
     public interface IFactoryModifier
     {
         DrawableCreationMode Find(GenericHostInfo hostInfo, int depth);
+        bool ShouldWrap(GenericHostInfo hostInfo, int depth);
     }
 
     public class StandardDepthChecker : IFactoryModifier
@@ -33,6 +34,11 @@ namespace Rhinox.GUIUtils.Editor
             if (!CheckDepth(depth))
                 return DrawableCreationMode.None;
             return DrawableCreationMode.Auto;
+        }
+
+        public virtual bool ShouldWrap(GenericHostInfo hostInfo, int depth)
+        {
+            return true;
         }
 
         protected bool CheckDepth(int depth)
@@ -99,8 +105,7 @@ namespace Rhinox.GUIUtils.Editor
 
             return group;
         }
-
-
+        
         public static void SortDrawables(this List<IOrderedDrawable> drawables)
         {
             foreach (var drawable in drawables)
@@ -180,8 +185,13 @@ namespace Rhinox.GUIUtils.Editor
             }
             
             // Check for decorators
-            var resultingDrawable = DrawableWrapperFactory.TryWrapDrawable(coreDrawable, hostInfo.GetAttributes());
-            return resultingDrawable;
+            if (modifier.ShouldWrap(hostInfo, depth))
+            {
+                var resultingDrawable = DrawableWrapperFactory.TryWrapDrawable(coreDrawable, hostInfo.GetAttributes());
+                return resultingDrawable;
+            }
+
+            return coreDrawable;
         }
         
         private static IOrderedDrawable CreateDrawableForParameter(ParameterInfo pi, int index, GenericHostInfo arrayHostInfo)
@@ -204,7 +214,7 @@ namespace Rhinox.GUIUtils.Editor
             var drawable = new VerticalGroupDrawable();
             
             var targetType = hostInfo.GetReturnType();
-            var memberEntries = GetEditorVisibleFields(hostInfo, targetType);
+            var memberEntries = GetEditorVisibleMembers(hostInfo, targetType);
             var drawables = new List<IOrderedDrawable>();
             foreach (var memberEntry in memberEntries)
             {
@@ -242,7 +252,7 @@ namespace Rhinox.GUIUtils.Editor
             {
                 var hostInfo = property.GetHostInfo();
                 attributes = hostInfo.GetAttributes();
-                if (AttributeParser.ParseDrawAsUnity(hostInfo.MemberInfo))
+                if (AttributeParser.ParseDrawAsUnity(hostInfo.MemberInfo, hostInfo.HostType))
                     drawable = new UnityObjectDrawableField(hostInfo);
                 else
                 {
@@ -398,7 +408,7 @@ namespace Rhinox.GUIUtils.Editor
                     continue;
 
                 // TypeCache only marks certain methods as using this attribute, now actually fetch it
-                var attributes =  AttributeProcessorHelper.FindAllAttributesInclusive(mi);
+                var attributes =  AttributeProcessorHelper.FindAllAttributesInclusive(mi, type);
                 var attr = attributes.OfType<ButtonAttribute>().First();
 
                 IOrderedDrawable button = new DrawableButton(info, mi)
@@ -415,7 +425,7 @@ namespace Rhinox.GUIUtils.Editor
                 var mi = drawMethods[i];
                 if (!ReflectionUtility.IsMethodOfType(type, ref mi))
                     continue;
-                var attributes = AttributeProcessorHelper.FindAllAttributesInclusive(mi);
+                var attributes = AttributeProcessorHelper.FindAllAttributesInclusive(mi, type);
 
                 IOrderedDrawable drawable = new DrawableMethod(info, mi);
                 drawable = DrawableWrapperFactory.TryWrapDrawable(drawable, attributes);
@@ -425,29 +435,25 @@ namespace Rhinox.GUIUtils.Editor
             return drawables;
         }
 
-        private static IReadOnlyCollection<GenericHostInfo> GetEditorVisibleFields(GenericHostInfo parent, Type t)
+        private static IReadOnlyCollection<GenericHostInfo> GetEditorVisibleMembers(GenericHostInfo parent, Type t)
         {
-            // All public members
-            var publicFields = t.GetFields(BindingFlags.Instance | BindingFlags.Public |
-                                             BindingFlags.GetField | BindingFlags.FlattenHierarchy);
             var visibleProperties = GetEditorVisibleProperties(t);
 
-            // All non-publics that serialize or are visible
-            var serializedMembers = t.GetMembers(BindingFlags.Instance | BindingFlags.NonPublic |
-                                                    BindingFlags.GetField | BindingFlags.GetProperty | BindingFlags.FlattenHierarchy);
-            serializedMembers = serializedMembers
-                .Where(x => !(x is MethodBase))
-                .Where(x => x.IsSerialized() || AttributeProcessorHelper.FindAttributeInclusive<ShowInInspectorAttribute>(x) != null)
+            var fields = ReflectionUtility.GetAllFields(t);
+            fields = fields
+                .Where(x => x.IsSerialized() || AttributeProcessorHelper.FindAttributeInclusive<ShowInInspectorAttribute>(x, t) != null)
                 .ToArray();
+
+            var events = ReflectionUtility.GetAllEvents(t);
 
             var instance = parent.GetValue();
 
             var list = new List<GenericHostInfo>();
-            foreach (var member in publicFields)
-                list.Add(new GenericHostInfo(parent, instance, member));
             foreach (var member in visibleProperties)
                 list.Add(new GenericHostInfo(parent, instance, member));
-            foreach (var member in serializedMembers)
+            foreach (var member in fields)
+                list.Add(new GenericHostInfo(parent, instance, member));
+            foreach (var member in events)
                 list.Add(new GenericHostInfo(parent, instance, member));
             
             return list;
@@ -455,23 +461,15 @@ namespace Rhinox.GUIUtils.Editor
         
         // =============================================================================================================
         // Generic Helper methods (TODO: move these to helper classes?)
-        private static bool IsVisibleInEditor(this PropertyInfo propertyInfo)
-        {
-            if (propertyInfo.GetGetMethod(true) == null)
-                return false;
-
-            if (AttributeProcessorHelper.FindAttributeInclusive<ShowInInspectorAttribute>(propertyInfo) == null)
-                return false;
-            return true;
-        }
-
         private static IEnumerable<PropertyInfo> GetEditorVisibleProperties(this Type type)
         {
             var properties = ReflectionUtility.GetAllProperties(type);
             
             foreach (var propertyMember in properties)
             {
-                if (!propertyMember.IsVisibleInEditor())
+                if (propertyMember.GetGetMethod(true) == null)
+                    continue;
+                if (AttributeProcessorHelper.FindAttributeInclusive<ShowInInspectorAttribute>(propertyMember, type) == null)
                     continue;
                 yield return propertyMember;
             }

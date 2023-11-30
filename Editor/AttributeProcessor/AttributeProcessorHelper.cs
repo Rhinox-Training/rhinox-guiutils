@@ -21,9 +21,9 @@ namespace Rhinox.GUIUtils.Editor
             return attrs.OfType<T>().FirstOrDefault();
         }
 
-        public static T FindAttributeInclusive<T>(MemberInfo memberInfo) where T : Attribute
+        public static T FindAttributeInclusive<T>(MemberInfo memberInfo, Type hostType = null) where T : Attribute
         {
-            var attrs = FindAllAttributesInclusive(memberInfo);
+            var attrs = FindAllAttributesInclusive(memberInfo, hostType);
             return attrs.OfType<T>().FirstOrDefault();
         }
         
@@ -33,9 +33,9 @@ namespace Rhinox.GUIUtils.Editor
             return attrs.OfType<T>();
         }
 
-        public static IEnumerable<T> FindAttributesInclusive<T>(MemberInfo memberInfo) where T : Attribute
+        public static IEnumerable<T> FindAttributesInclusive<T>(MemberInfo memberInfo, Type hostType = null) where T : Attribute
         {
-            var attrs = FindAllAttributesInclusive(memberInfo);
+            var attrs = FindAllAttributesInclusive(memberInfo, hostType);
             return attrs.OfType<T>();
         }
 
@@ -57,10 +57,10 @@ namespace Rhinox.GUIUtils.Editor
             return totalAttrs;
         }
         
-        public static ICollection<Attribute> FindAllAttributesInclusive(MemberInfo info)
+        public static ICollection<Attribute> FindAllAttributesInclusive(MemberInfo info, Type hostType = null)
         {
             var attributes = info.GetCustomAttributes().ToArray();
-            var processor = FindProcessor(info.ReflectedType);
+            var processor = FindProcessor(hostType ?? info.ReflectedType);
             if (processor == null)
                 return attributes;
 

@@ -288,7 +288,7 @@ namespace Rhinox.GUIUtils.Editor
             
             System.Type parentType = property.serializedObject.targetObject.GetType();
             ReflectionUtility.TryGetField(parentType, property.propertyPath, out FieldInfo fi);
-            return AttributeProcessorHelper.FindAttributeInclusive<T>(fi);
+            return AttributeProcessorHelper.FindAttributeInclusive<T>(fi, parentType);
         }
 
         public static IEnumerable<Attribute> GetAttributes(this SerializedProperty property)
@@ -304,7 +304,7 @@ namespace Rhinox.GUIUtils.Editor
             
             System.Type parentType = property.serializedObject.targetObject.GetType();
             ReflectionUtility.TryGetField(parentType, property.propertyPath, out FieldInfo fi);
-            return AttributeProcessorHelper.FindAllAttributesInclusive(fi);
+            return AttributeProcessorHelper.FindAllAttributesInclusive(fi, parentType);
         }
         
         public static T GetAttributeOrCreate<T>(this SerializedProperty property) where T : Attribute, new()
@@ -337,7 +337,7 @@ namespace Rhinox.GUIUtils.Editor
             var fields = ReflectionUtility.GetAllFields(type, typeof(UnityEngine.Object));
             foreach (var field in fields)
             {
-                if (AttributeProcessorHelper.FindAttributeInclusive<HideInInspector>(field) != null)
+                if (AttributeProcessorHelper.FindAttributeInclusive<HideInInspector>(field, type) != null)
                     continue;
                 
                 var fieldProperty = property.FindPropertyRelative(field.Name);
@@ -345,7 +345,7 @@ namespace Rhinox.GUIUtils.Editor
                 {
                     if (field.IsPrivate)
                     {
-                        var showInInspector = AttributeProcessorHelper.FindAttributeInclusive<ShowInInspectorAttribute>(field);
+                        var showInInspector = AttributeProcessorHelper.FindAttributeInclusive<ShowInInspectorAttribute>(field, type);
                         if (showInInspector != null)
                         {
                             yield return new FieldData()
@@ -392,7 +392,7 @@ namespace Rhinox.GUIUtils.Editor
             var fields = ReflectionUtility.GetAllFields(type, typeof(UnityEngine.Object));
             foreach (var field in fields)
             {
-                if (AttributeProcessorHelper.FindAttributeInclusive<HideInInspector>(field) != null)
+                if (AttributeProcessorHelper.FindAttributeInclusive<HideInInspector>(field, type) != null)
                     continue;
                 
                 var fieldProperty = serializedObject.FindProperty(field.Name);
@@ -400,7 +400,7 @@ namespace Rhinox.GUIUtils.Editor
                 {
                     if (field.IsPrivate)
                     {
-                        var showInInspector = AttributeProcessorHelper.FindAttributeInclusive<ShowInInspectorAttribute>(field);
+                        var showInInspector = AttributeProcessorHelper.FindAttributeInclusive<ShowInInspectorAttribute>(field, type);
                         if (showInInspector != null)
                         {
                             yield return new FieldData()

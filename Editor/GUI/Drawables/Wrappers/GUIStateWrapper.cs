@@ -72,8 +72,8 @@ namespace Rhinox.GUIUtils.Editor
             };
         }
         
-        [WrapDrawer(typeof(ReadOnlyAttribute), Priority.BehaviourChange)]
-        public static BaseWrapperDrawable Create(ReadOnlyAttribute attr, IOrderedDrawable drawable)
+        [WrapDrawer(typeof(Sirenix.OdinInspector.ReadOnlyAttribute), Priority.BehaviourChange)]
+        public static BaseWrapperDrawable Create(Sirenix.OdinInspector.ReadOnlyAttribute attr, IOrderedDrawable drawable)
         {
             return new GUIStateWrapper(drawable)
             {
