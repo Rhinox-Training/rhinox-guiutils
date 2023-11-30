@@ -10,6 +10,9 @@ namespace Rhinox.GUIUtils.Editor
 {
     public abstract class BasePicker : PopupWindowContent
     {
+        public const string NoneContentLabel = "<None>";
+        protected static readonly GUIContent NoneContent = new GUIContent(NoneContentLabel);
+        
         public bool ShowSearchField { get; set; }
 
         public int MaxOptionsShown
@@ -35,6 +38,12 @@ namespace Rhinox.GUIUtils.Editor
 
         protected Vector2 _size;
         private bool _supportsIcons;
+
+        public void ShowDropdown(Rect rect, GUIContent label, FocusType type = FocusType.Keyboard)
+        {
+            if (EditorGUI.DropdownButton(rect, label, type))
+                Show(rect);
+        }
 
         public void Show(Rect rect)
         {
@@ -91,7 +100,7 @@ namespace Rhinox.GUIUtils.Editor
 
             if (obj == null)
             {
-                GUI.Label(rect, GUIContentHelper.TempContent("<None>"));
+                GUI.Label(rect, NoneContent);
                 return;
             }
 

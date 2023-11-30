@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Rhinox.GUIUtils.Attributes;
 using Rhinox.Lightspeed;
 using Rhinox.Lightspeed.Reflection;
 using UnityEditor;
@@ -18,9 +19,9 @@ namespace Rhinox.GUIUtils.Editor
         public override object GetValue() => GetHost();
         public override Type GetReturnType(bool preferValueType = true) => HostType;
 
-        public override Attribute[] GetAttributes()
+        public override ICollection<Attribute> GetAttributes()
         {
-            return GetReturnType().GetCustomAttributes();
+            return AttributeProcessorHelper.FindAllAttributesInclusive(GetReturnType());
         }
     }
 
@@ -40,10 +41,10 @@ namespace Rhinox.GUIUtils.Editor
             return _info.ParameterType;
         }
 
-        public override Attribute[] GetAttributes()
+        public override ICollection<Attribute> GetAttributes()
         {
-            var typeAttr = GetReturnType().GetCustomAttributes();
-            var directAttr = _info.GetCustomAttributes();
+            var typeAttr = AttributeProcessorHelper.FindAllAttributesInclusive(GetReturnType());
+            var directAttr = _info.GetCustomAttributes(); // ParameterInfo does not have injectable attributes
             return directAttr.Concat(typeAttr).ToArray();
         }
 
@@ -126,11 +127,11 @@ namespace Rhinox.GUIUtils.Editor
             base.Apply();
         }
 
-        protected override GenericHostInfo CreateChildHostInfo(MemberInfo member)
+        protected override GenericHostInfo CreateChildHostInfo(MemberInfo member, int index = -1)
         {
             if (member is FieldInfo fieldInfo)
-                return new HostInfo(this, fieldInfo);
-            return base.CreateChildHostInfo(member);
+                return new HostInfo(this, fieldInfo, index);
+            return base.CreateChildHostInfo(member, index);
         }
     }
     
@@ -217,6 +218,15 @@ namespace Rhinox.GUIUtils.Editor
             // If we are, then we received a list and can access it by our index
             if (host is IList list)
                 return list[ArrayIndex];
+            if (host is ICollection collection) // TODO: should we?
+            {
+                int index = 0;
+                foreach (var entry in collection)
+                {
+                    if (ArrayIndex == index++)
+                        return entry;
+                }
+            }
             throw new IndexOutOfRangeException($"Could not map found index {ArrayIndex} to value {host} (Type: {host.GetType().GetNiceName()})");
         }
 
@@ -227,8 +237,18 @@ namespace Rhinox.GUIUtils.Editor
             TrySetValue(obj);
         }
 
+        public bool CanSetValue()
+        {
+            if (MemberInfo is PropertyInfo propertyInfo)
+                return propertyInfo.GetSetMethod(true) != null;
+            return true;
+        }
+
         public virtual bool TrySetValue(object val)
         {
+            if (!CanSetValue())
+                return false;
+            
             var host = GetHost();
 
             if (ArrayIndex < 0)
@@ -263,10 +283,21 @@ namespace Rhinox.GUIUtils.Editor
             return false;
         }
 
+        public void ForceNotifyValueChanged()
+        {
+            var host = GetHost();
+            OnValueChanged(host);
+        }
+
         protected virtual void OnValueChanged(object host)
         {
-            if (HostType.IsValueType && Parent != null)
+            if (Parent == null)
+                return;
+            
+            if (HostType.IsValueType)
                 Parent.TrySetValue(host);
+            else
+                Parent.OnValueChanged(Parent.GetHost());
         }
 
         // TODO: Do we migrate this to Rhinox.Lightspeed?
@@ -292,16 +323,39 @@ namespace Rhinox.GUIUtils.Editor
                 if (value != null)
                     return value.GetType();
             }
-
-            Type type = MemberInfo.GetReturnType();
             
             if (MemberInfo == null)
                 return HostType;
+
+            Type type = MemberInfo.GetReturnType();
+
+            var typeHintAttr = AttributeProcessorHelper.FindAttributeInclusive<HostInfoTypeHintAttribute>(MemberInfo, HostType);
+            if (typeHintAttr != null)
+            {
+                var hintType = TryGetHintType(GetHost(), typeHintAttr.Member);
+                if (hintType != null)
+                    type = hintType;
+            }
             
             if (ArrayIndex < 0) return type;
             if (type.IsArray)
                 return type.GetElementType();
             return type.GetArgumentsOfInheritedOpenGenericClass(typeof(IList<>)).First();
+        }
+
+        private static Type TryGetHintType(object instance, string member)
+        {
+            var memberHelper = MemberHelper.Create<Type>(instance, member);
+            if (!memberHelper.HasError)
+                return memberHelper.ForceGetValue();
+            
+            var altMemberHelper = MemberHelper.Create<SerializableType>(instance, member);
+            if (altMemberHelper.HasError)
+                return null;
+            var hintType = altMemberHelper.ForceGetValue();
+            if (hintType == null)
+                return null;
+            return hintType;
         }
 
         public bool TryGetAttribute<T>(out T attribute) where T : Attribute
@@ -315,13 +369,13 @@ namespace Rhinox.GUIUtils.Editor
             return GetAttributes().OfType<T>().FirstOrDefault();
         }
         
-        public virtual Attribute[] GetAttributes()
+        public virtual ICollection<Attribute> GetAttributes()
         {
-            var typeAttr = GetReturnType().GetCustomAttributes();
+            var typeAttr = AttributeProcessorHelper.FindAllAttributesInclusive(GetReturnType());
             if (ArrayIndex != -1)
                 return typeAttr;
             
-            var directAttr = MemberInfo.GetCustomAttributes();
+            var directAttr = AttributeProcessorHelper.FindAllAttributesInclusive(MemberInfo, HostType);
             return directAttr.Concat(typeAttr).ToArray();
         }
 
@@ -346,7 +400,7 @@ namespace Rhinox.GUIUtils.Editor
             
         }
 
-        public bool TryGetChild(string name, out GenericHostInfo childHostInfo)
+        public bool TryGetChild(string name, out GenericHostInfo childHostInfo, int index = -1)
         {
             Type t = GetReturnType();
             if (t == null)
@@ -355,11 +409,18 @@ namespace Rhinox.GUIUtils.Editor
                 return false;
             }
             
-            var members = t.GetMember(name);
+            var members = t.GetMember(name, BindingFlags.Instance | BindingFlags.Public | BindingFlags.Default | BindingFlags.NonPublic);
             if (members.Length > 1 || members.Length == 0)
             {
                 childHostInfo = null;
                 return false;
+            }
+
+            if (index != -1)
+            {
+                var collectionHostInfo = CreateChildHostInfo(members[0]);
+                childHostInfo = collectionHostInfo.CreateChildHostInfo(members[0], index);
+                return true;
             }
 
             childHostInfo = CreateChildHostInfo(members[0]);
@@ -378,22 +439,40 @@ namespace Rhinox.GUIUtils.Editor
             return false;
         }
 
-        protected virtual GenericHostInfo CreateChildHostInfo(MemberInfo member)
+        public bool TryGetChild<T>(int index, out TypedHostInfoWrapper<T> childHostInfoWrapper)
         {
-            return new GenericHostInfo(this, member);
+            if (ArrayIndex != -1)
+            {
+                childHostInfoWrapper = null;
+                return false;
+            }
+            
+            var childHostInfo = CreateChildHostInfo(MemberInfo, index);
+            childHostInfoWrapper = new TypedHostInfoWrapper<T>(childHostInfo);
+            return true;
+            
+        }
+
+        protected virtual GenericHostInfo CreateChildHostInfo(MemberInfo member, int index = -1)
+        {
+            return new GenericHostInfo(this, member, index);
         }
 
         public string GetNicePath()
         {
-            string path = ArrayIndex == -1 ? $"{NiceName}" : $"element{ArrayIndex.ToString()}";
+            string path = ArrayIndex == -1 ? $"{NiceName}" : $"[{ArrayIndex.ToString()}]";
 
             var currentHostInfo = Parent;
+            GenericHostInfo previousHostInfo = this;
             while (currentHostInfo != null)
             {
+                var suffixPath = previousHostInfo.ArrayIndex != -1 ? path : $".{path}";
+                
                 path = currentHostInfo.ArrayIndex == -1 ?
-                    $"{currentHostInfo.NiceName}/{path}" :
-                    $"element{currentHostInfo.ArrayIndex}/{path}";
+                    $"{currentHostInfo.NiceName}{suffixPath}" :
+                    $"[{currentHostInfo.ArrayIndex}]{suffixPath}";
 
+                previousHostInfo = currentHostInfo;
                 currentHostInfo = currentHostInfo.Parent;
             }
 

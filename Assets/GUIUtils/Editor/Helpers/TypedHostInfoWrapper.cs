@@ -13,5 +13,11 @@
         {
             HostInfo = hostInfo;
         }
+
+        public TypedHostInfoWrapper<T> GetChild<T>(int index)
+        {
+            HostInfo.TryGetChild<T>(index, out var typedHostInfo);
+            return typedHostInfo;
+        }
     }
 }

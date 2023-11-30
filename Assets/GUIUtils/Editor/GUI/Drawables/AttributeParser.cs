@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System;
+using System.Reflection;
 using Rhinox.GUIUtils.Attributes;
 using Sirenix.OdinInspector;
 using UnityEditor;
@@ -8,29 +9,10 @@ namespace Rhinox.GUIUtils.Editor
 {
     public static class AttributeParser
     {
-        public static bool TryParseOrder(MemberInfo memberInfo, out int order, int defaultReturn = 0)
+        public static bool ParseDrawAsUnity(MemberInfo memberInfo, Type hostType = null)
         {
-            var orderAttr = memberInfo.GetCustomAttribute<PropertyOrderAttribute>();
-            if (orderAttr != null)
-            {
-                order = (int)orderAttr.Order;
-                return true;
-            }
-            
-            order = defaultReturn;
-            return false;
-        }
-
-        public static bool ParseDrawAsUnity(MemberInfo memberInfo)
-        {
-            var attr = memberInfo.GetCustomAttribute<DrawAsUnityObjectAttribute>();
+            var attr = AttributeProcessorHelper.FindAttributeInclusive<DrawAsUnityObjectAttribute>(memberInfo, hostType);
             return attr != null;
-        }
-
-        public static void Parse(MemberInfo memberInfo, ref IOrderedDrawable drawable)
-        {
-            if (TryParseOrder(memberInfo, out int order))
-                drawable.Order = order;
         }
     }
 }

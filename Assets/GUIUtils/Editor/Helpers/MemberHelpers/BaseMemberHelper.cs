@@ -13,6 +13,8 @@ namespace Rhinox.GUIUtils.Editor
         protected string _errorMessage;
         protected Type _objectType;
 
+        public bool HasError => !_errorMessage.IsNullOrEmpty();
+
         protected object _host;
         protected NewFrameHandler _newFrameHandler;
         
@@ -64,20 +66,22 @@ namespace Rhinox.GUIUtils.Editor
             return false;
         }
         
-        public void DrawError()
+        public bool DrawError()
         {
             if (_errorMessage.IsNullOrEmpty())
-                return;
+                return false;
                 
             EditorGUILayout.HelpBox(_errorMessage, MessageType.Error, true);
+            return true;
         }
         
-        public void DrawError(Rect rect)
+        public bool DrawError(Rect rect)
         {
             if (_errorMessage.IsNullOrEmpty())
-                return;
+                return false;
                 
             EditorGUI.HelpBox(rect, _errorMessage, MessageType.Error);
+            return true;
         }
         
         protected bool TryFindMemberInHost<T>(string input, bool isStatic, out Func<T> staticGetter, out Func<object, T> instanceGetter)
@@ -85,7 +89,7 @@ namespace Rhinox.GUIUtils.Editor
             staticGetter = null;
             instanceGetter = null;
             
-            if (!TryFindMember(input, out MemberInfo info, isStatic))
+            if (!TryFindMember(input, out MemberInfo info, isStatic, !isStatic))
                 return false;
 
             if (!info.GetReturnType().InheritsFrom<T>())
@@ -99,11 +103,11 @@ namespace Rhinox.GUIUtils.Editor
             return true;
         }
         
-        protected bool TryFindMember(string filter, out MemberInfo info, bool isStatic = false)
+        protected bool TryFindMember(string filter, out MemberInfo info, bool isStatic = false, bool includeExtensionMethods = false)
         {
             var flags = isStatic ? BindingFlags.Static : (BindingFlags.Static | BindingFlags.Instance);
             flags |= BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.FlattenHierarchy;
-            return ReflectionUtility.TryGetMember(_objectType, AllowedMembers, filter, out info, flags);
+            return ReflectionUtility.TryGetMember(_objectType, AllowedMembers, filter, out info, flags, includeExtensionMethods);
         }
     }
 }

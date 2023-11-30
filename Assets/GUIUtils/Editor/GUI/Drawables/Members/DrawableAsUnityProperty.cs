@@ -18,7 +18,24 @@ namespace Rhinox.GUIUtils.Editor
         {
             _height = base.ElementHeight;
             _drawerType = drawerType;
-            _drawer = (PropertyDrawer) Activator.CreateInstance(drawerType);
+
+            if (_drawerType.IsGenericType && _drawerType.IsGenericTypeDefinition)
+            {
+                var hostType = hostInfo.GetReturnType();
+                var arguments = hostType.GetGenericArguments();
+                while (arguments.Length == 0)
+                {
+                    hostType = hostType.BaseType;
+                    if (hostType == null)
+                        break;
+                    arguments = hostType.GetGenericArguments();
+                }
+                
+                if (arguments.Length > 0)
+                    _drawerType = _drawerType.MakeGenericType(arguments);
+            }
+
+            _drawer = (PropertyDrawer) Activator.CreateInstance(_drawerType);
             _drawerInterface = (IHostInfoDrawer) _drawer;
             if (_drawer is IRepaintEvent repaintEventHandler)
                 repaintEventHandler.RepaintRequested += RequestRepaint;

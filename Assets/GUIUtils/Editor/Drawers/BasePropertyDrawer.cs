@@ -56,11 +56,13 @@ namespace Rhinox.GUIUtils.Editor
             _property = property;
             UpdateData(property);
             
-            EditorGUI.BeginProperty(position, label, property);
+            if (property != null)
+                EditorGUI.BeginProperty(position, label, property);
 
             DrawProperty(position, label);
             
-            EditorGUI.EndProperty();
+            if (property != null)
+                EditorGUI.EndProperty();
 
             Apply();
             SaveData(property);
@@ -113,7 +115,7 @@ namespace Rhinox.GUIUtils.Editor
                 var property = _property;
                 while (property != null)
                 {
-                    attribute = searchType.GetCustomAttribute<T>();
+                    attribute = AttributeProcessorHelper.FindAttributeInclusive<T>(searchType);
                     if (attribute != null)
                         break;
 
@@ -139,6 +141,7 @@ namespace Rhinox.GUIUtils.Editor
         private TData _activeData;
 
         private IOrderedDrawable _innerDrawable;
+        private CustomPropertyDrawer _customPropertyDrawerAttr;
 
         public override Type FieldType => GetHostInfo(_activeData)?.GetReturnType();
 
@@ -179,16 +182,67 @@ namespace Rhinox.GUIUtils.Editor
             return _innerDrawable.ElementHeight;
         }
 
+        private class TypeExclusionModifier : StandardDepthChecker
+        {
+            public Type FilterType { get; }
+
+            public bool InheritsFrom { get; }
+            
+            public TypeExclusionModifier(Type filterType, bool inheritsFrom = false)
+            {
+                if (filterType == typeof(object) || filterType == typeof(UnityEngine.Object))
+                    throw new ArgumentException("TFilter cannot support object type");
+                FilterType = filterType;
+                InheritsFrom = inheritsFrom;
+            }
+
+            public override DrawableCreationMode Find(GenericHostInfo hostInfo, int depth)
+            {
+                if (!CheckDepth(depth))
+                    return DrawableCreationMode.None;
+                var returnType = hostInfo.GetReturnType();
+                if (CheckType(returnType))
+                    return DrawableCreationMode.Composite;
+                return DrawableCreationMode.Auto;
+            }
+
+            public override bool ShouldWrap(GenericHostInfo hostInfo, int depth)
+            {
+                var returnType = hostInfo.GetReturnType();
+                if (CheckType(returnType))
+                    return false;
+                return base.ShouldWrap(hostInfo, depth);
+            }
+
+            private bool CheckType(Type returnType)
+            {
+                if (InheritsFrom)
+                    return returnType.InheritsFrom(FilterType);
+                return returnType == FilterType;
+            }
+        }
+
+        private bool IsPropertyDrawerForChildTypes()
+        {
+            if (_customPropertyDrawerAttr == null)
+                _customPropertyDrawerAttr = this.GetType().GetCustomAttribute<CustomPropertyDrawer>();
+            return _customPropertyDrawerAttr.IsUsedForChildren();
+        }
+
         protected virtual Rect CallInnerDrawer(Rect position, GUIContent label)
         {
             if (_innerDrawable == null)
-                _innerDrawable = DrawableFactory.CreateDrawableFor(HostInfo, false);
+                _innerDrawable = DrawableFactory.CreateDrawableFor(HostInfo, new TypeExclusionModifier(typeof(T), IsPropertyDrawerForChildTypes())); 
             float oldHeight = position.height;
             float innerDrawableHeight = _innerDrawable.ElementHeight;
-            position.height = innerDrawableHeight;
+            if (position.IsValid())
+                position.height = innerDrawableHeight;
             _innerDrawable.Draw(position, label);
-            position.height = oldHeight;
-            position.y += innerDrawableHeight;
+            if (position.IsValid())
+            {
+                position.height = oldHeight;    
+                position.y += innerDrawableHeight;
+            }
             return position;
         }
 
@@ -266,6 +320,54 @@ namespace Rhinox.GUIUtils.Editor
         protected override void Apply()
         {
             HostInfo?.Apply();
+        }
+        
+        private class ChildDrawer : IEditorDrawable
+        {
+            private IOrderedDrawable _childDrawable;
+
+            public ChildDrawer(GenericHostInfo hostInfo)
+            {
+                _childDrawable = DrawableFactory.CreateDrawableFor(hostInfo);
+            }
+
+            public float ElementHeight => _childDrawable.ElementHeight;
+
+            public void Draw(GUIContent label, params GUILayoutOption[] options)
+            {
+                _childDrawable.Draw(label, options);
+            }
+
+            public void Draw(Rect position, GUIContent label)
+            {
+                float oldHeight = position.height;
+                float innerDrawableHeight = _childDrawable.ElementHeight;
+                if (position.IsValid())
+                    position.height = innerDrawableHeight;
+                _childDrawable.Draw(position, label);
+                if (position.IsValid())
+                {
+                    position.height = oldHeight;    
+                    position.y += innerDrawableHeight;
+                }
+            }
+        }
+
+        protected IEditorDrawable GetChildDrawer(string memberDataName, int index = -1)
+        {
+            return GetChildDrawer(memberDataName, out _, index);
+        }
+
+        protected IEditorDrawable GetChildDrawer(string memberDataName, out GenericHostInfo childHostInfo, int index = -1)
+        {
+            HostInfo.TryGetChild(memberDataName, out childHostInfo, index);
+            return GetChildDrawer(childHostInfo);
+        }
+
+        protected IEditorDrawable GetChildDrawer(GenericHostInfo childHostInfo)
+        {
+            var childDrawer = new ChildDrawer(childHostInfo);
+            return childDrawer;
         }
     }
 

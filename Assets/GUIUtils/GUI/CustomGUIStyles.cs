@@ -28,40 +28,33 @@ namespace Rhinox.GUIUtils
 
         
         private static GUIStyle _boxStyle;
-        public static GUIStyle Box
-        {
-            get
+        public static GUIStyle Box =>
+            _boxStyle ?? (_boxStyle = new GUIStyle("box")
             {
-                if (_boxStyle == null)
-                    _boxStyle = new GUIStyle("box")
-                    {
-                        margin = new RectOffset(),
-                        normal = new GUIStyleState()
-                        {
-                            background = Utility.GetColorTexture(BoxBackgroundColor)
-                        }
-                    };
-                return _boxStyle;
-            }
-        }
-        
+                margin = new RectOffset(),
+                normal = new GUIStyleState()
+                {
+                    background = Utility.GetColorTexture(BoxBackgroundColor)
+                }
+            });
+
         private static GUIStyle _cardStyle;
-        public static GUIStyle Card
-        {
-            get
+        public static GUIStyle Card =>
+            _cardStyle ?? (_cardStyle = new GUIStyle("sv_iconselector_labelselection")
             {
-                if (_cardStyle == null)
-                    _cardStyle = new GUIStyle("sv_iconselector_labelselection")
-                    {
-                        padding = new RectOffset(15, 15, 15, 15),
-                        margin = new RectOffset(0, 0, 0, 0),
-                        stretchHeight = false
-                    };;
-                return _cardStyle;
-            }
-        }
+                padding = new RectOffset(15, 15, 15, 15),
+                margin = new RectOffset(0, 0, 0, 0),
+                stretchHeight = false
+            });
         
-#region Title Styles
+        private static GUIStyle _boldFoldoutStyle;
+        public static GUIStyle BoldFoldout =>
+            _boldFoldoutStyle ?? (_boldFoldoutStyle = new GUIStyle("foldout")
+            {
+                fontStyle = FontStyle.Bold
+            });
+        
+        #region Title Styles
         private static GUIStyle _titleStyle;
         public static GUIStyle Title
         {
@@ -234,238 +227,127 @@ namespace Rhinox.GUIUtils
 #region Label Styles
 
         private static GUIStyle _labelStyle;
-        public static GUIStyle Label
-        {
-            get
-            {
-                if (_labelStyle == null)
-                {
-                    _labelStyle = new GUIStyle("ControlLabel");
-                }
-
-                return _labelStyle;
-            }
-        }
+        public static GUIStyle Label => _labelStyle ?? (_labelStyle = new GUIStyle("ControlLabel"));
         
-        private static GUIStyle _labelStyleCentered;
-        public static GUIStyle CenteredLabel
-        {
-            get
-            {
-                if (_labelStyleCentered == null)
-                {
-                    _labelStyleCentered = new GUIStyle(CustomGUIStyles.Label)
-                    {
-                        alignment = TextAnchor.MiddleCenter
-                    };
-                }
 
-                return _labelStyleCentered;
-            }
-        }
+        private static GUIStyle _labelStyleCentered;
+        public static GUIStyle CenteredLabel =>
+            _labelStyleCentered ?? (_labelStyleCentered = new GUIStyle(CustomGUIStyles.Label)
+            {
+                alignment = TextAnchor.MiddleCenter
+            });
+
         
         private static GUIStyle _labelStyleRight;
-        public static GUIStyle LabelRight
-        {
-            get
+        public static GUIStyle LabelRight =>
+            _labelStyleRight ?? (_labelStyleRight = new GUIStyle(CustomGUIStyles.Label)
             {
-                if (_labelStyleRight == null)
-                {
-                    _labelStyleRight = new GUIStyle(CustomGUIStyles.Label)
-                    {
-                        alignment = TextAnchor.MiddleRight
-                    };
-                }
+                alignment = TextAnchor.MiddleRight
+            });
 
-                return _labelStyleRight;
-            }
-        }
         
         private static GUIStyle _labelStyleCenteredWithHover;
-        public static GUIStyle CenteredLabelWithHover
-        {
-            get
-            {
-                if (_labelStyleCenteredWithHover == null)
+        public static GUIStyle CenteredLabelWithHover =>
+            _labelStyleCenteredWithHover ?? (_labelStyleCenteredWithHover =
+                new GUIStyle(CustomGUIStyles.Label)
                 {
-                    _labelStyleCenteredWithHover = new GUIStyle(CustomGUIStyles.Label)
+                    alignment = TextAnchor.MiddleCenter,
+                    hover = new GUIStyleState()
                     {
-                        alignment = TextAnchor.MiddleCenter
-                    };
-                    _labelStyleCenteredWithHover.hover = new GUIStyleState() {
                         textColor = Color.white
-                    };
-                }
+                    }
+                });
 
-                return _labelStyleCenteredWithHover;
-            }
-        }
         
         private static GUIStyle _labelStyleBold;
-        public static GUIStyle BoldLabel
-        {
-            get
+        public static GUIStyle BoldLabel =>
+            _labelStyleBold ?? (_labelStyleBold = new GUIStyle(CustomGUIStyles.Label)
             {
-                if (_labelStyleBold == null)
-                {
-                    _labelStyleBold = new GUIStyle(CustomGUIStyles.Label)
-                    {
-                        fontStyle = FontStyle.Bold,
-                    };
-                }
+                fontStyle = FontStyle.Bold,
+            });
 
-                return _labelStyleBold;
-            }
-        }
         
         private static GUIStyle _labelStyleBoldCentered;
-        public static GUIStyle BoldLabelCentered
-        {
-            get
+        public static GUIStyle BoldLabelCentered =>
+            _labelStyleBoldCentered ?? (_labelStyleBoldCentered = new GUIStyle(CustomGUIStyles.Label)
             {
-                if (_labelStyleBoldCentered == null)
-                {
-                    _labelStyleBoldCentered = new GUIStyle(CustomGUIStyles.Label)
-                    {
-                        fontStyle = FontStyle.Bold,
-                        alignment = TextAnchor.MiddleCenter
-                    };
-                }
-
-                return _labelStyleBoldCentered;
-            }
-        }
+                fontStyle = FontStyle.Bold,
+                alignment = TextAnchor.MiddleCenter
+            });
+        
 
         private static GUIStyle _labelStyleUnpadded;
-        public static GUIStyle UnpaddedLabel
-        {
-            get
+        public static GUIStyle UnpaddedLabel =>
+            _labelStyleUnpadded ?? (_labelStyleUnpadded = new GUIStyle(CustomGUIStyles.Label)
             {
-                if (_labelStyleUnpadded == null)
-                {
-                    _labelStyleUnpadded = new GUIStyle(CustomGUIStyles.Label)
-                    {
-                        padding = new RectOffset(),
-                        fontStyle = FontStyle.Normal,
-                    };
-                    //_labelStyleUnpadded.font.material.color = Color.white;
-                }
+                padding = new RectOffset(),
+                fontStyle = FontStyle.Normal,
+            });
 
-                return _labelStyleUnpadded;
-            }
-        }
         
+        //_labelStyleUnpadded.font.material.color = Color.white;
         private static GUIStyle _miniLabelStyleLeft;
-        public static GUIStyle MiniLabel
-        {
-            get
+        public static GUIStyle MiniLabel =>
+            _miniLabelStyleLeft ?? (_miniLabelStyleLeft = new GUIStyle("MiniLabel")
             {
-                if (_miniLabelStyleLeft == null)
+                alignment = TextAnchor.MiddleLeft,
+                clipping = TextClipping.Clip,
+                margin = new RectOffset(4, 4, 4, 4),
+                normal =
                 {
-                    _miniLabelStyleLeft = new GUIStyle("MiniLabel")
-                    {
-                        alignment = TextAnchor.MiddleLeft,
-                        clipping = TextClipping.Clip,
-                        margin = new RectOffset(4, 4, 4, 4),
-                        normal = {
-                            textColor = Color.grey
-                        }
-                    };
+                    textColor = Color.grey
                 }
-                return _miniLabelStyleLeft;
-            }
-        }
+            });
 
+        
         private static GUIStyle _miniLabelStyleCentered;
-        public static GUIStyle MiniLabelCentered
-        {
-            get
+        public static GUIStyle MiniLabelCentered =>
+            _miniLabelStyleCentered ?? (_miniLabelStyleCentered = new GUIStyle(CustomGUIStyles.MiniLabel)
             {
-                if (_miniLabelStyleCentered == null)
-                {
-                    _miniLabelStyleCentered = new GUIStyle(CustomGUIStyles.MiniLabel)
-                    {
-                        alignment = TextAnchor.MiddleCenter,
-                    };
-                }
-                return _miniLabelStyleCentered;
-            }
-        }
+                alignment = TextAnchor.MiddleCenter,
+            });
 
+        
         private static GUIStyle _miniLabelStyleRight;
-        public static GUIStyle MiniLabelRight
-        {
-            get
+        public static GUIStyle MiniLabelRight =>
+            _miniLabelStyleRight ?? (_miniLabelStyleRight = new GUIStyle(CustomGUIStyles.MiniLabel)
             {
-                if (_miniLabelStyleRight == null)
-                {
-                    _miniLabelStyleRight = new GUIStyle(CustomGUIStyles.MiniLabel)
-                    {
-                        alignment = TextAnchor.MiddleRight
-                    };
-                }
-                return _miniLabelStyleRight;
-            }
-        }
-#endregion //Label Styles
+                alignment = TextAnchor.MiddleRight
+            });
+
+        #endregion //Label Styles
 
 #region Clean Styles
         // =============================================================================================================
         // Clean styles
         private static GUIStyle _cleanStyle;
-        public static GUIStyle Clean
-        {
-            get
+        public static GUIStyle Clean =>
+            _cleanStyle ?? (_cleanStyle = new GUIStyle()
             {
-                if (_cleanStyle == null)
-                {
-                    _cleanStyle = new GUIStyle()
-                    {
-                        overflow = new RectOffset(0, 0, 0, 0),
-                        margin = new RectOffset(0, 0, 0, 0),
-                        padding = new RectOffset(0, 0, 0, 0)
-                    };
-                }
+                overflow = new RectOffset(0, 0, 0, 0),
+                margin = new RectOffset(0, 0, 0, 0),
+                padding = new RectOffset(0, 0, 0, 0),
+            });
 
-                return _cleanStyle;
-            }
-        }
         
         private static GUIStyle _cleanStyleTextField;
-        public static GUIStyle CleanTextField
-        {
-            get
+        public static GUIStyle CleanTextField =>
+            _cleanStyleTextField ?? (_cleanStyleTextField = new GUIStyle("TextField")
             {
-                if (_cleanStyleTextField == null)
-                {
-                    _cleanStyleTextField = new GUIStyle("TextField")
-                    {
-                        overflow = new RectOffset(0, 0, 0, 0),
-                        margin = new RectOffset(0, 0, 0, 0),
-                    };
-                }
+                overflow = new RectOffset(0, 0, 0, 0),
+                margin = new RectOffset(0, 0, 0, 0),
+            });
 
-                return _cleanStyleTextField;
-            }
-        }
+        
         private static GUIStyle _cleanLabelField;
-        public static GUIStyle CleanLabelField
-        {
-            get
+        public static GUIStyle CleanLabelField =>
+            _cleanLabelField ?? (_cleanLabelField = new GUIStyle("ControlLabel")
             {
-                if (_cleanLabelField == null)
-                {
-                    _cleanLabelField = new GUIStyle("ControlLabel")
-                    {
-                        overflow = new RectOffset(0, 0, 0, 0),
-                        margin = new RectOffset(0, 0, 0, 0),
-                    };
-                }
+                overflow = new RectOffset(0, 0, 0, 0),
+                margin = new RectOffset(0, 0, 0, 0),
+            });
 
-                return _cleanLabelField;
-            }
-        }
-#endregion
+        #endregion
  
 #region Toolbar Styles
 
@@ -473,317 +355,167 @@ namespace Rhinox.GUIUtils
         // Toolbar styles
         
         private static GUIStyle _toolbarBackground;
-        public static GUIStyle ToolbarBackground
-        {
-            get
+        public static GUIStyle ToolbarBackground =>
+            _toolbarBackground ?? (_toolbarBackground = new GUIStyle("toolbar")
             {
-                if (_toolbarBackground == null)
-                {
-                    _toolbarBackground = new GUIStyle("toolbar")
-                    {
-                        padding = new RectOffset(0, 0, 0, 0),
-                        stretchHeight = true,
-                        stretchWidth = true,
-                        fixedHeight = 0.0f,
-                    };
-                }
-                return _toolbarBackground;
-            }
-        }
+                padding = new RectOffset(0, 0, 0, 0),
+                stretchHeight = true,
+                stretchWidth = true,
+                fixedHeight = 0.0f,
+            });
+
         
+        private static GUIStyle _toolbarIconButtonStyle;
+        public static GUIStyle ToolbarIconButton =>
+            _toolbarIconButtonStyle ?? (_toolbarIconButtonStyle = new GUIStyle("IconButton")
+            {
+                padding = new RectOffset(2, 2, 2, 2)
+            });
+
         
         private static GUIStyle _toggleGroupBackground;
-        public static GUIStyle ToggleGroupBackground
-        {
-            get
+        public static GUIStyle ToggleGroupBackground =>
+            _toggleGroupBackground ?? (_toggleGroupBackground = new GUIStyle("HelpBox")
             {
-                if (_toggleGroupBackground == null)
-                {
-                    _toggleGroupBackground = new GUIStyle("HelpBox")
-                    {
-                        overflow = new RectOffset(0, 0, 0, 0),
-                        margin = new RectOffset(-2, -2, 0, 0),
-                        padding = new RectOffset(0, 0, 0, 0)
-                    };
-                }
+                overflow = new RectOffset(0, 0, 0, 0),
+                margin = new RectOffset(-2, -2, 0, 0),
+                padding = new RectOffset(0, 0, 0, 0)
+            });
 
-                return _toggleGroupBackground;
-            }
-        }
-        
         private static GUIStyle _toggleGroupHeaderStyle;
-        public static GUIStyle ToggleGroupHeader
-        {
-            get
+        public static GUIStyle ToggleGroupHeader =>
+            _toggleGroupHeaderStyle ?? (_toggleGroupHeaderStyle = new GUIStyle("RL Header")
             {
-                if (_toggleGroupHeaderStyle == null)
-                    _toggleGroupHeaderStyle = new GUIStyle("RL Header")
-                    {
-                        margin = new RectOffset(0, 0, 0, 0),
-                        padding = new RectOffset(2, 2, 0, 0)
-                    };
-                return _toggleGroupHeaderStyle;
-            }
-        }
+                margin = new RectOffset(0, 0, 0, 0),
+                padding = new RectOffset(2, 2, 0, 0)
+            });
+
         
         private static GUIStyle _toggleGroupContentStyle;
-        public static GUIStyle ToggleGroupContent
-        {
-            get
+        public static GUIStyle ToggleGroupContent =>
+            _toggleGroupContentStyle ?? (_toggleGroupContentStyle = new GUIStyle(Clean)
             {
-                if (_toggleGroupContentStyle == null)
-                    _toggleGroupContentStyle = new GUIStyle(Clean)
-                    {
-                        padding = new RectOffset(2, 2, 0, 0)
-                    };
-                return _toggleGroupContentStyle;
-            }
-        }
+                padding = new RectOffset(2, 2, 0, 0)
+            });
 
         private static GUIStyle _toolbarTab;
-        public static GUIStyle ToolbarTab
-        {
-            get
+        public static GUIStyle ToolbarTab =>
+            _toolbarTab ?? (_toolbarTab = new GUIStyle("toolbarbutton")
             {
-                if (_toolbarTab == null)
-                    _toolbarTab = new GUIStyle("toolbarbutton")
-                    {
-                        fixedHeight = 0.0f,
-                        stretchHeight = true,
-                        stretchWidth = true
-                    };
-                return _toolbarTab;
-            }
-        }
+                fixedHeight = 0.0f,
+                stretchHeight = true,
+                stretchWidth = true
+            });
+
         
         private static GUIStyle _toolbarCentered;
-        public static GUIStyle ToolbarButtonCentered
-        {
-            get
+        public static GUIStyle ToolbarButtonCentered =>
+            _toolbarCentered ?? (_toolbarCentered = new GUIStyle("toolbarbutton")
             {
-                if (_toolbarCentered == null)
-                    _toolbarCentered = new GUIStyle("toolbarbutton")
-                    {
-                        fixedHeight = 0.0f,
-                        alignment = TextAnchor.MiddleCenter,
-                        stretchHeight = true,
-                        stretchWidth = false
-                    };
-                return _toolbarCentered;
-            }
-        }
+                fixedHeight = 0.0f,
+                alignment = TextAnchor.MiddleCenter,
+                stretchHeight = true,
+                stretchWidth = false
+            });
+
         
         private static GUIStyle _toolbarSearchTextField;
-        public static GUIStyle ToolbarSearchTextField
-        {
-            get
-            {
-                if (_toolbarSearchTextField == null)
-                    _toolbarSearchTextField = new GUIStyle("ToolbarSeachTextField");
-                return _toolbarSearchTextField;
-            }
-        }
+        public static GUIStyle ToolbarSearchTextField =>
+            _toolbarSearchTextField ?? (_toolbarSearchTextField = new GUIStyle("ToolbarSeachTextField"));
+
         
         private static GUIStyle _toolbarSearchCancelButton;
-        public static GUIStyle ToolbarSearchCancelButton
-        {
-            get
-            {
-                if (_toolbarSearchCancelButton == null)
-                    _toolbarSearchCancelButton = new GUIStyle("ToolbarSeachCancelButton");
-                return _toolbarSearchCancelButton;
-            }
-        }
-#endregion
+        public static GUIStyle ToolbarSearchCancelButton =>
+            _toolbarSearchCancelButton ?? (_toolbarSearchCancelButton = new GUIStyle("ToolbarSeachCancelButton"));
+
+        #endregion
 
 #region Button Styles
         // =============================================================================================================
         // Button Styles
-
         private static GUIStyle _iconButtonStyle;
-        public static GUIStyle IconButton
-        {
-            get
+        public static GUIStyle IconButton =>
+            _iconButtonStyle ?? (_iconButtonStyle = new GUIStyle(GUIStyle.none)
             {
-                if (_iconButtonStyle == null)
-                {
-                    _iconButtonStyle = new GUIStyle(GUIStyle.none)
-                    {
-                        padding = new RectOffset(1, 1, 1, 1)
-                    };
-                }
-                    
-                return _iconButtonStyle;
-            }
-        }
+                padding = new RectOffset(1, 1, 1, 1)
+            });
 
+        
         private static GUIStyle _buttonStyle;
-        public static GUIStyle Button
-        {
-            get
-            {
-                if (_buttonStyle == null)
-                    _buttonStyle = new GUIStyle((GUIStyle)nameof(Button));
-                return _buttonStyle;
-            }
-        }
+        public static GUIStyle Button => _buttonStyle ?? (_buttonStyle = new GUIStyle((GUIStyle)nameof(Button)));
+
         
         private static GUIStyle _buttonStyleSelected;
-        public static GUIStyle ButtonSelected
-        {
-            get
+        public static GUIStyle ButtonSelected =>
+            _buttonStyleSelected ?? (_buttonStyleSelected = new GUIStyle(CustomGUIStyles.Button)
             {
-                if (_buttonStyleSelected == null)
-                    _buttonStyleSelected = new GUIStyle(CustomGUIStyles.Button)
-                    {
-                        normal = new GUIStyle(CustomGUIStyles.Button).onNormal
-                    };
-                return _buttonStyleSelected;
-            }
-        }
+                normal = new GUIStyle(CustomGUIStyles.Button).onNormal
+            });
+
         
         private static GUIStyle _buttonStyleLeft;
-        public static GUIStyle ButtonLeft
-        {
-            get
-            {
-                if (_buttonStyleLeft == null)
-                {
-                    if (GUI.skin.FindStyle(nameof(ButtonLeft)) != null)
-                        _buttonStyleLeft = new GUIStyle((GUIStyle) nameof(ButtonLeft));
-                    else
-                        _buttonStyleLeft = new GUIStyle((GUIStyle) "button");
-                }
+        public static GUIStyle ButtonLeft =>
+            _buttonStyleLeft ?? (_buttonStyleLeft = GUI.skin.FindStyle(nameof(ButtonLeft), "button"));
 
-                return _buttonStyleLeft;
-            }
-        }
         
         private static GUIStyle _iconButtonStyleLeft;
-        public static GUIStyle IconButtonLeft
-        {
-            get
+        public static GUIStyle IconButtonLeft =>
+            _iconButtonStyleLeft ?? (_iconButtonStyleLeft = new GUIStyle(CustomGUIStyles.ButtonLeft)
             {
-                if (_iconButtonStyleLeft == null)
-                {
-                    _iconButtonStyleLeft = new GUIStyle(CustomGUIStyles.ButtonLeft)
-                    {
-                        padding = new RectOffset(1, 1, 1, 1)
-                    };
-                }
+                padding = new RectOffset(1, 1, 1, 1)
+            });
 
-                return _iconButtonStyleLeft;
-            }
-        }
         
         private static GUIStyle _buttonStyleLeftSelected;
-        public static GUIStyle ButtonLeftSelected
-        {
-            get
+        public static GUIStyle ButtonLeftSelected =>
+            _buttonStyleLeftSelected ?? (_buttonStyleLeftSelected = new GUIStyle(CustomGUIStyles.ButtonLeft)
             {
-                if (_buttonStyleLeftSelected == null)
-                    _buttonStyleLeftSelected = new GUIStyle(CustomGUIStyles.ButtonLeft)
-                    {
-                        normal = CustomGUIStyles.ButtonLeft.onNormal
-                    };
-                return _buttonStyleLeftSelected;
-            }
-        }
+                normal = CustomGUIStyles.ButtonLeft.onNormal
+            });
 
+        
         private static GUIStyle _buttonStyleMiddle;
-        public static GUIStyle ButtonMid
-        {
-            get
-            {
-                if (_buttonStyleMiddle == null)
-                {
-                    if (GUI.skin.FindStyle(nameof(ButtonMid)) != null)
-                        _buttonStyleMiddle = new GUIStyle((GUIStyle)nameof(ButtonMid));
-                    else
-                        _buttonStyleMiddle = new GUIStyle((GUIStyle) "button");
-                }
-                return _buttonStyleMiddle;
-            }
-        }
+        public static GUIStyle ButtonMid =>
+            _buttonStyleMiddle ?? (_buttonStyleMiddle = new GUIStyle(GUI.skin.FindStyle(nameof(ButtonMid), "button")));
+
         
         private static GUIStyle _buttonStyleMidSelected;
-        public static GUIStyle ButtonMidSelected
-        {
-            get
+        public static GUIStyle ButtonMidSelected =>
+            _buttonStyleMidSelected ?? (_buttonStyleMidSelected = new GUIStyle(CustomGUIStyles.ButtonMid)
             {
-                if (_buttonStyleMidSelected == null)
-                    _buttonStyleMidSelected = new GUIStyle(CustomGUIStyles.ButtonMid)
-                    {
-                        normal = CustomGUIStyles.ButtonMid.onNormal
-                    };
-                return _buttonStyleMidSelected;
-            }
-        }
+                normal = CustomGUIStyles.ButtonMid.onNormal
+            });
+
         
         private static GUIStyle _iconButtonStyleMid;
-        public static GUIStyle IconButtonMid
-        {
-            get
+        public static GUIStyle IconButtonMid =>
+            _iconButtonStyleMid ?? (_iconButtonStyleMid = new GUIStyle(CustomGUIStyles.ButtonMid)
             {
-                if (_iconButtonStyleMid == null)
-                {
-                    _iconButtonStyleMid = new GUIStyle(CustomGUIStyles.ButtonMid)
-                    {
-                        padding = new RectOffset(1, 1, 1, 1)
-                    };
-                }
+                padding = new RectOffset(1, 1, 1, 1)
+            });
 
-                return _iconButtonStyleMid;
-            }
-        }
-
+        
         private static GUIStyle _buttonStyleRight;
-        public static GUIStyle ButtonRight
-        {
-            get
-            {
-                if (_buttonStyleRight == null)
-                {
-                    if (GUI.skin.FindStyle(nameof(ButtonRight)) != null)
-                        _buttonStyleRight = new GUIStyle((GUIStyle)nameof(ButtonRight));
-                    else
-                        _buttonStyleRight = new GUIStyle((GUIStyle) "button");
-                }
-                return _buttonStyleRight;
-            }
-        }
+        public static GUIStyle ButtonRight =>
+            _buttonStyleRight ?? (_buttonStyleRight = GUI.skin.FindStyle(nameof(ButtonRight), "button"));
+
         
         private static GUIStyle _buttonStyleRightSelected;
-        public static GUIStyle ButtonRightSelected
-        {
-            get
-            {
-                if (_buttonStyleRightSelected == null)
-                    _buttonStyleRightSelected = new GUIStyle(CustomGUIStyles.ButtonRight)
-                    {
-                        normal = CustomGUIStyles.ButtonRight.onNormal
-                    };
-                return _buttonStyleRightSelected;
-            }
-        }
+        public static GUIStyle ButtonRightSelected =>
+            _buttonStyleRightSelected ?? (_buttonStyleRightSelected =
+                new GUIStyle(CustomGUIStyles.ButtonRight)
+                {
+                    normal = CustomGUIStyles.ButtonRight.onNormal
+                });
+
         
         private static GUIStyle _iconButtonStyleRight;
-        public static GUIStyle IconButtonRight
-        {
-            get
+        public static GUIStyle IconButtonRight =>
+            _iconButtonStyleRight ?? (_iconButtonStyleRight = new GUIStyle(CustomGUIStyles.ButtonRight)
             {
-                if (_iconButtonStyleRight == null)
-                {
-                    _iconButtonStyleRight = new GUIStyle(CustomGUIStyles.ButtonRight)
-                    {
-                        padding = new RectOffset(1, 1, 1, 1)
-                    };
-                }
+                padding = new RectOffset(1, 1, 1, 1)
+            });
 
-                return _iconButtonStyleRight;
-            }
-        }
-        
         public static GUIStyle GetButtonGroupStyle(int buttonI, int maxI, bool selected = false)
         {
             if (buttonI == 0 && maxI <= 1)
@@ -793,106 +525,59 @@ namespace Rhinox.GUIUtils
             return selected ? CustomGUIStyles.ButtonMidSelected : CustomGUIStyles.ButtonMid;
         }
 
+        
         private static GUIStyle _miniButtonStyle;
-        public static GUIStyle MiniButton
-        {
-            get
-            {
-                if (_miniButtonStyle == null)
-                    _miniButtonStyle = new GUIStyle("miniButton");
-                return _miniButtonStyle;
-            }
-        }
+        public static GUIStyle MiniButton => _miniButtonStyle ?? (_miniButtonStyle = new GUIStyle("miniButton"));
 
+        
         private static GUIStyle _miniButtonStyleSelected;
-        public static GUIStyle MiniButtonSelected
-        {
-            get
+        public static GUIStyle MiniButtonSelected =>
+            _miniButtonStyleSelected ?? (_miniButtonStyleSelected = new GUIStyle(CustomGUIStyles.MiniButton)
             {
-                if (_miniButtonStyleSelected == null)
-                    _miniButtonStyleSelected = new GUIStyle(CustomGUIStyles.MiniButton)
-                    {
-                        normal = new GUIStyle(CustomGUIStyles.MiniButton).onNormal
-                    };
-                return _miniButtonStyleSelected;
-            }
-        }
+                normal = new GUIStyle(CustomGUIStyles.MiniButton).onNormal
+            });
 
+        
         private static GUIStyle _miniButtonStyleLeft;
-        public static GUIStyle MiniButtonLeft
-        {
-            get
-            {
-                if (_miniButtonStyleLeft == null)
-                    _miniButtonStyleLeft = new GUIStyle("miniButtonLeft");
-                return _miniButtonStyleLeft;
-            }
-        }
+        public static GUIStyle MiniButtonLeft => 
+            _miniButtonStyleLeft ?? (_miniButtonStyleLeft = new GUIStyle("miniButtonLeft"));
+
 
         private static GUIStyle _miniButtonStyleLeftSelected;
-        public static GUIStyle MiniButtonLeftSelected
-        {
-            get
-            {
-                if (_miniButtonStyleLeftSelected == null)
-                    _miniButtonStyleLeftSelected = new GUIStyle(CustomGUIStyles.MiniButtonLeft)
-                    {
-                        normal = new GUIStyle(CustomGUIStyles.MiniButtonLeft).onNormal
-                    };
-                return _miniButtonStyleLeftSelected;
-            }
-        }
+        public static GUIStyle MiniButtonLeftSelected =>
+            _miniButtonStyleLeftSelected ?? (_miniButtonStyleLeftSelected =
+                new GUIStyle(CustomGUIStyles.MiniButtonLeft)
+                {
+                    normal = new GUIStyle(CustomGUIStyles.MiniButtonLeft).onNormal
+                });
 
+        
         private static GUIStyle _miniButtonStyleMid;
-        public static GUIStyle MiniButtonMid
-        {
-            get
-            {
-                if (_miniButtonStyleMid == null)
-                    _miniButtonStyleMid = new GUIStyle("miniButtonMid");
-                return _miniButtonStyleMid;
-            }
-        }
+        public static GUIStyle MiniButtonMid =>
+            _miniButtonStyleMid ?? (_miniButtonStyleMid = new GUIStyle("miniButtonMid"));
 
         private static GUIStyle _miniButtonStyleMidSelected;
-        public static GUIStyle MiniButtonMidSelected
-        {
-            get
-            {
-                if (_miniButtonStyleMidSelected == null)
-                    _miniButtonStyleMidSelected = new GUIStyle(CustomGUIStyles.MiniButtonMid)
-                    {
-                        normal = new GUIStyle(CustomGUIStyles.MiniButtonMid).onNormal
-                    };
-                return _miniButtonStyleMidSelected;
-            }
-        }
+        public static GUIStyle MiniButtonMidSelected =>
+            _miniButtonStyleMidSelected ?? (_miniButtonStyleMidSelected =
+                new GUIStyle(CustomGUIStyles.MiniButtonMid)
+                {
+                    normal = new GUIStyle(CustomGUIStyles.MiniButtonMid).onNormal
+                });
 
+        
         private static GUIStyle _miniButtonStyleRight;
-        public static GUIStyle MiniButtonRight
-        {
-            get
-            {
-                if (_miniButtonStyleRight == null)
-                    _miniButtonStyleRight = new GUIStyle("miniButtonRight");
-                return _miniButtonStyleRight;
-            }
-        }
+        public static GUIStyle MiniButtonRight => 
+            _miniButtonStyleRight ?? (_miniButtonStyleRight = new GUIStyle("miniButtonRight"));
+
 
         private static GUIStyle _miniButtonStyleRightSelected;
-        public static GUIStyle MiniButtonRightSelected
-        {
-            get
-            {
-                if (_miniButtonStyleRightSelected == null)
-                    _miniButtonStyleRightSelected = new GUIStyle(CustomGUIStyles.MiniButtonRight)
-                    {
-                        normal = new GUIStyle(CustomGUIStyles.MiniButtonRight).onNormal
-                    };
-                return _miniButtonStyleRightSelected;
-            }
-        }
-        
+        public static GUIStyle MiniButtonRightSelected =>
+            _miniButtonStyleRightSelected ?? (_miniButtonStyleRightSelected =
+                new GUIStyle(CustomGUIStyles.MiniButtonRight)
+                {
+                    normal = new GUIStyle(CustomGUIStyles.MiniButtonRight).onNormal
+                });
+
         public static GUIStyle GetMiniButtonGroupStyle(int buttonI, int maxI, bool selected = false)
         {
             if (buttonI == 0 && maxI <= 1)

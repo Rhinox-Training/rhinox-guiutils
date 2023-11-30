@@ -13,7 +13,7 @@ using UnityEngine.UIElements;
 namespace Rhinox.GUIUtils.NoOdin.Editor
 {
     [CustomPropertyDrawer(typeof(DrawAsUnityGenericAttribute))]
-    internal class GenericRedirectDrawer : PropertyDrawer
+    public class GenericRedirectDrawer : PropertyDrawer
     {
         private struct GenericDrawerInfo
         {

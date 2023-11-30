@@ -14,11 +14,14 @@ namespace Rhinox.GUIUtils.Editor
         private const int DEFAULT_LINE_WIDTH = 1;
         private const int DEFAULT_ICON_WIDTH = 22;
         private const int DEFAULT_ICON_HEIGHT = 18;
+        private const int INDENT_SIZE = 15;
 
         private static object _parentView = null;
         private static PropertyInfo _screenPosProp;
         private static MethodInfo _toolbarSearchFieldMethodInfo;
         private static MethodInfo _toolbarSearchFieldRectMethodInfo;
+
+        public static float Indent => EditorGUI.indentLevel * INDENT_SIZE;
 
         public static Rect GetEditorWindowRect()
         {
@@ -308,6 +311,23 @@ namespace Rhinox.GUIUtils.Editor
                 CustomEditorGUI.HorizontalLine(CustomGUIStyles.LightBorderColor, thickness: 1);
                 GUILayout.Space(1.0f + CustomGUIUtility.Padding);
             }
+        }
+
+        public static void Title(Rect position, GUIContent label, GUIStyle customLabelStyle = null, bool includeHorizontalLine = true)
+        {
+            position = position.AlignTop(EditorGUIUtility.singleLineHeight);
+            GUI.Label(position, label, customLabelStyle ?? CustomGUIStyles.Title);
+            if (includeHorizontalLine)
+            {
+                var lineRect = position.AddY( CustomGUIUtility.Padding / 2.0f + EditorGUIUtility.singleLineHeight);
+                lineRect.height = 1;
+                CustomEditorGUI.HorizontalLine(lineRect, CustomGUIStyles.LightBorderColor);
+            }
+        }
+
+        public static void Title(Rect rect, string text, GUIStyle customLabelStyle = null, bool includeHorizontalLine = true)
+        {
+            Title(rect, GUIContentHelper.TempContent(text), customLabelStyle, includeHorizontalLine);
         }
         
         public static void Title(string text, GUIStyle customLabelStyle = null, bool includeHorizontalLine = true)

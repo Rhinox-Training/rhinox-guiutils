@@ -61,8 +61,9 @@ namespace Rhinox.GUIUtils.Editor
             if (label != null)
                 position = EditorGUI.PrefixLabel(position, label);
 
-            var title = data.Title ?? "<None>";
+            var title = data.Title;
             if (SmartValue != null) title = SmartValue.Name;
+            if (title.IsNullOrEmpty()) title = BasePicker.NoneContentLabel;
 
             if (EditorGUI.DropdownButton(position, GUIContentHelper.TempContent(title), FocusType.Keyboard))
                 DoTypeDropdown(fullRect, data);
@@ -76,7 +77,10 @@ namespace Rhinox.GUIUtils.Editor
 
         private void SetValue(Type type, DrawerData data)
         {
-            data.Info.SetValue(new SerializableType(type));
+            SerializableType newValue = null;
+            if (type != null)
+                newValue = new SerializableType(type);
+            data.Info.SetValue(newValue);
             data.IsDirty = true;
         }
 

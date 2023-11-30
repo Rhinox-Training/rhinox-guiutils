@@ -481,98 +481,12 @@ namespace Rhinox.GUIUtils.Editor
             public IndentedLayout(int increment = 1)
             {
                 _originalIndentLevel = EditorGUI.indentLevel;
-                EditorGUI.indentLevel = EditorGUI.indentLevel + increment;
+                EditorGUI.indentLevel += increment;
             }
             
             public void Dispose()
             {
                 EditorGUI.indentLevel = _originalIndentLevel;
-            }
-        }
-
-        public class SimpleTableView : IDisposable
-        {
-            private readonly GUILayoutOption[][] _columnOptions;
-            public int ColumnCount { get; }
-
-
-            private GUIStyle _cellStyle = null;
-            private GUIStyle CellStyle
-            {
-                get
-                {
-                    if (_cellStyle == null)
-                    {
-                        _cellStyle = new GUIStyle("RL Background")
-                        {
-                            alignment = TextAnchor.MiddleCenter,
-                            fontStyle = FontStyle.Normal
-                        };
-                    }
-                    return _cellStyle;
-                }
-            }
-            
-            private GUIStyle _defaultHeaderStyle = null;
-            private GUIStyle DefaultHeaderStyle
-            {
-                get
-                {
-                    if (_defaultHeaderStyle == null)
-                    {
-                        _defaultHeaderStyle = new GUIStyle(CustomGUIStyles.BoldTitleCentered);
-                    }
-                    return _defaultHeaderStyle;
-                }
-            }
-
-            public SimpleTableView(string[] rowHeaders, GUILayoutOption[][] columnOptions = null, GUIStyle headerStyle = null)
-            {
-                if (rowHeaders == null) throw new ArgumentNullException(nameof(rowHeaders));
-                if (columnOptions != null && columnOptions.Length != rowHeaders.Length)
-                    throw new ArgumentException(nameof(columnOptions));
-                ColumnCount = rowHeaders.Length;
-                _columnOptions = columnOptions;
-                
-                EditorGUILayout.BeginVertical();
-
-                EditorGUILayout.BeginHorizontal("RL Header");
-                {
-                    for (int i = 0; i < rowHeaders.Length; ++i)
-                    {
-                        var header = rowHeaders[i];
-                        if (columnOptions != null)
-                            EditorGUILayout.LabelField(header, headerStyle ?? DefaultHeaderStyle, columnOptions[i]);
-                        else
-                            EditorGUILayout.LabelField(header, headerStyle ?? DefaultHeaderStyle);
-                    }
-                }
-                EditorGUILayout.EndHorizontal();
-            }
-
-            public void DrawRow(params object[] entries)
-            {
-                if (entries.Length != ColumnCount)
-                    return;
-                
-                EditorGUILayout.BeginHorizontal(CellStyle);
-                {
-                    for (int i = 0; i < entries.Length; ++i)
-                    {
-                        var entry = entries[i];
-                        var content = GUIContentHelper.TempContent(entry != null ? entry.ToString() : "<NULL>");
-                        if (_columnOptions != null)
-                            EditorGUILayout.LabelField(content, CustomGUIStyles.CenteredLabel, _columnOptions[i]);
-                        else
-                            EditorGUILayout.LabelField(content, CustomGUIStyles.CenteredLabel);
-                    }
-                }
-                EditorGUILayout.EndHorizontal();
-            }
-
-            public void Dispose()
-            {
-                EditorGUILayout.EndVertical();
             }
         }
     }
