@@ -22,6 +22,7 @@ namespace Rhinox.GUIUtils.Editor
     public interface IFactoryModifier
     {
         DrawableCreationMode Find(GenericHostInfo hostInfo, int depth);
+        bool ShouldWrap(GenericHostInfo hostInfo, int depth);
     }
 
     public class StandardDepthChecker : IFactoryModifier
@@ -33,6 +34,11 @@ namespace Rhinox.GUIUtils.Editor
             if (!CheckDepth(depth))
                 return DrawableCreationMode.None;
             return DrawableCreationMode.Auto;
+        }
+
+        public virtual bool ShouldWrap(GenericHostInfo hostInfo, int depth)
+        {
+            return true;
         }
 
         protected bool CheckDepth(int depth)
@@ -99,8 +105,7 @@ namespace Rhinox.GUIUtils.Editor
 
             return group;
         }
-
-
+        
         public static void SortDrawables(this List<IOrderedDrawable> drawables)
         {
             foreach (var drawable in drawables)
@@ -180,8 +185,13 @@ namespace Rhinox.GUIUtils.Editor
             }
             
             // Check for decorators
-            var resultingDrawable = DrawableWrapperFactory.TryWrapDrawable(coreDrawable, hostInfo.GetAttributes());
-            return resultingDrawable;
+            if (modifier.ShouldWrap(hostInfo, depth))
+            {
+                var resultingDrawable = DrawableWrapperFactory.TryWrapDrawable(coreDrawable, hostInfo.GetAttributes());
+                return resultingDrawable;
+            }
+
+            return coreDrawable;
         }
         
         private static IOrderedDrawable CreateDrawableForParameter(ParameterInfo pi, int index, GenericHostInfo arrayHostInfo)
