@@ -218,6 +218,15 @@ namespace Rhinox.GUIUtils.Editor
             // If we are, then we received a list and can access it by our index
             if (host is IList list)
                 return list[ArrayIndex];
+            if (host is ICollection collection) // TODO: should we?
+            {
+                int index = 0;
+                foreach (var entry in collection)
+                {
+                    if (ArrayIndex == index++)
+                        return entry;
+                }
+            }
             throw new IndexOutOfRangeException($"Could not map found index {ArrayIndex} to value {host} (Type: {host.GetType().GetNiceName()})");
         }
 
