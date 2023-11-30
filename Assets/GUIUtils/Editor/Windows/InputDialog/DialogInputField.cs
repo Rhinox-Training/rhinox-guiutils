@@ -1,3 +1,4 @@
+using System;
 using Rhinox.Lightspeed;
 using UnityEditor;
 using UnityEngine;
@@ -13,6 +14,7 @@ namespace Rhinox.GUIUtils.Editor
         
         public abstract object WeakValue { get; }
         public float Height { get; protected set; } = EditorGUIUtility.singleLineHeight + 4;
+        public virtual bool IsDataValid => true;
 
         public delegate void InputFieldHandler(DialogInputField field);
 
@@ -77,6 +79,20 @@ namespace Rhinox.GUIUtils.Editor
 
         public T Get() => SmartValue;
 
+        public override object WeakValue => SmartValue;
+
+        public override bool IsDataValid
+        {
+            get
+            {
+                if (_customValidator == null)
+                    return base.IsDataValid;
+                return _customValidator.Invoke(SmartValue);
+            }
+        }
+
+        protected Func<T, bool> _customValidator;
+
         protected DialogInputField(string label, string tooltip = null, T initialValue = default(T))
         {
             _tooltip = tooltip;
@@ -84,6 +100,9 @@ namespace Rhinox.GUIUtils.Editor
             SmartValue = initialValue;
         }
 
-        public override object WeakValue => SmartValue;
+        public void SetValidator(Func<T, bool> validationFunction)
+        {
+            _customValidator = validationFunction;
+        }
     }
 }

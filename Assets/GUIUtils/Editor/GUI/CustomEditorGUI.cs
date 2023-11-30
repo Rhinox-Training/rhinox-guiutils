@@ -312,6 +312,23 @@ namespace Rhinox.GUIUtils.Editor
                 GUILayout.Space(1.0f + CustomGUIUtility.Padding);
             }
         }
+
+        public static void Title(Rect position, GUIContent label, GUIStyle customLabelStyle = null, bool includeHorizontalLine = true)
+        {
+            position = position.AlignTop(EditorGUIUtility.singleLineHeight);
+            GUI.Label(position, label, customLabelStyle ?? CustomGUIStyles.Title);
+            if (includeHorizontalLine)
+            {
+                var lineRect = position.AddY( CustomGUIUtility.Padding / 2.0f + EditorGUIUtility.singleLineHeight);
+                lineRect.height = 1;
+                CustomEditorGUI.HorizontalLine(lineRect, CustomGUIStyles.LightBorderColor);
+            }
+        }
+
+        public static void Title(Rect rect, string text, GUIStyle customLabelStyle = null, bool includeHorizontalLine = true)
+        {
+            Title(rect, GUIContentHelper.TempContent(text), customLabelStyle, includeHorizontalLine);
+        }
         
         public static void Title(string text, GUIStyle customLabelStyle = null, bool includeHorizontalLine = true)
         {

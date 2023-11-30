@@ -19,6 +19,7 @@ namespace Rhinox.GUIUtils.Editor
         private static FieldInfo _currentEventField =
             typeof(Event).GetField("s_Current", BindingFlags.Static | BindingFlags.NonPublic);
 
+        private static Texture WarnIcon => UnityIcon.InternalIcon("d_console.warnicon.inactive.sml@2x");
 
         private void OnGUI()
         {
@@ -31,20 +32,36 @@ namespace Rhinox.GUIUtils.Editor
             EditorGUILayout.BeginVertical(GUIStyle.none, GUILayout.ExpandHeight(true), GUILayout.ExpandWidth(true));
             EditorGUILayout.LabelField(_data.Content);
 
+            
+            bool isValid = true;
             foreach (var field in _data.Fields)
+            {
                 field.Draw(null);
 
-            GUILayout.FlexibleSpace();
+                bool isDataValid = field.IsDataValid;
+                if (!isDataValid)
+                {
+                    var lastRect = GUILayoutUtility.GetLastRect();
+                    GUI.Label(RectExtensions.AlignRight(lastRect, 16),
+                        GUIContentHelper.TempContent(string.Empty, WarnIcon));
+                }
 
+                isValid &= isDataValid;
+            }
+
+            GUILayout.FlexibleSpace();
+    
             var rect = EditorGUILayout.GetControlRect();
             var confirmRect = AlignLeft(rect, rect.width * 0.48f);
             var cancelRect = AlignRight(rect, rect.width * 0.48f);
 
+            EditorGUI.BeginDisabledGroup(!isValid);
             if (GUI.Button(confirmRect, _data.ConfirmButton))
             {
                 _data.Resolve(true);
                 Close();
             }
+            EditorGUI.EndDisabledGroup();
 
             if (!_data.CancelButton.IsNullOrEmpty() && GUI.Button(cancelRect, _data.CancelButton))
             {

@@ -5,10 +5,16 @@ using UnityEngine;
 
 namespace Rhinox.GUIUtils.Editor
 {
-    public interface IOrderedDrawable
+    public interface IEditorDrawable
+    {
+        float ElementHeight { get; }
+        void Draw(GUIContent label, params GUILayoutOption[] options);
+        void Draw(Rect rect, GUIContent label);
+    }
+    
+    public interface IOrderedDrawable : IEditorDrawable
     {
         float Order { get; set; }
-        float ElementHeight { get; }
         GenericHostInfo HostInfo { get; }
         bool IsVisible { get; }
         GUIContent Label { get; }
@@ -17,8 +23,6 @@ namespace Rhinox.GUIUtils.Editor
 
         IEnumerable<TAttribute> GetDrawableAttributes<TAttribute>() where TAttribute : Attribute;
         void TryInitialize();
-        void Draw(GUIContent label, params GUILayoutOption[] options);
-        void Draw(Rect rect, GUIContent label);
 
     }
 }

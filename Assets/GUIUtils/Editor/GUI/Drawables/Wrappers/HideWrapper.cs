@@ -34,7 +34,7 @@ namespace Rhinox.GUIUtils.Editor
         public bool ShouldDraw()
         {
             if (_stateMember == null)
-                return !_state;
+                return _state;
 
             var value = _stateMember.GetValue();
             if (_stateMemberValue != null)
