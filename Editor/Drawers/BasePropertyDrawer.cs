@@ -141,6 +141,7 @@ namespace Rhinox.GUIUtils.Editor
         private TData _activeData;
 
         private IOrderedDrawable _innerDrawable;
+        private CustomPropertyDrawer _customPropertyDrawerAttr;
 
         public override Type FieldType => GetHostInfo(_activeData)?.GetReturnType();
 
@@ -181,29 +182,49 @@ namespace Rhinox.GUIUtils.Editor
             return _innerDrawable.ElementHeight;
         }
 
-        private class TypeExclusionModifier<TFilter> : StandardDepthChecker
+        private class TypeExclusionModifier : StandardDepthChecker
         {
-            public TypeExclusionModifier()
-            {
-                if (typeof(TFilter) == typeof(object) || typeof(TFilter) == typeof(UnityEngine.Object))
-                    throw new ArgumentException("TFilter cannot support object type");
-            }
+            public Type FilterType { get; }
+
+            public bool InheritsFrom { get; }
             
+            public TypeExclusionModifier(Type filterType, bool inheritsFrom = false)
+            {
+                if (filterType == typeof(object) || filterType == typeof(UnityEngine.Object))
+                    throw new ArgumentException("TFilter cannot support object type");
+                FilterType = filterType;
+                InheritsFrom = inheritsFrom;
+            }
+
             public override DrawableCreationMode Find(GenericHostInfo hostInfo, int depth)
             {
                 if (!CheckDepth(depth))
                     return DrawableCreationMode.None;
                 var returnType = hostInfo.GetReturnType();
-                if (returnType == typeof(TFilter))
+                if (CheckType(returnType))
                     return DrawableCreationMode.Composite;
                 return DrawableCreationMode.Auto;
             }
+
+            private bool CheckType(Type returnType)
+            {
+                if (InheritsFrom)
+                    return returnType.InheritsFrom(FilterType);
+                return returnType == FilterType;
+            }
+        }
+
+        private bool IsPropertyDrawerForChildTypes()
+        {
+            if (_customPropertyDrawerAttr == null)
+                _customPropertyDrawerAttr = this.GetType().GetCustomAttribute<CustomPropertyDrawer>();
+            return _customPropertyDrawerAttr.IsUsedForChildren();
         }
 
         protected virtual Rect CallInnerDrawer(Rect position, GUIContent label)
         {
             if (_innerDrawable == null)
-                _innerDrawable = DrawableFactory.CreateDrawableFor(HostInfo, new TypeExclusionModifier<T>());
+                _innerDrawable = DrawableFactory.CreateDrawableFor(HostInfo, new TypeExclusionModifier(typeof(T), IsPropertyDrawerForChildTypes())); 
             float oldHeight = position.height;
             float innerDrawableHeight = _innerDrawable.ElementHeight;
             if (position.IsValid())
