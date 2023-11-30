@@ -53,7 +53,7 @@ namespace Rhinox.GUIUtils.Editor
         {
             _titleMemberHelper.DrawError(rect);
             var title = _titleMemberHelper.GetSmartValue();
-            if (!string.IsNullOrEmpty(title))
+            if (!string.IsNullOrEmpty(title) && rect.IsValid())
             {
                 var labelRect = rect.AlignTop(EditorGUIUtility.singleLineHeight);
                 rect.y += labelRect.height;
