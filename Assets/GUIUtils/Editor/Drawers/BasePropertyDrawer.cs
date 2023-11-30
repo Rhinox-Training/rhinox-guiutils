@@ -361,6 +361,11 @@ namespace Rhinox.GUIUtils.Editor
         protected IEditorDrawable GetChildDrawer(string memberDataName, out GenericHostInfo childHostInfo, int index = -1)
         {
             HostInfo.TryGetChild(memberDataName, out childHostInfo, index);
+            return GetChildDrawer(childHostInfo);
+        }
+
+        protected IEditorDrawable GetChildDrawer(GenericHostInfo childHostInfo)
+        {
             var childDrawer = new ChildDrawer(childHostInfo);
             return childDrawer;
         }

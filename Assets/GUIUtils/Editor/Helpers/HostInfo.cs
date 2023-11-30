@@ -424,6 +424,20 @@ namespace Rhinox.GUIUtils.Editor
             return false;
         }
 
+        public bool TryGetChild<T>(int index, out TypedHostInfoWrapper<T> childHostInfoWrapper)
+        {
+            if (ArrayIndex != -1)
+            {
+                childHostInfoWrapper = null;
+                return false;
+            }
+            
+            var childHostInfo = CreateChildHostInfo(MemberInfo, index);
+            childHostInfoWrapper = new TypedHostInfoWrapper<T>(childHostInfo);
+            return true;
+            
+        }
+
         protected virtual GenericHostInfo CreateChildHostInfo(MemberInfo member, int index = -1)
         {
             return new GenericHostInfo(this, member, index);
