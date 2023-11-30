@@ -274,6 +274,12 @@ namespace Rhinox.GUIUtils.Editor
             return false;
         }
 
+        public void ForceNotifyValueChanged()
+        {
+            var host = GetHost();
+            OnValueChanged(host);
+        }
+
         protected virtual void OnValueChanged(object host)
         {
             if (Parent == null)
