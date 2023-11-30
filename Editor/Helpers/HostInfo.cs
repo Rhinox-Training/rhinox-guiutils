@@ -394,7 +394,7 @@ namespace Rhinox.GUIUtils.Editor
                 return false;
             }
             
-            var members = t.GetMember(name);
+            var members = t.GetMember(name, BindingFlags.Instance | BindingFlags.Public | BindingFlags.Default | BindingFlags.NonPublic);
             if (members.Length > 1 || members.Length == 0)
             {
                 childHostInfo = null;
