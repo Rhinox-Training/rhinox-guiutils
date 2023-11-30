@@ -53,8 +53,10 @@ namespace Rhinox.GUIUtils.NoOdin.Editor
                 eUtility.Header(dropdownPosition, label, out dropdownRect, CustomGUIStyles.Label);
 
             string typeTitle = null;
-            if (hasValue) typeTitle = SmartValue.GetType().Name;
-            else typeTitle = $"{BasePicker.NoneContentLabel} [{HostInfo.GetReturnType().Name}]";
+            if (hasValue) 
+                typeTitle = SmartValue.GetType().Name;
+            else 
+                typeTitle = $"{BasePicker.NoneContentLabel} [{HostInfo.GetReturnType().Name}]";
 
             data.Picker.ShowDropdown(dropdownRect, GUIContentHelper.TempContent(typeTitle));
 
