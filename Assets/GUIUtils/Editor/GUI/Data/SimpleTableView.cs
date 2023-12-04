@@ -49,9 +49,8 @@ namespace Rhinox.GUIUtils.Editor
         }
 
         public SimpleTableView(params string[] rowHeaders)
-         : this(rowHeaders, null, null)
+            : this(rowHeaders, null, null)
         {
-
         }
 
         public SimpleTableView(string[] rowHeaders, GUILayoutOption[][] columnOptions = null,
@@ -98,7 +97,7 @@ namespace Rhinox.GUIUtils.Editor
                 for (int i = 0; i < entries.Length; ++i)
                 {
                     var columnOptions = GetColumnOptionsSmart(i);
-                    
+
                     GUILayout.BeginVertical(CustomGUIStyles.Clean, columnOptions);
                     var entry = entries[i];
                     if (entry is Action<GUILayoutOption[]> entryDrawer)
@@ -114,6 +113,7 @@ namespace Rhinox.GUIUtils.Editor
                 }
             }
             GUILayout.EndHorizontal();
+            GUILayout.Space(1f); //gives a better separation between the rows
         }
 
         private GUILayoutOption[] GetColumnOptionsSmart(int i, int paddingHorizontal = 0)
