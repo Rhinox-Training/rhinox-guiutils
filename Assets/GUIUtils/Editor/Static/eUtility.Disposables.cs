@@ -8,6 +8,7 @@ using Sirenix.Utilities;
 using Sirenix.Utilities.Editor;
 #endif
 
+
 namespace Rhinox.GUIUtils.Editor
 {
     public static partial class eUtility
@@ -16,15 +17,13 @@ namespace Rhinox.GUIUtils.Editor
         {
             public Box(params GUILayoutOption[] options) : base(CustomGUIStyles.ToggleGroupBackground, options)
             {
-                
             }
-            
+
             public Box(GUIStyle style, params GUILayoutOption[] options) : base(style, options)
             {
-                
             }
         }
-        
+
         public class HiddenGroup : EditorGUILayout.FadeGroupScope
         {
             public HiddenGroup(bool hidden = true)
@@ -32,7 +31,7 @@ namespace Rhinox.GUIUtils.Editor
             {
             }
         }
-        
+
         public class DisabledGroup : IDisposable
         {
             public DisabledGroup(bool disabled = true)
@@ -45,7 +44,7 @@ namespace Rhinox.GUIUtils.Editor
                 EditorGUI.EndDisabledGroup();
             }
         }
-        
+
         public class ErrorGroup : IDisposable
         {
             public ErrorGroup(bool error = true)
@@ -80,16 +79,17 @@ namespace Rhinox.GUIUtils.Editor
             public HorizontalGroup() : this(false, GUIStyle.none, Array.Empty<GUILayoutOption>())
             {
             }
-            
+
             public HorizontalGroup(GUIStyle style) : this(false, style, Array.Empty<GUILayoutOption>())
             {
             }
-            
+
             public HorizontalGroup(params GUILayoutOption[] options) : this(false, GUIStyle.none, options)
             {
             }
-            
-            public HorizontalGroup(bool disabled, params GUILayoutOption[] options) : this(disabled, GUIStyle.none, options)
+
+            public HorizontalGroup(bool disabled, params GUILayoutOption[] options) : this(disabled, GUIStyle.none,
+                options)
             {
             }
 
@@ -119,16 +119,17 @@ namespace Rhinox.GUIUtils.Editor
             public VerticalGroup() : this(false, GUIStyle.none, Array.Empty<GUILayoutOption>())
             {
             }
-            
+
             public VerticalGroup(GUIStyle style) : this(false, style, Array.Empty<GUILayoutOption>())
             {
             }
-            
+
             public VerticalGroup(params GUILayoutOption[] options) : this(false, GUIStyle.none, options)
             {
             }
-            
-            public VerticalGroup(bool disabled, params GUILayoutOption[] options) : this(disabled, GUIStyle.none, options)
+
+            public VerticalGroup(bool disabled, params GUILayoutOption[] options) : this(disabled, GUIStyle.none,
+                options)
             {
             }
 
@@ -149,7 +150,7 @@ namespace Rhinox.GUIUtils.Editor
                 EditorGUILayout.EndVertical();
             }
         }
-        
+
         public class GuiColor : IDisposable
         {
             public GuiColor(Color color, bool blendAlpha = false)
@@ -164,7 +165,7 @@ namespace Rhinox.GUIUtils.Editor
                 GUIContentHelper.PopColor();
             }
         }
-        
+
         public class GuiBackgroundColor : IDisposable
         {
             private readonly Color _old;
@@ -180,10 +181,11 @@ namespace Rhinox.GUIUtils.Editor
                 GUI.backgroundColor = _old;
             }
         }
-        
+
         public class HandleColor : IDisposable
         {
             private Color _prevColor;
+
             public HandleColor(Color color)
             {
                 _prevColor = Handles.color;
@@ -195,16 +197,17 @@ namespace Rhinox.GUIUtils.Editor
                 Handles.color = _prevColor;
             }
         }
-        
+
         public class GizmoColor : IDisposable
         {
             private Color _prevColor;
+
             public GizmoColor(Color color)
             {
                 _prevColor = Gizmos.color;
                 Gizmos.color = color;
             }
-            
+
             public GizmoColor(float r, float g, float b, float a = 1f)
             {
                 _prevColor = Gizmos.color;
@@ -251,10 +254,9 @@ namespace Rhinox.GUIUtils.Editor
                 _originalHierachyMode = EditorGUIUtility.hierarchyMode;
                 EditorGUIUtility.hierarchyMode = state;
             }
-            
+
             public void Dispose()
             {
-                
                 EditorGUIUtility.hierarchyMode = _originalHierachyMode;
             }
         }
@@ -268,68 +270,81 @@ namespace Rhinox.GUIUtils.Editor
                 _originalLabelWidth = EditorGUIUtility.labelWidth;
                 EditorGUIUtility.labelWidth = width;
             }
-            
+
             public void Dispose()
             {
-                
                 EditorGUIUtility.labelWidth = _originalLabelWidth;
             }
         }
-        
+
         public class FoldoutContainer : GUI.Scope
         {
             private static readonly GUIStyle DefaultContainerStyle;
             private static readonly GUIStyle DefaultLabelStyle;
-
-            static FoldoutContainer ()
+            
+            static FoldoutContainer()
             {
-                DefaultContainerStyle = GUI.skin.FindStyle ("Box");
-                DefaultLabelStyle = new GUIStyle (EditorStyles.foldout);
+                DefaultContainerStyle = CustomGUIStyles.FoldoutBoxStyle;
+                DefaultLabelStyle = new GUIStyle(EditorStyles.foldout);
             }
 
             public bool isOpen { get; private set; }
 
-            public FoldoutContainer (ref bool isOpen, string text) : this (ref isOpen, text, DefaultContainerStyle, DefaultLabelStyle) { }
-            public FoldoutContainer (ref bool isOpen, string text, GUIStyle containerStyle, GUIStyle labelStyle)
+            public FoldoutContainer(ref bool isOpen, string text) : this(ref isOpen, text, DefaultContainerStyle)
             {
-                this.isOpen = isOpen;
-                GUIContentHelper.PushIndentLevel(1);
-                
-                EditorGUILayout.BeginVertical(containerStyle);
-                GUILayout.Space (3);
-                
-                isOpen = EditorGUI.Foldout (EditorGUILayout.GetControlRect(), isOpen, text, true, labelStyle);
             }
 
-            public FoldoutContainer (SerializedProperty isExpanded, string text) : this (isExpanded, text, DefaultContainerStyle, DefaultLabelStyle) { }
-            public FoldoutContainer (SerializedProperty isExpanded, string text, GUIStyle containerStyle, GUIStyle labelStyle)
+            public FoldoutContainer(ref bool isOpen, string text, GUIStyle containerStyle)
+            {
+                this.isOpen = isOpen;
+
+                isOpen = EditorGUI.Foldout(EditorGUILayout.GetControlRect(), isOpen, text, true);
+
+                EditorGUILayout.BeginFadeGroup(isOpen ? 1 : 0);
+                GUILayout.BeginVertical(containerStyle);
+
+                GUIContentHelper.PushIndentLevel();
+                // GUILayout.Space(3);
+            }
+
+            public FoldoutContainer(SerializedProperty isExpanded, string text)
+                : this(isExpanded, text, DefaultContainerStyle)
+            {
+            }
+
+            public FoldoutContainer(SerializedProperty isExpanded, string text,
+                GUIStyle containerStyle)
             {
                 this.isOpen = isExpanded.isExpanded;
-                GUIContentHelper.PushIndentLevel(1);
-                
-                EditorGUILayout.BeginVertical(containerStyle);
-                GUILayout.Space (3);
-                
-                using (var check = new EditorGUI.ChangeCheckScope ())
+
+                using (var check = new EditorGUI.ChangeCheckScope())
                 {
-                    isOpen = EditorGUI.Foldout (EditorGUILayout.GetControlRect (), isOpen, text, true, labelStyle);
+                    isOpen = EditorGUI.Foldout(EditorGUILayout.GetControlRect(), isOpen, text, true);
                     if (!check.changed) return;
-                    
-                    isExpanded.serializedObject.ApplyModifiedPropertiesWithoutUndo ();
+
+                    isExpanded.serializedObject.ApplyModifiedPropertiesWithoutUndo();
                     isExpanded.isExpanded = isOpen;
                 }
+                
+                EditorGUILayout.BeginFadeGroup(isOpen ? 1 : 0);
+                GUILayout.BeginVertical(containerStyle);
+
+                GUIContentHelper.PushIndentLevel();
+                // GUILayout.Space(3);
             }
 
             protected override void CloseScope()
             {
-                GUILayout.Space(3);
-                EditorGUILayout.EndVertical();
+                GUILayout.Space(1);
+                GUILayout.EndVertical();
                 
+                EditorGUILayout.EndFadeGroup();
+                    
                 GUIContentHelper.PopIndentLevel();
             }
         }
-  
-#if ODIN_INSPECTOR      
+
+#if ODIN_INSPECTOR
         public class FoldoutData
         {
             public float Time;
@@ -346,7 +361,8 @@ namespace Rhinox.GUIUtils.Editor
             {
                 // assuming event type == EventType.Layout
                 EditorTimeHelper.Time.Update();
-                Time = Mathf.MoveTowards(Time, IsExpanded ? 1f : 0.0f, EditorTimeHelper.Time.DeltaTime * (1f / SirenixEditorGUI.DefaultFadeGroupDuration));
+                Time =
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          Mathf.MoveTowards(Time, IsExpanded ? 1f : 0.0f, EditorTimeHelper.Time.DeltaTime * (1f / SirenixEditorGUI.DefaultFadeGroupDuration));
             }
             
             public static implicit operator bool(FoldoutData d) => d.IsExpanded;
@@ -382,7 +398,7 @@ namespace Rhinox.GUIUtils.Editor
             }
         }
 #endif
-        
+
         /// <summary>
         /// WIP, not working.
         /// </summary>
@@ -394,9 +410,9 @@ namespace Rhinox.GUIUtils.Editor
             private int _selectionStart;
             private int _selectionEnd;
             private int _textLength;
-            
+
             private TextEditor _editor;
-            
+
             public PreserveSelection(string controlName)
             {
                 _control = controlName;
@@ -406,7 +422,7 @@ namespace Rhinox.GUIUtils.Editor
                 var editor = GetTextEditor();
 
                 if (editor == null) return;
-                
+
                 _selectionStart = editor.selectIndex;
                 _selectionEnd = editor.cursorIndex;
                 _textLength = editor.text.Length;
@@ -418,7 +434,7 @@ namespace Rhinox.GUIUtils.Editor
 
                 GUI.FocusControl(_control);
                 var editor = GetTextEditor();
-                
+
                 if (editor == null) return;
 
                 var diff = editor.text.Length - _textLength;
@@ -428,10 +444,12 @@ namespace Rhinox.GUIUtils.Editor
             private bool IsSelected() => GUI.GetNameOfFocusedControl() == _control;
 
             private static FieldInfo _recycledTextEditorField;
+
             private TextEditor GetTextEditor()
             {
                 TextEditor editor = null;
-                try {
+                try
+                {
                     editor = GUIUtility.QueryStateObject(typeof(TextEditor), GUIUtility.keyboardControl) as TextEditor;
                 }
                 catch { }
@@ -439,18 +457,20 @@ namespace Rhinox.GUIUtils.Editor
                 if (editor == null)
                 {
                     if (_recycledTextEditorField == null)
-                        _recycledTextEditorField = typeof(EditorGUI).GetField("s_RecycledEditor", BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
-                    editor = (TextEditor) _recycledTextEditorField.GetValue(null);
+                        _recycledTextEditorField = typeof(EditorGUI).GetField("s_RecycledEditor",
+                            BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
+                    editor = (TextEditor)_recycledTextEditorField.GetValue(null);
                 }
                 return editor;
             }
         }
-        
+
         public class PaddedGUIScope : GUI.Scope
         {
             private float m_LabelWidth;
             private readonly float? m_CustomMargin;
             private const string STYLESHEET_NAME = "sb-settings-panel-client-area";
+
             public PaddedGUIScope(float? customMargin = null, float? labelWidth = null)
             {
                 this.m_CustomMargin = customMargin;
@@ -458,8 +478,9 @@ namespace Rhinox.GUIUtils.Editor
                 if (labelWidth.HasValue)
                     EditorGUIUtility.labelWidth = labelWidth.Value;
                 GUILayout.BeginHorizontal();
-                float marginLeft = m_CustomMargin.HasValue ? m_CustomMargin.Value : ExposedEditorResources.GetFloat(STYLESHEET_NAME, ExposedStyleCatalog.marginLeft);
-                
+                float marginLeft = m_CustomMargin.HasValue ? m_CustomMargin.Value :
+                    ExposedEditorResources.GetFloat(STYLESHEET_NAME, ExposedStyleCatalog.marginLeft);
+
                 GUILayout.Space(marginLeft);
                 GUILayout.BeginVertical();
             }
@@ -467,13 +488,14 @@ namespace Rhinox.GUIUtils.Editor
             protected override void CloseScope()
             {
                 GUILayout.EndVertical();
-                float marginRight = m_CustomMargin.HasValue ? m_CustomMargin.Value : ExposedEditorResources.GetFloat(STYLESHEET_NAME, ExposedStyleCatalog.marginRight);
+                float marginRight = m_CustomMargin.HasValue ? m_CustomMargin.Value :
+                    ExposedEditorResources.GetFloat(STYLESHEET_NAME, ExposedStyleCatalog.marginRight);
                 GUILayout.Space(marginRight);
                 GUILayout.EndHorizontal();
                 EditorGUIUtility.labelWidth = this.m_LabelWidth;
             }
         }
-        
+
         public class IndentedLayout : IDisposable
         {
             private readonly int _originalIndentLevel;
@@ -483,7 +505,7 @@ namespace Rhinox.GUIUtils.Editor
                 _originalIndentLevel = EditorGUI.indentLevel;
                 EditorGUI.indentLevel += increment;
             }
-            
+
             public void Dispose()
             {
                 EditorGUI.indentLevel = _originalIndentLevel;
