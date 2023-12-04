@@ -29,14 +29,6 @@ namespace Rhinox.GUIUtils.NoOdin.Editor
         private static readonly Dictionary<Type, GenericDrawerInfo> _drawerInfoByTargetType =
             new Dictionary<Type, GenericDrawerInfo>();
 
-        // =============================================================================================================
-        // UnityEditor.CustomPropertyDrawer
-        // internal System.Type m_Type;
-        private static FieldInfo _typeOfAttributeField;
-
-        // internal bool m_UseForChildren;
-        private static FieldInfo _useAttributeForChildrenField;
-
         private HostInfo _info;
         private GenericPropertyDrawer _drawer;
 
@@ -54,29 +46,17 @@ namespace Rhinox.GUIUtils.NoOdin.Editor
                 })
                 .ToArray();
 
-            _typeOfAttributeField =
-                typeof(CustomPropertyDrawer).GetField("m_Type", BindingFlags.NonPublic | BindingFlags.Instance);
-            _useAttributeForChildrenField = typeof(CustomPropertyDrawer).GetField("m_UseForChildren",
-                BindingFlags.NonPublic | BindingFlags.Instance);
-
-            // If one of these fails, unity probably changed their API, update this for your version
-            if (_typeOfAttributeField == null || _useAttributeForChildrenField == null)
-            {
-                Debug.LogError($"Could not initialize {nameof(GenericRedirectDrawer)}...");
-                return;
-            }
-
             for (var i = 0; i < infos.Length; i++)
             {
                 var info = infos[i];
-                info.DrawTargetType = (Type) _typeOfAttributeField.GetValue(info.Attribute);
+                info.DrawTargetType = info.Attribute.GetPropertyType();
 
                 // If it is not a generic type or it is not picked up by this drawer -> abandon it
                 if (!info.DrawTargetType.IsGenericTypeDefinition
                     || !info.PropertyDrawerType.InheritsFrom(typeof(GenericPropertyDrawer)))
                     continue;
 
-                info.UseForChildClasses = (bool) _useAttributeForChildrenField.GetValue(info.Attribute);
+                info.UseForChildClasses = info.Attribute.IsUsedForChildren();
 
                 if (info.DrawerIsGenericTypeDefinition)
                 {

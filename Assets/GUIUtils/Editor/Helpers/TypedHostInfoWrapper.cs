@@ -5,8 +5,8 @@
         public GenericHostInfo HostInfo { get;}
 
         public T SmartValue {
-            get { return HostInfo.GetSmartValue<T>(); }
-            set { HostInfo.SetValue(value); }
+            get => HostInfo.GetSmartValue<T>();
+            set => HostInfo.SetValue(value);
         }
         
         public TypedHostInfoWrapper(GenericHostInfo hostInfo)
@@ -14,9 +14,9 @@
             HostInfo = hostInfo;
         }
 
-        public TypedHostInfoWrapper<T> GetChild<T>(int index)
+        public TypedHostInfoWrapper<TChild> GetChild<TChild>(int index)
         {
-            HostInfo.TryGetChild<T>(index, out var typedHostInfo);
+            HostInfo.TryGetChild<TChild>(index, out var typedHostInfo);
             return typedHostInfo;
         }
     }

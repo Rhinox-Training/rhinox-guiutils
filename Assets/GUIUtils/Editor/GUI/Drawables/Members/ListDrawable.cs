@@ -93,7 +93,8 @@ namespace Rhinox.GUIUtils.Editor
 
         private void ApplyDrawerSettings(ListDisplaySettings settings)
         {
-            _listRO.MaxItemsPerPage = settings.MaxItemsPerPage;
+            if (settings.MaxItemsPerPage > 0)
+                _listRO.MaxItemsPerPage = settings.MaxItemsPerPage;
             _listRO.Draggable = settings.DraggableItems;
             _listRO.DisplayAdd = !settings.IsReadOnly && !settings.HideAddButton;
             _listRO.DisplayRemove = !settings.IsReadOnly && !settings.HideRemoveButton;
