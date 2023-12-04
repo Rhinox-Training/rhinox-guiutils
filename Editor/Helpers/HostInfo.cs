@@ -268,7 +268,7 @@ namespace Rhinox.GUIUtils.Editor
                         ResizeArray(ref arr, ArrayIndex + 1);
                         e = (IList)arr;
                         e[ArrayIndex] = val;
-                        MemberInfo.SetValue(GetHost(), e);
+                        MemberInfo.SetValue(Parent.GetHost(), e);
                     }
                     else
                         e.Insert(ArrayIndex, val);

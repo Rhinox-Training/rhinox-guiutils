@@ -222,6 +222,13 @@ namespace Rhinox.GUIUtils.Editor
             }
         }
 
+        private Type GetTargetTypeOfPropertyDrawer()
+        {
+            if (_customPropertyDrawerAttr == null)
+                _customPropertyDrawerAttr = this.GetType().GetCustomAttribute<CustomPropertyDrawer>();
+            return _customPropertyDrawerAttr.GetPropertyType();
+        }
+
         private bool IsPropertyDrawerForChildTypes()
         {
             if (_customPropertyDrawerAttr == null)
@@ -232,7 +239,14 @@ namespace Rhinox.GUIUtils.Editor
         protected virtual Rect CallInnerDrawer(Rect position, GUIContent label)
         {
             if (_innerDrawable == null)
-                _innerDrawable = DrawableFactory.CreateDrawableFor(HostInfo, new TypeExclusionModifier(typeof(T), IsPropertyDrawerForChildTypes())); 
+            {
+                var propertyType = GetTargetTypeOfPropertyDrawer();
+                var modifier = propertyType.InheritsFrom<Attribute>()
+                    ? null
+                    : new TypeExclusionModifier(propertyType, IsPropertyDrawerForChildTypes());
+                _innerDrawable = DrawableFactory.CreateDrawableFor(HostInfo, modifier);
+            }
+
             float oldHeight = position.height;
             float innerDrawableHeight = _innerDrawable.ElementHeight;
             if (position.IsValid())
