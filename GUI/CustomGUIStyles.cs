@@ -37,6 +37,18 @@ namespace Rhinox.GUIUtils
                     background = Utility.GetColorTexture(BoxBackgroundColor)
                 }
             });
+        
+        private static GUIStyle _foldoutBoxStyle;
+        public static GUIStyle FoldoutBoxStyle =>
+            _foldoutBoxStyle ?? (_foldoutBoxStyle = new GUIStyle("box")
+            {
+                margin = new RectOffset(),
+                padding = new RectOffset(),
+                normal = new GUIStyleState()
+                {
+                    background = Utility.GetColorTexture(BoxBackgroundColor)
+                }
+            });
 
         private static GUIStyle _cardStyle;
         public static GUIStyle Card =>
