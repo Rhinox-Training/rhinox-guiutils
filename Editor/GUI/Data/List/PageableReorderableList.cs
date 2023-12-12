@@ -394,5 +394,13 @@ namespace Rhinox.GUIUtils.Editor
                 return s_Defaults.iconToolbarPlusMore;
             return base.GetAddIcon();
         }
+
+        public bool MovePage(int amount)
+        {
+            int oldIndex = _drawPageIndex;
+            _drawPageIndex += amount;
+            _drawPageIndex = Math.Min(_maxPagesCount - 1, Math.Max(0, _drawPageIndex));
+            return oldIndex != _drawPageIndex;
+        }
     }
 }
