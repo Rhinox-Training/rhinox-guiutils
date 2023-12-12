@@ -81,7 +81,7 @@ namespace Rhinox.GUIUtils.Editor
                 Initialize();
 
 
-            if (!drawable.HostInfo.CanSetValue())
+            if (!drawable.HostInfo.CanSetValue() && drawable.HostInfo.GetReturnType().IsValueType)
                 attributes = attributes.Append(new Sirenix.OdinInspector.ReadOnlyAttribute());
             
             var builderPairs = attributes
