@@ -28,12 +28,17 @@ namespace Rhinox.GUIUtils.Editor
         public void UpdateSearch(string filter)
         {
             FilteredValues.Clear();
-            FilteredValues.Add(null);
+            FilteredValues.Add(GetDefaultEntry());
             foreach (var value in Options)
             {
                 if (MatchesFilter(value, filter))
                     FilteredValues.Add(value);
             }
+        }
+
+        protected virtual object GetDefaultEntry()
+        {
+            return null;
         }
 
         protected abstract bool MatchesFilter(object o, string filter);
