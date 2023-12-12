@@ -62,5 +62,10 @@ namespace Rhinox.GUIUtils.Editor
             t = _iconSelector.Invoke((T)o);
             return true;
         }
+
+        protected override object GetDefaultEntry()
+        {
+            return default(T);
+        }
     }
 }
