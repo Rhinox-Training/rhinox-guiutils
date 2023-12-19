@@ -8,8 +8,6 @@ namespace Rhinox.GUIUtils.Editor
 {
     public class MethodMemberHelper : BaseMemberHelper
     {
-        private GenericHostInfo _hostInfo;
-        
         protected MethodInfo _info;
         public Type MethodReturnType => _info != null ? _info.GetReturnType() : null;
         
