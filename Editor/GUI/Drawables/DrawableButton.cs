@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using Rhinox.Lightspeed;
 using Rhinox.Lightspeed.Reflection;
+using Sirenix.OdinInspector;
 using UnityEditor;
 using UnityEngine;
 
@@ -15,10 +16,14 @@ namespace Rhinox.GUIUtils.Editor
         
         public string Name { get; set; }
         
+        public IPropertyMemberHelper<string> NameHelper { get; set; }
+        
         public float Height { get; set; }
+        
+        public ButtonStyle ButtonStyle { get; set; }
 
         public new MethodHostInfo HostInfo => (MethodHostInfo) _hostInfo;
-        
+
         public DrawableButton(GenericHostInfo info, MethodInfo method)
         {
             _hostInfo = new MethodHostInfo(info, method);
@@ -39,15 +44,17 @@ namespace Rhinox.GUIUtils.Editor
         protected override void DrawInner(GUIContent label, params GUILayoutOption[] options)
         {
             var height = Height == 0 ? (int)EditorGUIUtility.singleLineHeight : Height;
-            if (GUILayout.Button(Name, options.Append(GUILayout.Height(height))))
+            string labelStr = NameHelper != null ? NameHelper.GetSmartValue() : Name;
+            if (GUILayout.Button(labelStr, options.Append(GUILayout.Height(height))))
                 Invoke();
         }
 
         protected override void DrawInner(Rect rect, GUIContent label)
         {
             var buttonHeight = Height == 0 ? (int)EditorGUIUtility.singleLineHeight : Height;
+            string labelStr = NameHelper != null ? NameHelper.GetSmartValue() : Name;
             rect.height = buttonHeight;
-            if (GUI.Button(rect, Name))
+            if (GUI.Button(rect, labelStr))
                 Invoke();
         }
 
