@@ -15,8 +15,6 @@ namespace Rhinox.GUIUtils.Editor
     /// </summary>
     public class SerializedPropertyMemberHelper<T> : BaseValueMemberHelper<T>, IPropertyMemberHelper<T>
     {
-        private GenericHostInfo _hostInfo;
-
         public SerializedPropertyMemberHelper(SerializedProperty property, string input)
             : this(property.serializedObject == null, input, property)
         {
@@ -50,45 +48,6 @@ namespace Rhinox.GUIUtils.Editor
             
             if (!TryFindMemberInHost(input, isStatic, out _staticValueGetter, out _instanceValueGetter))
                 _errorMessage = $"Could not find field {input} on type {_objectType.Name}";
-        }
-        
-        protected override bool TryParseParameter(ref string input)
-        {
-            if (!base.TryParseParameter(ref input))
-                return false;
-            
-            const string PARENT_ID = "parent";
-            const string ROOT_ID = "root";
-            const string PROPERTY_ID = "property";
-
-            int partI = -1;
-            while ((partI = input.IndexOf(".", StringComparison.Ordinal)) >= 0)
-            {
-                var part = input.Substring(0, partI);
-                bool actionTaken = true;
-                switch (part)
-                {
-                    case PARENT_ID:
-                        _hostInfo = _hostInfo.Parent;
-                        break;
-                    case ROOT_ID:
-                        while (_hostInfo.Parent != null)
-                            _hostInfo = _hostInfo.Parent;
-                        break;
-                    case PROPERTY_ID:
-                        break;
-                    default:
-                        actionTaken = false;
-                        break;
-                }
-
-                if (!actionTaken)
-                    break;
-                
-                input = input.Substring(part.Length + 1);
-            }
-            
-            return true;
         }
 
         protected override object GetInstance() => _hostInfo?.GetHost();
