@@ -27,7 +27,7 @@ namespace Rhinox.GUIUtils.Editor
         [InitializeOnLoadMethod]
         private static void InitHeaderIcon()
         {
-            var mi = typeof(CustomSmartEditor).GetMethod("DrawHeaderIcon", BindingFlags.NonPublic | BindingFlags.Static);
+            var mi = typeof(CustomSmartEditor).GetMethod(nameof(DrawHeaderIcon), BindingFlags.NonPublic | BindingFlags.Static);
             ScriptEditorHeaderIcons.RegisterMethod(mi);
         }
 

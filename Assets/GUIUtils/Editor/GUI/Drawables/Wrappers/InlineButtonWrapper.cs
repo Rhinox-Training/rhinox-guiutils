@@ -24,7 +24,7 @@ namespace Rhinox.GUIUtils.Editor
 
         protected override void DrawInner(Rect rect, GUIContent label)
         {
-            GUI.skin.label.CalcMinMaxWidth(_label, out float min, out float max);
+            GUI.skin.button.CalcMinMaxWidth(_label, out float min, out float max);
 
             var buttonRect = rect.AlignRight(max);
             rect.xMax -= max;

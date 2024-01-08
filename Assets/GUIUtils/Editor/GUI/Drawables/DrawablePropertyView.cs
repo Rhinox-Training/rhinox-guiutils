@@ -14,6 +14,8 @@ namespace Rhinox.GUIUtils.Editor
         private readonly GenericHostInfo _hostInfo;
         private readonly SerializedObject _serializedObject;
         private readonly IOrderedDrawable _rootDrawable;
+
+        private float _previousHeight;
         
         public float Height => _rootDrawable.ElementHeight;
         public object Target => _instance ?? _hostInfo.GetHost();
@@ -93,6 +95,7 @@ namespace Rhinox.GUIUtils.Editor
 
         private void OnPreDraw()
         {
+            _previousHeight = Height;
             if (_serializedObject != null)
             {
                 _serializedObject.ApplyModifiedProperties();

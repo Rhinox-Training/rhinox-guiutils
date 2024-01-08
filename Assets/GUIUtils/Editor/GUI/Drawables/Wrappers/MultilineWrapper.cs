@@ -40,12 +40,14 @@ namespace Rhinox.GUIUtils.Editor
         {
             EditorGUILayout.BeginVertical(options);
             EditorGUILayout.LabelField(label);
-            _scrollPosition = EditorGUILayout.BeginScrollView(_scrollPosition, GUILayout.MaxHeight(ViewableLines * EditorGUIUtility.singleLineHeight));
+            var height = ViewableLines * EditorGUIUtility.singleLineHeight;
+            var opt = GUILayout.MaxHeight(height);
+            // _scrollPosition = EditorGUILayout.BeginScrollView(_scrollPosition, opt);
             var oldText = GetValue() as string;
-            string newText = EditorGUILayout.TextArea(oldText, GUILayout.MaxHeight(ViewableLines * EditorGUIUtility.singleLineHeight));
+            string newText = EditorGUILayout.TextArea(oldText, opt);
             if (!string.Equals(oldText, newText, StringComparison.InvariantCulture))
                 SetValue(newText);
-            EditorGUILayout.EndScrollView();
+            // EditorGUILayout.EndScrollView();
             EditorGUILayout.EndVertical();
         }
 
