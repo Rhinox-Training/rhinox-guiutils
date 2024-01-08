@@ -409,6 +409,21 @@ namespace Rhinox.GUIUtils
             {
                 padding = new RectOffset(2, 2, 0, 0)
             });
+        
+        private static GUIStyle _toolbarTabHeader;
+        public static GUIStyle ToolbarTabHeader =>
+            _toolbarTabHeader ?? (_toolbarTabHeader = new GUIStyle(ToggleGroupHeader)
+            {
+                margin = new RectOffset(-2, -2, 0, 0),
+                padding = new RectOffset(2, 2, 0, 0),
+            });
+        
+        private static GUIStyle _toolbarTabBackground;
+        public static GUIStyle ToolbarTabBackground =>
+            _toolbarTabBackground ?? (_toolbarTabBackground = new GUIStyle(ToggleGroupBackground)
+            {
+                margin = new RectOffset(-2, -2, 0, 0),
+            });
 
         private static GUIStyle _toolbarTab;
         public static GUIStyle ToolbarTab =>
@@ -418,7 +433,6 @@ namespace Rhinox.GUIUtils
                 stretchHeight = true,
                 stretchWidth = true
             });
-
         
         private static GUIStyle _toolbarCentered;
         public static GUIStyle ToolbarButtonCentered =>
@@ -429,7 +443,15 @@ namespace Rhinox.GUIUtils
                 stretchHeight = true,
                 stretchWidth = false
             });
-
+        
+        private static GUIStyle _toolbarTabButtons;
+        public static GUIStyle ToolbarTabButtons =>
+            _toolbarCentered ?? (_toolbarCentered = new GUIStyle("toolbarbutton")
+            {
+                alignment = TextAnchor.MiddleCenter,
+                margin = new RectOffset(0, 0, 0, 0),
+                padding = new RectOffset(2, 2, 0, 0),
+            });
         
         private static GUIStyle _toolbarSearchTextField;
         public static GUIStyle ToolbarSearchTextField =>
