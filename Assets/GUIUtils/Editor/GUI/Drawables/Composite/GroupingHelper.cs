@@ -4,12 +4,13 @@ using Rhinox.Lightspeed;
 using Sirenix.OdinInspector;
 using UnityEngine;
 
+
 namespace Rhinox.GUIUtils.Editor
 {
     public static class GroupingHelper
     {
         private const string GroupingString = "/";
-        
+
         public static GroupedDrawable CreateFrom(PropertyGroupAttribute groupingAttr, GroupedDrawable parent = null)
         {
             switch (groupingAttr)
@@ -24,6 +25,8 @@ namespace Rhinox.GUIUtils.Editor
                     return new VerticalGroupDrawable(parent, groupingAttr.GroupID, groupingAttr.Order);
                 case TabGroupAttribute tabGroupAttribute:
                     return new TabGroupDrawable(parent, groupingAttr.GroupID, groupingAttr.Order);
+                case FoldoutGroupAttribute foldoutGroupAttribute:
+                    return new FoldoutGroupDrawable(parent, groupingAttr.GroupID, groupingAttr.Order);
                 default:
                     Debug.LogWarning($"Unimplemented Group type: {groupingAttr.GetType().Name}, falling back to FallbackGroup (layout: Vertical)...");
                     return new FallbackGroupDrawable(parent, groupingAttr.GroupID, groupingAttr.Order);
@@ -32,7 +35,7 @@ namespace Rhinox.GUIUtils.Editor
 
         public static string[] SplitIntoParts(string groupId)
         {
-            return groupId.Split(new[] {GroupingString}, StringSplitOptions.RemoveEmptyEntries);
+            return groupId.Split(new[] { GroupingString }, StringSplitOptions.RemoveEmptyEntries);
         }
 
         public static GroupedDrawable Process(List<IOrderedDrawable> drawables)
