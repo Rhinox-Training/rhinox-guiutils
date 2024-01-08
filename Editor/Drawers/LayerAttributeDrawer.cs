@@ -1,6 +1,6 @@
 using Rhinox.GUIUtils.Attributes;
+using Rhinox.Lightspeed;
 using Rhinox.Lightspeed.Reflection;
-using Rhinox.GUIUtils.Utils;
 using UnityEditor;
 using UnityEngine;
 using System.Collections.Generic;
@@ -25,7 +25,7 @@ namespace Rhinox.GUIUtils.Editor
             //I recreate the list instead of caching it.
             //If the Tags & Layers list changes (add,remove or rename), then the cache will be stale.
             //Beacuse there is (AFAIK) no direct method when the Tags & Layers names update.
-            var options = LayerUtils.GetLayerNames();
+            var options = Utility.GetLayerNames();
             _layerNameByIndex = options.Select(x => new KeyValuePair<int, string>(LayerMask.NameToLayer(x), x)).ToList();
 
             if (((LayerAttribute)attribute).IsMask)

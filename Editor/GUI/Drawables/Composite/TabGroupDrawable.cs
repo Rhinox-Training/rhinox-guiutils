@@ -11,6 +11,8 @@ namespace Rhinox.GUIUtils.Editor
     {
         private Dictionary<string, List<IOrderedDrawable>> _dic;
         private List<TabGroupName> _tabs;
+        private string[] _tabNames;
+
         public int _index = 0;
         
         private class TabGroupName
@@ -27,17 +29,13 @@ namespace Rhinox.GUIUtils.Editor
                     return EditorGUIUtility.singleLineHeight;
                 
                 float height = EditorGUIUtility.singleLineHeight;
+                
                 foreach (var child in Children)
                 {
-                    if (!child.IsVisible)
+                    if (!child.IsVisible || !IsChildInActiveTab(child))
                         continue;
                     
-                    if (_tabs != null && _dic != null && 
-                        !_dic[_tabs[_index].TabID].Contains(child)) 
-                        continue;
-                    
-                    if (height > EditorGUIUtility.singleLineHeight)
-                        height += CustomGUIUtility.Padding;
+                    height += CustomGUIUtility.Padding;
                     height += child.ElementHeight;
                 }
                 return height;
@@ -68,16 +66,19 @@ namespace Rhinox.GUIUtils.Editor
 
         protected override void ParseAttributeSmart(TabGroupAttribute attr) { }
 
+
         public override void Draw(GUIContent label)
         {
-            
             if (_drawableMemberChildren == null)
                 return;
 
             GUILayout.BeginVertical(CustomGUIStyles.Clean, GetLayoutOptions(_size));
-            
-            _index = GUILayout.Toolbar(_index, _tabs.Select(x => x.TabNameHelper.GetSmartValue()).ToArray());
-            
+
+            UpdateTabNames();
+
+            // Draw the header
+            _index = GUILayout.Toolbar(_index, _tabNames);
+
             var activeTab = _tabs[_index];
             for (var i = 0; i < _drawableMemberChildren.Count; i++)
             {
@@ -98,6 +99,7 @@ namespace Rhinox.GUIUtils.Editor
             GUILayout.EndVertical();
         }
 
+
         public override void Draw(Rect rect, GUIContent label)
         {
             if (_drawableMemberChildren == null)
@@ -105,15 +107,29 @@ namespace Rhinox.GUIUtils.Editor
 
             Rect toolbarRect, toolbarContentRect;
             if (rect.IsValid())
-                rect.SplitY(EditorGUIUtility.singleLineHeight, out toolbarRect, out toolbarContentRect);
+            {
+                rect = EditorGUI.IndentedRect(rect);   
+                rect.SplitY(EditorGUIUtility.singleLineHeight + CustomGUIUtility.Padding, out toolbarRect, out toolbarContentRect);
+            }
             else
             {
                 toolbarRect = rect;
                 toolbarContentRect = rect;
             }
-            _index = GUI.Toolbar(toolbarRect, _index, _tabs.Select(x => x.TabNameHelper.GetSmartValue()).ToArray());
+            
+            GUIContentHelper.PushIndentLevel(0);
 
-            var activeTab = _tabs[_index];
+            UpdateTabNames();
+            
+            CustomGUIStyles.ToolbarTabHeader.Draw(toolbarRect);
+            toolbarRect.height -= CustomGUIUtility.Padding;
+
+            // toolbarRect = toolbarRect.Padding(2);
+
+            _index = GUI.Toolbar(toolbarRect, _index, _tabNames, CustomGUIStyles.ToolbarTabButtons);
+            
+            CustomGUIStyles.ToolbarTabBackground.Draw(toolbarContentRect);
+
             for (var i = 0; i < _drawableMemberChildren.Count; i++)
             {
                 var childDrawable = _drawableMemberChildren[i];
@@ -121,17 +137,39 @@ namespace Rhinox.GUIUtils.Editor
                 if (childDrawable == null || !childDrawable.IsVisible)
                     continue;
           
-                if (!_dic[activeTab.TabID].Contains(childDrawable)) 
+                if (!IsChildInActiveTab(childDrawable)) 
                     continue;
 
                 if (toolbarContentRect.IsValid())
                     toolbarContentRect.height = childDrawable.ElementHeight;
 
-                childDrawable.Draw(toolbarContentRect, childDrawable.Label);
+                // childDrawable.Draw(toolbarContentRect, childDrawable.Label);
 
                 if (toolbarContentRect.IsValid() && i < _drawableMemberChildren.Count - 1)
                     toolbarContentRect.y += childDrawable.ElementHeight + CustomGUIUtility.Padding;
             }
+            
+            GUIContentHelper.PopIndentLevel();
+        }
+        
+        private void UpdateTabNames()
+        {
+            // Update array length in case it no longer matches
+            if (_tabNames == null || _tabNames.Length != _tabs.Count)
+                _tabNames = new string[_tabs.Count];
+            
+            // need to do this every frame as the helper can change
+            for (var i = 0; i < _tabs.Count; i++)
+                _tabNames[i] = _tabs[i].TabNameHelper.GetSmartValue();
+        }
+
+        private bool IsChildInActiveTab(IEditorDrawable drawable)
+        {
+            if (_dic == null) return false;
+            if (_tabs == null) return false;
+            
+            var id = _tabs[_index].TabID;
+            return _dic[id].Contains(drawable);
         }
     }
 }

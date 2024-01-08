@@ -33,6 +33,7 @@ namespace Rhinox.GUIUtils.Editor
         {
             if (!CheckDepth(depth))
                 return DrawableCreationMode.None;
+            
             return DrawableCreationMode.Auto;
         }
 
