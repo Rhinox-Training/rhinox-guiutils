@@ -23,9 +23,7 @@ namespace Rhinox.GUIUtils.Editor
         {
             GUI.Box(position.HorizontalPadding(-CustomGUIUtility.Padding*2), string.Empty, boxStyle);
 
-            var fullRect = position
-                .HorizontalPadding(CustomGUIUtility.Padding * 2, CustomGUIUtility.Padding)
-                .VerticalPadding(CustomGUIUtility.Padding);
+            var fullRect = position.VerticalPadding(CustomGUIUtility.Padding);
             
             var valueRect = fullRect.AlignTop(EditorGUIUtility.singleLineHeight);
             fullRect.yMin += EditorGUIUtility.singleLineHeight + CustomGUIUtility.Padding;

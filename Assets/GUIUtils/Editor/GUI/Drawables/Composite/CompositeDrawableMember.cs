@@ -117,7 +117,7 @@ namespace Rhinox.GUIUtils.Editor
                     compositeDrawableMember.Sort();
             }
 
-            _drawableMemberChildren.SortBy(x => x.Order);
+            _drawableMemberChildren.SortStable(x => x.Order);
             
             OnChildrenChanged();
         }
