@@ -33,6 +33,7 @@ namespace Rhinox.GUIUtils.Editor
         {
             if (!CheckDepth(depth))
                 return DrawableCreationMode.None;
+            
             return DrawableCreationMode.Auto;
         }
 
@@ -411,10 +412,13 @@ namespace Rhinox.GUIUtils.Editor
                 var attributes =  AttributeProcessorHelper.FindAllAttributesInclusive(mi, type);
                 var attr = attributes.OfType<ButtonAttribute>().First();
 
+                
                 IOrderedDrawable button = new DrawableButton(info, mi)
                 {
                     Name = attr.Name,
-                    Height = attr.ButtonHeight
+                    NameHelper = string.IsNullOrWhiteSpace(attr.Name) ? null : MemberHelper.Create<string>(info, attr.Name),
+                    Height = attr.ButtonHeight,
+                    ButtonStyle = attr.Style,
                 };
                 button = DrawableWrapperFactory.TryWrapDrawable(button, attributes);
                 drawables.AddUnique(button);
@@ -444,16 +448,12 @@ namespace Rhinox.GUIUtils.Editor
                 .Where(x => x.IsSerialized() || AttributeProcessorHelper.FindAttributeInclusive<ShowInInspectorAttribute>(x, t) != null)
                 .ToArray();
 
-            var events = ReflectionUtility.GetAllEvents(t);
-
             var instance = parent.GetValue();
 
             var list = new List<GenericHostInfo>();
             foreach (var member in visibleProperties)
                 list.Add(new GenericHostInfo(parent, instance, member));
             foreach (var member in fields)
-                list.Add(new GenericHostInfo(parent, instance, member));
-            foreach (var member in events)
                 list.Add(new GenericHostInfo(parent, instance, member));
             
             return list;

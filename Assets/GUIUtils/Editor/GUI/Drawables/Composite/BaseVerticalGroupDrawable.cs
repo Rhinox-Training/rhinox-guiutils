@@ -20,9 +20,8 @@ namespace Rhinox.GUIUtils.Editor
                 {
                     if (!child.IsVisible)
                         continue;
-                    // if (height > 0)
-                    //     height += CustomGUIUtility.Padding;
                     height += child.ElementHeight;
+                    height += CustomGUIUtility.Padding;
                 }
                 return height;
             }

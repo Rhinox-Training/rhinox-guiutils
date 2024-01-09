@@ -105,7 +105,6 @@ namespace Rhinox.GUIUtils.Editor
 
         public override void Draw(Rect rect, GUIContent label)
         {
-            var indentLevel = EditorGUI.indentLevel;
             _hasLabel = label != GUIContent.none;
 
             bool isFoldout = _isFoldout && _hasLabel;
@@ -115,15 +114,12 @@ namespace Rhinox.GUIUtils.Editor
                 var height = EditorGUIUtility.singleLineHeight;
                 var labelRect = rect.AlignTop(height);
                 _expanded = eUtility.Foldout(labelRect, _expanded, label);
-                
-                ++EditorGUI.indentLevel;
-                if (rect.IsValid())
-                {
-                    rect.yMin += height + CustomGUIUtility.Padding;
-                    rect = EditorGUI.IndentedRect(rect);
-                }
 
-                EditorGUI.indentLevel = 0;
+                GUIContentHelper.PushIndentLevel();
+                
+                if (rect.IsValid())
+                    rect.yMin += height + CustomGUIUtility.Padding;
+
             }
             else if (rect.IsValid())
                 rect = EditorGUI.PrefixLabel(rect, label);
@@ -135,8 +131,9 @@ namespace Rhinox.GUIUtils.Editor
                     child.Draw(rect, GUIContent.none);
                 } 
             }
-
-            EditorGUI.indentLevel = indentLevel;
+            
+            if (isFoldout)
+                GUIContentHelper.PopIndentLevel();
         }
 
         public object GetValue()

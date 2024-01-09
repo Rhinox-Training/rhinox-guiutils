@@ -1,4 +1,3 @@
-//
 using System.Collections.Generic;
 using System.Linq;
 using Sirenix.OdinInspector;
@@ -40,15 +39,8 @@ namespace Rhinox.GUIUtils.Editor
 #else
             if (EditorGUI.DropdownButton(rect, GUIContentHelper.TempContent(SmartValue.Text ?? "<Select a value>", _tooltip), FocusType.Passive, EditorStyles.miniPullDown))
             {
-                var menu = new GenericMenu();
-                foreach (var option in _options)
-                {
-                    menu.AddItem(new GUIContent(option.Text), false, () =>
-                    {
-                        SmartValue = option;
-                    });
-                }
-                menu.DropDown(rect);
+                GenericPicker.Show(rect, _options, (x) => { SmartValue = x; },
+                    (option) => option.Text); 
             }
 #endif
         }
@@ -88,20 +80,12 @@ namespace Rhinox.GUIUtils.Editor
                 selector.ShowInPopup(rect);
             }
 #else
-            if (EditorGUI.DropdownButton(rect, GUIContentHelper.TempContent(SmartValue.Text), FocusType.Passive, EditorStyles.miniPullDown))
+            if (EditorGUI.DropdownButton(rect, GUIContentHelper.TempContent(SmartValue.Text ?? "<Select a value>"), FocusType.Passive, EditorStyles.miniPullDown))
             {
-                var menu = new GenericMenu();
-                foreach (var option in _options)
-                {
-                    menu.AddItem(new GUIContent(option.Text), false, () =>
-                    {
-                        SmartValue = option;
-                    });
-                }
-                menu.DropDown(rect);
+                GenericPicker.Show(rect, _options, (x) => { SmartValue = x; },
+                    (option) => option.Text); 
             }
 #endif
         }
-
     }
 }

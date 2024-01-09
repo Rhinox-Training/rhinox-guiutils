@@ -51,6 +51,7 @@ namespace Rhinox.GUIUtils.Editor
                 }
             }
 
+            base.OnGUI(rect); // Forward events to this rect
             _listView.DoList(rect, GUIContentHelper.TempContent("Options"));
         }
     }

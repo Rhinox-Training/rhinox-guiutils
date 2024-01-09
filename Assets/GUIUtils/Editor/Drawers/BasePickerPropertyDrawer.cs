@@ -64,7 +64,7 @@ namespace Rhinox.GUIUtils.Editor
             public GUIContent ActiveContent;
         }
         
-        private GUIContent _noneContent;
+        protected GUIContent _noneContent;
 
         protected override DrawerData CreateData(GenericHostInfo info)
         {

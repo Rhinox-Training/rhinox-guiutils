@@ -125,6 +125,28 @@ namespace Rhinox.GUIUtils.Editor
             }
         }
 
+        public override void OnGUI(Rect rect)
+        {
+            // NOTE: this check allows inheriting classes to restrict the scroll wheel check region dynamically
+            if (rect.Contains(Event.current.mousePosition))
+            {
+                // Has scrolled in the list view
+                if (Event.current.isScrollWheel && _listView != null)
+                {
+                    if (Event.current.delta.y > float.Epsilon)
+                    {
+                        if (_listView.MovePage(1))
+                            OnRepaintRequested();
+                    }
+                    else if (Event.current.delta.y < -float.Epsilon)
+                    {
+                        if (_listView.MovePage(-1))
+                            OnRepaintRequested();
+                    }
+                }
+            }
+        }
+
         protected void OnRepaintRequested()
         {
             editorWindow.Repaint();

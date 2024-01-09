@@ -42,15 +42,13 @@ namespace Rhinox.GUIUtils.Editor
         public static ICollection<Attribute> FindAllAttributesInclusive(Type type)
         {
             var attributes = type.GetCustomAttributes();
-            var processor = FindProcessor(type);
-            if (processor == null)
-                return attributes;
 
             var totalAttrs = new List<Attribute>();
-            processor.ProcessType(ref totalAttrs);
+            var processor = FindProcessor(type);
+            if (processor != null)
+                processor.ProcessType(ref totalAttrs);
             
             totalAttrs.AddRange(attributes);
-
             
             ExpandIncludeMyAttributes(ref totalAttrs);
             
@@ -60,12 +58,12 @@ namespace Rhinox.GUIUtils.Editor
         public static ICollection<Attribute> FindAllAttributesInclusive(MemberInfo info, Type hostType = null)
         {
             var attributes = info.GetCustomAttributes().ToArray();
-            var processor = FindProcessor(hostType ?? info.ReflectedType);
-            if (processor == null)
-                return attributes;
 
             var totalAttrs = new List<Attribute>();
-            processor.ProcessMember(info, ref totalAttrs);
+            
+            var processor = FindProcessor(hostType ?? info.ReflectedType);
+            if (processor != null)
+                processor.ProcessMember(info, ref totalAttrs);
             
             totalAttrs.AddRange(attributes);
 
