@@ -42,7 +42,7 @@ namespace Rhinox.GUIUtils.NoOdin.Editor
         protected override void DrawProperty(Rect position, ref DrawerData data, GUIContent label)
         {
             Rect dropdownPosition = position.AlignTop(EditorGUIUtility.singleLineHeight);
-            position.y += EditorGUIUtility.singleLineHeight + CustomGUIUtility.Padding;
+            position.yMin += EditorGUIUtility.singleLineHeight + CustomGUIUtility.Padding;
 
             var hasValue = SmartValue != null;
             
@@ -62,7 +62,9 @@ namespace Rhinox.GUIUtils.NoOdin.Editor
 
             if (_expanded && hasValue)
             {
+                GUIContentHelper.PushIndentLevel();
                 CallInnerDrawer(position, GUIContent.none);
+                GUIContentHelper.PopIndentLevel();
             }
 
             // EditorGUI.PropertyField(position, property, GUIContent.none, true);

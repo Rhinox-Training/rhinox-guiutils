@@ -246,7 +246,7 @@ namespace Rhinox.GUIUtils.Editor
                     : new TypeExclusionModifier(propertyType, IsPropertyDrawerForChildTypes());
                 _innerDrawable = DrawableFactory.CreateDrawableFor(HostInfo, modifier);
             }
-
+            
             float oldHeight = position.height;
             float innerDrawableHeight = _innerDrawable.ElementHeight;
             if (position.IsValid())
@@ -255,7 +255,7 @@ namespace Rhinox.GUIUtils.Editor
             if (position.IsValid())
             {
                 position.height = oldHeight;    
-                position.y += innerDrawableHeight;
+                position.yMin += innerDrawableHeight;
             }
             return position;
         }
