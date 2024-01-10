@@ -11,7 +11,7 @@ namespace Rhinox.GUIUtils.Editor
         where T : PropertyGroupAttribute
     {
         protected readonly SizeResolver _widthResolver;
-        protected Rect _cachedRect;
+        protected ValidRect _rect;
         
         public override float ElementHeight
         {
@@ -35,7 +35,7 @@ namespace Rhinox.GUIUtils.Editor
             if (_drawableMemberChildren == null)
                 return;
 
-            float width = _cachedRect.width;
+            float width = _rect.width;
             // if (_size.MinSize > 0)
             //     width = _size.MinSize;
             if (_size.PreferredSize > float.Epsilon)
@@ -71,8 +71,7 @@ namespace Rhinox.GUIUtils.Editor
             
             // This causes stacking issues
             var rect = GUILayoutUtility.GetLastRect();
-            if (rect.IsValid())
-                _cachedRect = rect;
+            _rect.Update(rect);
         }
 
         public override void Draw(Rect rect, GUIContent label)
@@ -80,10 +79,10 @@ namespace Rhinox.GUIUtils.Editor
             if (_drawableMemberChildren == null)
                 return;
 
-            if (rect.IsValid())
-                _cachedRect = rect;
+            _rect.Update(rect);
+
             
-            var widths = _widthResolver.Resolve(_cachedRect.width, CustomGUIUtility.Padding);
+            var widths = _widthResolver.Resolve(_rect.width, CustomGUIUtility.Padding);
             
             Rect childRect = rect;
             for (int i = 0; i < _drawableMemberChildren.Count; ++i)
