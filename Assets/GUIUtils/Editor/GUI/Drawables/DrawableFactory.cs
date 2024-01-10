@@ -72,6 +72,11 @@ namespace Rhinox.GUIUtils.Editor
             return CreateDrawableForMember(hostInfo, 0, modifier ?? DefaultModifier);
         }
         
+        public static IOrderedDrawable CreateDrawableFor(GenericHostInfo hostInfo, Type overrideType, IFactoryModifier modifier = null)
+        {
+            return CreateDrawableForMember(hostInfo, overrideType, 0, modifier ?? DefaultModifier);
+        }
+        
         public static IOrderedDrawable CreateDrawableFor(SerializedObject obj)
         {
             object instanceVal = obj.targetObject;
@@ -160,8 +165,14 @@ namespace Rhinox.GUIUtils.Editor
 
             return drawable;
         }
-        
+
         private static IOrderedDrawable CreateDrawableForMember(GenericHostInfo hostInfo, int depth, IFactoryModifier modifier)
+        {
+            var type = hostInfo.GetReturnType();
+            return CreateDrawableForMember(hostInfo, type, depth, modifier);
+        }
+
+        private static IOrderedDrawable CreateDrawableForMember(GenericHostInfo hostInfo, Type type, int depth, IFactoryModifier modifier)
         {
             IOrderedDrawable coreDrawable;
             switch (modifier.Find(hostInfo, depth))
@@ -170,16 +181,14 @@ namespace Rhinox.GUIUtils.Editor
                     coreDrawable = null; // Draw nothing
                     break;
                 case DrawableCreationMode.Simple:
-                    var buildType = hostInfo.GetReturnType();
-                    TryCreateDirect(hostInfo, buildType, out coreDrawable);
+                    TryCreateDirect(hostInfo, type, out coreDrawable);
                     break;
                 case DrawableCreationMode.Composite:
-                    coreDrawable = CreateCompositeDrawable(hostInfo, depth + 1, modifier);
+                    coreDrawable = CreateCompositeDrawable(hostInfo, type, depth + 1, modifier);
                     break;
                 case DrawableCreationMode.Auto:
-                    var buildTypeAuto = hostInfo.GetReturnType();
-                    if (!TryCreateDirect(hostInfo, buildTypeAuto, out coreDrawable))
-                        coreDrawable = CreateCompositeDrawable(hostInfo, depth + 1, modifier);
+                    if (!TryCreateDirect(hostInfo, type, out coreDrawable))
+                        coreDrawable = CreateCompositeDrawable(hostInfo, type, depth + 1, modifier);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
@@ -206,6 +215,12 @@ namespace Rhinox.GUIUtils.Editor
 
         private static IOrderedDrawable CreateCompositeDrawable(GenericHostInfo hostInfo, int depth, IFactoryModifier modifier)
         {
+            var targetType = hostInfo.GetReturnType();
+            return CreateCompositeDrawable(hostInfo, targetType, depth, modifier);
+        }
+
+        private static IOrderedDrawable CreateCompositeDrawable(GenericHostInfo hostInfo, Type targetType, int depth, IFactoryModifier modifier)
+        {
             var subInstance = hostInfo.GetValue();
 
             // TODO still needed?
@@ -214,7 +229,6 @@ namespace Rhinox.GUIUtils.Editor
             
             var drawable = new VerticalGroupDrawable();
             
-            var targetType = hostInfo.GetReturnType();
             var memberEntries = GetEditorVisibleMembers(hostInfo, targetType);
             var drawables = new List<IOrderedDrawable>();
             foreach (var memberEntry in memberEntries)
