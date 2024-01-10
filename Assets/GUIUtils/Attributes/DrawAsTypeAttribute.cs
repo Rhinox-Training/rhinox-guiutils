@@ -1,18 +1,19 @@
 using System;
+using UnityEngine;
 
 namespace Rhinox.GUIUtils.Attributes
 {
-    public class GenericValueAttribute : Attribute
+    public class DrawAsTypeAttribute : PropertyAttribute
     {
         public string TypeName { get; private set; }
         public Type TargetType { get; private set; }
 
-        public GenericValueAttribute(Type type)
+        public DrawAsTypeAttribute(Type type)
         {
             TargetType = type;
         }
         
-        public GenericValueAttribute(string type)
+        public DrawAsTypeAttribute(string type)
         {
             TypeName = type;
             TargetType = null;

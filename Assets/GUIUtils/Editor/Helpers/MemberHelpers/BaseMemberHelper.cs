@@ -101,7 +101,7 @@ namespace Rhinox.GUIUtils.Editor
                         if (_hostInfo != null)
                         {
                             _host = _hostInfo.GetValue();
-                            _objectType = _host?.GetType();
+                            // _objectType = _host?.GetType();
                         }
                         break;
                     default:
@@ -139,6 +139,13 @@ namespace Rhinox.GUIUtils.Editor
 
         protected virtual bool TryParseExpression(string input)
         {
+            // TODO: We do not support Expressions; but we can pipe through to parameter parsing to partially support odin's syntax
+            input = input.Substring(1);
+            // parameter = true;
+                
+            if (TryParseParameter(ref input))
+                return true;
+            
             this._errorMessage = "Expressions are only supported with Odin Enabled";
             return false;
         }

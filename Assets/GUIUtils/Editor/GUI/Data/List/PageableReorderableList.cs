@@ -23,6 +23,7 @@ namespace Rhinox.GUIUtils.Editor
         private int _maxPagesCount => Mathf.CeilToInt((float)List.Count / MaxItemsPerPage);
 
         private bool _isUnityType;
+        private bool _clickedHeader;
         
         public override object SelectedItem => List[SelectedIndex + MaxItemsPerPage * _drawPageIndex];
 
@@ -30,7 +31,7 @@ namespace Rhinox.GUIUtils.Editor
         // Each tracks their own rect so you do need multiple
         private readonly List<HoverTexture> _closeIcons = new List<HoverTexture>();
 
-        private Rect _headerRect;
+        private ValidRect _headerRect;
         private GUIContent _addContent;
 
         private static Dictionary<Type, TypeCache.TypeCollection> _typeOptionsByType = new Dictionary<Type, TypeCache.TypeCollection>();
@@ -132,15 +133,13 @@ namespace Rhinox.GUIUtils.Editor
                 }
             }
 
-            if (rect.IsValid() && _headerRect != rect)
-            {
-                _headerRect = rect;
+            if (_headerRect.Update(rect))
                 RequestRepaint();
-            }
-            
+            else if (!_headerRect.IsValid())
+                RequestRepaint();
             
             GUILayout.BeginArea(_headerRect);
-            GUILayout.BeginHorizontal();
+            var areaRect = EditorGUILayout.BeginHorizontal();
 
             var drawnLabel = ValidateLabel(label);
 
@@ -149,11 +148,25 @@ namespace Rhinox.GUIUtils.Editor
                 bool wasEnabled = GUI.enabled;
                 GUI.enabled = true;
 
-                m_Expanded = eUtility.Foldout(m_Expanded, drawnLabel);
-
-                // var icon = m_Expanded ? "IN_foldout_on" : "IN_foldout";
-                // if (CustomEditorGUI.IconButton(UnityIcon.InternalIcon(icon)))
-                //     SetExpanded(!m_Expanded);
+                // m_Expanded = eUtility.Foldout(m_Expanded, drawnLabel);
+                // eUtility.Foldout does not work properly
+                // Likely due to indent stuff TODO: find out what's going on
+# if UNITY_2021_OR_NEWER
+                var icon = m_Expanded ? "IN_foldout_on" : "IN_foldout";
+#else
+                var icon = m_Expanded ? "IN foldout on" : "IN foldout";
+#endif
+                if (CustomEditorGUI.IconButton(UnityIcon.InternalIcon(icon)))
+                    SetExpanded(!m_Expanded);
+                else
+                {
+                    var width = GUI.skin.label.CalcMaxWidth(drawnLabel);
+                    width += 30; // approx the width of the iconbutton
+                    if (eUtility.IsClicked(ref _clickedHeader, areaRect.AlignLeft(width)))
+                        SetExpanded(!m_Expanded);
+                }
+                
+                GUILayout.Label(drawnLabel);
                 
                 GUI.enabled = wasEnabled;
             }
@@ -223,7 +236,7 @@ namespace Rhinox.GUIUtils.Editor
                 }
             }
             
-            GUILayout.EndHorizontal();
+            EditorGUILayout.EndHorizontal();
             GUILayout.EndArea();
         }
 

@@ -228,6 +228,28 @@ namespace Rhinox.GUIUtils.Editor
 
             return rect.Value.Contains(e.mousePosition);
         }
+        
+        public static bool IsClicked(ref bool isClicked, Rect? rect = null, Event e = null)
+        {
+            if (e == null) e = Event.current;
+
+            // We keep track of whether the rect was clicked in mouse event, and return that value during layout
+            // Otherwise doing certain operations might go wrong
+            // This essentially treats a rect as if it were a button
+            if (e.type == EventType.MouseDown && IsMouseOver(rect, e))
+            {
+                isClicked = true;
+                return false;
+            }
+
+            if (isClicked && e.type == EventType.Layout) // polling this during a repaint can cause issues
+                return true;
+            
+            if (e.type == EventType.Repaint)
+                isClicked = false;
+
+            return false;
+        }
 
         public static bool DropZone(Func<Object[], bool> dragHandler, Rect? rect = null)
         {
