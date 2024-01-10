@@ -7,8 +7,8 @@ namespace Rhinox.GUIUtils.Editor
     {
         public Color? HoverColor;
         public Color? ClickColor;
-        
-        protected Rect _cachedRect;
+
+        protected ValidRect _rect;
         protected bool _wasHovering;
         protected bool _isClicked;
 
@@ -17,8 +17,7 @@ namespace Rhinox.GUIUtils.Editor
 
         public bool IsHovering(Rect rect, out bool changed)
         {
-            if (rect.IsValid())
-                _cachedRect = rect;
+            _rect.Update(rect);
 
             var eType = Event.current.type;
             if (eType == EventType.MouseDown)
@@ -28,7 +27,7 @@ namespace Rhinox.GUIUtils.Editor
             
             if (eType != EventType.Repaint)
             {
-                bool isHovering = eUtility.IsMouseOver(_cachedRect);
+                bool isHovering = eUtility.IsMouseOver(_rect);
                 changed = _wasHovering == isHovering;
                 _wasHovering = isHovering;
             }
