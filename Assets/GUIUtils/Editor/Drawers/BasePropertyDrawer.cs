@@ -131,16 +131,16 @@ namespace Rhinox.GUIUtils.Editor
             return attribute != null;
         }
     }
-
+    
     public abstract class BasePropertyDrawer<T, TData> : BasePropertyDrawer, IHostInfoDrawer
     {
         // Property drawers are created per type - not per value, so we need to switch context when we get a different SerializedProperty
         private Dictionary<string, TData> _dataByPropertyPath;
+        private Dictionary<GenericHostInfo, IOrderedDrawable> _innerDrawableByHostInfo;
 
         private string _activePath;
         private TData _activeData;
 
-        private IOrderedDrawable _innerDrawable;
         private CustomPropertyDrawer _customPropertyDrawerAttr;
 
         public override Type FieldType => GetHostInfo(_activeData)?.GetReturnType();
@@ -157,6 +157,7 @@ namespace Rhinox.GUIUtils.Editor
         {
             base.OnInitialize();
             _dataByPropertyPath = new Dictionary<string, TData>();
+            _innerDrawableByHostInfo = new Dictionary<GenericHostInfo, IOrderedDrawable>();
         }
 
         protected sealed override void DrawProperty(Rect position, GUIContent label)
@@ -177,9 +178,17 @@ namespace Rhinox.GUIUtils.Editor
 
         protected virtual float GetInnerDrawerHeight(GUIContent label)
         {
-            if (_innerDrawable == null)
+            var innerDrawable = GetInnerDrawable(out _);
+            if (innerDrawable == null)
                 return base.GetPropertyHeight(label);
-            return _innerDrawable.ElementHeight;
+            return innerDrawable.ElementHeight;
+        }
+
+        private IOrderedDrawable GetInnerDrawable(out GenericHostInfo info)
+        {
+            info = GetHostInfo(_activeData);
+            var innerDrawable = _innerDrawableByHostInfo.GetOrDefault(info);
+            return innerDrawable;
         }
 
         private class TypeExclusionModifier : StandardDepthChecker
@@ -238,20 +247,22 @@ namespace Rhinox.GUIUtils.Editor
 
         protected virtual Rect CallInnerDrawer(Rect position, GUIContent label)
         {
-            if (_innerDrawable == null)
+            var innerDrawable = GetInnerDrawable(out GenericHostInfo info);
+            if (innerDrawable == null)
             {
                 var propertyType = GetTargetTypeOfPropertyDrawer();
                 var modifier = propertyType.InheritsFrom<Attribute>()
                     ? null
                     : new TypeExclusionModifier(propertyType, IsPropertyDrawerForChildTypes());
-                _innerDrawable = DrawableFactory.CreateDrawableFor(HostInfo, modifier);
+                innerDrawable = DrawableFactory.CreateDrawableFor(HostInfo, modifier);
+                _innerDrawableByHostInfo[info] = innerDrawable;
             }
             
             float oldHeight = position.height;
-            float innerDrawableHeight = _innerDrawable.ElementHeight;
+            float innerDrawableHeight = innerDrawable.ElementHeight;
             if (position.IsValid())
                 position.height = innerDrawableHeight;
-            _innerDrawable.Draw(position, label);
+            innerDrawable.Draw(position, label);
             if (position.IsValid())
             {
                 position.height = oldHeight;    
