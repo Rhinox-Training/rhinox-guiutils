@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
-using System.Reflection;
-using System.Text;
 using Rhinox.Lightspeed;
 using Rhinox.Lightspeed.Reflection;
 using UnityEditor;
@@ -12,6 +9,10 @@ using Object = UnityEngine.Object;
 
 namespace Rhinox.GUIUtils.Editor
 {
+    /// <summary>
+    /// Custom Editor window that supports multiple draw targets and a bunch of other utilities.
+    /// By Default it draws itself (its own properties), this can be changed by overriding the GetTargets method
+    /// </summary>
     public partial class CustomEditorWindow : EditorWindow, ISerializationCallbackReceiver, IRepaintable
     {
         /// <summary>
@@ -54,10 +55,6 @@ namespace Rhinox.GUIUtils.Editor
             get => _defaultEditorPreviewHeight;
             set => _defaultEditorPreviewHeight = value;
         }
-        
-        private static PropertyInfo s_materialForceVisibleProperty = typeof(MaterialEditor).GetProperty("forceVisible",
-            BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic |
-            BindingFlags.FlattenHierarchy);
 
         private static int s_inspectObjectWindowCount = 3;
 

@@ -229,13 +229,23 @@ namespace Rhinox.GUIUtils.Editor
             return rect.Value.Contains(e.mousePosition);
         }
         
+        public static bool IsClicked(Rect? rect = null, Event e = null)
+        {
+            if (e == null) e = Event.current;
+            
+            if (e.type == EventType.MouseDown && IsMouseOver(rect, e))
+                return true;
+
+            return false;
+        }
+        
+        // We keep track of whether the rect was clicked in mouse event, and return that value during layout
+        // Otherwise doing certain operations might go wrong
+        // This essentially treats a rect as if it were a button
         public static bool IsClicked(ref bool isClicked, Rect? rect = null, Event e = null)
         {
             if (e == null) e = Event.current;
 
-            // We keep track of whether the rect was clicked in mouse event, and return that value during layout
-            // Otherwise doing certain operations might go wrong
-            // This essentially treats a rect as if it were a button
             if (e.type == EventType.MouseDown && IsMouseOver(rect, e))
             {
                 isClicked = true;
