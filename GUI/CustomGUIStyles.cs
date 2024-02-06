@@ -239,7 +239,11 @@ namespace Rhinox.GUIUtils
 #region Label Styles
 
         private static GUIStyle _labelStyle;
-        public static GUIStyle Label => _labelStyle ?? (_labelStyle = new GUIStyle("ControlLabel"));
+        public static GUIStyle Label =>
+            _labelStyle ?? (_labelStyle = new GUIStyle("ControlLabel")
+            {
+                alignment = TextAnchor.MiddleLeft
+            });
         
 
         private static GUIStyle _labelStyleCentered;
@@ -285,6 +289,14 @@ namespace Rhinox.GUIUtils
             {
                 fontStyle = FontStyle.Bold,
                 alignment = TextAnchor.MiddleCenter
+            });
+        
+        private static GUIStyle _labelStyleBoldRight;
+        public static GUIStyle BoldLabelRight =>
+            _labelStyleBoldRight ?? (_labelStyleBoldRight = new GUIStyle(CustomGUIStyles.Label)
+            {
+                fontStyle = FontStyle.Bold,
+                alignment = TextAnchor.MiddleRight
             });
         
 
