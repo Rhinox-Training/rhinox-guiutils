@@ -105,17 +105,23 @@ namespace Rhinox.GUIUtils.Editor
             return (string) method.Invoke(projectBrowser, null);
         }
 
-        public static T[] FindAssets<T>() where T : Object
+        public static string[] FindAssetGuids<T>(params string[] paths) where T : Object
         {
-            string[] guids = AssetDatabase.FindAssets ($"t:{typeof(T).Name}", null);
+            return AssetDatabase.FindAssets ($"t:{typeof(T).Name}", paths);
+        }
+
+        public static T LoadAssetFromGuid<T>(string guid) where T : Object
+        {
+            string path = AssetDatabase.GUIDToAssetPath(guid);
+            return AssetDatabase.LoadAssetAtPath<T>(path);
+        }
+        
+        public static T[] FindAssets<T>(params string[] paths) where T : Object
+        {
+            string[] guids = FindAssetGuids<T>(paths);
             var arr = new T[guids.Length];
             for (var i = 0; i < guids.Length; i++)
-            {
-                var guid = guids[i];
-                var path = AssetDatabase.GUIDToAssetPath(guid);
-                arr[i] = AssetDatabase.LoadAssetAtPath<T>(path);
-            }
-
+                arr[i] = LoadAssetFromGuid<T>(guids[i]);
             return arr;
         }
     }
