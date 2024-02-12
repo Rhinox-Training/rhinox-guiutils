@@ -356,11 +356,18 @@ namespace Rhinox.GUIUtils.Editor
                 return true;
             }
             
+            if (type == typeof(Color))
+            {
+                drawableMember = new ColorDrawableField(hostInfo);
+                return true;
+            }
+            
             if (type == typeof(Type))
             {
                 drawableMember = new TypeDrawableField(hostInfo);
                 return true;
             }
+            
 
             if (type == typeof(LayerMask))
             {
