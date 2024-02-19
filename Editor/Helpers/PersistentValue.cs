@@ -75,7 +75,6 @@ namespace Rhinox.GUIUtils.Editor
                     else
                         _value = obj is T ? (T) obj : default(T);
                 }
-                
             }
         }
 

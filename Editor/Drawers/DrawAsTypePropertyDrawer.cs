@@ -18,10 +18,9 @@ namespace Rhinox.GUIUtils.Editor
 
         private IOrderedDrawable _drawable;
 
-
         protected override void OnInitialize()
         {
-            base.Initialize();
+            base.OnInitialize();
 
             var attr = HostInfo.GetAttribute<DrawAsTypeAttribute>();
             
@@ -39,7 +38,6 @@ namespace Rhinox.GUIUtils.Editor
         {
             EditorGUI.BeginChangeCheck();
             
-            const bool allowSceneObjects = true;
             var type = GetTargetType();
 
             if (_drawable == null)

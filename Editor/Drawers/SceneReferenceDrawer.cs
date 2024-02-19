@@ -6,8 +6,8 @@ using BuildUtils = Rhinox.GUIUtils.Editor.BuildUtils;
 
 namespace Rhinox.GUIUtils.Editor
 {
-    [CustomPropertyDrawer(typeof(SceneReferenceData), true)]
-    public class SceneReferenceDrawer : BasePropertyDrawer<SceneReferenceData>
+    [CustomPropertyDrawer(typeof(SceneReference), true)]
+    public class SceneReferenceDrawer : BasePropertyDrawer<SceneReference>
     {
         private static readonly GUIStyle boxStyle = EditorStyles.helpBox;
         private static readonly RectOffset boxPadding = boxStyle.padding;
@@ -40,7 +40,7 @@ namespace Rhinox.GUIUtils.Editor
                 if (newAsset != null)
                 {
                     // Call Constructor taking a SceneAsset
-                    SmartValue = Activator.CreateInstance(FieldType, new[] { newAsset }) as SceneReferenceData;
+                    SmartValue = Activator.CreateInstance(FieldType, new[] { newAsset }) as SceneReference;
                     Apply();
                     asset = newAsset;
                 }
