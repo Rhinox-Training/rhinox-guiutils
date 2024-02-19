@@ -104,25 +104,5 @@ namespace Rhinox.GUIUtils.Editor
                 projectBrowserType.GetMethod("GetActiveFolderPath", BindingFlags.Instance | BindingFlags.NonPublic);
             return (string) method.Invoke(projectBrowser, null);
         }
-
-        public static string[] FindAssetGuids<T>(params string[] paths) where T : Object
-        {
-            return AssetDatabase.FindAssets ($"t:{typeof(T).Name}", paths);
-        }
-
-        public static T LoadAssetFromGuid<T>(string guid) where T : Object
-        {
-            string path = AssetDatabase.GUIDToAssetPath(guid);
-            return AssetDatabase.LoadAssetAtPath<T>(path);
-        }
-        
-        public static T[] FindAssets<T>(params string[] paths) where T : Object
-        {
-            string[] guids = FindAssetGuids<T>(paths);
-            var arr = new T[guids.Length];
-            for (var i = 0; i < guids.Length; i++)
-                arr[i] = LoadAssetFromGuid<T>(guids[i]);
-            return arr;
-        }
     }
 }

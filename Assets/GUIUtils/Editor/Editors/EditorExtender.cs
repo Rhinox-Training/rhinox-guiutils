@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Rhinox.Lightspeed.Reflection;
@@ -11,16 +12,31 @@ namespace Rhinox.GUIUtils.Editor
 {
     /// <summary>
     /// Various stuff that only needs to be done once; and not per type instantiated type
+    /// Do not inherit from this, inherit from DefaultEditorExtender<>
     /// </summary>
     public abstract class BaseEditorExtender : UnityEditor.Editor
     {
+        /// ================================================================================================================
+        /// REFLECTION
         // namespace UnityEditor - internal class CustomEditorAttributes
         private static Type _editorAttributesType;
-
+        
+        // namespace UnityEditor.CustomEditorAttributes (subclass) - internal readonly struct MonoEditorType
+        private static Type _monoEditorTypeType;
+#if !UNITY_2023_1_OR_NEWER
         // private static readonly Dictionary<Type, List<MonoEditorType>> kSCustomEditors = new Dictionary<Type, List<MonoEditorType>>();
         private static FieldInfo _customEditorsDictionaryField;
-        // private static FieldInfo _customEditorIsInherited;
+#else
+        // private readonly CustomEditorAttributes.CustomEditorCache m_Cache;
+        private static FieldInfo _cacheField;
+        
+        // private static CustomEditorAttributes instance => CustomEditorAttributes.k_Instance.Value;
+        private static PropertyInfo _instanceProp;
+        
+        // internal bool TryGet(Type type, bool multiedition, out List<CustomEditorAttributes.MonoEditorType> editors)
+        private static MethodInfo _tryGetEditorsMethod;
 
+#endif
         // internal static void Rebuild()
         private static MethodInfo _rebuildMethod;
 
@@ -28,36 +44,52 @@ namespace Rhinox.GUIUtils.Editor
         // public Type m_InspectorType;
         private static FieldInfo _inspectorTypeField;
         
+        /// ================================================================================================================
+        /// FIELDS
+        private static IDictionary _editorTypeDictionary;
+        
         protected virtual void OnEnable() { }
         protected virtual void OnDisable() { }
+
+        private static bool GetEditorsForType(Type type, out Type editorType, out Type editorFallbackType)
+        {
+            editorType = null;
+            editorFallbackType = null;
+            
+            var typeList = GetEditorsForType(type);
+            
+            // We need something to work with
+            if (typeList == null || typeList.Count == 0)
+                return false;
+            
+            // Ensure our type is in the list
+            editorType = GetTypeFromMonoEditorType(typeList[0]);
+
+            // If there is only 1 editor, nothing to do here, the type likely has no default editor
+            if (typeList.Count < 2)
+                return true;
+
+            // Fetch the default editor type
+            editorFallbackType = GetTypeFromMonoEditorType(typeList[1]);
+            return true;
+        }
 
         [InitializeOnLoadMethod]
         private static void InitExtendors()
         {
-            if (_editorAttributesType != null) return;
-
-            var dictionary = GetEditorTypeDictionary();
-            // It might not be initialized yet...
-            if (dictionary.Count == 0)
-                Rebuild();
-
             var editorTypes = TypeCache.GetTypesDerivedFrom(typeof(BaseEditorExtender));
+
             foreach (var type in editorTypes)
             {
                 if (type.ContainsGenericParameters) continue;
 
                 var baseType = ReflectionUtility.GetImplementedGenericType(type, typeof(DefaultEditorExtender<>));
                 var unityObjectType = baseType.GetGenericArguments().First();
-                var typeList = dictionary[unityObjectType] as IList;
 
+                bool success = GetEditorsForType(unityObjectType, out var editorType, out var fallbackType);
+                if (!success)
+                    Debug.LogError($"Failed to initialize {type}. No editors registered?");
 
-                // We need something to work with
-                if (typeList == null || typeList.Count == 0)
-                {
-                    Debug.LogError($"Failed to initialize {type}. No editors registered.");
-                    continue;
-                }
-                
                 // Check for the CustomEditor attribute
                 var customEditorAttribute = AttributeProcessorHelper.FindAttributeInclusive<CustomEditor>(type);
                 if (customEditorAttribute == null)
@@ -76,33 +108,17 @@ namespace Rhinox.GUIUtils.Editor
                 //     // TODO Tested this, it doesn't but for some reason ProbuilderMesh does? INVESTIGATE
                 // }
 
-                // Ensure our type is in the list
-                var probablyOurType = GetTypeFromMonoEditorType(typeList[0]);
-                if (probablyOurType != type)
+                // Ensure our type is the one we would be drawing
+                if (editorType != type)
                 {
                     // Debug.LogError($"Failed to initialize {type}. Did you forget to add [CustomEditor] to your type?");
                     continue;
                 }
 
-                // If there is only 1 editor, nothing to do here, the type likely has no default editor
-                if (typeList.Count < 2)
-                    continue;
-
-                // Fetch the default editor type
-                var defaultEditorType = ExtractDefaultEditorType(typeList);
-
                 var initializer = baseType.GetMethod("SetBaseInspectorType", BindingFlags.Static | BindingFlags.NonPublic);
                 if (initializer != null)
-                    initializer.Invoke(null, new object[] {defaultEditorType});
+                    initializer.Invoke(null, new object[] {fallbackType});
             }
-        }
-
-        private static Type ExtractDefaultEditorType(IList typeList)
-        {
-            // typeList = List<MonoEditorType>; this is a class nested under CustomEditorAttributes
-            // The first item would be our custom editor
-            var defaultEditorTypeContainer = typeList[1];
-            return GetTypeFromMonoEditorType(defaultEditorTypeContainer);
         }
 
         private static Type GetTypeFromMonoEditorType(object defaultEditorTypeContainer)
@@ -110,21 +126,31 @@ namespace Rhinox.GUIUtils.Editor
             if (_inspectorTypeField == null)
             {
                 var monoEditorType = defaultEditorTypeContainer.GetType();
+#if UNITY_2023_1_OR_NEWER
+                _inspectorTypeField = monoEditorType.GetField("inspectorType", BindingFlags.Instance | BindingFlags.Public);
+#else
                 _inspectorTypeField = monoEditorType.GetField("m_InspectorType", BindingFlags.Instance | BindingFlags.Public);
+#endif
             }
 
             return _inspectorTypeField.GetValue(defaultEditorTypeContainer) as Type;
         }
-
+        
+        private static void FetchEditorAttributesType()
+        {
+            // Fetch the dictionary of all possible editors for any given type
+            // It has a method to return the correct type but that will just return our own editor
+            var ass = typeof(UnityEditor.Editor).Assembly;
+            _editorAttributesType = ass.GetType("UnityEditor.CustomEditorAttributes");
+        }
+        
+#if !UNITY_2023_1_OR_NEWER
         private static IDictionary GetEditorTypeDictionary()
         {
             // Fetch the dictionary of all possible editors for any given type
             // It has a method to return the correct type but that will just return our own editor
             if (_editorAttributesType == null)
-            {
-                var ass = typeof(UnityEditor.Editor).Assembly;
-                _editorAttributesType = ass.GetType("UnityEditor.CustomEditorAttributes");
-            }
+                FetchEditorAttributesType();
             
             if (_customEditorsDictionaryField == null)
                 _customEditorsDictionaryField = _editorAttributesType.GetField("kSCustomEditors", BindingFlags.Static | BindingFlags.NonPublic);
@@ -135,10 +161,56 @@ namespace Rhinox.GUIUtils.Editor
             return fieldData as IDictionary;
         }
 
+        private static IList GetEditorsForType(Type type)
+        {
+            if (_editorTypeDictionary == null)
+            {
+                _editorTypeDictionary = GetEditorTypeDictionary();
+                // It might not be initialized yet...
+                if (_editorTypeDictionary.Count == 0)
+                    Rebuild();
+            }
+            return _editorTypeDictionary[type] as IList;
+        }
+#else
+        private static object GetEditorAttributesInstance()
+        {
+            if (_editorAttributesType == null)
+                FetchEditorAttributesType();
+            
+            if (_instanceProp == null)
+                _instanceProp = _editorAttributesType.GetProperty("instance", BindingFlags.Static | BindingFlags.NonPublic);
+            
+            return _instanceProp.GetValue(null);
+        }
+        
+        private static IList GetEditorsForType(Type type)
+        {
+            var instance = GetEditorAttributesInstance();
+            if (_cacheField == null)
+                _cacheField = _editorAttributesType.GetField("m_Cache", BindingFlags.Instance | BindingFlags.NonPublic);
+
+            var cache = _cacheField.GetValue(instance);
+
+            if (_tryGetEditorsMethod == null)
+                _tryGetEditorsMethod = cache.GetType().GetMethod("TryGet", BindingFlags.Instance | BindingFlags.NonPublic);
+
+            if (_monoEditorTypeType == null)
+                _monoEditorTypeType = _editorAttributesType.GetNestedType("MonoEditorType", BindingFlags.NonPublic);
+
+            var listType = typeof(List<>).MakeGenericType(_monoEditorTypeType);
+            IList list = listType.CreateInstance() as IList;
+
+            var args = new object[] { type, false, list };
+            var success = (bool) _tryGetEditorsMethod.Invoke(cache, args);
+            return (IList) args[2];
+        }
+#endif
+        
         private static void Rebuild()
         {
             _rebuildMethod = _editorAttributesType.GetMethod("Rebuild", BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
-            _rebuildMethod.Invoke(null, new object[] { });
+            _rebuildMethod.Invoke(null, Array.Empty<object>());
         }
     }
 
