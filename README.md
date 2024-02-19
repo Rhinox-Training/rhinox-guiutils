@@ -38,7 +38,7 @@ Please explore the code for a proper overview but here's a quick sample:
 #### Various Base classes
 - `MenuListEditorWindow` provides a list on the left with selectable items
 - `PagerEditor` / `PagerEditorWindow` which allows you to turns your editor into pages and provides a navigation bar with clickable history
-![Pager Editor](readme-images/pager-editor.png){height=250}
+![Pager Editor](readme-images/pager-editor.png)
 - `DefaultEditorExtender` allows you to add upon existing editors (even native ones) or toggle back to them back on some condition.
   ```cs
   [CustomEditor(typeof(BoxCollider))]
@@ -51,9 +51,9 @@ Please explore the code for a proper overview but here's a quick sample:
       }
   }
   ```
-  ![Editor Extender Example](readme-images/extender-example.png){height=150}
+  ![Editor Extender Example](readme-images/extender-example.png)
 - `CustomSceneOverlayWindow` allows you to add small overlay editors inside the scene window. This is the same API that for example 'navigation' natively uses and will work nicely with it.
-  ![Scene Overlay](readme-images/scene-overlay.png){height=205}
+  ![Scene Overlay](readme-images/scene-overlay.png)
 - and many others...
 
 #### Various utilities
@@ -82,8 +82,8 @@ You can mark any `Monobehaviour`/`ScriptableObject` class with the `[SmartFallba
 It was/is intended as a (very basic) open-source fallback version for Odin Inspector that allows you to expose some of its functionality to end users that do not have it available.
 
 We've chosen to not make this automatic as there are still some issues to kink out.
-You can also 'preview' the change by clicking the wand icon.
-![Wand Icon](readme-images/wand-icon.png){height=50}
+You can also 'preview' the change by clicking the wand icon.   
+![Wand Icon](readme-images/wand-icon.png)
 
 You can make any object draw with a simple
 ```cs
