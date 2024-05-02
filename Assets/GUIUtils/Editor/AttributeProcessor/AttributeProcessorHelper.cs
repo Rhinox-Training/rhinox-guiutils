@@ -6,6 +6,7 @@ using NUnit.Framework;
 using Rhinox.Lightspeed;
 using Rhinox.Lightspeed.Reflection;
 using Sirenix.OdinInspector;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -92,7 +93,7 @@ namespace Rhinox.GUIUtils.Editor
             {
                 _attributeProcessors = new Dictionary<Type, IAttributeProcessor>();
                 
-                var types = AppDomain.CurrentDomain.GetDefinedTypesOfType<IAttributeProcessor>();
+                var types = ReflectionUtility.GetTypesInheritingFrom(typeof(IAttributeProcessor));
                 foreach (var type in types)
                 {
                     var processor = Activator.CreateInstance(type) as IAttributeProcessor;

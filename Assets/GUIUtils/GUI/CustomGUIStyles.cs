@@ -467,12 +467,20 @@ namespace Rhinox.GUIUtils
         
         private static GUIStyle _toolbarSearchTextField;
         public static GUIStyle ToolbarSearchTextField =>
+#if UNITY_2023_1_OR_NEWER
+            _toolbarSearchTextField ?? (_toolbarSearchTextField = new GUIStyle("ToolbarSearchTextField"));
+#else
             _toolbarSearchTextField ?? (_toolbarSearchTextField = new GUIStyle("ToolbarSeachTextField"));
+#endif
 
         
         private static GUIStyle _toolbarSearchCancelButton;
         public static GUIStyle ToolbarSearchCancelButton =>
+#if UNITY_2023_1_OR_NEWER
+            _toolbarSearchCancelButton ?? (_toolbarSearchCancelButton = new GUIStyle("ToolbarSearchCancelButton"));
+#else
             _toolbarSearchCancelButton ?? (_toolbarSearchCancelButton = new GUIStyle("ToolbarSeachCancelButton"));
+#endif
 
         #endregion
 
@@ -485,6 +493,12 @@ namespace Rhinox.GUIUtils
             {
                 padding = new RectOffset(1, 1, 1, 1)
             });
+        
+        private static GUIStyle _commandButtonStyle;
+        public static GUIStyle CommandButton => _commandButtonStyle ?? (_commandButtonStyle = new GUIStyle("Command")
+        {
+            fixedWidth = 28
+        });
 
         
         private static GUIStyle _buttonStyle;

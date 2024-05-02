@@ -3,30 +3,29 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Rhinox.GUIUtils.Attributes;
+using Rhinox.Lightspeed.Reflection;
 using Sirenix.OdinInspector;
 using Sirenix.OdinInspector.Editor;
 using Sirenix.OdinInspector.Editor.Drawers;
-using Sirenix.Utilities;
 using Sirenix.Utilities.Editor;
 using UnityEditor;
 using UnityEngine;
-using Object = UnityEngine.Object;
 
 namespace Rhinox.GUIUtils.Odin.Editor
 {
     [DrawerPriority(0.0, 0.0, 2002.0)]
     public sealed class AssignableTypeFilterAttributeDrawer : OdinAttributeDrawer<AssignableTypeFilterAttribute>
     {
-        private string error;
-        private GUIContent label;
-        private bool isList;
+        private string _error;
+        private GUIContent _label;
+        private bool _isList;
 
-        private Func<IEnumerable<object>> getSelection;
-        private IEnumerable<object> result;
-        private Dictionary<object, string> nameLookup;
-        private LocalPersistentContext<bool> isToggled;
-        private GenericSelector<object> inlineSelector;
-        private IEnumerable<object> nextResult;
+        private Func<IEnumerable<object>> _getSelection;
+        private IEnumerable<object> _result;
+        private Dictionary<object, string> _nameLookup;
+        private LocalPersistentContext<bool> _isToggled;
+        private GenericSelector<object> _inlineSelector;
+        private IEnumerable<object> _nextResult;
 
         protected override bool CanDrawAttributeProperty(InspectorProperty property)
         {
@@ -36,10 +35,10 @@ namespace Rhinox.GUIUtils.Odin.Editor
         /// <summary>Initializes this instance.</summary>
         protected override void Initialize()
         {
-            this.isToggled = this.GetPersistentValue<bool>("Toggled", Attribute.Expanded || SirenixEditorGUI.ExpandFoldoutByDefault);
-            this.isList = this.Property.ChildResolver is ICollectionResolver;
-            this.getSelection = () => this.Property.ValueEntry.WeakValues.Cast<object>();
-            this.ReloadDropdownCollections();
+            _isToggled = this.GetPersistentValue<bool>("Toggled", Attribute.Expanded || SirenixEditorGUI.ExpandFoldoutByDefault);
+            _isList = Property.ChildResolver is ICollectionResolver;
+            _getSelection = () => Property.ValueEntry.WeakValues.Cast<object>();
+            ReloadDropdownCollections();
         }
 
         private IEnumerable<ValueDropdownItem> GetAllAssignableTypesForTarget()
@@ -48,27 +47,22 @@ namespace Rhinox.GUIUtils.Odin.Editor
             if (baseType == null)
                 baseType = Property.Info.TypeOfValue;
 
-            return AppDomain.CurrentDomain
-                .GetAssemblies()
-                .SelectMany(x => x.GetTypes())
-                // Cannot instantiate Abstract and Generic types so skip those
-                .Where(x => !x.IsAbstract)
-                .Where(x => !x.IsGenericTypeDefinition)
-                // Only those assignable
-                .Where(baseType.IsAssignableFrom)
-                // Skip any Unity managed types (cannot be assigned)
-                .Where(x => !x.InheritsFrom(typeof(Object)))
-                .Select(x => new ValueDropdownItem((string) null, x));
+            return ReflectionUtility.GetTypesInheritingFrom(baseType) // TODO already filters Assignable
+                    // Only those assignable
+                    .Where(baseType.IsAssignableFrom)
+                    // Skip any Unity managed types (cannot be assigned)
+                    .Where(x => !x.InheritsFrom(typeof(UnityEngine.Object)))
+                    .Select(x => new ValueDropdownItem((string) null, x));
         }
 
         private void ReloadDropdownCollections()
         {
-            if (this.error != null)
+            if (_error != null)
                 return;
             IEnumerable<ValueDropdownItem> valueDropdownItems = GetAllAssignableTypesForTarget();
-            this.nameLookup = new Dictionary<object, string>();
+            _nameLookup = new Dictionary<object, string>();
             foreach (ValueDropdownItem valueDropdownItem in valueDropdownItems)
-                this.nameLookup[(object) valueDropdownItem] = valueDropdownItem.Text;
+                _nameLookup[(object) valueDropdownItem] = valueDropdownItem.Text;
         }
 
         /// <summary>
@@ -76,40 +70,41 @@ namespace Rhinox.GUIUtils.Odin.Editor
         /// </summary>
         protected override void DrawPropertyLayout(GUIContent label)
         {
-            this.label = label;
-            if (this.Property.ValueEntry == null)
-                this.CallNextDrawer(label);
-            else if (this.error != null)
+            _label = label;
+            if (Property.ValueEntry == null)
+                CallNextDrawer(label);
+            else if (_error != null)
             {
-                SirenixEditorGUI.ErrorMessageBox(this.error, true);
+                SirenixEditorGUI.ErrorMessageBox(_error, true);
                 CallNextDrawer(label);
             }
-            else if (this.isList)
+            else if (_isList)
             {
-                CollectionDrawerStaticInfo.NextCustomAddFunction = new Action(this.OpenSelector);
+                CollectionDrawerStaticInfo.NextCustomAddFunction = new Action(OpenSelector);
                 CallNextDrawer(label);
-                if (result != null)
+                if (_result != null)
                 {
-                    AddResult(this.result);
-                    result = null;
+                    AddResult(_result);
+                    _result = null;
                 }
 
                 CollectionDrawerStaticInfo.NextCustomAddFunction = (Action) null;
             }
             else
-                this.DrawDropdown();
+                DrawDropdown();
         }
 
         private void AddResult(IEnumerable<object> query)
         {
             if (!query.Any())
                 return;
-            if (this.isList)
+            
+            if (_isList)
             {
-                ICollectionResolver childResolver = this.Property.ChildResolver as ICollectionResolver;
+                ICollectionResolver childResolver = Property.ChildResolver as ICollectionResolver;
                 foreach (object obj in query)
                 {
-                    object[] values = new object[this.Property.ParentValues.Count];
+                    object[] values = new object[Property.ParentValues.Count];
                     for (int index = 0; index < values.Length; ++index)
                     {
                         if (obj is System.Type type)
@@ -122,10 +117,10 @@ namespace Rhinox.GUIUtils.Odin.Editor
             else
             {
                 System.Type type = query.FirstOrDefault() as Type;
-                for (int index = 0; index < this.Property.ValueEntry.WeakValues.Count; ++index)
+                for (int index = 0; index < Property.ValueEntry.WeakValues.Count; ++index)
                 {
                     if (type != null)
-                        this.Property.ValueEntry.WeakValues[index] = Activator.CreateInstance(type);
+                        Property.ValueEntry.WeakValues[index] = Activator.CreateInstance(type);
                 }
             }
         }
@@ -133,20 +128,20 @@ namespace Rhinox.GUIUtils.Odin.Editor
         private void DrawDropdown()
         {
             EditorGUI.BeginChangeCheck();
-            string currentValueName = this.GetCurrentValueName();
+            string currentValueName = GetCurrentValueName();
             IEnumerable<object> query;
-            if (this.Property.Children.Count > 0)
+            if (Property.Children.Count > 0)
             {
                 SirenixEditorGUI.BeginIndentedVertical();
                 Rect valueRect;
-                this.isToggled.Value = SirenixEditorGUI.Foldout(this.isToggled.Value, this.label, out valueRect);
+                _isToggled.Value = SirenixEditorGUI.Foldout(_isToggled.Value, _label, out valueRect);
                 query = OdinSelector<object>.DrawSelectorDropdown(valueRect, currentValueName, ShowSelector);
-                if (SirenixEditorGUI.BeginFadeGroup(this, this.isToggled.Value))
+                if (SirenixEditorGUI.BeginFadeGroup(this, _isToggled.Value))
                 {
                     ++EditorGUI.indentLevel;
-                    for (int index = 0; index < this.Property.Children.Count; ++index)
+                    for (int index = 0; index < Property.Children.Count; ++index)
                     {
-                        InspectorProperty child = this.Property.Children[index];
+                        InspectorProperty child = Property.Children[index];
                         child.Draw(child.Label);
                     }
 
@@ -158,23 +153,23 @@ namespace Rhinox.GUIUtils.Odin.Editor
 
             }
             else
-                query = OdinSelector<object>.DrawSelectorDropdown(this.label, currentValueName, this.ShowSelector, null);
+                query = OdinSelector<object>.DrawSelectorDropdown(_label, currentValueName, ShowSelector, null);
 
             if (!EditorGUI.EndChangeCheck() || query == null)
                 return;
-            this.AddResult(query);
+            AddResult(query);
         }
 
         private void OpenSelector()
         {
-            this.ReloadDropdownCollections();
-            this.ShowSelector(new Rect(Event.current.mousePosition, Vector2.zero)).SelectionConfirmed +=
-                (Action<IEnumerable<object>>) (x => this.result = x);
+            ReloadDropdownCollections();
+            ShowSelector(new Rect(Event.current.mousePosition, Vector2.zero)).SelectionConfirmed +=
+                (Action<IEnumerable<object>>) (x => _result = x);
         }
 
         private OdinSelector<object> ShowSelector(Rect rect)
         {
-            GenericSelector<object> selector = this.CreateSelector();
+            GenericSelector<object> selector = CreateSelector();
             rect.x = (int) rect.x;
             rect.y = (int) rect.y;
             rect.width = (int) rect.width;
@@ -187,14 +182,14 @@ namespace Rhinox.GUIUtils.Odin.Editor
         {
             IEnumerable<ValueDropdownItem> source1 = GetAllAssignableTypesForTarget() ?? Enumerable.Empty<ValueDropdownItem>();
             bool hasTenOrMoreItems = source1.Take(10).Count() == 10;
-            GenericSelector<object> genericSelector = new GenericSelector<object>(this.Attribute.DropdownTitle, false,
+            GenericSelector<object> genericSelector = new GenericSelector<object>(Attribute.DropdownTitle, false,
                 source1.Select(x => new GenericSelectorItem<object>(x.Text, x.Value)));
             genericSelector.CheckboxToggle = false;
             genericSelector.EnableSingleClickToSelect();
             genericSelector.SelectionTree.Config.DrawSearchToolbar = hasTenOrMoreItems;
             IEnumerable<object> source2 = Enumerable.Empty<object>();
-            if (!this.isList)
-                source2 = this.getSelection();
+            if (!_isList)
+                source2 = _getSelection();
             IEnumerable<object> selection =
                 source2.Select(x => x != null ? (object) x.GetType() : (object) null);
             genericSelector.SetSelection(selection);
@@ -206,10 +201,10 @@ namespace Rhinox.GUIUtils.Odin.Editor
         {
             if (EditorGUI.showMixedValue)
                 return "—";
-            object key = this.Property.ValueEntry.WeakSmartValue;
+            object key = Property.ValueEntry.WeakSmartValue;
             string name = (string) null;
-            if (this.nameLookup != null && key != null)
-                this.nameLookup.TryGetValue(key, out name);
+            if (_nameLookup != null && key != null)
+                _nameLookup.TryGetValue(key, out name);
             if (key != null)
                 key = (object) key.GetType();
             return new GenericSelectorItem<object>(name, key).GetNiceName();

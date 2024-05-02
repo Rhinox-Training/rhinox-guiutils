@@ -86,7 +86,11 @@ namespace Rhinox.GUIUtils.Editor
             // In build scenes and enabled
             else if (buildScene.scene.enabled)
             {
+#if UNITY_2023_1_OR_NEWER
+                iconContent = EditorGUIUtility.IconContent("sv_icon_dot3_pix16_gizmo");
+#else
                 iconContent = EditorGUIUtility.IconContent("d_winbtn_mac_max");
+#endif
                 labelContent.text = "BuildIndex: " + buildScene.buildIndex;
                 labelContent.tooltip = "This scene is in build settings and ENABLED.\nIt will be included in builds." +
                                        readOnlyWarning;
@@ -108,7 +112,8 @@ namespace Rhinox.GUIUtils.Editor
                 buttonRect = position.AlignRight(position.width - EditorGUIUtility.labelWidth);
 
                 var iconRect = labelRect;
-                iconRect.width = iconContent.image.width + PAD_SIZE;
+                if (iconContent?.image != null)
+                    iconRect.width = iconContent.image.width + PAD_SIZE;
                 labelRect.width -= iconRect.width;
                 labelRect.x += iconRect.width;
                 EditorGUI.LabelField(iconRect, iconContent);
