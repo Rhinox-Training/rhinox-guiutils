@@ -55,6 +55,12 @@ namespace Rhinox.GUIUtils
 
             return style.CalcMinWidth(_tempContent);
         }
+
+        public static float CalcMinWidth(this GUIStyle style, GUIContent content)
+        {
+            style.CalcMinMaxWidth(content, out float min, out float max);
+            return min;
+        }
         
         public static float CalcMaxWidth(this GUIStyle style, string label, string tooltip = null)
         {
@@ -65,16 +71,18 @@ namespace Rhinox.GUIUtils
             return style.CalcMaxWidth(_tempContent);
         }
         
-        public static float CalcMinWidth(this GUIStyle style, GUIContent content)
-        {
-            style.CalcMinMaxWidth(content, out float min, out float max);
-            return min;
-        }
-        
         public static float CalcMaxWidth(this GUIStyle style, GUIContent content)
         {
             style.CalcMinMaxWidth(content, out float min, out float max);
             return max;
+        }
+        
+        public static float CalcWidth(this GUIStyle style, GUIContent content, float height)
+        {
+            var size = style.CalcSize(content);
+            if (size.y > height)
+                size.x *= height / size.y;
+            return size.x;
         }
         
         public static void CalcMinMaxWidth(this GUIStyle style, string label, out float min, out float max, string tooltip = null)

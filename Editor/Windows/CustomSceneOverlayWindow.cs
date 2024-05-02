@@ -29,7 +29,7 @@ namespace Rhinox.GUIUtils.Editor
         public bool IsActive => _active;
 
         private static T _window;
-        protected static T Window => _window != null ? _window : GetWindowInstance();
+        protected static T Window => _window ?? GetWindowInstance();
 
         protected virtual int Order => -1;
 
@@ -134,23 +134,26 @@ namespace Rhinox.GUIUtils.Editor
     internal static class OverlayWindowResurrector
     {
         [UnityEditor.Callbacks.DidReloadScripts]
-        private static void OnReloadScripts()
+        private static void Init()
         {
             // Is Unity still compiling or reloading assets
-            if(EditorApplication.isCompiling || EditorApplication.isUpdating)
-                AssemblyReloadEvents.afterAssemblyReload += RecreateOverlayWindowsIfNeeded; // Delay some more
-            else
+            if (EditorApplication.isCompiling || EditorApplication.isUpdating)
                 EditorApplication.delayCall += RecreateOverlayWindowsIfNeeded;
+            else
+                AssemblyReloadEvents.afterAssemblyReload += RecreateOverlayWindowsIfNeeded; // Delay some more
         }
-
+        
         private static void RecreateOverlayWindowsIfNeeded()
         {
             AssemblyReloadEvents.afterAssemblyReload -= RecreateOverlayWindowsIfNeeded;
 
-            var types = AppDomain.CurrentDomain.GetDefinedTypesOfType<ICustomSceneOverlayWindow>();
+            var types = TypeCache.GetTypesDerivedFrom<ICustomSceneOverlayWindow>();
 
             foreach (var type in types)
             {
+                if (type.IsAbstract || type.ContainsGenericParameters)
+                    continue;
+                
                 var supertype = typeof(CustomSceneOverlayWindow<>).MakeGenericType(type);
                 var prop = supertype.GetProperty("Window",
                     BindingFlags.Static | BindingFlags.FlattenHierarchy | BindingFlags.NonPublic);
