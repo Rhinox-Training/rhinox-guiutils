@@ -45,7 +45,8 @@ namespace Rhinox.GUIUtils.Editor
         
         protected Type m_ListType;
         protected Type m_ElementType;
-        
+
+        public bool SelectableItems;
         public bool DisplayHeader;
         public bool DisplayAdd;
         public bool DisplayRemove;
@@ -77,20 +78,21 @@ namespace Rhinox.GUIUtils.Editor
 
         public static BetterReorderableList.Defaults defaultBehaviours => BetterReorderableList.s_Defaults;
 
-        public BetterReorderableList(IList elements)
-            : this()
+        public BetterReorderableList(IList elements, bool selectableItems)
+            : this(selectableItems)
         {
             this.Initialize(null, elements);
         }
 
-        public BetterReorderableList(SerializedProperty property)
-            : this()
+        public BetterReorderableList(SerializedProperty property, bool selectableItems)
+            : this(selectableItems)
         {
             this.Initialize(property, null);
         }
 
-        protected BetterReorderableList()
+        protected BetterReorderableList(bool selectableItems = false)
         {
+            this.SelectableItems = selectableItems;
             this.DisplayAdd = true;
             this.DisplayHeader = true;
             this.DisplayRemove = true;
@@ -384,7 +386,7 @@ namespace Rhinox.GUIUtils.Editor
 
                     DrawElement(contentRect1, m_ActiveElement, true, true);
                 }
-                else
+                else // any event except when we're dragging in repaint
                 {
                     for (int index = 0; index < count; ++index)
                     {
@@ -406,7 +408,7 @@ namespace Rhinox.GUIUtils.Editor
 
                 this.DoDraggingAndSelection(listRect);
             }
-            else
+            else // if there are no elements
             {
                 elementRect.y = listRect.y;
                 OnDrawElementBackground(elementRect, -1, false, false, false);
@@ -524,7 +526,7 @@ namespace Rhinox.GUIUtils.Editor
             if (SerializedProperty != null)
             {
                 SerializedProperty.DeleteArrayElementAtIndex(indexToRemove);
-                if (SelectedIndex >= SerializedProperty.arraySize - 1)
+                if (SelectableItems && SelectedIndex >= SerializedProperty.arraySize - 1)
                     SelectedIndex = SerializedProperty.arraySize - 1;
                 m_SerializedObject.ApplyModifiedProperties();
             }
@@ -539,7 +541,7 @@ namespace Rhinox.GUIUtils.Editor
                 {
                     m_ElementList.RemoveAt(indexToRemove);
                 }
-                if (SelectedIndex >= List.Count - 1)
+                if (SelectableItems && SelectedIndex >= List.Count - 1)
                     SelectedIndex = List.Count - 1;
             }
         }
@@ -556,7 +558,8 @@ namespace Rhinox.GUIUtils.Editor
                         (Event.current.button == 0 || Event.current.button == 1))
                     {
                         CustomEditorGUI.EndEditingActiveTextField();
-                        this.m_ActiveElement = this.GetRowIndex(Event.current.mousePosition.y - listRect.y);
+                        if (SelectableItems)
+                            this.m_ActiveElement = this.GetRowIndex(Event.current.mousePosition.y - listRect.y);
                         if (this.Draggable && Event.current.button == 0)
                         {
                             this.m_DragOffset = Event.current.mousePosition.y - listRect.y -
@@ -667,13 +670,13 @@ namespace Rhinox.GUIUtils.Editor
                 case UnityEngine.EventType.KeyDown:
                     if (GUIUtility.keyboardControl != this.id)
                         return;
-                    if (current.keyCode == KeyCode.DownArrow)
+                    if (SelectableItems && current.keyCode == KeyCode.DownArrow)
                     {
                         ++this.m_ActiveElement;
                         current.Use();
                     }
 
-                    if (current.keyCode == KeyCode.UpArrow)
+                    if (SelectableItems && current.keyCode == KeyCode.UpArrow)
                     {
                         --this.m_ActiveElement;
                         current.Use();

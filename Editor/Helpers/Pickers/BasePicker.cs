@@ -61,7 +61,7 @@ namespace Rhinox.GUIUtils.Editor
 
             FilteredCollection.UpdateSearch(string.Empty);
             
-            _listView = new PageableReorderableList(FilteredCollection.FilteredValues)
+            _listView = new PageableReorderableList(FilteredCollection.FilteredValues, true)
             {
                 Draggable = false,
                 DisplayAdd = false,
