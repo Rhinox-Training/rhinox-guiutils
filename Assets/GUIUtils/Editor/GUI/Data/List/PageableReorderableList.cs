@@ -53,19 +53,19 @@ namespace Rhinox.GUIUtils.Editor
             }
         }
         
-        public PageableReorderableList(IList elements)
-            : base(elements)
+        public PageableReorderableList(IList elements, bool selectableItems)
+            : base(elements, selectableItems)
         {
         }
         
-        public PageableReorderableList(SerializedProperty elements)
-            : base(elements)
+        public PageableReorderableList(SerializedProperty elements, bool selectableItems)
+            : base(elements, selectableItems)
         {
             MaxItemsPerPage = DEFAULT_ITEMS_PER_PAGE;
         }
 
-        public PageableReorderableList(GenericHostInfo hostInfo)
-            : base()
+        public PageableReorderableList(GenericHostInfo hostInfo, bool selectableItems)
+            : base(selectableItems)
         {
             MaxItemsPerPage = DEFAULT_ITEMS_PER_PAGE;
             _hostInfo = hostInfo;
@@ -276,8 +276,10 @@ namespace Rhinox.GUIUtils.Editor
 
                 if (CustomEditorGUI.IconButton(removeBtnRect, _closeIcons[elementIndex], tooltip: "Remove entry."))
                 {
-                    this.SelectedIndex = elementIndex + _drawPageIndex * MaxItemsPerPage;
-                    HandleRemoveElement(this.SelectedIndex);
+                    int actualIndex = elementIndex + _drawPageIndex * MaxItemsPerPage;
+                    if (SelectableItems)
+                        this.SelectedIndex = actualIndex;
+                    HandleRemoveElement(actualIndex);
                     onChangedCallback?.Invoke(this);
                     if (_drawPageIndex * MaxItemsPerPage >= this.count && _drawPageIndex > 0)
                         --_drawPageIndex;
@@ -298,7 +300,7 @@ namespace Rhinox.GUIUtils.Editor
             if (SerializedProperty != null)
             {
                 SerializedProperty.DeleteArrayElementAtIndex(indexToRemove);
-                if (SelectedIndex >= SerializedProperty.arraySize - 1)
+                if (SelectableItems && SelectedIndex >= SerializedProperty.arraySize - 1)
                     SelectedIndex = SerializedProperty.arraySize - 1;
 
                 m_SerializedObject.ApplyModifiedProperties();
@@ -309,16 +311,15 @@ namespace Rhinox.GUIUtils.Editor
                 if (collection is Array arr)
                 {
                     m_ElementList = arr.RemoveAtGeneric(indexToRemove);
-                    if (_hostInfo != null)
-                        _hostInfo.TrySetValue(m_ElementList);
+                    _hostInfo?.TrySetValue(m_ElementList);
                 }
                 else
                 {
                     m_ElementList.RemoveAt(indexToRemove);
-                    if (_hostInfo != null)
-                        _hostInfo.TrySetValue(m_ElementList);
+                    _hostInfo?.TrySetValue(m_ElementList);
                 }
-                if (SelectedIndex >= List.Count - 1)
+                
+                if (SelectableItems && SelectedIndex >= List.Count - 1)
                     SelectedIndex = List.Count - 1;
             }
         }

@@ -72,7 +72,7 @@ namespace Rhinox.GUIUtils.Editor
                 throw new ArgumentNullException(nameof(listProperty));
             
             _listProperty = listProperty;
-            _listRO = new PageableReorderableList(listProperty);
+            _listRO = new PageableReorderableList(listProperty, false);
             
             var listDisplaySettings = ListDisplaySettings.Create(_hostInfo);
             ApplyDrawerSettings(listDisplaySettings);
@@ -83,7 +83,7 @@ namespace Rhinox.GUIUtils.Editor
         public ListDrawable(GenericHostInfo hostInfo) : base(hostInfo)
         {
             _listProperty = null;
-            _listRO = new PageableReorderableList(hostInfo);
+            _listRO = new PageableReorderableList(hostInfo, false);
             
             var listDisplaySettings = ListDisplaySettings.Create(hostInfo);
             ApplyDrawerSettings(listDisplaySettings);

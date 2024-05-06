@@ -85,25 +85,62 @@ namespace Rhinox.GUIUtils.Editor
             Texture targetPaint = memberVal;
             if (targetPaint == null)
                 targetPaint = Utility.GetColorTexture(Color.gray);
-            
+
             EditorGUI.DrawTextureTransparent(rect, targetPaint, ScaleMode.ScaleToFit);
 
             var isReadOnly = CheckIfIsReadOnly();
 
             if (!isReadOnly)
             {
-                rect = rect.AlignBottom(rect.height / 5.0f);
-                rect = rect.AlignCenter(rect.width * 0.6f);
-                if (GUI.Button(rect, "Select"))
+                var buttonRect = rect.AlignBottom(rect.height / 5.0f);
+                buttonRect = buttonRect.AlignCenter(rect.width * 0.6f);
+                if (GUI.Button(buttonRect, "Select"))
                 {
                     _activeControlId = GUIUtility.GetControlID (FocusType.Passive);
                     EditorGUIUtility.ShowObjectPicker<Texture2D> (memberVal, true, "", _activeControlId);
                 }
             }
 
-            if (Event.current.type == EventType.MouseDown && eUtility.IsMouseOver(rect))
-                Selection.activeObject = memberVal;
-                
+            bool hovering = eUtility.IsMouseOver(rect);
+
+            if (hovering)
+            {
+                switch (Event.current.type)
+                {
+                    case EventType.MouseDown:
+                        if (memberVal && EditorUtility.IsPersistent(memberVal))
+                            EditorGUIUtility.PingObject(memberVal);
+                        Selection.activeObject = memberVal;
+                        break;
+                    case EventType.MouseDrag:
+                        DragAndDrop.PrepareStartDrag();
+                        DragAndDrop.objectReferences = new Object[] { memberVal };
+                        DragAndDrop.StartDrag("Dragging Texture");
+                        Event.current.Use();
+                        break;
+                    case EventType.DragUpdated:
+                        if (!isReadOnly)
+                            DragAndDrop.visualMode = DragAndDropVisualMode.Copy;
+                        break;
+                    case EventType.DragExited:
+                        if (!isReadOnly)
+                        {
+                            DragAndDrop.AcceptDrag();
+                            Object[] draggedObjects = DragAndDrop.objectReferences;
+                            foreach (Object obj in draggedObjects)
+                            {
+                                Texture draggedTexture = obj as Texture;
+                                if (draggedTexture != null)
+                                {
+                                    memberVal = draggedTexture; // Assign the dragged texture to memberVal
+                                    Event.current.Use();
+                                    break; // Only handle the first valid drop
+                                }
+                            }
+                        }
+                        break;
+                }
+            }
         }
 
         private bool CheckIfIsReadOnly()
