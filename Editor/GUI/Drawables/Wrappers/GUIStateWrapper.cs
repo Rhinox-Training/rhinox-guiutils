@@ -49,8 +49,13 @@ namespace Rhinox.GUIUtils.Editor
 
         [WrapDrawer(typeof(EnableIfAttribute), Priority.BehaviourChange)]
         public static BaseWrapperDrawable Create(EnableIfAttribute attr, IOrderedDrawable drawable)
-        { 
-            var member = MemberHelper.Create<object>(drawable.HostInfo, attr.MemberName);
+        {
+#if !ODIN_INSPECTOR_3
+            var input = attr.MemberName;
+#else
+            var input = attr.Condition;
+#endif
+            var member = MemberHelper.Create<object>(drawable.HostInfo, input);
             return new GUIStateWrapper(drawable)
             {
                 _state = true,
@@ -62,7 +67,12 @@ namespace Rhinox.GUIUtils.Editor
         [WrapDrawer(typeof(DisableIfAttribute), Priority.BehaviourChange)]
         public static BaseWrapperDrawable Create(DisableIfAttribute attr, IOrderedDrawable drawable)
         {
-            var member = MemberHelper.Create<object>(drawable.HostInfo, attr.MemberName);
+#if !ODIN_INSPECTOR_3
+            var input = attr.MemberName;
+#else
+            var input = attr.Condition;
+#endif
+            var member = MemberHelper.Create<object>(drawable.HostInfo, input);
             
             return new GUIStateWrapper(drawable)
             {

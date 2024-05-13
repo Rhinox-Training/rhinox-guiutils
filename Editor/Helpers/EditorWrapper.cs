@@ -161,9 +161,7 @@ namespace Rhinox.GUIUtils.Editor
         public void Validate(Object root, ref List<PersistentValidationResultBatch> list)
         {
             var runner = new OdinValidationRunner();
-            // TODO root or Target??
-            var resultBatches = runner.ValidateUnityObjectRecursively(root).ToArray();
-            list.AddRange(resultBatches);
+            list.AddRange( runner.ValidateObject(root));
         }
     #else
     

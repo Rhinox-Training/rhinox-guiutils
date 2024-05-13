@@ -46,7 +46,12 @@ namespace Rhinox.GUIUtils.Editor
         [WrapDrawer(typeof(InlineButtonAttribute), Priority.Append)]
         public static BaseWrapperDrawable Create(InlineButtonAttribute attr, IOrderedDrawable drawable)
         {
-            var member = MemberHelper.CreateMethod(drawable.HostInfo, attr.MemberMethod);
+#if !ODIN_INSPECTOR_3
+            var input = attr.MemberMethod;
+#else
+            var input = attr.Action;
+#endif
+            var member = MemberHelper.CreateMethod(drawable.HostInfo, input);
             return new InlineButtonWrapper(drawable)
             {
                 _label = attr.Label,

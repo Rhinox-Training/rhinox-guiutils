@@ -42,7 +42,11 @@ namespace Rhinox.GUIUtils.Editor
             }
             else if (info.TryGetAttribute(out TypeFilterAttribute typeFilter))
             {
+#if !ODIN_INSPECTOR_3
                 data.TypeMethod = typeFilter.MemberName;
+#else
+                data.TypeMethod = typeFilter.FilterGetter;
+#endif
                 data.Title = typeFilter.DropdownTitle;
 
                 data.RawGetter = MemberHelper.Create<object>(info, data.TypeMethod);

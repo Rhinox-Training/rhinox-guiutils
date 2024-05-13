@@ -29,7 +29,11 @@ namespace Rhinox.GUIUtils.Editor
 
         public ListDisplaySettings(ListDrawerSettingsAttribute attr)
         {
+#if !ODIN_INSPECTOR_3
             Expanded = attr.Expanded;
+#else
+            Expanded = attr.ShowFoldout;
+#endif
             HideAddButton = attr.HideAddButton;
             HideRemoveButton = attr.HideRemoveButton;
             HideHeader = false;

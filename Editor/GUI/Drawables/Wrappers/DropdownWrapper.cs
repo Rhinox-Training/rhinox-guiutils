@@ -162,7 +162,12 @@ namespace Rhinox.GUIUtils.Editor
         [WrapDrawer(typeof(ValueDropdownAttribute), Priority.Simple)]
         public static BaseWrapperDrawable Create(ValueDropdownAttribute attr, IOrderedDrawable drawable)
         {
-            var member = MemberHelper.Create<IEnumerable>(drawable.HostInfo, attr.MemberName);
+#if !ODIN_INSPECTOR_3
+            var input = attr.MemberName;
+#else
+            var input = attr.ValuesGetter;
+#endif
+            var member = MemberHelper.Create<IEnumerable>(drawable.HostInfo, input);
             return new DropdownBaseWrapper(drawable, member);
         }
     }
