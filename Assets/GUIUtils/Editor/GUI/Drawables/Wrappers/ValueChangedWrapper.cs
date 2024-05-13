@@ -40,7 +40,12 @@ namespace Rhinox.GUIUtils.Editor
         [WrapDrawer(typeof(OnValueChangedAttribute), Priority.BehaviourChange)]
         public static BaseWrapperDrawable Create(OnValueChangedAttribute attr, IOrderedDrawable drawable)
         {
-            var member = MemberHelper.CreateMethod(drawable.HostInfo, attr.MethodName);
+#if !ODIN_INSPECTOR_3
+            var input = attr.MethodName;
+#else
+            var input = attr.Action;
+#endif
+            var member = MemberHelper.CreateMethod(drawable.HostInfo, input);
             return new ValueChangedWrapper(drawable)
             {
                 _methodMember = member

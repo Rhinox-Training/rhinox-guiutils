@@ -66,7 +66,12 @@ namespace Rhinox.GUIUtils.Editor
         [WrapDrawer(typeof(CustomValueDrawerAttribute), Priority.Simple)]
         public static BaseWrapperDrawable Create(CustomValueDrawerAttribute attr, IOrderedDrawable drawable)
         {
-            var member = MemberHelper.CreateMethod(drawable.HostInfo, attr.MethodName);
+#if !ODIN_INSPECTOR_3
+            var input = attr.MethodName;
+#else
+            var input = attr.Action;
+#endif
+            var member = MemberHelper.CreateMethod(drawable.HostInfo, input);
             member.EnforceSyntax(parameterIndex: 1, typeof(GUIContent));
             member.EnforceSyntax(numberOfParameters: 2);
             member.EnforceSyntax(hasReturnType: true);

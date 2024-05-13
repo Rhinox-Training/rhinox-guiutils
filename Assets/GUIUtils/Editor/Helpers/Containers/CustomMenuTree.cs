@@ -378,7 +378,9 @@ namespace Rhinox.GUIUtils.Editor
 
         public virtual void Update()
         {
-#if ODIN_INSPECTOR
+#if ODIN_INSPECTOR_3
+            _menuTree.HandleKeyboardMenuNavigation();
+#elif ODIN_INSPECTOR
             _menuTree.HandleKeybaordMenuNavigation();
 #endif
 

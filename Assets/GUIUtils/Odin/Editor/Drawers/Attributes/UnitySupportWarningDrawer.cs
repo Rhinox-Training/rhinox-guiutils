@@ -20,7 +20,7 @@ namespace Rhinox.GUIUtils.Odin.Editor
             base.DrawPropertyLayout(label);
 
             string unityVersionStr = Application.unityVersion;
-            int index = unityVersionStr.IndexOf("f");
+            int index = unityVersionStr.IndexOf("f", StringComparison.Ordinal);
             if (index != -1)
                 unityVersionStr = unityVersionStr.Substring(0, index);
             

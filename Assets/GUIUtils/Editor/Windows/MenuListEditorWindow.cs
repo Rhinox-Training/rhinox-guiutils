@@ -15,7 +15,9 @@ namespace Rhinox.GUIUtils.Editor
 			List = l;
 		}
 
+#pragma warning disable CS0618 // Type or member is obsolete
 		[ShowInInspector, HideLabel, HideReferenceObjectPicker, ListDrawerSettings(Expanded = true, IsReadOnly = true)]
+#pragma warning restore CS0618 // Type or member is obsolete
 		public List<object> List;
 	}
 
