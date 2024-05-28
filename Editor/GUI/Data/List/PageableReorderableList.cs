@@ -53,18 +53,18 @@ namespace Rhinox.GUIUtils.Editor
             }
         }
         
-        public PageableReorderableList(IList elements, bool selectableItems)
+        public PageableReorderableList(IList elements, bool selectableItems = false)
             : base(elements, selectableItems)
         {
         }
         
-        public PageableReorderableList(SerializedProperty elements, bool selectableItems)
+        public PageableReorderableList(SerializedProperty elements, bool selectableItems = false)
             : base(elements, selectableItems)
         {
             MaxItemsPerPage = DEFAULT_ITEMS_PER_PAGE;
         }
 
-        public PageableReorderableList(GenericHostInfo hostInfo, bool selectableItems)
+        public PageableReorderableList(GenericHostInfo hostInfo, bool selectableItems = false)
             : base(selectableItems)
         {
             MaxItemsPerPage = DEFAULT_ITEMS_PER_PAGE;
