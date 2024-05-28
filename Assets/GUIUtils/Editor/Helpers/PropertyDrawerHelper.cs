@@ -20,7 +20,11 @@ namespace Rhinox.GUIUtils.Editor
         {
             if (_getDrawerTypeMethod == null)
                 _getDrawerTypeMethod = ScriptAttributeUtilityType.GetMethod("GetDrawerTypeForType", StaticFlags);
-            return (Type) _getDrawerTypeMethod.Invoke(null, new[] {type});
+#if UNITY_2022_2_OR_NEWER
+            return (Type) _getDrawerTypeMethod.Invoke(null, new object[] {type, false});
+#else
+            return (Type) _getDrawerTypeMethod.Invoke(null, new object[] {type});
+#endif
         }
 
         public static object GetHandler(SerializedProperty property)
@@ -28,7 +32,7 @@ namespace Rhinox.GUIUtils.Editor
             if (_getHandlerMethod == null)
                 _getHandlerMethod = ScriptAttributeUtilityType.GetMethod("GetHandler", StaticFlags);
             // Returns internal class PropertyHandler
-            return _getHandlerMethod.Invoke(null, new[] { property });
+            return _getHandlerMethod.Invoke(null, new object[] { property });
         }
     }
 }
