@@ -10,7 +10,7 @@ using Object = UnityEngine.Object;
 
 namespace Rhinox.GUIUtils.Editor
 {
-    [CustomEditor(typeof(Object), true)]
+    [CustomEditor(typeof(Object), true, isFallback = true)]
     [CanEditMultipleObjects]
     public class CustomSmartEditor : BaseEditor<Object>
     {

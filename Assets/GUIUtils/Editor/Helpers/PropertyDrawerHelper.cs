@@ -20,8 +20,11 @@ namespace Rhinox.GUIUtils.Editor
         {
             if (_getDrawerTypeMethod == null)
                 _getDrawerTypeMethod = ScriptAttributeUtilityType.GetMethod("GetDrawerTypeForType", StaticFlags);
-#if UNITY_2022_2_OR_NEWER
-            return (Type) _getDrawerTypeMethod.Invoke(null, new object[] {type, false});
+            
+#if UNITY_2023_2_OR_NEWER
+            return (Type) _getDrawerTypeMethod?.Invoke(null, new object[] {type});
+#elif UNITY_2022_2_OR_NEWER
+            return (Type) _getDrawerTypeMethod?.Invoke(null, new object[] {type, false});
 #else
             return (Type) _getDrawerTypeMethod.Invoke(null, new object[] {type});
 #endif
