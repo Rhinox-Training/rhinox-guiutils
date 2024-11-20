@@ -49,6 +49,22 @@ namespace Rhinox.GUIUtils.Editor
         }
     }
     
+    public class OpenFileField : FileIOInputField
+    {
+        private string _extensions;
+
+        public OpenFileField(string label, string tooltip = null, string initialFolder = null, string initialValue = default(string), string extensions = default(string)) 
+            : base(label, tooltip, initialFolder, initialValue)
+        {
+            _extensions = extensions ?? string.Empty;// = extensions != null ? Path.GetFileNameWithoutExtension(initialValue) : "New File";
+        }
+
+        protected override string OpenDialog(string initialFolder)
+        {
+            return EditorUtility.OpenFilePanel("Open File...", initialFolder, _extensions);
+        }
+    }
+    
     public class OpenFolderField : FileIOInputField
     {
         public OpenFolderField(string label, string tooltip = null, string initialFolder = null, string initialValue = default(string)) 

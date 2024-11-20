@@ -137,6 +137,14 @@ namespace Rhinox.GUIUtils.Editor
             var field = new SaveFileField(name, tooltip, initialFolder);
             return Add(field, out reference, initialValue, validation);
         }
+        
+        public DialogBuilder OpenFileField(string name, out ValueReference<string> reference,
+            string initialValue = null, string initialFolder = null, string tooltip = null, Func<string, bool> validation = null, string extensions = null)
+        {
+            
+            var field = new OpenFileField(name, tooltip, initialFolder, extensions);
+            return Add(field, out reference, initialValue, validation);
+        }
 
         public DialogBuilder OpenFolderField(string name, out ValueReference<string> reference,
             string initialValue = null, string initialFolder = null, string tooltip = null, Func<string, bool> validation = null)
